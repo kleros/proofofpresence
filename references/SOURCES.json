@@ -1,0 +1,9 @@
+{
+  "snapshotDate": "2026-10-28",
+  "packaging": "Vendored source snapshots, not Git submodules. Cloned Git metadata preserved locally under .runtime/source-history and excluded from delivery.",
+  "sources": [
+    { "path": "kickback", "url": "https://github.com/weiwei-ooi/devcon-side-event-kickback", "branch": "main", "baseCommit": "57fc1c8233c60e31c1b5988c631ef57d7c3f1b81", "modified": true, "trackedBasePatch": "../docs/patches/kickback.patch", "newFiles": "Pinned ABI, provenance helpers/tests, generic template, console support and AGENTS are included directly in this source snapshot." },
+    { "path": "events", "url": "https://github.com/weiwei-ooi/kleros-events", "branch": "main", "baseCommit": "fa732b8ea20e57648516b6e46e1076c0bf2ab434", "modified": false },
+    { "path": "booth", "url": "https://github.com/weiwei-ooi/kleros-devcon-checkin", "branch": "main", "baseCommit": "169220bb41787b8aabdec5190ab85379328f143f", "modified": false }
+  ]
+}

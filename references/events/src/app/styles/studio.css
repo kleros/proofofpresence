@@ -1,0 +1,117 @@
+/* Team recording tools: event page studio, /record, /admin/recordings and the
+   Link to events dialog. Tokens from globals.css only. */
+
+/* team buttons under the Talks heading */
+.sec-tools { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; }
+.sec-tools .dot, .ev-title .btn .dot, .adm-head .btn .dot { width: 8px; height: 8px; }
+.btn.primary .dot { background: var(--accent-ink); }
+
+/* the studio panel (inside Talks) */
+.studio { display: grid; gap: var(--s-4); padding: var(--s-4); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); border-radius: var(--r);
+  background: linear-gradient(160deg, rgb(124 92 230 / 0.10), transparent 60%), var(--surface); scroll-margin-top: 120px; min-width: 0; }
+.studio-h { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.studio-t { display: grid; gap: var(--s-2); min-width: 0; }
+.studio-tabs { justify-self: start; }
+.studio-pane { display: grid; gap: var(--s-3); min-width: 0; }
+.studio-pane > p { margin: 0; }
+.studio-pick { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--s-3); align-items: end; }
+.studio-pick p { margin: 0; padding-bottom: 4px; }
+.studio .rec { background: var(--bg); }
+.studio .rec-actions { background: var(--bg); }
+.as-file { overflow-wrap: anywhere; }
+
+/* drop zone shared by the event editor and the studio */
+.am-drop { border: 1px dashed var(--line); border-radius: var(--r); padding: 14px; text-align: center; background: var(--bg); }
+.am-drop.is-over { background: var(--accent-soft); border-color: var(--accent); }
+
+/* linked-event chips */
+.ev-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 3px 4px 3px 11px; font-size: 0.82rem; line-height: 1.4; }
+.ev-chip > a { color: var(--fg); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ev-chip > a:hover { color: var(--lavender); }
+.ev-chip .pill { padding: 3px 7px; font-size: 0.7rem; }
+.ev-chip:not(:has(.chip-x)):not(:has(.pill)) { padding-right: 11px; }
+.chip-x { border: 0; background: var(--sunk); color: var(--muted); border-radius: 999px; min-width: 22px; height: 22px; padding: 0 6px; cursor: pointer; font-size: 0.72rem; flex: none; }
+.chip-x:hover { color: var(--fg); }
+.chip-x.armed { background: color-mix(in srgb, var(--rec) 22%, transparent); color: var(--rec); font-weight: 600; }
+
+/* talk page: every event it was presented at */
+.talk-events { display: flex; gap: var(--s-2); flex-wrap: wrap; align-items: center; margin-top: var(--s-3); }
+.talk-unlinked { margin-top: var(--s-3); }
+
+/* Link to events dialog */
+.le-dialog { width: min(640px, calc(100vw - 24px)); max-height: min(760px, calc(100dvh - 24px)); padding: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); color: var(--fg); box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.8); }
+.le-dialog::backdrop { background: rgb(10 8 15 / 0.66); backdrop-filter: blur(3px); }
+.le-dialog[open] { display: flex; }
+.le-inner { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-5); width: 100%; min-height: 0; }
+.le-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); }
+.le-title { display: grid; gap: 4px; min-width: 0; }
+.le-title h2 { font-size: 1.15rem; overflow-wrap: anywhere; }
+.le-title p { margin: 0; }
+.le-x { flex: none; }
+.le-tools { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.le-tools .search { flex: 1 1 220px; background: var(--bg); }
+.le-list { list-style: none; margin: 0; padding: 4px; display: grid; gap: 2px; overflow-y: auto; min-height: 120px; max-height: 46dvh; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); }
+.le-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--s-3); align-items: center; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.le-row:hover { background: var(--surface); }
+.le-row.is-on { background: var(--accent-soft); }
+.le-row input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.le-row[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+.le-row[aria-disabled="true"]:hover { background: none; }
+.le-main { display: grid; gap: 1px; min-width: 0; }
+.le-main b { font-weight: 600; color: var(--white); font-size: 0.95rem; overflow-wrap: anywhere; line-height: 1.35; }
+.le-empty { padding: 14px 10px; }
+.le-create { display: grid; gap: var(--s-3); padding: var(--s-4); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); }
+.le-check { display: flex; gap: var(--s-2); align-items: baseline; flex-wrap: wrap; font-size: 0.92rem; cursor: pointer; }
+.le-check input { accent-color: var(--accent); }
+.le-foot { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; padding-top: var(--s-3); border-top: 1px solid var(--line); }
+.le-foot .spacer { flex: 1; }
+
+/* /record */
+.rs-page { display: grid; gap: var(--s-5); }
+.rs-head p { margin: 0; }
+.rs-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--s-5); align-items: start; }
+.rs-side { gap: var(--s-3); }
+.rs-side p { margin: 0; }
+.rs-steps { margin: 0; padding-left: 1.2em; display: grid; gap: var(--s-3); font-size: 0.92rem; color: var(--muted); }
+.rs-steps b { color: var(--fg); font-weight: 600; }
+.rs-links { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); }
+.rs-links-h { display: flex; align-items: center; gap: var(--s-2) var(--s-3); flex-wrap: wrap; min-width: 0; }
+
+/* /admin/recordings */
+.recl-tools { display: flex; gap: var(--s-3); flex-wrap: wrap; align-items: center; }
+.recl-tools .search { flex: 1 1 260px; }
+.recl-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); overflow: hidden; }
+.recl-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: var(--s-3) var(--s-4); align-items: start; padding: 14px 16px; }
+.recl-row + .recl-row { border-top: 1px solid var(--line); }
+.recl-main { display: grid; gap: 4px; min-width: 0; }
+.recl-title { color: var(--white); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; line-height: 1.35; }
+.recl-title:hover { color: var(--lavender); }
+.recl-evs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.recl-side { display: flex; flex-direction: column; align-items: flex-end; gap: var(--s-2); }
+
+@media (max-width: 860px) {
+  .rs-grid { grid-template-columns: minmax(0, 1fr); }
+  .studio-pick { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .studio { padding: var(--s-3); margin-inline: calc(var(--s-1) * -1); }
+  .studio-h { flex-direction: column-reverse; align-items: stretch; }
+  .studio-h > .btn { align-self: flex-end; }
+  .studio-tabs { display: flex; width: 100%; }
+  .studio-tabs button { flex: 1 1 auto; padding-inline: 8px; white-space: normal; line-height: 1.25; }
+  .recl-row { grid-template-columns: 36px minmax(0, 1fr); }
+  .recl-row .ico { width: 36px; height: 36px; }
+  .recl-side { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+  .le-inner { padding: var(--s-4); }
+  .le-foot .btn { flex: 1 1 auto; justify-content: center; }
+  .le-foot > .muted { flex-basis: 100%; }
+  .le-foot .spacer { display: none; }
+}
+
+/* Talk page: slides kept as a link next to a recording (RecordingSlides) */
+.rec-slides-card { display: flex; gap: var(--s-3); align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.rec-slides-card p { margin: 4px 0 0; }
+.rec-slides-edit summary { cursor: pointer; color: var(--muted); font-weight: 500; }
+.rec-slides-edit[open] summary { margin-bottom: var(--s-3); }
+.rec-slides-pdf { margin-top: var(--s-3); padding-top: var(--s-3); border-top: 1px solid var(--line); }
+.rec-slides-pdf p { margin: 0; }

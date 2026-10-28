@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140a3a">
+<title>Connect with the Kleros team</title>
+<meta name="description" content="Building something? Tell the Kleros team and we'll follow up after Devcon.">
+<link rel="icon" href="assets/kleros-symbol-white-flat.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* The "talk to the team" page: a calm paper card, deliberately unlike the purple merch flow. */
+  :root {
+    --night: #0f0a2e; --night-2: #1d1050;
+    --paper: #fbf9ff; --ink: #1b1240; --ink-2: #4a4170; --line: #e3dcf3;
+    --kleros: #4d00b4; --kleros-2: #9013fe; --gold: #c8962f; --gold-soft: #f6ead0;
+    --danger: #c2185b; --ok: #0f7a5c;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0; min-height: 100vh; min-height: 100dvh;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--ink);
+    background: radial-gradient(90% 50% at 50% 0%, rgba(144, 19, 254, .22), transparent 70%), linear-gradient(180deg, var(--night), var(--night-2));
+    background-color: var(--night); background-attachment: fixed; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 2px 18px; }
+  header img { height: 26px; }
+  header a { color: #cfc4f2; font-size: 13px; text-decoration: none; }
+  header a:hover { color: #fff; }
+  .card { background: var(--paper); border-radius: 22px; padding: 26px 22px 22px; box-shadow: 0 24px 60px rgba(5, 0, 25, .45); border-top: 4px solid var(--gold); }
+  .kicker { font-size: 11.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+  h1 { font-family: Urbanist, Inter, sans-serif; font-size: 30px; line-height: 1.1; margin: 0 0 10px; color: var(--ink); text-wrap: balance; }
+  .lede { margin: 0 0 18px; color: var(--ink-2); font-size: 15px; line-height: 1.55; }
+  .prefill { margin: -6px 0 16px; padding: 9px 12px; border-radius: 10px; background: var(--gold-soft); color: #6b4c10; font-size: 13px; }
+  form { display: grid; gap: 14px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .row { grid-template-columns: 1fr; } }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  label, .label { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .req { color: var(--kleros-2); margin-left: 2px; }
+  .opt { font-weight: 400; color: #8a82a8; }
+  input, textarea {
+    width: 100%; font: 15px Inter, system-ui, sans-serif; color: var(--ink); background: #fff;
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 11px 12px; outline: none; transition: border-color .15s, box-shadow .15s;
+  }
+  textarea { min-height: 84px; resize: vertical; line-height: 1.45; }
+  input:focus, textarea:focus { border-color: var(--kleros-2); box-shadow: 0 0 0 3px rgba(144, 19, 254, .14); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font: 600 13.5px Inter, system-ui, sans-serif; color: var(--ink-2); background: #fff; border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 8px 13px; cursor: pointer; transition: all .15s;
+  }
+  .chip[aria-pressed="true"] { background: var(--kleros); border-color: var(--kleros); color: #fff; }
+  .error { display: none; color: var(--danger); font-size: 12.5px; }
+  .field.invalid .error { display: block; }
+  .field.invalid input, .field.invalid textarea { border-color: var(--danger); }
+  button.send {
+    margin-top: 4px; width: 100%; border: 0; border-radius: 14px; padding: 15px 18px; cursor: pointer;
+    font: 700 16px Urbanist, Inter, sans-serif; color: #fff; background: var(--ink); letter-spacing: .01em;
+  }
+  button.send:hover { background: #2a1d60; }
+  button.send:disabled { opacity: .6; cursor: default; }
+  .fine { margin: 2px 0 0; font-size: 12px; color: #8a82a8; line-height: 1.5; text-align: center; }
+  .done { text-align: center; padding: 8px 4px 4px; }
+  .done .tick { width: 54px; height: 54px; border-radius: 50%; margin: 0 auto 14px; display: grid; place-items: center; background: #e5f6ef; color: var(--ok); font-size: 28px; }
+  .done h1 { font-size: 28px; }
+  .done p { color: var(--ink-2); line-height: 1.55; margin: 0 0 14px; }
+  .done a { display: inline-block; margin-top: 4px; color: var(--kleros); font-weight: 600; text-decoration: none; }
+  .status { font-size: 12.5px; color: #8a82a8; margin-top: 6px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <img src="assets/logo-kleros-white.svg" alt="Kleros">
+    <a href="./" id="back">Booth check-in →</a>
+  </header>
+
+  <section class="card" id="form-card">
+    <p class="kicker" id="kicker">Kleros team</p>
+    <h1>Connect with the Kleros team</h1>
+    <p class="lede">Building something, or exploring Kleros for your product? Tell us a little, and the right person from the team will follow up after Devcon.</p>
+    <p class="prefill" id="prefill" hidden>We’ve filled in what you gave us at check-in.</p>
+
+    <form id="form" novalidate autocomplete="on">
+      <div class="row">
+        <div class="field" data-f="name">
+          <label for="name">Your name<span class="req">*</span></label>
+          <input id="name" type="text" autocomplete="name" autocapitalize="words" required>
+          <div class="error">Please add your name.</div>
+        </div>
+        <div class="field" data-f="company">
+          <label for="company">Company or project<span class="req">*</span></label>
+          <input id="company" type="text" autocomplete="organization" required>
+          <div class="error">Please add your company or project.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="position">Your role <span class="opt">(optional)</span></label>
+          <input id="position" type="text" autocomplete="organization-title">
+        </div>
+        <div class="field" data-f="email">
+          <label for="email">Email<span class="req">*</span></label>
+          <input id="email" type="email" autocomplete="email" inputmode="email" required>
+          <div class="error" id="email-error">Please add your email.</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="telegram">Telegram <span class="opt">(optional)</span></label>
+          <input id="telegram" type="text" placeholder="@handle" autocapitalize="off">
+        </div>
+        <div class="field">
+          <label for="linkedin">LinkedIn <span class="opt">(optional)</span></label>
+          <input id="linkedin" type="text" placeholder="linkedin.com/in/…" autocapitalize="off">
+        </div>
+      </div>
+
+      <div class="field" data-f="topics">
+        <span class="label">What would you like to talk about?<span class="req">*</span></span>
+        <div class="chips" id="topics" data-multi="1"></div>
+        <div class="error">Pick at least one.</div>
+      </div>
+      <div class="field" data-f="project">
+        <label for="project">What are you building, and where could Kleros help?<span class="req">*</span></label>
+        <textarea id="project" maxlength="600" placeholder="e.g. An agent marketplace that needs a way to settle failed jobs"></textarea>
+        <div class="error">A line or two is plenty.</div>
+      </div>
+      <div class="field">
+        <span class="label">Timing</span>
+        <div class="chips" id="timing"></div>
+      </div>
+      <div class="field">
+        <span class="label">Best way to reach you</span>
+        <div class="chips" id="reach"></div>
+      </div>
+      <div class="field">
+        <label for="met">Who did you talk to at the booth? <span class="opt">(optional)</span></label>
+        <input id="met" type="text" placeholder="Their name">
+      </div>
+
+      <button class="send" type="submit" id="send">Send to the Kleros team</button>
+      <p class="fine">Only the Kleros team sees this. Never sold or shared. Ask us to see or delete it any time: <span id="contact"></span>.</p>
+    </form>
+  </section>
+
+  <section class="card done" id="done-card" hidden>
+    <div class="tick" aria-hidden="true">✓</div>
+    <h1 id="done-title">Thanks!</h1>
+    <p id="done-text"></p>
+    <p class="status" id="status"></p>
+    <a href="./" id="done-link">Check in for booth merch →</a>
+  </section>
+</main>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  var CFG = window.KLEROS_BOOTH_CONFIG || {}, ENDPOINT = CFG.endpoint || '';
+  var K_SELF = 'kleros_devcon_self', K_QUEUE = 'kleros_devcon_connect_queue';
+  var TOPICS = ['Using Kleros in my product', 'A pilot or test case', 'Partnership', 'Speaking, research or media', 'Something else'];
+  var TIMING = ['Ready now', 'In the next 3 months', 'Just exploring'];
+  var REACH = ['Email', 'Telegram', 'A call'];
+  function $(id) { return document.getElementById(id); }
+  function store(k, v) {
+    try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; }
+  }
+  $('contact').textContent = CFG.privacyContact || 'the Kleros team';
+  if (CFG.edition) $('kicker').textContent = 'Kleros team · ' + CFG.edition + (CFG.city ? ' ' + CFG.city : '');
+
+  // Chips: `multi` toggles any number, otherwise one at a time (tap again to clear).
+  function chips(box, list, multi) {
+    list.forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip'; b.textContent = t; b.setAttribute('aria-pressed', 'false');
+      b.onclick = function () {
+        var on = b.getAttribute('aria-pressed') !== 'true';
+        if (!multi) box.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        if (box.id === 'topics') setInvalid('topics', false);
+      };
+      box.appendChild(b);
+    });
+  }
+  function picked(box) { return [].slice.call(box.querySelectorAll('.chip[aria-pressed="true"]')).map(function (c) { return c.textContent; }); }
+  chips($('topics'), TOPICS, true); chips($('timing'), TIMING, false); chips($('reach'), REACH, false);
+
+  // Already checked in on this phone: start from what they gave us there.
+  var me = store(K_SELF);
+  if (me && me.email) {
+    $('name').value = me.name || ''; $('company').value = me.company || ''; $('position').value = me.position || '';
+    $('email').value = me.email || ''; $('telegram').value = me.telegram ? '@' + String(me.telegram).replace(/^@/, '') : ''; $('linkedin').value = me.linkedin || '';
+    $('prefill').hidden = false;
+    $('back').textContent = 'Back to your ticket →';
+  }
+
+  function setInvalid(f, on) { var el = document.querySelector('[data-f="' + f + '"]'); if (el) el.classList.toggle('invalid', on); }
+  ['name', 'company', 'email', 'project'].forEach(function (f) { $(f).addEventListener('input', function () { setInvalid(f, false); }); });
+
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+
+  // Offline-safe like the check-in: requests wait on the phone until the backend confirms them.
+  var busy = false;
+  function flush() {
+    var q = store(K_QUEUE) || [];
+    if (!ENDPOINT || busy || !q.length) return Promise.resolve(q.length);
+    busy = true;
+    return q.reduce(function (p, d) {
+      return p.then(function () {
+        return fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(d), keepalive: true })
+          .then(function (r) { return r.json(); })
+          .then(function (res) { if (res && res.ok) store(K_QUEUE, (store(K_QUEUE) || []).filter(function (x) { return x.rid !== d.rid; })); })
+          .catch(function () {});
+      });
+    }, Promise.resolve()).then(function () { busy = false; return (store(K_QUEUE) || []).length; });
+  }
+  function showStatus(left) {
+    $('status').textContent = !ENDPOINT ? 'Demo mode: saved on this device only.' : left ? 'Saved on your phone. It sends as soon as you’re online.' : 'Sent.';
+  }
+  window.addEventListener('online', function () { flush().then(showStatus); });
+  flush();
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var d = {
+      action: 'connect', rid: uid(),
+      name: $('name').value.trim(), company: $('company').value.trim(), position: $('position').value.trim(),
+      email: $('email').value.trim(), telegram: $('telegram').value.trim().replace(/^@/, ''), linkedin: $('linkedin').value.trim(),
+      topics: picked($('topics')), project: $('project').value.trim(), timing: picked($('timing'))[0] || '', reach: picked($('reach'))[0] || '',
+      met: $('met').value.trim(), checkin: me && me.ticket ? me.ticket : ''
+    };
+    var first = null, check = function (f, bad) { setInvalid(f, bad); if (bad && !first) first = f; };
+    check('name', !d.name); check('company', !d.company);
+    $('email-error').textContent = d.email ? 'That email looks off. Mind checking it?' : 'Please add your email.';
+    check('email', !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email));
+    check('topics', !d.topics.length); check('project', !d.project);
+    if (first) { document.querySelector('[data-f="' + first + '"]').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+
+    $('send').disabled = true; $('send').textContent = 'Sending…';
+    var q = store(K_QUEUE) || []; q.push(d); store(K_QUEUE, q);
+    var firstName = d.name.split(/\s+/)[0];
+    $('done-title').textContent = 'Thanks, ' + firstName + '!';
+    $('done-text').textContent = 'It’s with the Kleros team. ' + (d.met ? d.met + ' or someone else from the team' : 'Someone from the team') +
+      ' will reach out' + (d.reach === 'Telegram' && d.telegram ? ' on Telegram' : d.reach === 'A call' ? ' to set up a call' : ' by email') + ' after Devcon.';
+    if (me && me.ticket) { $('done-link').textContent = 'Back to your ticket →'; }
+    $('form-card').hidden = true; $('done-card').hidden = false;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('status').textContent = 'Sending…';
+    flush().then(showStatus);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+# Core application integration checkpoint
+
+28 October 2026. Main implementation owner: this chat (`Unify Kleros event deposits`).
+Core branch: `codex/core-application`. The exact code checkpoint SHA is recorded immediately after the
+initial local commit below. There is no upstream push or production deployment.
+
+## Architecture and authoritative interfaces
+
+The root Node ESM app is a local-only workbench using unchanged v7 per-event contracts and V1 Court
+mocks. The existing Next/Supabase content and separate booth systems remain retained source modules.
+OptionC is the application architecture; the redesign's **OptionB is a presentation choice**, not an
+instruction to replace this backend or merge financial identities into content/merch history.
+
+`docs/API.md` and `src/domain.ts` describe the public interface. The HTTP entry is `src/server.mjs`;
+domain operations are `src/workbench.mjs`, provenance is `src/imports.mjs`, authoritative on-chain
+state/version checks are `src/chain.mjs`. `public/app.js` currently consumes these real interfaces.
+
+| Surface | Implemented contract |
+|---|---|
+| Directory/event routes | UI `/#event=<stable-id>&view=participant\|organizer\|cases`; `GET /api/bootstrap`, `GET /api/events/:id` |
+| Auth | Demo session picker is explicitly simulated; EOA nonce challenge/verify proves wallet control. Session state returned by bootstrap is authoritative. |
+| Create/manage | `POST /api/events`, owner-only `PATCH /api/events/:id`; stable ID assigned by server. Immutable deployment terms cannot be edited. Optional Luma/content mappings grant no role. |
+| Registration | Self-registration links the authenticated wallet and declared contact; admission is owner-only. Successful deposit, approved admission and on-chain registration remain distinct states. |
+| Deposits/reconciliation | Receipt verification includes successful/canonical log, sender, selected chain/contract, amount, cutoff, duplicates and return pairing. Detail includes participant evidence plus privileged deposit/unmatched ledgers. |
+| Attendance | Event staff/owner check-in records source/reviewer/nonce/time; reviewed raw CSV requires origin acknowledgement and rejects known conflicts. Personal history/merch/consent never enter proposals. |
+| Financial actions | Draft preview→validate/execute→confirmed receipt. Event/wallet/deployment/revision/fingerprint/expiry are bound; changing context invalidates the review. Browser wallet uses validate→wallet send→confirm. |
+| Court/settlement | Challenge/match/correct/resolve/release, evidence, direct resolver appeal funding/rewards; reviewed `passPeriod` and `deliverRuling` use arbitrator IDs, preserving the resolver's finality/appeal override. |
+| Recovery | Reject/refund, cancellation, no-list withdrawal, owed claim, spare refund/sweep, two-step ownership. Contract rules and reserves remain authoritative. |
+| Local compatibility | `/finance/:id/guest/`, owner-only `/finance/:id/console/`; per-instance event config, pinned ABI, local upload/gateway and chain-time eligibility. Main workflow uses root drafts; file-driven legacy plans are prepared with retained scripts. |
+
+## UI integration invariants
+
+- `state.phase` is Open/Listed/Finalized/Cancelled. Finalized can coexist with unresolved matched cases.
+  Normal payouts must remain available with appropriate reserves; a late loser redistributes top-ups.
+- Distinguish registration/admission, verified deposit, staff observations, posted monetary attendance,
+  challenge state, owed payment, and newsletter/personal-history state. A visual status must not infer one
+  from another or manufacture a successful transaction.
+- `event.role`, `permissions`, `state.owner` and `pendingOwner` derive from server/chain. Browser-hidden
+  actions do not replace authorization. Private/editorial-draft events retain linked participant recovery
+  access and financial owner/pending-owner access without widening content-app RLS.
+- Resolver local IDs identify evidence/funding/rewards; arbitrator IDs identify Court delivery/cases.
+  Display exact event/network/contract/recipient/wei/policy and the reviewed consequences before signing.
+- Raw CSV labels/hashes do not authenticate origin. Manual review never overrides proven mismatch,
+  stale plan, duplicate evidence or conflicting identity. Explicit foreign participant IDs cannot fall
+  back to matching email.
+- Demo wallet selector/time controls/mock rulings/faucet must remain labeled and isolated. Runtime has
+  ephemeral in-memory state; no production persistence/authentication or public IPFS pin is claimed.
+
+## Redesign ownership and integration
+
+The parallel chat `Implement Option B UI redesign` owns presentation/accessibility/responsiveness.
+It currently works from a separate snapshot repository at `/private/tmp/kleros-ui-snapshot-20261028`
+and worktree `/private/tmp/kleros-ui-redesign`, branch `codex/kleros-ui-redesign`. This was necessary
+because the main repository was initially unborn. Do not assume shared Git ancestry.
+
+The main owner defers further visual polish. Once `UI_HANDOFF.md` is available, read its starting
+commit, changed files, data assumptions and actual tests. Compare its patch to that starting snapshot
+and to this latest core; preserve new financial actions and backend contracts. Import only compatible
+UI/assets/tests/documentation, resolve conflicts in the main branch, and rerun build/typecheck/Node,
+browser, desktop/mobile and relevant financial compatibility checks. No automatic whole-tree overwrite
+or upstream merge is authorized by the handoff itself. Record the accepted/rejected changes and results.
+
+## Verification and remaining work
+
+See TEST_REPORT for actual completed runs. The final current-source `npm run verify` is running at this
+checkpoint after earlier passing app suites; clean retained compatibility has54/54, guest180/180 and
+console verification is finishing. Future updates replace this sentence with completed evidence.
+
+Remaining local work: finish that consolidated verification, integrate/review the incoming UI handoff,
+and run the combined checks. External work remains persistent production auth/storage, staging RLS and
+private-content mapping rehearsal, a fresh mainnet fork, dependency remediation and an explicitly
+authorized rollout. Backend/financial behavior remains owned by the core implementation session.

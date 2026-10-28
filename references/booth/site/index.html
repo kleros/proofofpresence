@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#140a3a">
+<title>Kleros at Devcon</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Kleros at Devcon: decentralized dispute resolution for AI agents, prediction markets and enterprise. Meet the team.">
+<link rel="icon" href="assets/kleros-symbol-white-flat.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@500;600;700;800&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #0f0a2e;
+    --night-2: #1d1050;
+    --dusk: #4b2391;
+    --kleros: #9013fe;
+    --kleros-deep: #4d00b4;
+    --pink: #de4fd0;
+    --gold: #f2c46d;
+    --gold-dim: rgba(242, 196, 109, .35);
+    --teal: #7ff0e0;
+    --text: #f7f3ff;
+    --muted: #b8acdc;
+    --field: rgba(255, 255, 255, .06);
+    --field-line: rgba(255, 255, 255, .14);
+    --danger: #ff8fa3;
+    --radius: 14px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }   /* component display rules must never override the hidden attribute */
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(120% 60% at 50% 110%, rgba(222, 79, 208, .35), transparent 60%),
+      radial-gradient(90% 50% at 85% 0%, rgba(127, 240, 224, .10), transparent 60%),
+      linear-gradient(180deg, var(--night) 0%, var(--night-2) 45%, var(--dusk) 100%);
+    background-color: var(--night);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* starfield */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, #fff8 50%, transparent 51%),
+      radial-gradient(1px 1px at 72% 9%, #fff6 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 88% 34%, #fff7 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 42%, #fff5 50%, transparent 51%),
+      radial-gradient(1px 1px at 55% 26%, #fff6 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 6% 66%, #fff5 50%, transparent 51%),
+      radial-gradient(1px 1px at 94% 72%, #fff5 50%, transparent 51%),
+      radial-gradient(1px 1px at 44% 84%, #fff4 50%, transparent 51%);
+  }
+  .frame { position: fixed; inset: 10px; pointer-events: none; z-index: 0; border: 1px solid var(--gold-dim); border-radius: 6px; }
+  .frame svg { position: absolute; width: 34px; height: 34px; color: var(--gold); opacity: .8; }
+  .frame .tl { top: -5px; left: -5px; }
+  .frame .tr { top: -5px; right: -5px; transform: scaleX(-1); }
+  .frame .bl { bottom: -5px; left: -5px; transform: scaleY(-1); }
+  .frame .br { bottom: -5px; right: -5px; transform: scale(-1, -1); }
+
+  /* Floating Kleros icosahedrons along the sides */
+  .ico-float { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .ico-float svg { fill: currentColor; position: absolute; display: block; animation: drift var(--dur, 30s) linear infinite; filter: drop-shadow(0 0 14px currentColor); will-change: transform; }
+  .ico-float .i2, .ico-float .i4 { animation-direction: reverse; }
+  .ico-float .i1 { width: 92px; top: 13%; left: -28px; color: var(--gold); opacity: .32; --dur: 26s; animation-delay: -4s; }
+  .ico-float .i2 { width: 150px; top: 44%; right: -62px; color: #b77bff; opacity: .3; --dur: 38s; animation-delay: -11s; }
+  .ico-float .i3 { width: 56px; top: 71%; left: -10px; color: var(--teal); opacity: .36; --dur: 22s; animation-delay: -7s; }
+  .ico-float .i4 { width: 70px; top: 6%; right: -18px; color: var(--teal); opacity: .26; --dur: 30s; animation-delay: -15s; }
+  .ico-float .i5 { width: 118px; top: 86%; right: -40px; color: var(--gold); opacity: .24; --dur: 34s; animation-delay: -20s; }
+  @media (min-width: 760px) {
+    .ico-float .i1 { width: 150px; left: 6%; } .ico-float .i2 { width: 220px; right: 5%; }
+    .ico-float .i3 { width: 90px; left: 12%; } .ico-float .i4 { width: 100px; right: 14%; } .ico-float .i5 { width: 160px; right: 10%; }
+  }
+  @keyframes drift {
+    0%   { transform: translate(0, 0) rotate(0deg); }
+    25%  { transform: translate(8px, -22px) rotate(90deg); }
+    50%  { transform: translate(0, -40px) rotate(180deg); }
+    75%  { transform: translate(-8px, -22px) rotate(270deg); }
+    100% { transform: translate(0, 0) rotate(360deg); }
+  }
+  .wrap {
+    position: relative; z-index: 1; max-width: 480px; margin: 0 auto;
+    padding-block: max(28px, env(safe-area-inset-top, 0px)) 40px;
+    padding-left: max(22px, env(safe-area-inset-left, 0px)); padding-right: max(22px, env(safe-area-inset-right, 0px));
+  }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  header img { height: 30px; width: auto; display: block; }
+  .badge {
+    font: 600 10.5px/1 Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--gold); border: 1px solid var(--gold-dim); padding: 7px 10px; border-radius: 999px; white-space: nowrap;
+  }
+
+  .hero { text-align: center; margin: 30px 0 22px; }
+  /* The Kleros mark with a slow, small sway (no full spins: they read as distracting). */
+  .gem { width: 92px; height: 82px; margin: 0 auto 18px; display: block; overflow: visible;
+    filter: drop-shadow(0 0 14px rgba(183, 123, 255, .65)) drop-shadow(0 0 34px rgba(127, 240, 224, .28));
+    animation: gem-turn 14s ease-in-out infinite; transform-origin: 50% 52%; }
+  @keyframes gem-turn {
+    0%, 100% { transform: rotate(-8deg) scale(1); }
+    50% { transform: rotate(8deg) scale(1.04); }
+  }
+  .hero .lede { color: var(--text); font-size: 16.5px; line-height: 1.5; max-width: 32ch; margin: 14px auto 0; text-wrap: balance; }
+  .hero .lede em { font-style: normal; color: var(--gold); }
+  h1 {
+    font-family: Urbanist, Inter, system-ui, sans-serif; font-weight: 700; font-size: clamp(34px, 10vw, 44px); line-height: 1.04;
+    margin: 0; letter-spacing: -.02em; text-wrap: balance;
+    background: linear-gradient(180deg, #fff 35%, #c7b6ff 115%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .hero p { color: var(--muted); margin: 10px auto 0; font-size: 15.5px; line-height: 1.5; max-width: 34ch; }
+  .hero p strong { color: var(--text); font-weight: 600; }
+  .lanes { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 0; }
+  .lanes li { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
+  /* "Connect with the Kleros team": a quiet paper-style button, unlike the purple merch flow. */
+  .team-cta { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 18px 0; padding: 14px 18px; border-radius: 16px;
+    background: rgba(251, 249, 255, .96); color: #1b1240; text-decoration: none; border-top: 3px solid #c8962f; box-shadow: 0 10px 28px rgba(5, 0, 25, .35); }
+  .team-cta b { display: block; font: 700 16px Urbanist, Inter, sans-serif; }
+  .team-cta small { display: block; margin-top: 2px; font-size: 12.5px; color: #4a4170; }
+  .team-cta i { font-style: normal; font-size: 20px; color: #4d00b4; }
+  .team-cta:hover { background: #fff; }
+  .lanes li + li::before { content: "◆"; color: var(--gold); font-size: 7px; margin: 0 9px; vertical-align: 2px; }
+
+  .card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .035));
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 22px; padding: 22px 18px 20px;
+    box-shadow: 0 30px 80px -30px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .06);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  }
+
+  .field { margin-bottom: 14px; }
+  label, .label { display: block; font-size: 13px; font-weight: 600; color: #ddd3ff; margin: 0 0 7px 2px; }
+  .opt { font-weight: 400; color: var(--muted); }
+  input[type=text], input[type=email], input[type=url], select {
+    width: 100%; height: 52px; padding: 0 15px; font: 500 16px Inter, sans-serif; color: var(--text);
+    background: var(--field); border: 1px solid var(--field-line); border-radius: var(--radius);
+    outline: none; transition: border-color .15s, box-shadow .15s, background .15s; -webkit-appearance: none; appearance: none;
+  }
+  input::placeholder { color: #8f84b8; font-weight: 400; }
+  input:focus, select:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(127, 240, 224, .18); background: rgba(255, 255, 255, .09); }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f2c46d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 16px center; padding-right: 42px;
+  }
+  select:invalid { color: #8f84b8; font-weight: 400; }
+  select option { color: #111; }
+
+  .icon-input { position: relative; margin-bottom: 9px; }
+  .icon-input svg { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--muted); pointer-events: none; }
+  .icon-input input { padding-left: 44px; }
+
+  .focus { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .fcard {
+    position: relative; text-align: left; min-width: 0; padding: 12px 12px 13px; border-radius: 14px; cursor: pointer;
+    font: inherit; color: var(--text); background: var(--field); border: 1px solid var(--field-line);
+    -webkit-tap-highlight-color: transparent; transition: background .15s, border-color .15s, transform .1s;
+  }
+  .fcard:active { transform: scale(.98); }
+  .fcard svg { width: 22px; height: 22px; color: var(--gold); display: block; margin-bottom: 8px; }
+  .fcard b { display: block; font-size: 13.5px; font-weight: 600; line-height: 1.25; }
+  .fcard span { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 3px; }
+  .fcard::after {
+    content: ""; position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%;
+    border: 1px solid var(--field-line);
+  }
+  .fcard.wide { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding: 12px 44px 12px 14px; }
+  .fcard.wide svg { margin: 0; flex: none; }
+  .fcard.wide::after { top: 50%; transform: translateY(-50%); }
+  .fcard.wide span { margin-top: 1px; }
+  #other-wrap { margin: -2px 0 10px; }
+  .fcard[aria-pressed=true] { background: rgba(144, 19, 254, .32); border-color: #b77bff; }
+  .fcard[aria-pressed=true]::after {
+    background: var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23140a3a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center/12px no-repeat;
+    border-color: var(--teal);
+  }
+  .fcard:focus-visible, .chip:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .also { font-size: 12px; color: var(--muted); margin: 4px 2px 7px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+  .chip {
+    font: 500 13.5px Inter, sans-serif; color: #e6defd; background: var(--field); border: 1px solid var(--field-line);
+    padding: 9px 12px; border-radius: 999px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+    transition: background .15s, border-color .15s, color .15s, transform .1s;
+  }
+  .chip:active { transform: scale(.97); }
+  .chip[aria-pressed=true] { background: rgba(144, 19, 254, .35); border-color: #b77bff; color: #fff; }
+  .chip[aria-pressed=true]::before { content: "✓ "; color: var(--teal); }
+
+  .toggle { display: flex; gap: 11px; align-items: flex-start; margin: 18px 2px 4px; cursor: pointer; font-size: 13.5px; color: #ddd3ff; line-height: 1.4; }
+  .toggle input { appearance: none; -webkit-appearance: none; flex: none; width: 22px; height: 22px; margin: 0; border-radius: 7px; border: 1px solid var(--field-line); background: var(--field); display: grid; place-content: center; cursor: pointer; }
+  .toggle input:checked { background: var(--kleros); border-color: #b77bff; }
+  .toggle input:checked::after { content: ""; width: 10px; height: 6px; border: solid #fff; border-width: 0 0 2.4px 2.4px; transform: translateY(-1px) rotate(-45deg); }
+  .toggle input:focus-visible { box-shadow: 0 0 0 3px rgba(127, 240, 224, .25); }
+
+  button.primary {
+    margin-top: 20px; width: 100%; height: 56px; border: 0; border-radius: 16px; cursor: pointer;
+    font: 700 16.5px Inter, sans-serif; color: #fff; letter-spacing: .01em;
+    background: linear-gradient(95deg, var(--kleros-deep) 0%, var(--kleros) 45%, var(--pink) 100%);
+    box-shadow: 0 14px 34px -12px rgba(222, 79, 208, .7), inset 0 1px 0 rgba(255, 255, 255, .25);
+    transition: transform .1s, filter .15s; -webkit-tap-highlight-color: transparent;
+  }
+  button.primary:active { transform: scale(.985); }
+  button.primary[disabled] { filter: saturate(.5) brightness(.85); cursor: progress; }
+  button.primary.lite { background: linear-gradient(95deg, #8a6200, #c48e28 50%, #f2c46d); box-shadow: 0 12px 30px -14px rgba(242, 196, 109, .8); color: #1d1050; }
+  .fine { color: #9d92c4; font-size: 11.5px; line-height: 1.5; text-align: center; margin: 14px 6px 0; }
+  .fine a { color: var(--muted); }
+
+  .req { color: var(--gold); margin-left: 2px; }
+  textarea {
+    width: 100%; min-height: 84px; padding: 13px 15px; font: 500 16px/1.45 Inter, sans-serif; color: var(--text);
+    background: var(--field); border: 1px solid var(--field-line); border-radius: var(--radius); outline: none; resize: vertical;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  textarea::placeholder { color: #8f84b8; font-weight: 400; }
+  textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(127, 240, 224, .18); background: rgba(255, 255, 255, .09); }
+  #other-wrap { margin-top: 9px; }
+  .invalid .toggle input { border-color: var(--danger); }
+  .error { color: var(--danger); font-size: 12.5px; margin: 6px 2px 0; display: none; }
+  .invalid .error { display: block; }
+  .invalid input, .invalid select { border-color: var(--danger); }
+
+  /* success */
+  /* confirm-your-email step, between the form and the ticket */
+  #confirm-view { display: none; }
+  .show-confirm #form-view { display: none; }
+  .show-confirm #confirm-view { display: block; animation: rise .45s cubic-bezier(.2, .8, .2, 1); }
+  .confirm { text-align: center; padding: 26px 20px 22px; margin-top: 8px; }
+  .confirm .icon { width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 18px; display: grid; place-items: center; background: rgba(242, 196, 109, .14); border: 1px solid var(--gold-dim); color: var(--gold); }
+  .confirm .icon svg { width: 28px; height: 28px; }
+  .confirm .kicker { font: 600 11px Inter; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .confirm h2 { font-family: Urbanist, Inter, sans-serif; font-weight: 700; font-size: 26px; margin: 8px 0 10px; text-wrap: balance; }
+  .confirm p { color: var(--muted); font-size: 14.5px; line-height: 1.55; margin: 0 auto; max-width: 34ch; }
+  .confirm p b { color: var(--text); font-weight: 600; word-break: break-word; }
+  .confirm .wait { display: inline-flex; align-items: center; gap: 9px; margin-top: 18px; padding: 9px 14px; border-radius: 999px; background: var(--field); border: 1px solid var(--field-line); font-size: 13px; color: var(--teal); }
+  .confirm .wait i { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.15); } }
+  .confirm .actions { display: flex; justify-content: center; gap: 4px; margin-top: 10px; flex-wrap: wrap; }
+  .confirm .actions .ghost { margin-top: 0; }
+  #done { display: none; text-align: center; }
+  .show-done #form-view { display: none; }
+  .show-done #done { display: block; animation: rise .45s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .ticket {
+    position: relative; margin: 6px 0 18px; padding: 26px 18px 22px; border-radius: 22px; overflow: hidden;
+    background: linear-gradient(150deg, rgba(77, 0, 180, .75), rgba(144, 19, 254, .55) 55%, rgba(222, 79, 208, .55));
+    border: 1px solid rgba(242, 196, 109, .5);
+    box-shadow: 0 30px 70px -28px rgba(222, 79, 208, .8);
+  }
+  .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 50%; background: var(--night-2); transform: translateY(-50%); }
+  .ticket::before { left: -11px; } .ticket::after { right: -11px; }
+  .ticket .kicker { font: 600 11px Inter; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+  .ticket .who { font-family: Urbanist, Inter, sans-serif; font-weight: 700; font-size: 27px; margin: 8px 0 2px; line-height: 1.15; word-break: break-word; }
+  .ticket .org { color: #e8dcff; font-size: 14px; }
+  .ticket hr { border: 0; border-top: 1.5px dashed rgba(255, 255, 255, .35); margin: 18px 6px; }
+  .ticket .code { font: 700 22px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; color: #fff; margin-top: 12px; opacity: .9; }
+  .ticket .hint { font-size: 13px; color: #f0e6ff; margin-top: 8px; }
+
+  /* Merch tiers. The ticket takes the tier's colour; staff look for the colour, the reward and the ticking clock. */
+  .t-teal { --tc: var(--teal); } .t-purple { --tc: #b77bff; } .t-gold { --tc: var(--gold); }
+  .ticket[data-tier="teal"] { background: linear-gradient(150deg, rgba(8, 92, 84, .92), rgba(28, 160, 146, .7) 55%, rgba(127, 240, 224, .5)); border-color: rgba(127, 240, 224, .8); box-shadow: 0 30px 70px -28px rgba(127, 240, 224, .65); }
+  .ticket[data-tier="gold"] { background: linear-gradient(150deg, rgba(112, 72, 0, .95), rgba(196, 142, 40, .8) 55%, rgba(242, 196, 109, .65)); border-color: var(--gold); box-shadow: 0 30px 70px -28px rgba(242, 196, 109, .85); }
+  .ticket[data-tier="claimed"] { background: linear-gradient(150deg, rgba(52, 46, 78, .95), rgba(84, 78, 108, .8)); border-color: rgba(255, 255, 255, .22); box-shadow: none; }
+  .ticket .sheen { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .16) 50%, transparent 62%); animation: sheen 3.6s ease-in-out infinite; }
+  .ticket[data-tier="claimed"] .sheen { display: none; }
+  @keyframes sheen { 0% { transform: translateX(-110%); } 60%, 100% { transform: translateX(110%); } }
+  .ticket .t-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; position: relative; }
+  .ticket .live { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: #fff; background: rgba(0, 0, 0, .28); padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+  .ticket .live i { width: 7px; height: 7px; border-radius: 50%; background: #6dffb0; animation: pulse 1.4s ease-in-out infinite; }
+  .ticket .tier-row { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 14px; position: relative; text-align: center; }
+  .ticket .thumbs { --th: 60px; --ring: rgba(255, 255, 255, .75); }
+  .ticket .tier-name { font: 700 12px Inter, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #fff; }
+  .ticket .tier-reward { font-family: Urbanist, Inter, sans-serif; font-weight: 700; font-size: 22px; line-height: 1.2; margin-top: 3px; text-wrap: balance; }
+  .ticket[data-tier="claimed"] .tier-reward { font: 500 14.5px/1.45 Inter, sans-serif; color: #e6defd; }
+  /* One or more merch pictures, overlapping */
+  .thumbs { display: flex; flex: none; }
+  .thumbs img { width: var(--th, 44px); height: var(--th, 44px); border-radius: 30%; object-fit: cover; display: block; box-shadow: 0 0 0 2px var(--ring, var(--tc)); }
+  .thumbs img + img { margin-left: calc(var(--th, 44px) * -.3); }
+  .ticket[data-tier="gold"] .kicker, .ticket[data-tier="claimed"] .kicker { color: #fff3d6; }
+  .ticket.bump { animation: bump .7s cubic-bezier(.2, .8, .2, 1); }
+  @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.035); } 100% { transform: scale(1); } }
+
+  /* The ladder above the form */
+  .tiers { margin-bottom: 14px; padding: 18px 16px 16px; }
+  .tiers .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .tiers .kicker { font: 600 11px Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+  .tiers h2 { font-family: Urbanist, Inter, sans-serif; font-weight: 700; font-size: 21px; line-height: 1.2; margin: 6px 0 12px; text-wrap: balance; }
+  .tier-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .tier-list li { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: center; padding: 9px 12px; border-radius: 14px; background: var(--field); border: 1px solid var(--field-line); }
+  .tier-list .thumbs { --th: 44px; justify-content: center; }
+  .t-free { --tc: #cfc4f2; }
+  .tier-list li.t-free { background: transparent; border-style: dashed; }
+  .tier-list b { display: block; font-size: 14px; font-weight: 600; line-height: 1.3; }
+  .tier-list b em { font-style: normal; color: var(--tc); }
+  .tier-list .how { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+  .tiers .fine { margin: 10px 2px 0; text-align: left; }
+  .confirm .unlock { margin: 18px auto 0; font-size: 13.5px; color: var(--text); }
+  .confirm .fine { margin: 12px auto 0; }
+  .confirm .unlock em { font-style: normal; color: var(--teal); font-weight: 600; }
+
+  /* Level up: the steps to the next tier */
+  .levelup { text-align: left; margin-bottom: 14px; padding: 16px 16px 6px; border-radius: 18px; background: var(--field); border: 1px solid var(--field-line); }
+  .levelup .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .levelup .kicker { font: 600 11px Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+  .levelup .count { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin: 10px 0; }
+  .ladder i { height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .12); transition: background .4s; }
+  .ladder i.on { background: var(--tc); box-shadow: 0 0 10px var(--tc); }
+  .levelup .next { margin: 0 0 6px; font-size: 14px; line-height: 1.45; color: var(--text); }
+  .levelup .next b { color: var(--gold); font-weight: 600; }
+  .steps { list-style: none; margin: 0; padding: 0; }
+  .step { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 4px 11px; align-items: center; padding: 12px 0; border-top: 1px solid var(--field-line); }
+  .step .tick { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--field-line); align-self: start; margin-top: 1px; }
+  .step.done .tick { border-color: var(--teal); background: var(--teal) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23140a3a' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 5 5 9-10'/%3E%3C/svg%3E") center/12px no-repeat; }
+  .step b { display: block; font-size: 14px; font-weight: 600; }
+  .step small { display: block; font-size: 12.5px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .step.done small { color: var(--teal); }
+  .step .tag { font: 600 10px Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--tc); margin-left: 6px; vertical-align: 1px; }
+  .step .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .step.wide .acts { grid-column: 2 / -1; }
+  .step.done .acts { display: none; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; height: 36px; padding: 0 13px; border-radius: 11px; font: 600 13px Inter, sans-serif; color: #fff; text-decoration: none; white-space: nowrap; cursor: pointer;
+    background: rgba(144, 19, 254, .45); border: 1px solid #b77bff; -webkit-tap-highlight-color: transparent; }
+  .btn.alt { background: transparent; border-color: var(--field-line); }
+  .btn:active { transform: scale(.97); }
+
+  /* Kleros 101 */
+  .quiz { text-align: left; margin-bottom: 14px; padding: 16px; border-radius: 18px; scroll-margin-top: 16px;
+    background: linear-gradient(160deg, rgba(242, 196, 109, .13), rgba(242, 196, 109, .02)); border: 1px solid var(--gold-dim); }
+  .quiz .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .quiz .kicker { font: 600 11px Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+  .quiz .prog { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .quiz h3 { font-family: Urbanist, Inter, sans-serif; font-weight: 700; font-size: 19px; line-height: 1.3; margin: 10px 0 12px; text-wrap: balance; }
+  .quiz p.intro { margin: 8px 0 12px; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  .q-dots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+  .q-dots i { height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .14); }
+  .q-dots i.now { background: rgba(242, 196, 109, .5); }
+  .q-dots i.on { background: var(--gold); }
+  .q-opt { display: block; width: 100%; text-align: left; padding: 13px 14px; margin-bottom: 8px; border-radius: 14px; cursor: pointer;
+    font: 500 14.5px/1.4 Inter, sans-serif; color: var(--text); background: var(--field); border: 1px solid var(--field-line); -webkit-tap-highlight-color: transparent; transition: background .15s, border-color .15s; }
+  .q-opt:active { transform: scale(.985); }
+  .q-opt.wrong { border-color: rgba(255, 143, 163, .6); background: rgba(255, 143, 163, .1); color: #ffc9d3; text-decoration: line-through; text-decoration-color: rgba(255, 143, 163, .55); cursor: default; }
+  .q-opt.shake { animation: shake .42s; }
+  .q-opt.right { border-color: #6dffb0; background: rgba(109, 255, 176, .14); cursor: default; }
+  .q-opt.right::before { content: "✓ "; color: #6dffb0; font-weight: 700; }
+  .q-opt[disabled]:not(.wrong):not(.right) { opacity: .5; cursor: default; }
+  @keyframes shake { 0%, 100% { transform: none; } 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+  .q-explain { padding: 12px 14px; border-radius: 14px; margin: 2px 0 10px; font-size: 13.5px; line-height: 1.5; animation: rise .3s cubic-bezier(.2, .8, .2, 1); }
+  .q-explain.bad { background: rgba(255, 143, 163, .09); border: 1px solid rgba(255, 143, 163, .32); }
+  .q-explain.good { background: rgba(109, 255, 176, .07); border: 1px solid rgba(109, 255, 176, .32); }
+  .q-explain .verdict { font-weight: 700; display: block; margin-bottom: 3px; }
+  .q-explain.bad .verdict { color: var(--danger); } .q-explain.good .verdict { color: #6dffb0; }
+  .q-explain p { margin: 0; }
+  .q-explain .go { display: inline-block; margin-top: 10px; color: var(--teal); font-weight: 600; font-size: 13.5px; text-decoration: none; }
+  .q-more { display: inline-block; margin-top: 10px; padding: 0; background: none; border: 0; color: var(--teal); font: 600 13.5px Inter, system-ui, sans-serif; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .q-deep { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--field-line); animation: rise .3s cubic-bezier(.2, .8, .2, 1); }
+  .q-deep p, .q-deep ol { margin: 0; color: var(--text); }
+  .q-deep ol { padding-left: 18px; display: grid; gap: 5px; }
+  .art-reads { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; max-width: 220px; margin: 0 auto 10px; }
+  .art-reads i { aspect-ratio: 1; border-radius: 50%; animation: pop .35s cubic-bezier(.2, .8, .2, 1.4) backwards; }
+  .art-reads i.one { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .art-reads i.other { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
+  .q-art { margin: 12px 0 2px; }
+  .q-art .cap { display: block; text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 8px; letter-spacing: .02em; }
+  .art-pool { display: grid; grid-template-columns: repeat(8, 1fr); gap: 7px; max-width: 230px; margin: 0 auto; }
+  .art-pool i { aspect-ratio: 1; border-radius: 50%; background: rgba(255, 255, 255, .16); }
+  .art-pool i.pick { background: var(--gold); box-shadow: 0 0 10px var(--gold); animation: pop .45s cubic-bezier(.2, .8, .2, 1.4) backwards; }
+  .art-flow { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
+  .art-flow span { padding: 6px 9px; border-radius: 10px; font-size: 12px; font-weight: 600; background: rgba(255, 255, 255, .07); border: 1px solid var(--field-line); animation: pop .4s backwards; }
+  .art-flow span.key { border-color: var(--gold-dim); color: var(--gold); }
+  .art-flow i { font-style: normal; color: var(--muted); animation: pop .4s backwards; }
+  .art-rounds { display: grid; gap: 8px; max-width: 300px; margin: 0 auto; }
+  .art-rounds div { display: grid; grid-template-columns: 92px minmax(0, 1fr); align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted); }
+  .art-rounds span { display: flex; flex-wrap: wrap; gap: 3px; }
+  .art-rounds span i { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: pop .3s backwards; }
+  @keyframes pop { from { transform: scale(0); opacity: 0; } }
+  .q-next { margin-top: 2px; height: 48px; }
+  .q-done { text-align: center; padding: 6px 0 2px; }
+  .q-done .medal { width: 54px; height: 54px; margin: 6px auto 8px; display: block; filter: drop-shadow(0 0 14px rgba(242, 196, 109, .6)); }
+  .q-done b { display: block; font-family: Urbanist, Inter, sans-serif; font-size: 20px; }
+  .q-done p { margin: 4px auto 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; max-width: 34ch; }
+  .match { text-align: left; background: var(--field); border: 1px solid var(--field-line); border-radius: 16px; padding: 15px 16px; margin-bottom: 14px; }
+  .match .kicker { font: 600 11px Inter; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
+  .match h3 { margin: 6px 0 4px; font-size: 16px; }
+  .match p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  .match.blog p { margin-top: 6px; color: var(--text); }
+  .match.blog b { color: var(--gold); font-weight: 600; word-break: break-all; }
+  /* "Picked for you": the final screen, built from what the visitor told us */
+  .foryou { text-align: left; display: grid; gap: 10px; margin-bottom: 14px; }
+  .fy-head .kicker { font: 600 11px Inter; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin: 4px 2px 0; }
+  .fy-head p { margin: 5px 2px 0; color: var(--text); font-size: 15px; line-height: 1.45; text-wrap: balance; }
+  .foryou .match { margin-bottom: 0; }
+  .match p.because { margin-top: 9px; font-size: 12.5px; color: var(--teal); }
+  .match .said { margin: 10px 0 0; padding: 8px 12px; border-left: 2px solid var(--gold-dim); color: var(--text); font-size: 13.5px; line-height: 1.45; font-style: italic; overflow-wrap: anywhere; }
+  .match .said .lbl { display: block; font-style: normal; font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+  .match.tip { background: linear-gradient(160deg, rgba(127, 240, 224, .10), rgba(127, 240, 224, .02)); border-color: rgba(127, 240, 224, .28); }
+  .also-list { text-align: left; display: grid; gap: 8px; margin: -4px 0 14px; }
+  .also-list .kicker { font: 600 11px Inter; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 4px 2px 0; }
+  .uc-row {
+    display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center;
+    padding: 12px 14px; border-radius: 14px; text-decoration: none; color: var(--text);
+    background: var(--field); border: 1px solid var(--field-line); transition: border-color .15s, background .15s;
+  }
+  .uc-row:hover, .uc-row:focus-visible { border-color: #b77bff; background: rgba(144, 19, 254, .16); outline: none; }
+  .uc-row svg { width: 22px; height: 22px; color: var(--gold); justify-self: center; }
+  .uc-row b { display: block; font-size: 14px; font-weight: 600; }
+  .uc-row span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
+  .uc-row i { font-style: normal; color: var(--teal); font-weight: 700; }
+  .match .go { display: inline-block; margin-top: 10px; color: var(--teal); font-weight: 600; font-size: 13.5px; text-decoration: none; }
+  .hubs { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 12px; }
+  .hubs li { display: grid; gap: 2px; padding-left: 14px; border-left: 2px solid var(--gold-dim); }
+  .hubs b { font-size: 14px; font-weight: 600; }
+  .hubs span { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .session {
+    text-align: left; margin-bottom: 14px; padding: 16px 16px 15px; border-radius: 16px;
+    background: linear-gradient(160deg, rgba(242, 196, 109, .14), rgba(242, 196, 109, .03));
+    border: 1px solid var(--gold-dim);
+  }
+  .session .top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .session .kicker { font: 600 11px Inter; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+  .session .when { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .session h3 { font-family: Urbanist, Inter, sans-serif; font-weight: 700; font-size: 19px; line-height: 1.25; margin: 8px 0 6px; text-wrap: balance; }
+  .session p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+  .session .meta { margin-top: 10px; font-size: 12.5px; color: #e6defd; }
+  .session .meta .tbc { color: var(--teal); }
+  .session a { color: var(--teal); font-weight: 600; text-decoration: none; }
+  .links { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .links a {
+    display: flex; align-items: center; justify-content: center; gap: 7px; height: 48px; border-radius: 14px; text-decoration: none;
+    color: var(--text); font-weight: 600; font-size: 14px; background: var(--field); border: 1px solid var(--field-line);
+  }
+  .links a.wide { grid-column: 1 / -1; }
+  .ghost { margin-top: 16px; background: none; border: 0; color: var(--muted); font: 500 14px Inter; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 8px; }
+  .sync { font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 1em; }
+  .sync.ok { color: var(--teal); }
+
+  .privacy { margin: 10px 4px 0; font-size: 12px; color: #9d92c4; line-height: 1.5; }
+  .privacy summary { cursor: pointer; text-align: center; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; list-style: none; }
+  .privacy summary::-webkit-details-marker { display: none; }
+  .privacy p { margin: 8px 0 0; }
+  .privacy b { color: #ddd3ff; font-weight: 600; }
+  .tagline { text-align: center; margin-top: 26px; color: var(--text); font-size: 11.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; text-wrap: balance; }
+  .tagline i { font-style: normal; color: var(--muted); opacity: .6; margin: 0 .55em; }
+  .tagline b { color: var(--gold); font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *:not(.ico-float svg) { animation: none !important; transition: none !important; }
+    .ico-float svg { animation-duration: calc(var(--dur, 30s) * 2.5); }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="kleros-ico" viewBox="0 0 54 48"><path fill-rule="evenodd" clip-rule="evenodd" d="M42.6705 1.49354L15.7143 0.290039L0 19.9178L11.111 46.2282L38.2159 47.9398L53.6205 25.7715L42.6705 1.49354ZM15.9677 22.8233L35.5115 14.2859L32.6721 35.7602L15.9677 22.8233ZM17.6325 3.26712L33.2477 9.9924L14.3566 17.4282L17.6325 3.26712ZM12.3283 26.8772L29.2888 39.0155L12.7414 43.3351L12.3283 26.8772ZM39.341 13.9706L50.9078 25.6875L36.2702 36.5603L39.341 13.9706ZM18.9531 45.3993L33.2587 41.6249L35.7869 46.483L18.9531 45.3993ZM36.1174 40.3911L48.6481 31.0605L38.6111 45.2629L36.1174 40.3911ZM40.2718 9.8905L42.727 4.88647L49.3339 19.0971L40.2718 9.8905ZM23.7574 1.84743L39.6549 2.49187L36.8789 7.58677L23.7574 1.84743ZM2.27618 18.8892L13.412 4.8011L9.72714 20.47L2.27618 18.8892ZM1.78735 21.6281L9.27686 23.2116L9.5743 40.0592L1.78735 21.6281Z"/></symbol></defs></svg>
+<div class="ico-float" aria-hidden="true">
+  <svg class="i1" viewBox="0 0 54 48"><use href="#kleros-ico"/></svg>
+  <svg class="i2" viewBox="0 0 54 48"><use href="#kleros-ico"/></svg>
+  <svg class="i3" viewBox="0 0 54 48"><use href="#kleros-ico"/></svg>
+  <svg class="i4" viewBox="0 0 54 48"><use href="#kleros-ico"/></svg>
+  <svg class="i5" viewBox="0 0 54 48"><use href="#kleros-ico"/></svg>
+</div>
+<div class="frame" aria-hidden="true">
+  <svg class="tl" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 33V5h28"/><path d="M9 33V9h24"/><path d="M5 5l9 9"/><rect x="11" y="11" width="6" height="6" transform="rotate(45 14 14)"/></svg>
+  <svg class="tr" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 33V5h28"/><path d="M9 33V9h24"/><path d="M5 5l9 9"/><rect x="11" y="11" width="6" height="6" transform="rotate(45 14 14)"/></svg>
+  <svg class="bl" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 33V5h28"/><path d="M9 33V9h24"/><path d="M5 5l9 9"/><rect x="11" y="11" width="6" height="6" transform="rotate(45 14 14)"/></svg>
+  <svg class="br" viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M5 33V5h28"/><path d="M9 33V9h24"/><path d="M5 5l9 9"/><rect x="11" y="11" width="6" height="6" transform="rotate(45 14 14)"/></svg>
+</div>
+
+<main class="wrap" id="app">
+  <header>
+    <img src="assets/logo-kleros-white.svg" alt="Kleros">
+    <span class="badge" id="edition-badge">Devcon · Kleros booth</span>
+  </header>
+
+  <section id="form-view">
+    <div class="hero">
+      <svg class="gem" viewBox="0 0 54 48" role="img" aria-label="Kleros">
+        <defs><linearGradient id="gem-fill" x1="0" y1="0" x2="54" y2="48" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#f2c46d"/><stop offset=".45" stop-color="#ffffff"/><stop offset="1" stop-color="#b77bff"/>
+        </linearGradient></defs>
+        <use href="#kleros-ico" fill="url(#gem-fill)"/>
+      </svg>
+      <h1>Trust at Machine Speed</h1>
+      <p class="lede">When your agents, markets or users disagree, <em>who decides?</em></p>
+      <ul class="lanes" id="lanes" aria-label="Kleros focus areas"></ul>
+    </div>
+
+    <section class="card tiers" id="tiers" hidden aria-labelledby="tiers-title">
+      <div class="top"><span class="kicker">Booth merch</span></div>
+      <h2 id="tiers-title">More steps, better merch</h2>
+      <ol class="tier-list" id="tier-list"></ol>
+      <p class="fine" id="tiers-fine">Check in below for Teal. Purple and Gold unlock on the next screen.</p>
+    </section>
+
+    <form class="card" id="form" novalidate autocomplete="on">
+      <div class="field" data-f="name">
+        <label for="name">Your name<span class="req" aria-hidden="true">*</span></label>
+        <input id="name" name="name" type="text" autocomplete="name" autocapitalize="words" placeholder="Satoshi Nakamoto" required>
+        <div class="error">Please add your name.</div>
+      </div>
+
+      <div class="field" data-f="company">
+        <label for="company">Company or project<span class="req" aria-hidden="true">*</span></label>
+        <input id="company" name="company" type="text" autocomplete="organization" autocapitalize="words" placeholder="e.g. Gnosis, a DAO, independent" required>
+        <div class="error">Where do you work or build? "Independent" is fine.</div>
+      </div>
+
+      <div class="field" data-f="position">
+        <label for="position">Your role<span class="req" aria-hidden="true">*</span></label>
+        <select id="position" name="position" required>
+          <option value="" disabled selected>Choose one</option>
+          <option>Founder / C-level</option>
+          <option>Engineer / Developer</option>
+          <option>Product Manager</option>
+          <option>Business Development / Partnerships</option>
+          <option>Marketing / Community</option>
+          <option>Designer</option>
+          <option>Researcher / Academic</option>
+          <option>Legal / Compliance</option>
+          <option>Investor / VC</option>
+          <option>Government / Public Sector</option>
+          <option>Student</option>
+          <option>Other</option>
+        </select>
+        <div class="error">Pick the closest one.</div>
+      </div>
+
+      <div class="field" data-f="seniority">
+        <label for="seniority">Job level<span class="req" aria-hidden="true">*</span></label>
+        <select id="seniority" name="seniority" required>
+          <option value="" disabled selected>Choose one</option>
+          <option>Founder / C-suite</option>
+          <option>VP / Head / Director</option>
+          <option>Manager / Team lead</option>
+          <option>Individual contributor</option>
+          <option>Student / Early career</option>
+          <option>Other</option>
+        </select>
+        <div class="error">Pick the closest one.</div>
+      </div>
+
+      <div class="field" data-f="email">
+        <label for="email" style="margin-top:20px">Email<span class="req" aria-hidden="true">*</span></label>
+        <div class="icon-input">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg>
+          <input id="email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="you@company.com" required>
+        </div>
+        <div class="error" id="email-error">Please add your email.</div>
+      </div>
+
+      <div class="field">
+        <span class="label">Other ways to reach you</span>
+        <div class="icon-input">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3c.3-1.1-.8-2-1.8-1.6L2.7 9.4c-1.2.5-1.1 2.2.1 2.6l4.3 1.4 1.7 5.3c.3.9 1.4 1.2 2.1.6l2.5-2.2 4.4 3.2c.8.6 2 .1 2.2-.9L21.9 4.3ZM9.6 13.2l7.8-5.4-6.2 6.8-.3 3-1.3-4.4Z"/></svg>
+          <input id="telegram" name="telegram" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Telegram @handle" aria-label="Telegram handle">
+        </div>
+        <div class="icon-input">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9.75h4V21H3V9.75Zm6.5 0h3.8v1.6h.06c.53-1 1.84-2.05 3.78-2.05 4.04 0 4.79 2.66 4.79 6.12V21h-4v-4.94c0-1.18-.02-2.7-1.64-2.7-1.65 0-1.9 1.29-1.9 2.62V21h-4V9.75Z"/></svg>
+          <input id="linkedin" name="linkedin" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="LinkedIn URL or username" aria-label="LinkedIn">
+        </div>
+        <div class="icon-input">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.8 3h3.1l-6.8 7.7L22 21h-6.2l-4.9-6.3L5.3 21H2.2l7.2-8.3L1.8 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.5l11.2 14.5Z"/></svg>
+          <input id="x" name="x" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="X @handle" aria-label="X handle">
+        </div>
+      </div>
+
+      <div class="field" data-f="interests">
+        <span class="label" style="margin-top:20px">What brings you to Kleros?<span class="req" aria-hidden="true">*</span> <span class="opt">Tap any that apply</span></span>
+        <div class="focus" id="focus"></div>
+        <div id="other-wrap" hidden>
+          <input id="otherInterest" name="otherInterest" type="text" maxlength="120" placeholder="What brings you here?" aria-label="What brings you here">
+        </div>
+        <div class="also">Also into</div>
+        <div class="chips" id="chips"></div>
+        <div class="error" id="interests-error">Pick at least one, or tap Others and tell us.</div>
+      </div>
+
+      <div class="field">
+        <label for="klerosUse">If you were to use Kleros, what would you use it for?</label>
+        <textarea id="klerosUse" name="klerosUse" maxlength="400" placeholder="e.g. resolving disputes between our AI agents and their users"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="building">What are you working on?</label>
+        <input id="building" name="building" type="text" placeholder="One line is plenty" maxlength="200">
+      </div>
+
+      <label class="toggle"><input type="checkbox" id="newsletter"> <span>Subscribe me to the Kleros blog for updates and event invites <span class="opt">Unsubscribe anytime.</span></span></label>
+
+      <button class="primary" type="submit" id="submit">Check in</button>
+      <p class="fine"><span class="req">*</span> Required. Your details go to the Kleros team only. Never sold or shared.</p>
+      <details class="privacy" id="privacy">
+        <summary>How your details are used</summary>
+        <p><b>Who:</b> Cooperative Kleros (SCIC SAS, 2B rue Dupont-de-l'Eure, 75020 Paris, France) is responsible for this data.</p>
+        <p><b>What for:</b> to follow up on what you told us, to subscribe you to the Kleros blog for updates and event invites (you confirm by email), and to look up your public professional profile (company, role, public work) so the right person contacts you. If you level up your merch, we note which steps you did and, for the Telegram step, your Telegram username and account ID, to check you joined the Kleros group and that each account is used once.</p>
+        <p><b>Where:</b> stored in Kleros's Google Workspace, kept until 12 months after Devcon unless you stay subscribed. Blog subscriptions are held by Ghost, the platform the Kleros blog runs on.</p>
+        <p><b>Your choices:</b> unsubscribe from any email, or ask us to see, correct or delete your details at any time: <span id="privacy-contact"></span>, or at the booth.</p>
+      </details>
+    </form>
+
+    <a class="team-cta" href="connect.html">
+      <span><b>Connect with the Kleros team</b><small>Building something? Tell us and we’ll follow up after Devcon.</small></span><i aria-hidden="true">→</i>
+    </a>
+  </section>
+
+  <section id="confirm-view" aria-live="polite">
+    <div class="card confirm">
+      <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg></div>
+      <div class="kicker">One last step</div>
+      <h2>Confirm your email</h2>
+      <p>We've sent an email from the Kleros blog to <b id="c-email"></b>. Open it and tap <b>Confirm signup</b> (or <b>Sign in</b> if you already subscribe), then come back here.</p>
+      <div class="wait"><i aria-hidden="true"></i><span id="c-status">Waiting for your confirmation…</span></div>
+      <p class="unlock" id="c-unlock" hidden></p>
+      <p class="fine">Your merch screen appears here as soon as you've confirmed. Can't see the email? Check Promotions or Spam.</p>
+      <div class="actions">
+        <button class="ghost" id="c-resend" type="button">Resend email</button>
+        <button class="ghost" id="c-edit" type="button">Change email</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="done" aria-live="polite">
+    <div class="ticket" id="ticket" data-tier="purple">
+      <span class="sheen" aria-hidden="true"></span>
+      <div class="t-top">
+        <span class="kicker" id="ticket-kicker">Kleros booth</span>
+        <span class="live" id="t-live" title="Live: a screenshot stops ticking"><i aria-hidden="true"></i><span id="t-clock"></span></span>
+      </div>
+      <div class="tier-row" id="t-tier-row" hidden>
+        <div class="thumbs" id="t-img"></div>
+        <div><div class="tier-name" id="t-tier"></div><div class="tier-reward" id="t-reward"></div></div>
+      </div>
+      <hr>
+      <div class="who" id="t-name"></div>
+      <div class="org" id="t-org"></div>
+      <div class="code" id="t-code"></div>
+      <div class="hint" id="t-hint">Show this screen at the booth to claim your merch</div>
+    </div>
+
+    <div class="levelup" id="levelup" hidden>
+      <div class="top"><span class="kicker">Level up your merch</span><span class="count" id="lu-count"></span></div>
+      <div class="ladder" aria-hidden="true"><i class="t-teal"></i><i class="t-purple"></i><i class="t-gold"></i></div>
+      <p class="next" id="lu-next"></p>
+      <ol class="steps">
+        <li class="step done"><span class="tick" aria-hidden="true"></span><div><b>Check in</b></div></li>
+        <li class="step wide t-purple" id="st-tg"><span class="tick" aria-hidden="true"></span>
+          <div><b>Join the Kleros Telegram<span class="tag">Purple</span></b><small id="tg-status"></small></div>
+          <div class="acts"><a class="btn alt" id="tg-join" href="https://t.me/kleros" target="_blank" rel="noopener">1 · Join the group</a><a class="btn" id="tg-go" href="https://t.me/KlerosDevconBot" target="_blank" rel="noopener">2 · Verify with our bot</a></div>
+        </li>
+        <li class="step t-purple" id="st-x"><span class="tick" aria-hidden="true"></span>
+          <div><b>Follow Kleros on X<span class="tag">Purple</span></b><small>@kleros_io</small></div>
+          <div class="acts"><a class="btn" id="x-go" href="https://x.com/kleros_io" target="_blank" rel="noopener">Follow</a></div>
+        </li>
+        <li class="step t-purple" id="st-li"><span class="tick" aria-hidden="true"></span>
+          <div><b>Follow Kleros on LinkedIn<span class="tag">Purple</span></b><small>Kleros</small></div>
+          <div class="acts"><a class="btn" id="li-go" href="https://www.linkedin.com/company/kleros/" target="_blank" rel="noopener">Follow</a></div>
+        </li>
+        <li class="step t-gold" id="st-quiz"><span class="tick" aria-hidden="true"></span>
+          <div><b>Kleros 101<span class="tag">Gold</span></b><small id="quiz-status">Get all 3 questions right</small></div>
+          <div class="acts"><a class="btn" id="quiz-go" href="#quiz">Start</a></div>
+        </li>
+      </ol>
+    </div>
+
+    <section class="quiz" id="quiz" hidden aria-labelledby="q-title">
+      <div class="top"><span class="kicker">Kleros 101 · Gold tier</span><span class="prog" id="q-prog"></span></div>
+      <div class="q-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div id="q-intro">
+        <h3 id="q-title">How well do you know Kleros?</h3>
+        <p class="intro">Three quick questions on how Kleros settles disputes. Get all three right for Gold. Pick a wrong answer and we'll explain why, then you try again.</p>
+        <button class="primary lite q-next" type="button" id="q-start">Start the quiz</button>
+      </div>
+      <div id="q-body" hidden>
+        <h3 id="q-text"></h3>
+        <div id="q-opts"></div>
+        <div class="q-explain" id="q-explain" role="status" hidden></div>
+        <button class="primary lite q-next" type="button" id="q-next" hidden>Next question →</button>
+      </div>
+      <div class="q-done" id="q-done" hidden>
+        <svg class="medal" viewBox="0 0 54 48" aria-hidden="true"><use href="#kleros-ico" fill="#f2c46d"/></svg>
+        <b>Kleros 101: passed</b>
+        <p id="q-done-text"></p>
+      </div>
+    </section>
+
+    <div class="match blog" id="blog" hidden>
+      <div class="kicker">Kleros blog</div>
+      <p id="blog-text"></p>
+      <a class="go" id="blog-go" href="https://blog.kleros.io/#/portal/signup" target="_blank" rel="noopener" hidden>Subscribe to the Kleros blog →</a>
+    </div>
+
+    <div class="foryou" id="foryou" hidden>
+      <div class="fy-head">
+        <div class="kicker">Picked for you</div>
+        <p id="fy-intro"></p>
+      </div>
+      <div class="match" id="match">
+        <div class="kicker" id="m-kicker">Best fit</div>
+        <h3 id="m-title"></h3>
+        <p id="m-pitch"></p>
+        <div class="said" id="m-said" hidden><span class="lbl" id="m-said-label"></span><span id="m-said-text"></span></div>
+        <p class="because" id="m-why" hidden></p>
+        <a class="go" id="m-go" href="https://kleros.io" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="match" id="fy-second" hidden>
+        <div class="kicker">Also relevant</div>
+        <h3 id="s2-title"></h3>
+        <p id="s2-pitch"></p>
+        <a class="go" id="s2-go" href="https://kleros.io" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="match tip" id="fy-role" hidden>
+        <div class="kicker" id="r-kicker"></div>
+        <h3 id="r-title"></h3>
+        <p id="r-text"></p>
+        <a class="go" id="r-go" href="https://docs.kleros.io" target="_blank" rel="noopener"></a>
+      </div>
+    </div>
+
+    <div class="also-list" id="also-list" hidden>
+      <div class="kicker">Also from Kleros</div>
+    </div>
+
+    <div class="session" id="session" hidden>
+      <div class="top"><span class="kicker" id="s-kicker"></span><span class="when" id="s-day"></span></div>
+      <h3 id="s-title"></h3>
+      <ul class="hubs" id="s-list"></ul>
+      <div class="meta" id="s-meta"></div>
+    </div>
+
+    <a class="team-cta" href="connect.html">
+      <span><b>Connect with the Kleros team</b><small>Building something? Tell us and we’ll follow up after Devcon.</small></span><i aria-hidden="true">→</i>
+    </a>
+
+    <div class="links">
+      <a href="https://t.me/kleros" target="_blank" rel="noopener">Telegram</a>
+      <a href="https://x.com/kleros_io" target="_blank" rel="noopener" id="link-x">Follow on X</a>
+      <a href="https://blog.kleros.io" target="_blank" rel="noopener" id="blog-link">Kleros blog</a>
+      <a href="https://docs.kleros.io/welcome/introduction" target="_blank" rel="noopener">Kleros docs</a>
+    </div>
+    <div class="sync" id="sync"></div>
+    <button class="ghost" id="again" type="button">Check in someone else</button>
+  </section>
+
+  <div class="tagline">AI agents<i>·</i>Agent payments<i>·</i><b>Agentic Court</b></div>
+</main>
+
+<script src="config.js"></script>
+<script src="matching.js"></script>
+<script src="quiz.js"></script>
+<script>
+(function () {
+  var CFG = window.KLEROS_BOOTH_CONFIG || {};
+  var ENDPOINT = (CFG.endpoint || '').trim();
+  var KIOSK = /[?&]kiosk=1\b/.test(location.search);
+  document.getElementById('privacy-contact').textContent = CFG.privacyContact || 'the Kleros team';
+  // Year-specific bits come from config.js and matching.js, so a new Devcon only needs settings changes.
+  if (CFG.edition) {
+    document.getElementById('edition-badge').textContent = CFG.edition + (CFG.city ? ' · ' + CFG.city : '');
+    document.getElementById('ticket-kicker').textContent = 'Kleros · ' + CFG.edition;
+  }
+  KLEROS_USE_CASES.filter(function (u) { return u.focus; }).forEach(function (u) {
+    var li = document.createElement('li'); li.textContent = u.short; document.getElementById('lanes').appendChild(li);
+  });
+  var K_SELF = 'kleros_devcon_self', K_QUEUE = 'kleros_devcon_queue', K_DEMO = 'kleros_devcon_demo_leads';
+
+  var LINK_TEXT = {
+    ai: 'Kleros for AI agents', prediction: 'How oracle disputes are resolved', enterprise: 'Enterprise use cases',
+    defi: 'How Kleros Scout works', dao: 'How Kleros Governor works', commerce: 'Kleros products',
+    infra: 'Build with Kleros', research: 'Kleros research',
+    identity: 'How Proof of Humanity works', legal: 'Kleros legal framework', community: 'How Kleros dispute resolution works'
+  };
+  // The four pipeline areas get large cards; everything else in INTEREST_TO_USE_CASE becomes a chip.
+  var FOCUS = [
+    ['Disputes for AI Agents', 'AI Agents', 'Who\'s accountable when an agent deal goes wrong', '<rect x="5" y="7" width="14" height="12" rx="3"/><path d="M12 3v4M9 12h.01M15 12h.01M9 16h6M2 12h3M19 12h3"/>'],
+    ['Prediction Market Resolution', 'Prediction Markets', 'Fast, disputable market resolution', '<path d="M3 20h18"/><path d="m4 16 5-5 4 3 7-8"/><path d="M15 6h5v5"/>'],
+    ['Enterprise & Customer Disputes', 'Enterprise', 'Chargebacks, claims, support', '<path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6M4 21h16"/>'],
+    ['DeFi Curation & Token Lists', 'DeFi Curation', 'Token lists, address tags, registries', '<path d="M12 3 4 7v5c0 5 3.5 8 8 9 4.5-1 8-4 8-9V7z"/><path d="m8.5 12 2.5 2.5 4.5-5"/>']
+  ];
+
+  function store(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
+  function $(id) { return document.getElementById(id); }
+  function toggle(b) { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); }
+
+  var focusEl = $('focus');
+  FOCUS.forEach(function (f) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'fcard'; b.setAttribute('aria-pressed', 'false'); b.setAttribute('data-v', f[0]);
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + f[3] + '</svg><b>' + f[1] + '</b><span>' + f[2] + '</span>';
+    b.onclick = function () { toggle(b); };
+    focusEl.appendChild(b);
+  });
+  var chipsEl = $('chips');
+  var focusLabels = FOCUS.map(function (f) { return f[0]; });
+  Object.keys(INTEREST_TO_USE_CASE).forEach(function (label) {
+    if (focusLabels.indexOf(label) >= 0) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.textContent = label; b.setAttribute('aria-pressed', 'false'); b.setAttribute('data-v', label);
+    b.onclick = function () { toggle(b); };
+    chipsEl.appendChild(b);
+  });
+  // "Others": for visitors outside the four areas. Full width under the squares, opens a free-text box.
+  var otherChip = document.createElement('button');
+  otherChip.type = 'button'; otherChip.className = 'fcard wide'; otherChip.id = 'other-chip'; otherChip.setAttribute('aria-pressed', 'false');
+  otherChip.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><div><b>Others</b><span>Something else? Tell us what brings you here!</span></div>';
+  otherChip.onclick = function () {
+    toggle(otherChip);
+    var on = otherChip.getAttribute('aria-pressed') === 'true';
+    $('other-wrap').hidden = !on;
+    if (on) $('otherInterest').focus(); else $('otherInterest').value = '';
+  };
+  focusEl.appendChild(otherChip);
+
+  function clean(v) { return (v || '').trim().replace(/\s+/g, ' '); }
+  function handle(v) { return clean(v).replace(/^https?:\/\/(www\.)?(t\.me|telegram\.me|x\.com|twitter\.com)\//i, '').replace(/^@+/, '').replace(/[\/?].*$/, ''); }
+  function linkedin(v) {
+    v = clean(v); if (!v) return '';
+    if (/linkedin\.com/i.test(v)) return v.replace(/^(?!https?:\/\/)/, 'https://');
+    return 'https://www.linkedin.com/in/' + v.replace(/^@/, '').replace(/\/$/, '');
+  }
+  // 6 characters from 32 (about a billion codes): 4 would give dozens of repeats across 10,000 check-ins.
+  function ticketCode() {
+    var a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = '';
+    var r = (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(new Uint8Array(6)) : [0, 0, 0, 0, 0, 0].map(function () { return Math.random() * 256; });
+    for (var i = 0; i < 6; i++) s += a[r[i] % a.length];
+    return 'K-' + s;
+  }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 10); }
+
+  function setInvalid(f, bad) { var el = document.querySelector('[data-f="' + f + '"]'); if (el) el.classList.toggle('invalid', bad); return bad; }
+  ['name', 'company'].forEach(function (f) { $(f).addEventListener('input', function () { setInvalid(f, false); }); });
+  $('position').addEventListener('change', function () {
+    setInvalid('position', false);
+    // Save a tap where the role already implies the level.
+    var auto = { 'Founder / C-level': 'Founder / C-suite', 'Student': 'Student / Early career' }[$('position').value];
+    if (auto && !$('seniority').value) { $('seniority').value = auto; setInvalid('seniority', false); }
+  });
+  $('seniority').addEventListener('change', function () { setInvalid('seniority', false); });
+  $('otherInterest').addEventListener('input', function () { if ($('otherInterest').value.trim()) setInvalid('interests', false); });
+  document.getElementById('form').addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.fcard,.chip')) setInvalid('interests', false);
+  });
+  $('email').addEventListener('input', function () { setInvalid('email', false); });
+
+  function validate(d) {
+    var first = null;
+    function check(f, bad) { if (setInvalid(f, bad) && !first) first = f; }
+    check('name', !d.name);
+    check('company', !d.company);
+    check('position', !d.position);
+    check('seniority', !d.seniority);
+    // Email is required: it's how we follow up (and how the Kleros blog reaches those who tick the box).
+    $('email-error').textContent = d.email ? 'That email looks off. Mind checking it?' : 'Please add your email.';
+    check('email', !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email));
+    check('interests', !(d.interests.length || d.otherInterest));
+    if (first) {
+      var el = document.querySelector('[data-f="' + first + '"]');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      var input = el.querySelector('input,select'); if (input) setTimeout(function () { input.focus({ preventScroll: true }); }, 250);
+    }
+    return !first;
+  }
+
+  // Offline-first: every check-in goes to a local queue and leaves it only once the database confirms it
+  // (a timeout or error on the server keeps it queued for the next try). The server dedupes on `id`,
+  // so retries are safe. keepalive lets the request finish even if the visitor closes the page.
+  var inflight = null;
+  function unqueue(id) { store(K_QUEUE, (store(K_QUEUE) || []).filter(function (x) { return x.id !== id; })); }
+  function send(item) {
+    return fetch(ENDPOINT, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(item) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        // Saved, already saved, or rejected as malformed (retrying can't fix that one).
+        if (res.ok || res.error === 'invalid check-in') unqueue(item.id);
+      })
+      .catch(function () {});
+  }
+  function flush() {
+    if (inflight) return inflight;
+    var q = store(K_QUEUE) || [];
+    if (!q.length) return Promise.resolve(0);
+    if (!ENDPOINT) { // demo mode: keep on device so admin.html can show them
+      var demo = store(K_DEMO) || []; store(K_DEMO, demo.concat(q)); store(K_QUEUE, []); return Promise.resolve(0);
+    }
+    var tried = q.map(function (x) { return x.id; });
+    // One at a time, and one stuck item never blocks the ones behind it.
+    inflight = q.reduce(function (p, item) { return p.then(function () { return send(item); }); }, Promise.resolve())
+      .then(function () {
+        inflight = null;
+        var left = store(K_QUEUE) || [];
+        // Check-ins added while this pass was running go out straight away.
+        return left.some(function (x) { return tried.indexOf(x.id) < 0; }) ? flush() : left.length;
+      });
+    return inflight;
+  }
+  // Updates box → Kleros blog (Ghost members API, which accepts sign-ups from other sites). Ghost emails the
+  // visitor a confirm link, so nobody is subscribed without clicking it. Queued like check-ins, so bad wifi
+  // only delays it. Skipped in demo mode so review copies never send real emails.
+  var BLOG = CFG.blog && CFG.blog.url ? CFG.blog : null, K_BLOG = 'kleros_devcon_blog_queue', blogBusy = false;
+  function blogSignup(s) {
+    var api = BLOG.url.replace(/\/$/, '') + '/members/api/';
+    return fetch(api + 'integrity-token/')
+      .then(function (r) { if (!r.ok) throw new Error('token ' + r.status); return r.text(); })
+      .then(function (token) {
+        return fetch(api + 'send-magic-link/', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: s.email, name: s.name, emailType: 'signup', labels: BLOG.label ? [BLOG.label] : [], integrityToken: token })
+        });
+      })
+      .then(function (r) {
+        // Sent, or refused for good (e.g. an address Ghost won't accept). Rate-limited (429) or down: try again later.
+        if (r.ok || (r.status >= 400 && r.status < 500 && r.status !== 429)) {
+          store(K_BLOG, (store(K_BLOG) || []).filter(function (x) { return x.email !== s.email; }));
+        }
+      })
+      .catch(function () {});
+  }
+  function flushBlog() {
+    var q = store(K_BLOG) || [];
+    if (!BLOG || !ENDPOINT || blogBusy || !q.length) return;
+    blogBusy = true;
+    q.reduce(function (p, s) { return p.then(function () { return blogSignup(s); }); }, Promise.resolve())
+      .then(function () { blogBusy = false; });
+  }
+  function syncAll() { flushBlog(); return flush(); }
+
+  window.addEventListener('online', function () { syncAll().then(syncLabel); });
+  setInterval(function () {
+    syncAll().then(syncLabel);
+    if (doneRec && doneRec.synced === false) syncStatus();   // a merch step that didn't reach the backend yet
+  }, 20000);
+
+  function syncLabel(pending) {
+    var s = $('sync'); if (!s) return;
+    if (!ENDPOINT) { s.textContent = 'Demo mode: saved on this device'; s.className = 'sync'; return; }
+    if (pending) { s.textContent = 'Saved. Will sync when the connection is back.'; s.className = 'sync'; }
+    else { s.textContent = '✓ Saved'; s.className = 'sync ok'; }
+  }
+
+  // Always surface the three headline areas; the visitor's own match is shown above, so skip it here.
+  var SHOWCASE = ['ai', 'prediction', 'enterprise'];
+  function renderShowcase(skip) {
+    var box = $('also-list');
+    box.querySelectorAll('.uc-row').forEach(function (r) { r.remove(); });
+    SHOWCASE.forEach(function (id) {
+      if (skip.indexOf(id) >= 0) return;
+      var uc = useCaseById(id); if (!uc) return;
+      var icon = (FOCUS.filter(function (f) { return INTEREST_TO_USE_CASE[f[0]] === id; })[0] || [])[3] || '';
+      var a = document.createElement('a');
+      a.className = 'uc-row'; a.href = uc.link; a.target = '_blank'; a.rel = 'noopener';
+      a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icon + '</svg>' +
+        '<div><b></b><span></span></div><i aria-hidden="true">→</i>';
+      a.querySelector('b').textContent = uc.label;
+      a.querySelector('span').textContent = uc.tagline || uc.pitch;
+      box.appendChild(a);
+    });
+    box.hidden = !box.querySelector('.uc-row');
+  }
+
+  function renderSession() {
+    var ss = CFG.session;
+    if (!ss || ss.show === false || !(ss.hubs || []).length) return;
+    $('s-kicker').textContent = ss.kicker || '';
+    $('s-day').textContent = ss.dates || '';
+    $('s-title').textContent = ss.title || '';
+    var list = $('s-list');
+    list.innerHTML = '';
+    ss.hubs.forEach(function (hub) {
+      var li = document.createElement('li');
+      var b = document.createElement('b'); b.textContent = hub.name;
+      var d = document.createElement('span'); d.textContent = hub.about;
+      li.appendChild(b); li.appendChild(d); list.appendChild(li);
+    });
+    var meta = $('s-meta');
+    meta.textContent = '';
+    var note = document.createElement('span'); note.className = 'tbc';
+    note.textContent = [ss.venue, ss.note].filter(Boolean).join(' · ');
+    meta.appendChild(note);
+    $('session').hidden = false;
+  }
+
+  function renderBlog(rec) {
+    if (!BLOG || !rec.newsletter) { $('blog').hidden = true; return; }
+    var t = $('blog-text'); t.textContent = '';
+    if (rec.email && ENDPOINT && rec.blogVerified) {
+      t.textContent = 'You’re subscribed. Thanks for joining the Kleros blog!';
+    } else if (rec.email && ENDPOINT) {
+      t.appendChild(document.createTextNode('One last tap: confirm your subscription in the email we sent to '));
+      var b = document.createElement('b'); b.textContent = rec.email; t.appendChild(b);
+      t.appendChild(document.createTextNode('.'));
+    } else if (rec.email) {
+      t.textContent = 'Demo mode: no subscription email is sent.';
+    } else {
+      t.textContent = 'Get Kleros updates and event invites by email.';
+    }
+    $('blog-go').hidden = !!rec.email;
+    $('blog').hidden = false;
+  }
+
+  // The final screen doubles as marketing: what Kleros offers for this person, from their role, company,
+  // picks and own words. A finished phone keeps showing this page (no second check-in from the same phone).
+  var ROLE_NOUN = {
+    'Founder / C-level': 'a founder', 'Engineer / Developer': 'a developer', 'Product Manager': 'a product manager',
+    'Business Development / Partnerships': 'a partnerships lead', 'Marketing / Community': 'a marketing and community lead',
+    'Designer': 'a designer', 'Researcher / Academic': 'a researcher', 'Legal / Compliance': 'a legal and compliance lead',
+    'Investor / VC': 'an investor', 'Government / Public Sector': 'someone in the public sector', 'Student': 'a student'
+  };
+  var DOCS = 'https://docs.kleros.io';
+  var BUILD = { kicker: 'For builders', title: 'Build with Kleros', text: 'Integration guides, contracts and examples for adding a dispute route to your product.', link: DOCS + '/developers/overview', go: 'Developer docs' };
+  var TALK = { kicker: 'For founders and partnerships', title: 'Talk integrations with the team', text: 'The Kleros team is at the booth all Devcon. Ask for a walkthrough of how teams plug Kleros into their product.', link: DOCS + '/products/overview', go: 'All Kleros products' };
+  var JOIN = { kicker: 'Join the community', title: 'See how Kleros decides cases', text: 'How jurors are drawn, review evidence and vote, and where to say hi.', link: DOCS + '/concepts/dispute-resolution', go: 'How it works',
+               alt: { link: 'https://t.me/kleros', go: 'Say hi on Telegram' } };
+  var ROLE_TIP = {
+    'Engineer / Developer': BUILD,
+    'Founder / C-level': TALK, 'Business Development / Partnerships': TALK,
+    'Product Manager': { kicker: 'For product teams', title: 'See it in a real flow', text: 'Use cases from chargebacks and claims to marketplace disputes, decided end to end by independent jurors.', link: DOCS + '/enterprise/use-cases', go: 'Enterprise use cases' },
+    'Legal / Compliance': { kicker: 'For legal teams', title: 'How Kleros rulings hold up', text: 'The legal framework behind Kleros arbitration and how it fits with existing law.', link: DOCS + '/enterprise/legal', go: 'Legal framework' },
+    'Government / Public Sector': { kicker: 'For the public sector', title: 'Online dispute resolution', text: 'How public bodies and courts can use Kleros for faster, transparent dispute resolution.', link: DOCS + '/enterprise/legal', go: 'Legal framework' },
+    'Researcher / Academic': { kicker: 'For researchers', title: 'Kleros research', text: 'Game theory, mechanism design and decentralized justice, with fellowships and academic partnerships.', link: DOCS + '/research/overview', go: 'Kleros research' },
+    'Investor / VC': { kicker: 'For investors', title: 'Where Kleros is focused', text: 'Dispute resolution for AI agents, prediction markets and enterprise: the products and how they fit together.', link: DOCS + '/products/overview', go: 'Kleros products' }
+  };
+  function useCaseByLabel(label) { return KLEROS_USE_CASES.filter(function (u) { return u.label === label; })[0] || null; }
+  function setGo(el, uc) { el.textContent = (LINK_TEXT[uc.id] || 'Read the Kleros docs') + ' →'; el.href = uc.link || DOCS; }
+  function renderForYou(rec, m) {
+    var noun = ROLE_NOUN[rec.position] || '', co = String(rec.company || '').trim();
+    var at = co && !/^(independent|none|n\/a|-)$/i.test(co) ? ' at ' + co : '';
+    $('fy-intro').textContent = noun ? 'Here’s where Kleros fits for ' + noun + at + '.' : 'Here’s where Kleros fits' + (at ? ' for you' + at : ' for you') + '.';
+
+    var top = useCaseById(m.primaryId);
+    $('m-kicker').textContent = rec.wantsCall ? 'Your call topic' : 'Best fit';
+    $('m-title').textContent = m.primary;
+    $('m-pitch').textContent = m.pitch;
+    setGo($('m-go'), top);
+    // Their own words, quoted back.
+    var said = rec.klerosUse ? ['You’d use Kleros for', rec.klerosUse] : rec.building ? ['You’re working on', rec.building] : null;
+    $('m-said').hidden = !said;
+    if (said) { $('m-said-label').textContent = said[0]; $('m-said-text').textContent = '“' + said[1] + '”'; }
+    // Why this match, in plain words.
+    var picked = (rec.interests || []).filter(function (i) { return INTEREST_TO_USE_CASE[i] === m.primaryId; });
+    // Keyword hits, minus words that only came from their company name (no "you mentioned razorpay").
+    var hits = ((/mentions ([^;]+)/.exec(m.reasons || '') || [])[1] || '').split(', ').filter(function (k) {
+      return k && String(rec.company || '').toLowerCase().indexOf(k) < 0;
+    }).join(', ');
+    var why = [];
+    if (picked.length) why.push('You picked ' + picked.join(' and '));
+    if (hits) why.push((why.length ? 'you' : 'You') + ' mentioned ' + hits);
+    if (rec.wantsCall) why.push((why.length ? 'and someone' : 'Someone') + ' from the team will reach out soon');
+    $('m-why').textContent = why.length ? why.join(' · ') + '.' : '';
+    $('m-why').hidden = !why.length;
+
+    // "Also relevant": another area they picked themselves comes first, then the engine's runner-up.
+    var otherPick = (rec.interests || []).map(function (i) { return INTEREST_TO_USE_CASE[i]; }).filter(function (id) { return id && id !== m.primaryId; })[0];
+    var second = otherPick ? useCaseById(otherPick) : m.secondary ? useCaseByLabel(m.secondary) : null;
+    $('fy-second').hidden = !second;
+    if (second) { $('s2-title').textContent = second.label; $('s2-pitch').textContent = second.pitch; setGo($('s2-go'), second); }
+
+    var tip = ROLE_TIP[rec.position] || JOIN;
+    // Never the same link twice on one screen.
+    var alt = tip.alt || { link: DOCS + '/products/overview', go: 'All Kleros products' };
+    if (top && tip.link === top.link) tip = { kicker: tip.kicker, title: tip.title, text: tip.text, link: alt.link, go: alt.go };
+    $('r-kicker').textContent = tip.kicker; $('r-title').textContent = tip.title; $('r-text').textContent = tip.text;
+    $('r-go').textContent = tip.go + ' →'; $('r-go').href = tip.link;
+    $('fy-role').hidden = false;
+
+    $('foryou').hidden = false;
+    renderShowcase([m.primaryId, second ? second.id : '']);
+  }
+
+  // ---- Merch tiers ----
+  // Teal: checked in (and, if they ticked the blog box while the backend waits for it, confirmed the email).
+  // Purple: also joined the Kleros Telegram (checked by the bot) and tapped Follow on X and LinkedIn (counted on
+  // tap). Gold: also got all of Kleros 101 right. The ladder sits above the form so visitors know what more steps
+  // unlock; the ticket shows the tier with a ticking clock.
+  var MERCH = CFG.merch && (CFG.merch.tiers || []).length === 3 ? CFG.merch : null;
+  var TG = CFG.telegram || {}, FOLLOW = CFG.follow || {}, QUIZ = window.KLEROS_QUIZ || [];
+  var TIERS = ['teal', 'purple', 'gold'];
+  var TIER_HOW = ['Check in', '+ Join the Kleros Telegram, follow Kleros on X and LinkedIn', '+ Get all 3 Kleros 101 questions right'];
+  // `short` reads inside a sentence ("a Kleros kurta"); `reward` is the label on the ladder and the ticket.
+  function short(i) { return MERCH.tiers[i].short || MERCH.tiers[i].reward; }
+  function thumbs(imgs) {
+    var box = document.createElement('div');
+    box.className = 'thumbs';
+    [].concat(imgs || []).slice(0, 3).forEach(function (src) {
+      var im = document.createElement('img');
+      im.src = src; im.alt = ''; im.width = im.height = 60;
+      box.appendChild(im);
+    });
+    return box;
+  }
+  if (MERCH) {
+    var rows = MERCH.tiers.map(function (t, i) { return { cls: 't-' + TIERS[i], name: t.name, reward: t.reward, how: TIER_HOW[i], img: t.img }; });
+    if (MERCH.free) rows.unshift({ cls: 't-free', name: 'Everyone', reward: MERCH.free.reward, how: MERCH.free.how, img: MERCH.free.img });
+    rows.forEach(function (r) {
+      var li = document.createElement('li');
+      li.className = r.cls;
+      li.innerHTML = '<div><b><em></em> · <span></span></b><span class="how"></span></div>';
+      li.insertBefore(thumbs(r.img), li.firstChild);
+      li.querySelector('em').textContent = r.name;
+      li.querySelector('b span').textContent = r.reward;
+      li.querySelector('.how').textContent = r.how;
+      $('tier-list').appendChild(li);
+    });
+    if (MERCH.note) $('tiers-fine').textContent += ' ' + MERCH.note + '.';
+    $('tiers').hidden = false;
+    var unlock = $('c-unlock'), em = document.createElement('em');
+    em.textContent = MERCH.tiers[0].name + ' (' + short(0) + ')';
+    unlock.appendChild(document.createTextNode('Confirming unlocks '));
+    unlock.appendChild(em);
+    unlock.appendChild(document.createTextNode('. Purple and Gold come right after.'));
+    unlock.hidden = false;
+  }
+  if (TG.group) $('tg-join').href = TG.group;
+  if (FOLLOW.x) $('x-go').href = $('link-x').href = FOLLOW.x;
+  if (FOLLOW.linkedin) $('li-go').href = FOLLOW.linkedin;
+
+  function merchOf(rec) { return rec.merch || (rec.merch = { x: false, li: false, quiz: false, wrong: 0, tg: '', tgUser: '', tgSince: 0, claimed: '' }); }
+  function tierOf(m) { return m.claimed ? 0 : m.tg === 'joined' && m.x && m.li ? (m.quiz ? 3 : 2) : 1; }
+  function keep(rec) { if (!KIOSK) store(K_SELF, rec); }
+  function tgWaiting(m) { return m.tg !== 'joined' && m.tg !== 'offline' && !!m.tgSince && Date.now() - m.tgSince < 15 * 60000; }
+  function listText(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+  function tgText(m) {
+    if (m.tg === 'joined') return 'Joined' + (m.tgUser ? ' as ' + m.tgUser : '');
+    if (m.tg === 'offline') return 'The Telegram check isn’t switched on yet. Ask the Kleros team.';
+    if (m.tg === 'error') return 'Couldn’t check the group just now. Tap Verify again in a minute.';
+    if (m.tg === 'not_member') return 'Not in the group yet. Join it, then tap “I’ve joined” in the bot chat.';
+    if (tgWaiting(m)) return 'Waiting for @' + (TG.bot || 'our bot') + '… Tap Start in Telegram, then come back here.';
+    return 'Join the group, then verify: our bot checks it in seconds.';
+  }
+
+  var doneRec = null, shownTier = 0;
+  function renderMerch(rec) {
+    var m = merchOf(rec), tier = tierOf(m), t = $('ticket');
+    $('t-tier-row').hidden = !MERCH;
+    if (!MERCH) return;   // no tiers configured: the plain ticket
+    $('levelup').hidden = !!m.claimed || KIOSK;   // a booth tablet resets after a few seconds: Teal only
+    $('quiz').hidden = !!m.claimed || KIOSK || !QUIZ.length;
+    $('t-live').hidden = $('t-code').hidden = !!m.claimed;
+    if (m.claimed) {
+      t.setAttribute('data-tier', 'claimed');
+      $('t-img').hidden = true;
+      $('t-tier').textContent = 'Already claimed';
+      $('t-reward').textContent = m.claimed === 'telegram' ? 'This Telegram account already unlocked merch on another check-in.' : 'This email already checked in at the Kleros booth.';
+      $('t-hint').textContent = 'One merch per person. Thanks for stopping by!';
+      return;
+    }
+    var cur = MERCH.tiers[tier - 1], pics = thumbs(cur.img);
+    t.setAttribute('data-tier', TIERS[tier - 1]);
+    pics.id = 't-img';
+    $('t-img').replaceWith(pics);
+    $('t-tier').textContent = cur.name + ' tier';
+    $('t-reward').textContent = cur.reward;
+    $('t-hint').textContent = 'Show this screen at the booth to claim your merch';
+    if (shownTier && tier > shownTier) { t.classList.remove('bump'); void t.offsetWidth; t.classList.add('bump'); }
+    shownTier = tier;
+
+    $('lu-count').textContent = 'Tier ' + tier + ' of 3';
+    document.querySelectorAll('.ladder i').forEach(function (i, k) { i.classList.toggle('on', k < tier); });
+    var follow = [!m.x && 'X', !m.li && 'LinkedIn'].filter(Boolean), next = $('lu-next');
+    var todo = [m.tg !== 'joined' && 'join the Telegram', follow.length && 'follow Kleros on ' + follow.join(' and ')].filter(Boolean);
+    var line = function (lead, goal, rest) {
+      var b = document.createElement('b'); b.textContent = goal;
+      next.textContent = ''; next.appendChild(document.createTextNode(lead)); next.appendChild(b); next.appendChild(document.createTextNode(rest));
+    };
+    if (tier === 3) line('Top tier! Show this screen for ', short(2), '.');
+    else if (tier === 2) line('One more step to ', 'Gold (' + short(2) + ')', ': get all 3 Kleros 101 questions right.');
+    else if (m.quiz) line('Quiz done! Now ' + listText(todo) + ' for ', 'Gold (' + short(2) + ')', '.');
+    else line('Unlock ', 'Purple (' + short(1) + ')', ': ' + listText(todo) + '.');
+    $('st-tg').classList.toggle('done', m.tg === 'joined');
+    $('st-x').classList.toggle('done', !!m.x);
+    $('st-li').classList.toggle('done', !!m.li);
+    $('st-quiz').classList.toggle('done', !!m.quiz);
+    $('tg-status').textContent = tgText(m);
+    $('quiz-status').textContent = m.quiz ? 'Passed' : 'Get all 3 questions right';
+  }
+
+  // X and LinkedIn count on tap (can't be checked without paid APIs). Telegram is checked by the bot.
+  function stepDone(k) {
+    var rec = doneRec;
+    if (!rec || merchOf(rec)[k]) return;
+    merchOf(rec)[k] = true; rec.synced = false;
+    keep(rec); renderMerch(rec); syncStatus();
+  }
+  $('x-go').addEventListener('click', function () { stepDone('x'); });
+  $('link-x').addEventListener('click', function () { stepDone('x'); });
+  $('li-go').addEventListener('click', function () { stepDone('li'); });
+  $('tg-go').addEventListener('click', function (e) {
+    var rec = doneRec;
+    if (!rec) return;
+    var m = merchOf(rec);
+    m.tgSince = Date.now(); keep(rec); renderMerch(rec);
+    if (!ENDPOINT) {   // demo mode: no bot behind it
+      e.preventDefault();
+      setTimeout(function () { if (doneRec === rec) { m.tg = 'joined'; m.tgUser = '(demo)'; keep(rec); renderMerch(rec); } }, 1500);
+      return;
+    }
+    clearTimeout(statusTimer); statusTimer = setTimeout(syncStatus, 2500);
+  });
+  $('quiz-go').addEventListener('click', function (e) { e.preventDefault(); $('quiz').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+
+  // What the backend knows: blog confirmed, Telegram (from the bot), steps, or "Already claimed".
+  function applyStatus(rec, res) {
+    var m = merchOf(rec), s = res.steps || {};
+    if (res.claimed) { m.claimed = res.claimed; return; }
+    if (res.telegram !== undefined) { m.tg = res.telegram; m.tgUser = res.telegramUser || ''; }
+    m.x = m.x || !!s.x; m.li = m.li || !!s.linkedin; m.quiz = m.quiz || !!s.quiz;
+    rec.synced = !res.steps || (s.x === m.x && s.linkedin === m.li && s.quiz === m.quiz);
+  }
+  // Sends this phone's steps and reads the status back. While the visitor is verifying on Telegram it keeps
+  // polling (the backend then reads the bot's messages), for up to 15 minutes after they tapped Verify.
+  var statusTimer = null, statusBusy = false;
+  function syncStatus() {
+    var rec = doneRec;
+    if (!rec || !ENDPOINT || !BLOG || KIOSK || statusBusy || merchOf(rec).claimed) return;
+    var m = merchOf(rec);
+    clearTimeout(statusTimer); statusBusy = true;
+    fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'verify', id: rec.id, tg: tgWaiting(m), steps: { x: m.x, linkedin: m.li, quiz: m.quiz, wrong: m.wrong } }) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (doneRec !== rec || !res.ok || !res.confirmed) return;
+        applyStatus(rec, res);
+        keep(rec); renderMerch(rec); renderQuiz(rec);
+      })
+      .catch(function () {})
+      .then(function () {
+        statusBusy = false;
+        if (doneRec === rec && !m.claimed && tgWaiting(m)) statusTimer = setTimeout(syncStatus, document.hidden ? 15000 : 4000);
+      });
+  }
+
+  // ---- Kleros 101 ----
+  // One question at a time. A wrong pick is crossed out with the reason it's wrong; the right one explains why,
+  // with a small diagram and a docs link. Progress is kept on the phone, so closing the page loses nothing.
+  function quizOf(rec) { return rec.quizRun || (rec.quizRun = { i: 0, tried: [], solved: false, started: false }); }
+  function renderQuiz(rec, picked) {
+    var m = merchOf(rec), q = quizOf(rec), n = QUIZ.length;
+    if (!n) return;
+    document.querySelectorAll('.q-dots i').forEach(function (d, k) {
+      d.className = m.quiz || k < q.i || (k === q.i && q.solved) ? 'on' : k === q.i && q.started ? 'now' : '';
+    });
+    $('q-intro').hidden = m.quiz || q.started;
+    $('q-body').hidden = m.quiz || !q.started;
+    $('q-done').hidden = !m.quiz;
+    $('q-prog').textContent = m.quiz ? 'Passed' : q.started ? 'Question ' + (q.i + 1) + ' of ' + n : n + ' questions';
+    if (m.quiz) {
+      $('q-done-text').textContent = (m.wrong ? 'You got there with ' + m.wrong + (m.wrong === 1 ? ' retry. ' : ' retries. ') : 'All three on the first try. ') +
+        (tierOf(m) === 3 ? 'Gold unlocked!' : 'Finish the Purple steps above and Gold is yours.');
+      return;
+    }
+    if (!q.started) return;
+    var item = QUIZ[q.i], box = $('q-opts');
+    $('q-text').textContent = item.q;
+    box.textContent = '';
+    item.options.forEach(function (o, k) {
+      var b = document.createElement('button'), wrong = q.tried.indexOf(k) >= 0, right = q.solved && k === item.right;
+      b.type = 'button'; b.className = 'q-opt' + (wrong ? ' wrong' + (k === picked ? ' shake' : '') : '') + (right ? ' right' : '');
+      b.textContent = o[0];
+      b.disabled = wrong || q.solved;
+      b.onclick = function () { pickAnswer(k); };
+      box.appendChild(b);
+    });
+    var ex = $('q-explain'), last = q.solved ? item.right : q.tried[q.tried.length - 1];
+    ex.textContent = '';
+    ex.hidden = last === undefined;
+    if (last !== undefined) {
+      var v = document.createElement('span'), p = document.createElement('p');
+      ex.className = 'q-explain ' + (q.solved ? 'good' : 'bad');
+      v.className = 'verdict'; v.textContent = q.solved ? 'Correct!' : 'Not quite. Pick again.';
+      p.textContent = item.options[last][1];
+      ex.appendChild(v); ex.appendChild(p);
+      if (q.solved && item.art) ex.appendChild(quizArt(item.art));
+      // "Want to know more?" first opens a short deeper explanation; the docs link only comes after it.
+      if (q.solved && (item.deep || item.more)) {
+        if (!q.open) {
+          var more = document.createElement('button');
+          more.type = 'button'; more.className = 'q-more'; more.textContent = 'Want to know more?';
+          more.onclick = function () { q.open = true; keep(rec); renderQuiz(rec); };
+          ex.appendChild(more);
+        } else {
+          var deep = document.createElement('div');
+          deep.className = 'q-deep';
+          if (Array.isArray(item.deep)) {
+            var ol = document.createElement('ol');
+            item.deep.forEach(function (s) { var li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
+            deep.appendChild(ol);
+          } else if (item.deep) {
+            var dp = document.createElement('p'); dp.textContent = item.deep; deep.appendChild(dp);
+          }
+          if (item.more) {
+            var a = document.createElement('a');
+            a.className = 'go'; a.href = item.more[1]; a.target = '_blank'; a.rel = 'noopener'; a.textContent = item.more[0] + ' →';
+            deep.appendChild(a);
+          }
+          ex.appendChild(deep);
+        }
+      }
+    }
+    $('q-next').hidden = !q.solved;
+    $('q-next').textContent = q.i < n - 1 ? 'Next question →' : 'Finish';
+  }
+  function pickAnswer(k) {
+    var rec = doneRec;
+    if (!rec) return;
+    var q = quizOf(rec), item = QUIZ[q.i];
+    if (q.solved || q.tried.indexOf(k) >= 0) return;
+    if (k === item.right) q.solved = true;
+    else { q.tried.push(k); merchOf(rec).wrong++; }
+    keep(rec); renderQuiz(rec, k);
+    $('q-explain').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  $('q-start').onclick = function () {
+    if (!doneRec) return;
+    quizOf(doneRec).started = true; keep(doneRec); renderQuiz(doneRec);
+  };
+  $('q-next').onclick = function () {
+    var rec = doneRec;
+    if (!rec || !quizOf(rec).solved) return;
+    var q = quizOf(rec), m = merchOf(rec);
+    if (q.i < QUIZ.length - 1) { q.i++; q.tried = []; q.solved = false; q.open = false; }
+    else { m.quiz = true; rec.synced = false; }
+    keep(rec); renderQuiz(rec); renderMerch(rec);
+    $('quiz').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (m.quiz) syncStatus();
+  };
+  // The diagram under a right answer: jurors drawn from a pool, an agent deal through escrow, appeal rounds.
+  function quizArt(kind) {
+    var el = document.createElement('div'), cap = document.createElement('span'), i, k;
+    el.className = 'q-art'; cap.className = 'cap';
+    if (kind === 'draw') {
+      var pool = document.createElement('div'), picks = [];
+      pool.className = 'art-pool';
+      while (picks.length < 3) { k = Math.floor(Math.random() * 24); if (picks.indexOf(k) < 0) picks.push(k); }
+      for (i = 0; i < 24; i++) {
+        var d = document.createElement('i'), at = picks.indexOf(i);
+        if (at >= 0) { d.className = 'pick'; d.style.animationDelay = (0.3 + at * 0.4) + 's'; }
+        pool.appendChild(d);
+      }
+      el.appendChild(pool); cap.textContent = '3 jurors drawn at random from the pool';
+    } else if (kind === 'triage') {
+      // Nine independent AI reads of one case: here they split, so it goes to human jurors.
+      var reads = document.createElement('div'), split = [0, 0, 1, 0, 0, 1, 0, 0, 1];
+      reads.className = 'art-reads';
+      split.forEach(function (s, k) {
+        var r = document.createElement('i');
+        r.className = s ? 'other' : 'one'; r.style.animationDelay = (0.15 + k * 0.12) + 's';
+        reads.appendChild(r);
+      });
+      var steps = document.createElement('div');
+      steps.className = 'art-flow';
+      ['Escrow holds it', '9 AI reads', 'Split? Human jurors', 'Refund or pay out'].forEach(function (s, k) {
+        if (k) { var ar = document.createElement('i'); ar.textContent = '→'; ar.style.animationDelay = (1.3 + k * 0.35 - 0.2) + 's'; steps.appendChild(ar); }
+        var sp = document.createElement('span');
+        sp.textContent = s; sp.style.animationDelay = (1.3 + k * 0.35) + 's';
+        if (k === 2) sp.className = 'key';
+        steps.appendChild(sp);
+      });
+      el.appendChild(reads); el.appendChild(steps);
+      cap.textContent = 'Reads agree: settled in minutes. Reads split: human jurors decide';
+    } else if (kind === 'escrow') {
+      var flow = document.createElement('div');
+      flow.className = 'art-flow';
+      ['Agent pays', 'Escrow holds it', 'Jurors rule', 'Paid to the right side'].forEach(function (s, k) {
+        if (k) { var ar = document.createElement('i'); ar.textContent = '→'; ar.style.animationDelay = (k * 0.4 - 0.2) + 's'; flow.appendChild(ar); }
+        var sp = document.createElement('span');
+        sp.textContent = s; sp.style.animationDelay = k * 0.4 + 's';
+        if (k === 2) sp.className = 'key';
+        flow.appendChild(sp);
+      });
+      el.appendChild(flow); cap.textContent = 'How a disputed agent deal gets settled';
+    } else if (kind === 'appeal') {
+      var rounds = document.createElement('div');
+      rounds.className = 'art-rounds';
+      [['First round', 3], ['Appeal 1', 7], ['Appeal 2', 15], ['Appeal 3', 31]].forEach(function (rd, k) {
+        var row = document.createElement('div'), lab = document.createElement('small'), dots = document.createElement('span');
+        lab.textContent = rd[0] + ' · ' + rd[1];
+        for (var j = 0; j < rd[1]; j++) { var dot = document.createElement('i'); dot.style.animationDelay = (k * 0.5 + j * 0.02) + 's'; dots.appendChild(dot); }
+        row.appendChild(lab); row.appendChild(dots); rounds.appendChild(row);
+      });
+      el.appendChild(rounds); cap.textContent = 'Each appeal draws a bigger jury';
+    }
+    el.appendChild(cap);
+    return el;
+  }
+
+  // A ticking clock on the ticket: a screenshot shown at the booth stops ticking.
+  var clockTimer = null;
+  function startClock() {
+    var tick = function () { $('t-clock').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }); };
+    clearInterval(clockTimer); tick(); clockTimer = setInterval(tick, 1000);
+  }
+
+  var resetTimer;
+  function showDone(rec) {
+    doneRec = rec; shownTier = 0;
+    $('t-name').textContent = rec.name;
+    $('t-org').textContent = rec.position + ' · ' + rec.company;
+    $('t-code').textContent = rec.ticket;
+    if (TG.bot) $('tg-go').href = 'https://t.me/' + TG.bot + '?start=' + encodeURIComponent(rec.id);
+    renderMerch(rec);
+    renderQuiz(rec);
+    startClock();
+    var m = window.matchLead ? matchLead(rec) : null;
+    if (m) renderForYou(rec, m);
+    renderBlog(rec);
+    renderSession();
+    document.body.classList.add('show-done');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (KIOSK) { clearTimeout(resetTimer); resetTimer = setTimeout(reset, 12000); }
+  }
+
+  function reset() {
+    clearTimeout(resetTimer);
+    pending = null; clearTimeout(pollTimer);
+    doneRec = null; clearInterval(clockTimer); clearTimeout(statusTimer);
+    $('levelup').hidden = true; $('quiz').hidden = true;
+    document.body.classList.remove('show-confirm');
+    if (!KIOSK) store(K_SELF, null);
+    $('form').reset();
+    document.querySelectorAll('.chip,.fcard').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+    document.querySelectorAll('.invalid').forEach(function (c) { c.classList.remove('invalid'); });
+    $('other-wrap').hidden = true;
+    $('foryou').hidden = true; $('also-list').hidden = true; $('blog').hidden = true;
+    $('submit').disabled = false; $('submit').textContent = 'Check in';
+    document.body.classList.remove('show-done');
+    window.scrollTo({ top: 0 });
+    if (KIOSK) $('name').focus();
+  }
+  $('again').onclick = reset;
+  // One check-in per phone: only a booth tablet (?kiosk=1) gets "Check in someone else".
+  if (!KIOSK) $('again').hidden = true;
+
+  // Confirmation gate: the final screen only appears once the visitor has done every required step and
+  // confirmed their Kleros blog subscription (the link in Ghost's own email). Ghost reports it to the backend
+  // by webhook, and the backend answers { confirmed }. Strict: with no webhook set up ({ setup: false }) nobody gets through.
+  var pending = null, pollTimer = null, lastResend = 0;
+  // When the backend doesn't wait for the blog confirmation (it answers gate: false), the email prompt still
+  // stays up this long after it first appeared, so visitors open the Kleros blog email before their merch screen.
+  var CONFIRM_HOLD = 15000, holdTimer = null;
+  function passConfirm(rec, res) {
+    pending = null;
+    rec.confirmed = true; rec.blogVerified = res.gate !== false;
+    applyStatus(rec, res);
+    keep(rec);
+    document.body.classList.remove('show-confirm');
+    showDone(rec);
+    syncLabel((store(K_QUEUE) || []).length);
+  }
+  function verifyNow() {
+    var rec = pending;
+    if (!rec || holdTimer) return;
+    clearTimeout(pollTimer);
+    fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'verify', id: rec.id }) })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (pending !== rec) return;
+        if (res.ok && res.confirmed) {
+          var hold = res.gate === false ? (rec.askedAt || 0) + CONFIRM_HOLD - Date.now() : 0;
+          if (hold > 0) {
+            $('c-status').textContent = 'Waiting for your confirmation…';
+            holdTimer = setTimeout(function () { holdTimer = null; if (pending === rec) passConfirm(rec, res); }, hold);
+            return;
+          }
+          passConfirm(rec, res);
+          return;
+        }
+        $('c-status').textContent = res.setup === false ? 'Confirmation check is offline. Please ask the Kleros team.'
+          : res.pending ? 'Saving your check-in…' : 'Waiting for your confirmation…';
+      })
+      .catch(function () { if (pending === rec) $('c-status').textContent = 'No connection yet. Retrying…'; })
+      .then(function () { if (pending === rec && !holdTimer) pollTimer = setTimeout(verifyNow, document.hidden ? 15000 : 4000); });
+  }
+  function showConfirm(rec) {
+    pending = rec;
+    clearTimeout(holdTimer); holdTimer = null;
+    if (!rec.askedAt) { rec.askedAt = Date.now(); keep(rec); }
+    $('c-email').textContent = rec.email;
+    $('c-status').textContent = 'Waiting for your confirmation…';
+    document.body.classList.add('show-confirm');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    verifyNow();
+  }
+  // Back from the mail app (or from Telegram): check straight away.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) return;
+    if (pending) verifyNow();
+    else if (doneRec && tgWaiting(merchOf(doneRec))) syncStatus();
+  });
+  $('c-resend').onclick = function () {
+    if (!pending) return;
+    if (Date.now() - lastResend < 30000) { $('c-status').textContent = 'Just sent. Give it a minute.'; return; }
+    lastResend = Date.now();
+    blogSignup({ email: pending.email, name: pending.name });
+    $('c-status').textContent = 'Sent again. Check your inbox.';
+  };
+  // Typo in the email: back to the form with everything still filled in; resubmitting makes a fresh check-in.
+  $('c-edit').onclick = function () {
+    var rec = pending;
+    pending = null; clearTimeout(pollTimer);
+    if (!KIOSK) store(K_SELF, null);
+    if (rec && !$('name').value) fillForm(rec);
+    document.body.classList.remove('show-confirm');
+    $('submit').disabled = false; $('submit').textContent = 'Check in';
+    $('email').focus(); $('email').select();
+  };
+  function fillForm(rec) {
+    ['name', 'company', 'position', 'seniority', 'email', 'klerosUse', 'building'].forEach(function (f) { $(f).value = rec[f] || ''; });
+    $('telegram').value = rec.telegram ? '@' + rec.telegram : ''; $('x').value = rec.x ? '@' + rec.x : ''; $('linkedin').value = rec.linkedin || '';
+    $('newsletter').checked = !!rec.newsletter;
+    document.querySelectorAll('.fcard[data-v],.chip[data-v]').forEach(function (c) { c.setAttribute('aria-pressed', (rec.interests || []).indexOf(c.getAttribute('data-v')) >= 0 ? 'true' : 'false'); });
+    if (rec.otherInterest) { $('other-chip').setAttribute('aria-pressed', 'true'); $('other-wrap').hidden = false; $('otherInterest').value = rec.otherInterest; }
+  }
+
+  $('form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var d = {
+      name: clean($('name').value),
+      company: clean($('company').value),
+      position: $('position').value,
+      seniority: $('seniority').value,
+      email: clean($('email').value).toLowerCase(),
+      telegram: handle($('telegram').value),
+      linkedin: linkedin($('linkedin').value),
+      x: handle($('x').value),
+      interests: Array.prototype.map.call(document.querySelectorAll('.fcard[data-v][aria-pressed=true],.chip[data-v][aria-pressed=true]'), function (c) { return c.getAttribute('data-v'); }),
+      otherInterest: $('other-chip').getAttribute('aria-pressed') === 'true' ? clean($('otherInterest').value) : '',
+      klerosUse: clean($('klerosUse').value),
+      building: clean($('building').value),
+      newsletter: $('newsletter').checked
+    };
+    if (!validate(d)) return;
+    d.id = uid();
+    d.ticket = ticketCode();
+    d.ts = new Date().toISOString();
+    d.source = KIOSK ? 'kiosk' : 'qr';
+    d.event = CFG.event || 'Devcon';
+
+    $('submit').disabled = true; $('submit').textContent = 'Checking in…';
+    var q = store(K_QUEUE) || []; q.push(d); store(K_QUEUE, q);
+    if (BLOG && d.newsletter && d.email) { var bq = store(K_BLOG) || []; bq.push({ email: d.email, name: d.name }); store(K_BLOG, bq); }
+    if (!KIOSK) store(K_SELF, d);
+    lastResend = Date.now();
+    $('sync').textContent = 'Saving…'; $('sync').className = 'sync';
+    // Only visitors who ticked the blog box see "Confirm your email"; everyone else goes straight to their ticket,
+    // and its status (tier, "Already claimed") follows once the check-in is saved.
+    if (ENDPOINT && BLOG && d.newsletter) showConfirm(d);
+    else { d.synced = false; showDone(d); }
+    syncAll().then(function (n) { syncLabel(n); if (doneRec === d) syncStatus(); });
+  });
+
+  // Returning visitor on their own phone: their ticket again (with a fresh status: the bot may have answered
+  // meanwhile), or the confirm step if they haven't confirmed yet.
+  var me = !KIOSK && store(K_SELF);
+  if (me && me.ticket) {
+    if (me.confirmed || !me.newsletter || !ENDPOINT || !BLOG) { showDone(me); syncStatus(); } else showConfirm(me);
+    syncAll().then(syncLabel);
+  }
+  else syncAll();
+})();
+</script>
+</body>
+</html>

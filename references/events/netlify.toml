@@ -1,0 +1,9 @@
+# Netlify builds this as a Next.js site. Its Next.js adapter (OpenNext, @netlify/plugin-nextjs) is
+# added automatically on every build, so it is not pinned here. Setup notes: docs/deploy-netlify.md
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"

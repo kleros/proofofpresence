@@ -1,0 +1,12 @@
+{
+  "contractVersion": "v7",
+  "abiVersion": "v7",
+  "sourceCommit": "21b8f58",
+  "sourceSha256": "7d9a7854c43826453f7a3ac610d2350b48626cf6e18ee2c44530081af8f80a51",
+  "artifactSha256": "8ebc16a95f07f2b59e1dd182853fbfabb71933fc0d3078524b429e730729b1ec",
+  "compiler": {
+    "version": "0.8.28",
+    "optimizerRuns": 200,
+    "evmVersion": "paris"
+  }
+}

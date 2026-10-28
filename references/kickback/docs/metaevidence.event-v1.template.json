@@ -1,0 +1,21 @@
+{
+  "category": "Event attendance",
+  "title": "Did wallet {{wallet}} attend {{eventName}}?",
+  "description": "This case concerns the person linked to wallet {{wallet}} for the event \"{{eventName}}\". Event start: {{eventStart}}; timezone: {{timezone}}; venue: {{venue}}. The organiser wallet recorded at deployment is {{owner}}. Evidence submitted from that wallet is the organiser's own statement.\n\nThe participant committed {{deposit}} in native ETH to contract {{contract}} on {{chainName}}. Admission is curated by the organiser after deposit verification. The organiser published attendance and omitted this wallet. The participant challenged that omission and someone matched it, opening this case. The contract generated this description from its immutable deployment template; neither party chooses its wording. The policy linked below is immutable for this deployment.\n\nCheck challenges(wallet) at {{explorer}}/address/{{contract}}#readContract: localDisputeID identifies evidence and appeals at the V1 Dispute Resolver, and arbitratorDisputeID identifies the Kleros case. Use the final resolver ruling after all appeal periods. Ruling 1 adds attendance and pays the held share; ruling 2 keeps the participant excluded; ruling 0 also keeps them excluded and splits remaining challenge deposits. Other attendees may be paid while this case remains open. Apply the policy to the person, event and time described above. A pasted wallet, personal attended history, booth lead or merchandise state alone does not prove attendance.",
+  "question": "Did the person linked to wallet {{wallet}} attend {{eventName}} under its published policy?",
+  "rulingOptions": {
+    "type": "single-select",
+    "titles": ["Attended", "Did not attend"],
+    "descriptions": [
+      "The participant attended under the event policy. Add them to attendance, pay their equal accumulated entitlement and remaining challenge deposits after arbitration cost.",
+      "Attendance was not established under the event policy. Keep the participant excluded and pay remaining challenge deposits to the matcher."
+    ]
+  },
+  "fileURI": "{{policyURI}}",
+  "aliases": {
+    "{{wallet}}": "Challenger (participant wallet)",
+    "{{walletLower}}": "Challenger (participant wallet)",
+    "{{owner}}": "Organiser (deployment owner wallet)",
+    "{{ownerLower}}": "Organiser (deployment owner wallet)"
+  }
+}

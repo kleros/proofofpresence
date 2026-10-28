@@ -1,0 +1,251 @@
+{
+  "about": "Updates for the Kleros events site found on Kleros socials and team channels. Format and rules, including https-only links: docs/social-feed.md. Applied hourly by sync_feed() in Supabase.",
+  "items": [
+    {
+      "id": "2026-10-27-x-2113020717965123759",
+      "kind": "material",
+      "source": "https://x.com/federicoast/status/2113020717965123759",
+      "event_slug": "who-judges-the-machines-buenos-aires-2026",
+      "material_kind": "social",
+      "title": "Federico Ast's recap with photos (Spanish)",
+      "speaker": "Federico Ast",
+      "url": "https://x.com/federicoast/status/2113020717965123759"
+    },
+    {
+      "id": "2026-10-27-yt-PLN-I9T8pYvjQ",
+      "kind": "material",
+      "source": "https://www.youtube.com/playlist?list=PLN-I9T8pYvjQ",
+      "event_slug": "who-judges-the-machines-buenos-aires-2026",
+      "material_kind": "link",
+      "title": "YouTube playlist: keynote, both panels and the full event (ES)",
+      "url": "https://www.youtube.com/playlist?list=PLN-I9T8pYvjQ"
+    },
+    {
+      "id": "2026-10-27-web-merge-madrid-agent-commerce",
+      "kind": "material",
+      "source": "https://www.mmerge.io/events/ai-x-blockchain-track-by-qvac-agent-commerce-the-new-generation-of-payments",
+      "event_slug": "merge-madrid-2026",
+      "material_kind": "link",
+      "title": "Agent Commerce: The New Generation of Payments (MERGE programme)",
+      "speaker": "Facundo Trotz",
+      "url": "https://www.mmerge.io/events/ai-x-blockchain-track-by-qvac-agent-commerce-the-new-generation-of-payments"
+    },
+    {
+      "id": "2026-10-27-yt-CU7q3yfqMKM",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=CU7q3yfqMKM",
+      "event_slug": "ethcc-8-cannes-2025",
+      "material_kind": "video",
+      "title": "TE Unplugged: Incentives at the Edge, Valuation and Verification in Crypto Protocols (roundtable)",
+      "speaker": "William George, with Krzysztof Paruch and JP (Kosmos Ventures)",
+      "url": "https://www.youtube.com/watch?v=CU7q3yfqMKM"
+    },
+    {
+      "id": "2026-10-27-web-slideshare-281590078",
+      "kind": "material",
+      "source": "https://www.slideshare.net/slideshow/building-ethical-ai-decentralized-justice-for-aligning-artificial-intelligence-with-human-values/281590078",
+      "event_slug": "ethcc-8-cannes-2025",
+      "material_kind": "slides",
+      "title": "Building Ethical AI: Decentralized Justice for Aligning Artificial Intelligence with Human Values (slides)",
+      "url": "https://www.slideshare.net/slideshow/building-ethical-ai-decentralized-justice-for-aligning-artificial-intelligence-with-human-values/281590078",
+      "speaker": "Federico Ast"
+    },
+    {
+      "id": "2026-10-27-yt-tU4Pj56YSk8",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=tU4Pj56YSk8",
+      "event_slug": "ethcc-9-cannes-2026",
+      "material_kind": "video",
+      "title": "Prediction Markets and Decentralized Courts: A New Architecture for Online Justice",
+      "speaker": "Federico Ast",
+      "url": "https://www.youtube.com/watch?v=tU4Pj56YSk8"
+    },
+    {
+      "id": "2026-10-27-yt-0-OR1OZF27g",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=0-OR1OZF27g",
+      "event_slug": "ethcc-9-cannes-2026",
+      "material_kind": "video",
+      "title": "Futarchy on Ethereum: Practical Learnings from the Kleros DAO",
+      "speaker": "Alexandre (0xAlex)",
+      "url": "https://www.youtube.com/watch?v=0-OR1OZF27g"
+    },
+    {
+      "id": "2026-10-27-yt-oPAejIxHCYA",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=oPAejIxHCYA",
+      "event_slug": "ethcc-9-cannes-2026",
+      "material_kind": "video",
+      "title": "Validator Redirected Revenue",
+      "speaker": "Clément Lesaege and Devansh Mehta",
+      "url": "https://www.youtube.com/watch?v=oPAejIxHCYA"
+    },
+    {
+      "id": "2026-10-27-yt-QCpmUGIRPOI",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=QCpmUGIRPOI",
+      "event_slug": "governance-day-devconnect-2025",
+      "material_kind": "video",
+      "title": "Beyond the Runway: Designing Sustainable Treasuries with Volatile Tokens (panel)",
+      "speaker": "Juan Samitier",
+      "url": "https://www.youtube.com/watch?v=QCpmUGIRPOI"
+    },
+    {
+      "id": "2026-10-27-web-slideshare-284101653",
+      "kind": "material",
+      "source": "https://www.slideshare.net/slideshow/el-movimiento-de-la-justicia-descentralizada-inteligencia-artificial-blockchain-y-el-futuro-del-derecho/284101653",
+      "event_slug": "up-guadalajara-masterclass-2025",
+      "material_kind": "slides",
+      "title": "El Movimiento de la Justicia Descentralizada: Inteligencia Artificial, Blockchain y el Futuro del Derecho (slides, ES)",
+      "url": "https://www.slideshare.net/slideshow/el-movimiento-de-la-justicia-descentralizada-inteligencia-artificial-blockchain-y-el-futuro-del-derecho/284101653",
+      "speaker": "Federico Ast"
+    },
+    {
+      "id": "2026-10-27-web-blockchaingov-newsletter-25",
+      "kind": "material",
+      "source": "https://blockchaingov.substack.com/p/the-blockchaingov-newsletter-25-september",
+      "event_slug": "blockchaingov-symposium-paris-2025",
+      "material_kind": "link",
+      "title": "Organiser recap with photos: BlockchainGov Newsletter 25, Symposium Edition",
+      "url": "https://blockchaingov.substack.com/p/the-blockchaingov-newsletter-25-september",
+      "speaker": "Federico Ast"
+    },
+    {
+      "id": "2026-10-27-yt-kfr_IoXjMUk",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=kfr_IoXjMUk",
+      "event_slug": "ethcon-argentina-2025",
+      "material_kind": "video",
+      "title": "¿Por qué Ethereum? Panel (ES)",
+      "speaker": "Federico Ast, with Facundo Spagnuolo and Romina Sejas",
+      "url": "https://www.youtube.com/watch?v=kfr_IoXjMUk"
+    },
+    {
+      "id": "2026-10-27-yt-VYbYCItbBxM",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=VYbYCItbBxM",
+      "event_slug": "cifile-webinar-crowds-and-algorithms-2026",
+      "material_kind": "video",
+      "title": "Between Crowds and Algorithms: Decentralized Justice in the Age of AI (full webinar)",
+      "speaker": "Federico Ast and Abbas Poorhashemi",
+      "url": "https://www.youtube.com/watch?v=VYbYCItbBxM"
+    },
+    {
+      "id": "2026-10-27-yt-VG-h95Ap-5M",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=VG-h95Ap-5M",
+      "event_slug": "justicia-descentralizada-en-accion-webinar-2026",
+      "material_kind": "video",
+      "title": "Justicia Descentralizada en Acción: ciudades argentinas resuelven disputas con jurados ciudadanos (webinar, ES)",
+      "speaker": "Federico Ast, Facundo Trotz, María Fernanda Díaz, María Alejandra Tomasone and Sergio Mohadeb",
+      "url": "https://www.youtube.com/watch?v=VG-h95Ap-5M"
+    },
+    {
+      "id": "2026-10-27-yt-ag6Sye1EM6U",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=ag6Sye1EM6U",
+      "event_slug": "4s-toronto-2026",
+      "material_kind": "video",
+      "title": "William George recaps the 4S Toronto panel (Kleros Live Stream, 14 Oct 2026)",
+      "speaker": "William George",
+      "url": "https://www.youtube.com/watch?v=ag6Sye1EM6U&t=1307s"
+    },
+    {
+      "id": "2026-10-27-yt-P7Zp-QC2wQM",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=P7Zp-QC2wQM",
+      "event_slug": "kleros-ai-uk-tour-kings-college-2026",
+      "material_kind": "video",
+      "title": "King's College London recap (Kleros Live Stream, 17 Jun 2026)",
+      "speaker": "William George",
+      "url": "https://www.youtube.com/watch?v=P7Zp-QC2wQM&t=464s"
+    },
+    {
+      "id": "2026-10-27-web-ierr25-paper-7",
+      "kind": "material",
+      "source": "https://www.researchretreat.org/papers/paper/?venue=ierr25&id=7",
+      "event_slug": "ierr-demo-day-2025",
+      "material_kind": "doc",
+      "title": "Soulbound Token Weighted Pairwise Evaluation (research abstract)",
+      "url": "https://www.researchretreat.org/papers/paper/?venue=ierr25&id=7",
+      "speaker": "William George"
+    },
+    {
+      "id": "2026-10-27-web-ierr25-video-7",
+      "kind": "material",
+      "source": "https://www.researchretreat.org/papers/paper/?venue=ierr25&id=7",
+      "event_slug": "ierr-demo-day-2025",
+      "material_kind": "video",
+      "title": "Soulbound Token Weighted Pairwise Evaluation (talk recording)",
+      "url": "https://drive.google.com/file/d/19_fGl9MoibeA3dZK_bn-mfrL9yPJWi4I/view",
+      "speaker": "William George"
+    },
+    {
+      "id": "2026-10-27-web-externado-ast-2025",
+      "kind": "material",
+      "source": "https://www.uexternado.edu.co/departamento-de-derecho-de-los-negocios/el-profesor-federico-ast-en-la-especializacion-en-innovacion-legal/",
+      "event_slug": "externado-legal-innovation-workshop-2025",
+      "material_kind": "link",
+      "title": "Universidad Externado article with photo gallery (ES)",
+      "url": "https://www.uexternado.edu.co/departamento-de-derecho-de-los-negocios/el-profesor-federico-ast-en-la-especializacion-en-innovacion-legal/",
+      "speaker": "Federico Ast"
+    },
+    {
+      "id": "2026-10-27-yt-ha2v91yZ3vE",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=ha2v91yZ3vE",
+      "event_slug": "neuchatel-blockchain-dispute-resolution-2025",
+      "material_kind": "video",
+      "title": "Présentation de Kleros (FR)",
+      "speaker": "Federico Ast",
+      "url": "https://www.youtube.com/watch?v=ha2v91yZ3vE"
+    },
+    {
+      "id": "2026-10-27-web-arbtech-kcl-hackathon",
+      "kind": "material",
+      "source": "https://www.arbtech.io/collaborations/designing-the-future-of-justice-arbtech-at-kings-college-london-hackathon",
+      "event_slug": "from-idea-to-impact-legaltech-workshop-2025",
+      "material_kind": "link",
+      "title": "ArbTech recap with video: Designing the Future of Justice at King's College London",
+      "url": "https://www.arbtech.io/collaborations/designing-the-future-of-justice-arbtech-at-kings-college-london-hackathon",
+      "speaker": "Federico Ast and William George"
+    },
+    {
+      "id": "2026-10-27-web-medlab-conflict-systems",
+      "kind": "material",
+      "source": "https://www.colorado.edu/lab/medlab/2026/08/12/conflict-systems",
+      "event_slug": "colorado-online-dispute-systems-workshop-2026",
+      "material_kind": "doc",
+      "title": "Conflict Systems: the MEDLab zine from the workshop, with a Kleros showcase",
+      "url": "https://www.colorado.edu/lab/medlab/2026/08/12/conflict-systems"
+    },
+    {
+      "id": "2026-10-27-yt-0sW3QgNfH4I",
+      "kind": "material",
+      "source": "https://www.youtube.com/watch?v=0sW3QgNfH4I",
+      "event_slug": "stanford-blockchain-governance-summit-2025",
+      "material_kind": "video",
+      "title": "William George recaps his talk on 51% attacks (Kleros Community Call, 14 May 2025)",
+      "speaker": "William George",
+      "url": "https://www.youtube.com/watch?v=0sW3QgNfH4I&t=983s"
+    },
+    {
+      "id": "2026-10-28-luma-qewnqhas",
+      "kind": "event",
+      "source": "https://luma.com/qewnqhas",
+      "event": {
+        "slug": "ground-truth-mumbai",
+        "description": "A Devcon 8 side event in Mumbai (BKC). It is separate from Devcon, so no Devcon ticket is needed. A networking dinner on queryable onchain data, prediction markets, agent infrastructure and onchain justice, co-hosted by Kleros with Arkiv Network (by Golem Network) and Web3 Mumbai. Programme (IST): doors open at 18:00, the three hosts give a welcome toast at 18:45, and at 19:00 Kleros and Arkiv hold a fireside chat, \"Truth for Machines: Who keeps the record, who settles the dispute?\", on how agents and markets share data, build identity and reputation, and resolve disputes. Dinner and open networking follow at 19:30, the results of the evening's prediction market are announced at 21:15, and the event closes at 22:00. Free to attend; the hosts approve registrations. Wei Wei Ooi is a Luma co-host."
+      }
+    },
+    {
+      "id": "2026-10-28-yt-f8Y6EduCQR0",
+      "kind": "material",
+      "source": "https://www.youtube.com/shorts/f8Y6EduCQR0",
+      "event_slug": "who-judges-the-machines-buenos-aires-2026",
+      "material_kind": "video",
+      "title": "¿Quién juzga a las máquinas? El evento en dos minutos (two-minute recap, Spanish)",
+      "url": "https://www.youtube.com/shorts/f8Y6EduCQR0"
+    }
+  ]
+}

@@ -1,0 +1,1089 @@
+diff --git a/README.md b/README.md
+index 58d86e2..5e90a24 100644
+--- a/README.md
++++ b/README.md
+@@ -1,5 +1,11 @@
+ # Truth Pays: Kickback-style deposits for Luma
+ 
++Multi-event continuation: [canonical project brain](../../PROJECT_BRAIN.md). The unified local product
++lives at the workspace root; this directory preserves v7 and its historical deployment. Follow the
++updated [event-bound import workflow](docs/import-provenance.md): both raw import stages require
++`--provenance-review`, and verified/claims CSV sidecars must be retained. Legacy examples below need
++that additional review argument. Historical policy, deployment inputs and Solidity are unchanged.
++
+ Guests who want a guaranteed spot send a **refundable deposit in ETH on Ethereum mainnet** (the amount is `deposit` in `config.json`: 0.01 ETH for now, about $23 on 27 Oct 2026). Guests who show up get their deposit back, **plus an equal share of the no-shows' deposits**. Everyone else can still request a free spot, which the hosts approve by hand. A staker who was there but missed at check-in can challenge the attendance list on **Kleros**.
+ 
+ ```
+@@ -55,9 +61,12 @@ All the owner transactions are also written out as **Safe Transaction Builder**
+ ## Setup
+ 
+ ```bash
+-npm install
++npm ci --ignore-scripts
+ npm run compile
+ npm test            # ~4 min, runs on a local in-memory chain
++npx playwright install chromium
++npm run test:site
++npm run test:console
+ cp -n config.example.json config.json   # only if config.json is missing; then fill it in
+ ```
+ 
+@@ -200,7 +209,7 @@ After the list is posted, the same view is how challenges work: a staker left of
+ 
+ The deposit address is compiled into the page (`npm run site` writes `site/dist/index.html` from `config.json`); it is never read from the URL, so a look-alike link can't redirect deposits. Re-run after deploying. `npm run site -- --preview` builds a page without an address.
+ 
+-**Hosting:** the page is served by GitHub Pages from the `gh-pages` branch (root) at https://weiwei-ooi.github.io/devcon-side-event-kickback/. It shows "Deposits open soon" until the live contract exists. After the live deploy, set `contract`, `receiver`, `deployBlock` and `depositOpensAt` in `config.json`, run `node scripts/build-site.mjs --out <dir>`, replace `index.html` on `gh-pages` with the result and push, open the page to check it shows the contract, and only then put the address and the page link on Luma. Browser test: `npm run test:site` (needs Playwright: `npm i --no-save playwright && npx playwright install chromium`).
++**Hosting:** the page is served by GitHub Pages from the `gh-pages` branch (root) at https://weiwei-ooi.github.io/devcon-side-event-kickback/. It shows "Deposits open soon" until the live contract exists. After the live deploy, set `contract`, `receiver`, `deployBlock` and `depositOpensAt` in `config.json`, run `node scripts/build-site.mjs --out <dir>`, replace `index.html` on `gh-pages` with the result and push, open the page to check it shows the contract, and only then put the address and the page link on Luma. Browser test: `npm run test:site` (needs the pinned Playwright browser: `npx playwright install chromium`).
+ 
+ ## How a Kleros case works (Kleros Court v1 on Ethereum mainnet)
+ 
+diff --git a/console/index.html b/console/index.html
+index f3c2f28..ec6c465 100644
+--- a/console/index.html
++++ b/console/index.html
+@@ -390,8 +390,7 @@ async function checkConfigFresh() {
+ async function preflight() {
+   await checkConfigFresh();
+   const a = contractAddr();
+-  if (cfg.contract && a.toLowerCase() !== cfg.contract.toLowerCase() &&
+-      !confirm(`The address box (${a}) is NOT the contract in the config (${cfg.contract}). Continue with ${short(a)} anyway?`))
++  if (cfg.contract && a.toLowerCase() !== cfg.contract.toLowerCase())
+     throw new Error("Stopped: contract address differs from the config.");
+ }
+ 
+@@ -409,18 +408,29 @@ async function loadList(file) {
+   const dep = await c.depositAmount();
+   if (d.deposit === undefined || BigInt(d.deposit) !== dep)
+     throw new Error(`${file.slice(1)} was made for ${d.deposit === undefined ? "an unknown deposit" : "a deposit of " + eth(BigInt(d.deposit))}, but this contract takes ${eth(dep)}. Ask Claude to fix the deposit in the config and re-check the Luma list.`);
++  await checkArtifact(d, c);
+   const now = await Promise.all(d.items.map((i) => c.status(i.wallet)));
+   const changed = d.items.filter((i, k) => Number(now[k]) !== Number(i.status));
+   if (changed.length) throw new Error(`${file.slice(1)} is out of date (${changed.length} guest(s) changed since it was made, e.g. ${changed[0].name || short(changed[0].wallet)}). Ask Claude to re-check the Luma list.`);
+   return d.items;
+ }
+ 
++async function checkArtifact(d, c) {
++  if (!cfg.eventId) return; // Historical single-event console retains its contract/chain/deposit checks.
++  if (d.eventId !== cfg.eventId || d.abiVersion !== (cfg.abiVersion || "v7") || d.configHash !== settings.provenanceConfigHash)
++    throw new Error("Artifact event/version/configuration mismatch. Rebuild the import for this event.");
++  if (d.owner !== await c.owner()) throw new Error("The contract owner changed. Rebuild this stale plan.");
++  if (!d.blockHash || (await rp.getBlock(d.block))?.hash !== d.blockHash) throw new Error("Artifact snapshot changed. Rebuild this stale plan.");
++}
++
+ // Simulate first (plain-language error before any wallet popup), estimate with the public RPC,
+ // then ask the wallet only to sign and send. Waits for the receipt via the public RPC.
+ // The transaction carries the chainId, so the wallet refuses it on any other network.
+-async function sendTx(label, txReq, { onSent } = {}) {
++async function sendTx(label, txReq, { onSent, revalidate } = {}) {
++  await checkConfigFresh();
+   await ensureNetwork();
+   const from = account;
++  if (Number(await rp.send("eth_chainId", [])) !== chain.chainId) throw new Error("The RPC network changed. Reload the selected event before signing.");
+   try { await rp.call({ ...txReq, from }); } catch (e) { throw new Error(explain(e)); }
+   const gas = await rp.estimateGas({ ...txReq, from });
+   const fee = await rp.getFeeData();
+@@ -428,6 +438,11 @@ async function sendTx(label, txReq, { onSent } = {}) {
+   const req = { ...txReq, chainId: chain.chainId, gasLimit: margin > TX_GAS_CAP ? TX_GAS_CAP : margin };
+   if (fee.maxFeePerGas) { req.maxFeePerGas = fee.maxFeePerGas * 2n; req.maxPriorityFeePerGas = fee.maxPriorityFeePerGas ?? 0n; }
+   else if (fee.gasPrice) req.gasPrice = (fee.gasPrice * 12n) / 10n;
++  await checkConfigFresh();
++  await ensureNetwork();
++  const accounts = await window.ethereum.request({ method: "eth_accounts" });
++  if (!accounts?.[0] || accounts[0].toLowerCase() !== from.toLowerCase()) throw new Error("The connected wallet changed. Review a new action from this wallet.");
++  await revalidate?.();
+   log(`Confirm in your wallet: ${label}…`);
+   const tx = await signer.sendTransaction(req);
+   log("Sent: " + chain.explorer + "/tx/" + tx.hash);
+@@ -490,7 +505,7 @@ async function scanLogs(address, topic, fromBlock) {
+ // ------------------------------------------------------------ actions
+ // Deploys sent from this console are remembered in this browser (per mode and network), so a second
+ // Deploy click, even after a reload, asks before creating a second contract.
+-const DEPLOYS_KEY = () => `truthpays.deploys.${mode}.${chain.chainId}`;
++const DEPLOYS_KEY = () => `truthpays.deploys.${mode}.${chain.chainId}${cfg.eventId ? "." + cfg.eventId : ""}`;
+ let sessionDeploys = []; // in case browser storage is blocked
+ function pastDeploys() {
+   let stored = [];
+@@ -764,13 +779,21 @@ async function postList() {
+     throw new Error("This attendance list was built for a different contract or network. Ask Claude to rebuild it.");
+   if (BigInt(plan.stakers) !== state.count) throw new Error(`The plan counts ${plan.stakers} stakers but the contract has ${state.count}. Ask Claude to rebuild it.`);
+   const c = new ethers.Contract(contractAddr(), artifact.abi, rp);
++  const revalidate = async () => {
++    await checkArtifact(plan, c);
++    if (!cfg.eventId) return;
++    const current = [];
++    for (const w of await c.stakers()) if (Number(await c.status(w)) === 1) current.push(ethers.getAddress(w));
++    if (JSON.stringify([...new Set(current)].sort()) !== JSON.stringify(plan.stakerWallets)) throw new Error("The registered staker set changed. Rebuild this stale attendance plan.");
++  };
++  await revalidate();
+   const share = await c.previewShare(plan.attendees.length);
+   if (share.toString() !== String(plan.share)) throw new Error(`The share changed (plan ${eth(BigInt(plan.share))}, now ${eth(share)}). Ask Claude to rebuild it.`);
+   const msg = `Post ${plan.attendees.length} of ${state.count} stakers as attendees, ${where()}?\nEach would get ${eth(share)} (pool ${eth(state.dep * state.count)}), unless challenges add people.\nThis opens the 1-day challenge window and can only be done once.`;
+   $("postInfo").textContent = `${plan.attendees.length} attendees × ${eth(share)}`;
+   const typed = prompt(`${msg}\n\nType POST to continue.`);
+   if (typed !== "POST") { log("Attendance list not posted."); return; }
+-  await sendTx("post the attendance list", call("postAttendance", [plan.attendees, share]));
++  await sendTx("post the attendance list", call("postAttendance", [plan.attendees, share]), { revalidate });
+   log("✅ Attendance list posted. The 1-day challenge window is open.", "ok");
+   await refresh();
+ }
+diff --git a/package-lock.json b/package-lock.json
+index 0a6aae4..0958b3b 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -14,7 +14,8 @@
+         "solc": "0.8.28"
+       },
+       "devDependencies": {
+-        "ganache": "^7.9.2"
++        "ganache": "^7.9.2",
++        "playwright": "1.56.1"
+       }
+     },
+     "node_modules/@adraffy/ens-normalize": {
+@@ -131,6 +132,21 @@
+         }
+       }
+     },
++    "node_modules/fsevents": {
++      "version": "2.3.2",
++      "resolved": "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz",
++      "integrity": "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": "^8.16.0 || ^10.6.0 || >=11.0.0"
++      }
++    },
+     "node_modules/ganache": {
+       "version": "7.9.2",
+       "resolved": "https://registry.npmjs.org/ganache/-/ganache-7.9.2.tgz",
+@@ -4065,6 +4081,38 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/playwright": {
++      "version": "1.56.1",
++      "resolved": "https://registry.npmjs.org/playwright/-/playwright-1.56.1.tgz",
++      "integrity": "sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "playwright-core": "1.56.1"
++      },
++      "bin": {
++        "playwright": "cli.js"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "optionalDependencies": {
++        "fsevents": "2.3.2"
++      }
++    },
++    "node_modules/playwright-core": {
++      "version": "1.56.1",
++      "resolved": "https://registry.npmjs.org/playwright-core/-/playwright-core-1.56.1.tgz",
++      "integrity": "sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "bin": {
++        "playwright-core": "cli.js"
++      },
++      "engines": {
++        "node": ">=18"
++      }
++    },
+     "node_modules/semver": {
+       "version": "5.7.2",
+       "resolved": "https://registry.npmjs.org/semver/-/semver-5.7.2.tgz",
+diff --git a/package.json b/package.json
+index 7e8dad8..f853197 100644
+--- a/package.json
++++ b/package.json
+@@ -4,7 +4,7 @@
+   "description": "Kickback-style refundable ETH deposits on Ethereum mainnet for Luma events, with Kleros attendance challenges",
+   "scripts": {
+     "compile": "node scripts/compile.mjs",
+-    "test": "node --test --test-concurrency=1 --test-timeout=600000 test/contract.test.mjs test/kickback.test.mjs",
++    "test": "node --test --test-concurrency=1 --test-timeout=600000 test/contract.test.mjs test/kickback.test.mjs test/provenance.test.mjs",
+     "verify": "node scripts/verify-deposits.mjs",
+     "payout": "node scripts/build-payout.mjs",
+     "deploy": "node scripts/deploy.mjs",
+@@ -14,7 +14,9 @@
+     "site": "node scripts/build-site.mjs",
+     "test:site": "node test/site.e2e.mjs",
+     "test:console": "node test/console.e2e.mjs",
+-    "test:fork": "node test/fork.e2e.mjs"
++    "test:fork": "node test/fork.e2e.mjs",
++    "test:provenance": "node --test test/provenance.test.mjs",
++    "review:import": "node scripts/review-import.mjs"
+   },
+   "license": "MIT",
+   "dependencies": {
+@@ -23,8 +25,12 @@
+     "solc": "0.8.28"
+   },
+   "devDependencies": {
+-    "ganache": "^7.9.2"
++    "ganache": "^7.9.2",
++    "playwright": "1.56.1"
+   },
+   "type": "module",
+-  "private": true
++  "private": true,
++  "engines": {
++    "node": ">=22"
++  }
+ }
+diff --git a/scripts/build-payout.mjs b/scripts/build-payout.mjs
+index ab3d604..d2af084 100644
+--- a/scripts/build-payout.mjs
++++ b/scripts/build-payout.mjs
+@@ -24,6 +24,7 @@
+ import fs from "node:fs";
+ import path from "node:path";
+ import { ethers } from "ethers";
++import { identity, configHash, reviewSource, readBoundCsv, fileHash } from "./provenance.mjs";
+ import {
+   args, loadConfig, provider, readCsv, writeCsv, writeJson, detectColumns, normAddress,
+   safeBatch, loadAbi, fmt, fmtEth, STATUS, lumaDecision, uncell,
+@@ -43,13 +44,15 @@ const OUTPUTS = ["attendees.json", "payout-plan.json", "payout.csv", "payout-sum
+ for (const f of OUTPUTS) fs.rmSync(path.join(out, f), { force: true });
+ if (!cfg.contract) throw new Error('Set "contract" in the config: the stakers and the pool are read from the deployed contract.');
+ const verifiedFile = a.verified ?? `${out}/verified.csv`;
+-const verified = readCsv(verifiedFile);
++const verified = readBoundCsv(verifiedFile, cfg, "verified").rows;
+ // every registration that verified a wallet's deposit, including ones flagged as duplicates
+ const claimsFile = a.claims ?? path.join(path.dirname(verifiedFile), "claims.csv");
+-const claims = fs.existsSync(claimsFile) ? readCsv(claimsFile) : [];
++const claims = fs.existsSync(claimsFile) ? readBoundCsv(claimsFile, cfg, "claims").rows : [];
+ if (!fs.existsSync(claimsFile)) console.warn(`⚠️  ${claimsFile} not found: matching check-ins through ${verifiedFile} only. Re-run verify-deposits to create it.`);
+ 
+ // Who checked in?
++const sources = [reviewSource(a.checkins, cfg, "checkins", a["provenance-review"])];
++console.warn("Attendance origin is organiser-reviewed, not independently verified. Personal history and booth/merch state are not payout evidence.");
+ const rows = readCsv(a.checkins);
+ const col = detectColumns(Object.keys(rows[0] ?? {}), cfg.columns);
+ if (!col.checkedIn) throw new Error("No checked_in_at column found in the Luma export");
+@@ -64,6 +67,7 @@ for (const r of rows) {
+ }
+ let extraRows = [];
+ if (a["extra-checkins"]) {
++  sources.push(reviewSource(a["extra-checkins"], cfg, "manual", a["provenance-review"]));
+   extraRows = readCsv(a["extra-checkins"]);
+   const xc = detectColumns(Object.keys(extraRows[0] ?? {}), {});
+   if (!xc.email && !xc.wallet) throw new Error(`${a["extra-checkins"]}: needs an "email" or "wallet" column`);
+@@ -77,15 +81,19 @@ if (a["extra-checkins"]) {
+ // Stakers and the deposit come from the contract (the source of truth)
+ const contractAddr = ethers.getAddress(cfg.contract);
+ const { abi } = loadAbi("TruthPaysKickback");
+-const c = new ethers.Contract(contractAddr, abi, provider(cfg));
+-const all = await c.stakers();
+-const st = await Promise.all(all.map((w) => c.status(w)));
++const prov = provider(cfg);
++if (Number(await prov.send("eth_chainId", [])) !== Number(cfg.chainId)) throw new Error("RPC chain mismatch; no attendance plan produced");
++const c = new ethers.Contract(contractAddr, abi, prov);
++const snapshotBlock = await prov.getBlockNumber();
++const blockTag = { blockTag: snapshotBlock };
++const all = await c.stakers(blockTag);
++const st = await Promise.all(all.map((w) => c.status(w, blockTag)));
+ const stakerWallets = [...new Set(all.filter((_, i) => Number(st[i]) === STATUS.Staker).map((w) => ethers.getAddress(w)))];
+-const count = await c.stakerCount();
++const count = await c.stakerCount(blockTag);
+ if (BigInt(stakerWallets.length) !== count) throw new Error(`On-chain staker list (${stakerWallets.length}) and stakerCount (${count}) disagree; stop and investigate`);
+-const deposit = await c.depositAmount();
++const deposit = await c.depositAmount(blockTag);
+ if (deposit !== cfg.depositUnits)
+-  console.warn(`⚠️  The contract's deposit is ${fmt(deposit)} ETH but the config says ${cfg.deposit} ETH: using the contract's amount. Fix "deposit" in the config.`);
++  throw new Error(`The contract's deposit is ${fmt(deposit)} ETH but the config says ${cfg.deposit} ETH; fix the configuration and regenerate verified intermediates.`);
+ const approved = verified.filter((v) => lumaDecision(v.approval) === "approved").map((v) => ethers.getAddress(v.wallet));
+ const missing = [...new Set(approved)].filter((w) => !stakerWallets.includes(w));
+ if (missing.length) console.warn(`⚠️  ${missing.length} approved wallets with a verified deposit are NOT registered on-chain and can't be paid: ${missing.join(", ")}`);
+@@ -121,7 +129,7 @@ const n = BigInt(stakerWallets.length);
+ const pool = deposit * n;
+ const share = attendees.length ? pool / BigInt(attendees.length) : 0n;
+ const dust = pool - share * BigInt(attendees.length);
+-if (attendees.length && (await c.previewShare(attendees.length)) !== share)
++if (attendees.length && (await c.previewShare(attendees.length, blockTag)) !== share)
+   throw new Error("The contract computes a different share for this list; stop and investigate (is the config on the right contract?)");
+ 
+ if (!attendees.length) console.warn("⚠️  Nobody on the staker list checked in. Do not pay out; check the export first.");
+@@ -133,8 +141,12 @@ if (extraRows.length) {
+   for (const r of unmatchedExtra) console.log(`  no staker for door-list row: ${r.email || r.wallet}`);
+ }
+ writeJson(`${out}/payout-plan.json`, {
+-  contract: contractAddr,
+-  chainId: Number(cfg.chainId),
++  ...identity(cfg), configHash: configHash(cfg), parserVersion: "kickback-csv/v1", sources,
++  inputs: { verified: fileHash(verifiedFile), claims: fs.existsSync(claimsFile) ? fileHash(claimsFile) : null },
++  block: snapshotBlock, blockHash: (await prov.getBlock(snapshotBlock)).hash,
++  owner: await c.owner(blockTag),
++  stakerWallets: stakerWallets.slice().sort(),
++  generatedAt: new Date().toISOString(),
+   stakers: stakerWallets.length,
+   attendees: attendees.map((x) => x.wallet),
+   share: share.toString(), // wei: what postAttendance must be given
+@@ -147,7 +159,7 @@ writeCsv(
+   ["name", "email", "wallet", "attended", "payout"]
+ );
+ 
+-const summary = `# Truth Pays: deposit settlement
++const summary = `# ${cfg.eventName || identity(cfg).eventId}: deposit settlement
+ 
+ | | |
+ |---|---|
+@@ -164,7 +176,7 @@ console.log(summary);
+ 
+ if (attendees.length) {
+   const iface = new ethers.Interface(abi);
+-  writeJson(`${out}/safe-post-attendance.json`, safeBatch(cfg, `Truth Pays: post ${attendees.length} attendees`, [
++  writeJson(`${out}/safe-post-attendance.json`, safeBatch(cfg, `${cfg.eventName || identity(cfg).eventId}: post ${attendees.length} attendees`, [
+     { to: contractAddr, data: iface.encodeFunctionData("postAttendance", [attendees.map((x) => x.wallet), share]) },
+   ]));
+   console.log(`Next: click "Post attendance list" in the console (reads ${out}/payout-plan.json), or upload ${out}/safe-post-attendance.json in Safe.`);
+diff --git a/scripts/build-site.mjs b/scripts/build-site.mjs
+index 9f4afe3..03521a2 100644
+--- a/scripts/build-site.mjs
++++ b/scripts/build-site.mjs
+@@ -28,12 +28,18 @@ if (!a.preview && !(Number.isInteger(deployBlock) && deployBlock > 0))
+ // every read on the page goes through this RPC, before a wallet is even connected
+ if (!/^https?:\/\//.test(cfg.rpcUrl || "")) fail('No "rpcUrl" in the config: the page needs a public RPC to read the contract.');
+ const k = klerosConfig(cfg);
++const historical = String(cfg.contract).toLowerCase() === "0xd5c6a73c05fa431c748781dabaa99fe2590d677d" || (!cfg.eventId && /^Truth Pays/.test(cfg.eventName || ""));
++const lumaUrl = cfg.lumaUrl || (historical ? "https://luma.com/qewnqhas" : "");
++if (lumaUrl && !/^https:\/\/luma\.com\/[a-zA-Z0-9/_-]+$/.test(lumaUrl)) fail("lumaUrl must be an explicit HTTPS Luma event URL");
+ const site = {
++  eventId: cfg.eventId || `kickback:${cfg.chainId}:${String(cfg.contract || cfg.receiver).toLowerCase()}`,
++  environment: cfg.mode || "local",
++  eventName: cfg.eventName || "Event",
+   contract: a.preview ? "" : cfg.contract,
+   deployBlock: a.preview ? 0 : deployBlock,
+   chainId: Number(cfg.chainId),
+   // for wallet_addEthereumChain; the page's own text says "Ethereum mainnet"
+-  chainName: cfg.chainId === 1 ? "Ethereum" : cfg.chainName,
++  chainName: cfg.chainName,
+   rpc: cfg.rpcUrl,
+   // eth_getLogs is asked for this many blocks at a time (public mainnet RPCs refuse long ranges)
+   logChunk: cfg.logChunk,
+@@ -41,7 +47,7 @@ const site = {
+   // the deposit in ETH for the text, and in wei for the checks and the transaction
+   deposit: ethers.formatEther(cfg.depositUnits).replace(/\.0$/, ""),
+   depositWei: cfg.depositUnits.toString(),
+-  lumaUrl: cfg.lumaUrl ?? "https://luma.com/qewnqhas",
++  lumaUrl,
+   // Kleros Court v1: the Dispute Resolver the contract must use (checked on the page), KlerosLiquid, the
+   // court site, and the IPFS upload service and gateway for evidence
+   klerosResolver: k.disputeResolver,
+@@ -54,7 +60,18 @@ const site = {
+ const src = fs.readFileSync(new URL("../site/index.html", import.meta.url), "utf8");
+ const start = src.indexOf("/*CONFIG*/"), end = src.indexOf("/*END CONFIG*/");
+ if (start < 0 || end < 0) throw new Error("CONFIG markers missing in site/index.html");
+-const html = src.slice(0, start) + `/*CONFIG*/\nconst CONFIG = ${JSON.stringify(site, null, 2)};\n` + src.slice(end);
++const escapeHtml = (v) => String(v ?? "").replace(/[&<>"']/g, (s) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[s]);
++let html = src.slice(0, start) + `/*CONFIG*/\nconst CONFIG = ${JSON.stringify(site, null, 2).replace(/</g, "\\u003c")};\n` + src.slice(end);
++if (!historical) {
++  html = html.replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(site.eventName)} · Deposit</title>`)
++    .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${escapeHtml(site.eventName)} committed spot and attendance disputes.">`)
++    .replace(/<header>[\s\S]*?<\/header>/, `<header><span class="eyebrow">Committed Spot deposit · ${escapeHtml(site.chainName)}</span><h1>${escapeHtml(site.eventName)}</h1><div class="meta"><span>${escapeHtml(cfg.scheduleLabel || cfg.eventStart || "See event schedule")}${cfg.timezone ? " · " + escapeHtml(cfg.timezone) : ""}</span><span>${escapeHtml(cfg.venue || "See event venue")}</span><span>${escapeHtml(cfg.hosts || "Event organisers")}</span></div></header>`);
++}
++// Static HTML copy uses the selected chain; JavaScript uses CONFIG.chainName at runtime.
++const scriptStart = html.indexOf("<script>");
++if (scriptStart > 0) html = html.slice(0, scriptStart).replace(/Ethereum mainnet/g, escapeHtml(site.chainName)) + html.slice(scriptStart);
++html = html.replace('href="https://luma.com/qewnqhas"', `href="${escapeHtml(site.lumaUrl || "#")}"`);
++if (!site.lumaUrl) html = html.replace('<div class="row"><a id="luma-link"', '<div class="row" hidden><a id="luma-link"');
+ fs.mkdirSync(out, { recursive: true });
+ fs.writeFileSync(path.join(out, "index.html"), html);
+ console.log(`Wrote ${path.join(out, "index.html")} for contract ${site.contract || "(preview, no address)"} on chain ${site.chainId}, deposit ${site.deposit} ETH`);
+diff --git a/scripts/console.mjs b/scripts/console.mjs
+index 29b3003..ffb78e9 100644
+--- a/scripts/console.mjs
++++ b/scripts/console.mjs
+@@ -15,7 +15,7 @@ import path from "node:path";
+ import { fileURLToPath } from "node:url";
+ import { exec } from "node:child_process";
+ import { ethers } from "ethers";
+-import { loadConfig, klerosConfig, deployArgs, KLEROS } from "./lib.mjs";
++import { consoleSettings } from "./console-support.mjs";
+ 
+ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+ const PORT = Number(process.env.PORT || 8787);
+@@ -42,37 +42,7 @@ if (!fs.existsSync(path.join(root, "build/TruthPaysKickback.json"))) {
+ 
+ // The config as the scripts see it, read fresh on every request. `configHash` lets the page check
+ // that these settings come from the same config text it was opened with.
+-function settings() {
+-  const file = path.join(root, CONFIG);
+-  let text;
+-  try { text = fs.readFileSync(file, "utf8"); } catch { return { error: `${CONFIG} not found. Ask Claude to create it.` }; }
+-  const out = { configHash: ethers.id(text) };
+-  let cfg, k;
+-  try {
+-    cfg = loadConfig(file);
+-    k = klerosConfig(cfg);
+-  } catch (e) {
+-    return { ...out, error: `${CONFIG}: ${e.message}` };
+-  }
+-  Object.assign(out, {
+-    chainId: cfg.chainId,
+-    chainName: cfg.chainName,
+-    rpcUrl: cfg.rpcUrl,
+-    explorer: cfg.explorer,
+-    symbol: cfg.symbol,
+-    deposit: cfg.deposit,
+-    depositWei: cfg.depositUnits,
+-    poolCap: cfg.poolCap ?? null,
+-    poolCapWei: cfg.poolCapUnits ?? null,
+-    logChunk: cfg.logChunk,
+-    deployBlock: cfg.deployBlock ?? null,
+-    kleros: k,
+-    knownKleros: KLEROS[cfg.chainId] ?? null,
+-  });
+-  // the owner is the connected wallet: the page puts it in place of this placeholder
+-  try { out.deployArgs = deployArgs(cfg, ethers.ZeroAddress); } catch (e) { out.deployError = e.message; }
+-  return out;
+-}
++function settings() { return consoleSettings(path.join(root, CONFIG)); }
+ const toJson = (v) => JSON.stringify(v, (_, x) => (typeof x === "bigint" ? x.toString() : x));
+ 
+ http
+diff --git a/scripts/lib.mjs b/scripts/lib.mjs
+index 4d81d6c..700ab5d 100644
+--- a/scripts/lib.mjs
++++ b/scripts/lib.mjs
+@@ -76,6 +76,9 @@ function parseEth(cfg, key, file) {
+  */
+ export function loadConfig(file = "config.json") {
+   const cfg = JSON.parse(fs.readFileSync(file, "utf8"));
++  const abiVersion = cfg.abiVersion ?? "v7";
++  if (abiVersion !== "v7" || (cfg.contractVersion && cfg.contractVersion !== "v7"))
++    throw new Error(`${file}: unsupported contract/ABI version; only the preserved v7 adapter is available`);
+   if (cfg.token || cfg.tokenDecimals)
+     throw new Error(`${file} still has "token"/"tokenDecimals": deposits are in ETH now. Remove them and set "deposit" in ETH (e.g. "0.01").`);
+   const chain = CHAINS[cfg.chain];
+@@ -99,6 +102,8 @@ export function loadConfig(file = "config.json") {
+   const logChunk = Number(cfg.logChunk);
+   return {
+     ...cfg,
++    abiVersion,
++    contractVersion: "v7",
+     chainId,
+     chainName: cfg.chainName ?? chain?.name ?? String(cfg.chain ?? "custom network"),
+     rpcUrl: cfg.rpcUrl || (chain ? DEFAULT_RPC : ""),
+@@ -212,7 +217,7 @@ export function renderCase({ pieces, slots }, wallet, contract) {
+  */
+ export function caseTemplate(cfg, owner) {
+   const k = cfg.kleros ?? {};
+-  const file = path.resolve(ROOT, k.metaEvidenceTemplate || DEFAULT_METAEVIDENCE_TEMPLATE);
++  const file = path.resolve(ROOT, k.metaEvidenceTemplate || (cfg.eventId ? "docs/metaevidence.event-v1.template.json" : DEFAULT_METAEVIDENCE_TEMPLATE));
+   let raw;
+   try { raw = fs.readFileSync(file, "utf8"); } catch { throw new Error(`Case description template not found: ${file} ("kleros.metaEvidenceTemplate")`); }
+   const organiser = cfg.owner && ethers.isAddress(cfg.owner) ? ethers.getAddress(cfg.owner) : owner && owner !== ethers.ZeroAddress ? ethers.getAddress(owner) : "";
+@@ -224,6 +229,10 @@ export function caseTemplate(cfg, owner) {
+     "{{owner}}": organiser,
+     "{{ownerLower}}": organiser.toLowerCase(),
+     "{{explorer}}": cfg.explorer ?? "",
++    "{{eventStart}}": cfg.eventStart ?? "See immutable attendance policy",
++    "{{timezone}}": cfg.timezone ?? "See immutable attendance policy",
++    "{{venue}}": cfg.venue ?? "See immutable attendance policy",
++    "{{chainName}}": cfg.chainName ?? "Ethereum mainnet",
+   };
+   const text = raw.replace(/\{\{\w+\}\}/g, (m) => {
+     if (m in RUNTIME_SLOTS) return m;
+@@ -287,7 +296,7 @@ export function klerosConfig(cfg) {
+     jurors,
+     extraData: ethers.AbiCoder.defaultAbiCoder().encode(["uint256", "uint256"], [court, jurors]),
+     policyURI: k.policyURI ?? "",
+-    metaEvidenceTemplate: k.metaEvidenceTemplate || DEFAULT_METAEVIDENCE_TEMPLATE,
++    metaEvidenceTemplate: k.metaEvidenceTemplate || (cfg.eventId ? "docs/metaevidence.event-v1.template.json" : DEFAULT_METAEVIDENCE_TEMPLATE),
+     courtUrl: k.courtUrl || known.court || "https://court.kleros.io",
+     ipfsUpload: k.ipfsUpload || KLEROS_IPFS_UPLOAD,
+     ipfsGateway: k.ipfsGateway || KLEROS_IPFS_GATEWAY,
+@@ -863,8 +872,10 @@ export function lumaDecision(approval) {
+   return "pending"; // pending_approval, waitlist, invited, empty…
+ }
+ 
+-export function loadAbi(name) {
+-  const p = new URL(`../build/${name}.json`, import.meta.url);
++export function loadAbi(name, version = "v7") {
++  if (name === "TruthPaysKickback" && version !== "v7") throw new Error(`Unsupported TruthPaysKickback ABI version: ${version}`);
++  // Historical deployments must never silently pick up a newly compiled global ABI.
++  const p = new URL(name === "TruthPaysKickback" ? `../abi/${version}/${name}.json` : `../build/${name}.json`, import.meta.url);
+   if (!fs.existsSync(p)) throw new Error("Run `npm run compile` first");
+   return JSON.parse(fs.readFileSync(p, "utf8"));
+ }
+diff --git a/scripts/owner.mjs b/scripts/owner.mjs
+index 5c9e543..33a125d 100644
+--- a/scripts/owner.mjs
++++ b/scripts/owner.mjs
+@@ -22,6 +22,7 @@
+ //   PRIVATE_KEY=0x… node scripts/owner.mjs sweep --to 0x…
+ import fs from "node:fs";
+ import { ethers } from "ethers";
++import { assertIdentity } from "./provenance.mjs";
+ import { args, loadConfig, provider, loadAbi, fmt, fmtEth, klerosConfig, gasLimitFor, ipfsPathOf, PHASES } from "./lib.mjs";
+ 
+ const CHALLENGE_STATES = ["None", "Waiting for a match", "In a Kleros dispute", "Resolved"];
+@@ -31,7 +32,10 @@ const cmd = a._[0];
+ const cfg = loadConfig(a.config ?? "config.json");
+ if (!cfg.contract) throw new Error('Set "contract" in config.json');
+ const prov = provider(cfg);
+-const signer = process.env.PRIVATE_KEY ? new ethers.Wallet(process.env.PRIVATE_KEY, prov) : null;
++// One CLI invocation can send several transactions (for example settle unmatched cases, then
++// release payouts). Track their nonces locally: a fast local node can mine the next transaction
++// before ethers' RPC cache expires, making a plain Wallet reuse the previous pending nonce.
++const signer = process.env.PRIVATE_KEY ? new ethers.NonceManager(new ethers.Wallet(process.env.PRIVATE_KEY, prov)) : null;
+ const { abi } = loadAbi("TruthPaysKickback");
+ const c = new ethers.Contract(cfg.contract, abi, signer ?? prov);
+ const readJson = (f) => JSON.parse(fs.readFileSync(f, "utf8"));
+@@ -65,6 +69,9 @@ async function checkedList(file) {
+     throw new Error(`The config says the deposit is ${cfg.deposit} ETH, but the contract was deployed with ${fmt(deposit)} ETH. Set "deposit" in the config to the contract's amount and re-run verify-deposits. Stopped.`);
+   if (BigInt(d.deposit) !== deposit)
+     throw new Error(`${file} was made for a deposit of ${fmt(BigInt(d.deposit))} ETH, but the contract takes ${fmt(deposit)} ETH. Re-run verify-deposits. Stopped.`);
++  assertIdentity(d, cfg, file);
++  if (d.owner !== await c.owner()) throw new Error(`${file}: owner changed; rebuild the stale plan`);
++  if (!d.blockHash || (await prov.getBlock(d.block))?.hash !== d.blockHash) throw new Error(`${file}: snapshot changed; rebuild the stale plan`);
+   const now = await Promise.all(d.items.map((i) => c.status(i.wallet)));
+   const changed = d.items.filter((i, k) => Number(now[k]) !== Number(i.status));
+   if (changed.length)
+@@ -124,6 +131,12 @@ switch (cmd) {
+     const plan = readJson(a.file ?? "out/payout-plan.json");
+     if (!plan.contract || plan.contract.toLowerCase() !== cfg.contract.toLowerCase()) throw new Error("payout-plan.json is for a different contract");
+     if (Number(plan.chainId) !== (await liveChainId())) throw new Error(`payout-plan.json was made for chain ${plan.chainId}, the RPC is on another one. Stopped.`);
++    assertIdentity(plan, cfg, "payout-plan.json");
++    if (plan.owner !== await c.owner()) throw new Error("payout-plan.json: owner changed; rebuild the stale plan");
++    const currentStakers = [];
++    for (const wallet of await c.stakers()) if (Number(await c.status(wallet)) === 1) currentStakers.push(ethers.getAddress(wallet));
++    if (JSON.stringify([...new Set(currentStakers)].sort()) !== JSON.stringify(plan.stakerWallets)) throw new Error("payout-plan.json: registered stakers changed; rebuild the stale plan");
++    if (!plan.blockHash || (await prov.getBlock(plan.block))?.hash !== plan.blockHash) throw new Error("payout-plan.json: snapshot changed; rebuild the stale plan");
+     const share = await c.previewShare(plan.attendees.length);
+     if (share.toString() !== plan.share) throw new Error(`Share on-chain is ${fmt(share)} ETH, plan says ${fmt(BigInt(plan.share))} ETH. Rebuild the payout.`);
+     console.log(`Posting ${plan.attendees.length} attendees (${fmtEth(share)} each if nobody is added)`);
+diff --git a/scripts/verify-deposits.mjs b/scripts/verify-deposits.mjs
+index 1393b50..a6bef73 100644
+--- a/scripts/verify-deposits.mjs
++++ b/scripts/verify-deposits.mjs
+@@ -27,6 +27,7 @@
+ import fs from "node:fs";
+ import path from "node:path";
+ import { ethers } from "ethers";
++import { identity, configHash, reviewSource, bindOutput, sidecarPath } from "./provenance.mjs";
+ import {
+   args, loadConfig, provider, readCsv, writeCsv, writeJson, verifyRegistrations, resolveClaims, UNREAD_CODES,
+   pairReturns, getLogsChunked, incomingDeposits, depKey, isContractCode, safeBatch, loadAbi, fmt, fmtEth, STATUS, MONEY_CODES, normAddress,
+@@ -43,7 +44,10 @@ const out = a.out ?? "out";
+ // A run that stops half-way must never leave the previous run's lists looking current.
+ const OUTPUTS = ["verified.csv", "issues.csv", "to-review.csv", "returns.csv", "unmatched.csv", "claims.csv",
+   "new-stakers.json", "refunds.json", "safe-register.json", "safe-refunds.json"];
+-for (const f of OUTPUTS) fs.rmSync(path.join(out, f), { force: true });
++for (const f of OUTPUTS) {
++  fs.rmSync(path.join(out, f), { force: true });
++  fs.rmSync(sidecarPath(path.join(out, f)), { force: true });
++}
+ 
+ const cfg = loadConfig(configFile);
+ 
+@@ -61,6 +65,7 @@ if (scanFrom === undefined && cfg.mode) {
+ }
+ 
+ const prov = provider(cfg);
++if (Number(await prov.send("eth_chainId", [])) !== Number(cfg.chainId)) throw new Error("RPC chain mismatch; no import produced");
+ 
+ // The deposit contract. Deposits are its own Deposited events, so without it there is nothing to check.
+ const kickbackAddr = cfg.receiver;
+@@ -81,7 +86,9 @@ if (onChainDeposit !== cfg.depositUnits) {
+   process.exit(1);
+ }
+ 
++const sourceReview = reviewSource(a.guests, cfg, "guests", a["provenance-review"]);
+ const rows = readCsv(a.guests);
++console.warn("Source origin is organiser-reviewed, not independently verified; hashes bind reviewed bytes only.");
+ console.log(`Loaded ${rows.length} registrations from ${a.guests}`);
+ 
+ const { results, columns } = await verifyRegistrations(prov, cfg, rows);
+@@ -296,27 +303,29 @@ for (const t of incoming.filter((x) => !claimedDep.has(depKey(x.tx, x.from)) &&
+ }
+ 
+ // ---------------------------------------------------------------- write everything
+-const vCols = ["name", "email", "ticket", "approval", "onchain", "wallet", "amount", "sent_at", "tx", "explorer", "note"];
+-writeCsv(`${out}/verified.csv`, verified, vCols);
++const vCols = ["name", "email", "ticket", "approval", "onchain", "wallet", "amount", "sent_at", "tx", "explorer", "note", "eventId", "chainId", "contract", "deposit", "abiVersion"];
++writeCsv(`${out}/verified.csv`, verified.map((r) => ({ ...identity(cfg), ...r })), vCols);
+ writeCsv(`${out}/issues.csv`, issues, ["code", ...vCols]);
+ writeCsv(`${out}/to-review.csv`, toReview, vCols);
+ writeCsv(`${out}/returns.csv`, returns, ["code", "name", "email", "wallet", "to_return", "paid", "tx", "explorer", "note"]);
+ // every row whose tx verified as its wallet's deposit, duplicates included: a check-in through any
+ // of them counts for that wallet (payouts only ever go to the registered wallet itself)
+ const claims = [...verified, ...issues.filter((i) => i.was === "VERIFIED" && /^DUPLICATE_/.test(i.code))];
+-writeCsv(`${out}/claims.csv`, claims.map((r) => ({ ...r, code: r.was ? r.code : "VERIFIED" })), ["wallet", "email", "name", "code", "approval", "tx"]);
++writeCsv(`${out}/claims.csv`, claims.map((r) => ({ ...identity(cfg), ...r, code: r.was ? r.code : "VERIFIED" })), ["wallet", "email", "name", "code", "approval", "tx", "eventId", "chainId", "contract", "deposit", "abiVersion"]);
++const snapshot = await prov.getBlock(snapshotBlock);
++for (const kind of ["verified", "claims"]) bindOutput(`${out}/${kind}.csv`, cfg, kind, [sourceReview], { block: snapshotBlock, blockHash: snapshot.hash });
+ // The console checks contract, network, deposit amount (in wei) and each wallet's on-chain status before
+ // sending, so an out-of-date list is refused instead of acting on a guest whose situation has changed.
+-const stamp = { contract: kickbackAddr, chainId: Number(cfg.chainId), deposit: dep.toString(), block: snapshotBlock, generatedAt: new Date().toISOString() };
++const stamp = { ...identity(cfg), configHash: configHash(cfg), sources: [sourceReview], owner: await c.owner({ blockTag: snapshotBlock }), blockHash: snapshot.hash, block: snapshotBlock, generatedAt: new Date().toISOString() };
+ const STATUS_OF = { unregistered: 0, registered: 1, "refunded, paid again": 3 };
+ const item = (v) => ({ wallet: v.wallet, name: v.name, email: v.email, onchain: v.onchain, status: STATUS_OF[v.onchain] });
+ writeJson(`${out}/new-stakers.json`, { ...stamp, items: newStakers.map(item) });
+ writeJson(`${out}/refunds.json`, { ...stamp, items: refunds.map(item) });
+ 
+ const chunks = (list) => Array.from({ length: Math.ceil(list.length / 100) }, (_, i) => list.slice(i * 100, i * 100 + 100));
+-writeJson(`${out}/safe-register.json`, safeBatch(cfg, `Truth Pays: register ${newStakers.length} stakers`,
++writeJson(`${out}/safe-register.json`, safeBatch(cfg, `${cfg.eventName || identity(cfg).eventId}: register ${newStakers.length} stakers`,
+   chunks(newStakers.map((v) => v.wallet)).map((ch) => ({ to: kickbackAddr, data: iface.encodeFunctionData("registerStakers", [ch]) }))));
+-writeJson(`${out}/safe-refunds.json`, safeBatch(cfg, `Truth Pays: refund ${refunds.length} declined guests`,
++writeJson(`${out}/safe-refunds.json`, safeBatch(cfg, `${cfg.eventName || identity(cfg).eventId}: refund ${refunds.length} declined guests`,
+   chunks(refunds.map((v) => v.wallet)).map((ch) => ({ to: kickbackAddr, data: iface.encodeFunctionData("rejectAndRefund", [ch]) }))));
+ 
+ writeCsv(`${out}/unmatched.csv`, unmatched, ["status", "from", "amount", "to_return", "block", "tx", "explorer", "note"]);
+diff --git a/site/index.html b/site/index.html
+index 03edaae..a2e8f19 100644
+--- a/site/index.html
++++ b/site/index.html
+@@ -340,6 +340,7 @@ const ruling = (r) => RULINGS[r] || `ruling ${Number(r)}`;
+ const answer = (s) => (Number(s) === 0 ? "Refuse to arbitrate" : ruling(s));
+ const PHASE = { Open: 0, Listed: 1, Finalized: 2, Cancelled: 3 };
+ const NETWORKS = { 1: "Ethereum mainnet", 10: "Optimism", 56: "BNB Chain", 137: "Polygon", 324: "zkSync", 8453: "Base", 42161: "Arbitrum One", 42170: "Arbitrum Nova", 59144: "Linea", 11155111: "Sepolia testnet" };
++const NETWORK_LABEL = CONFIG.chainName || "Ethereum mainnet";
+ const CHAIN_HEX = "0x" + Number(CONFIG.chainId).toString(16);
+ const isAddr = (a) => /^0x[0-9a-fA-F]{40}$/.test(a || "");
+ const isHash = (h) => /^0x[0-9a-fA-F]{64}$/.test(h || "");
+@@ -557,9 +558,9 @@ function renderChecks(info) {
+   const rows = [];
+   const add = (ok, html) => rows.push(`<li><span class="mark ${ok === true ? "ok" : ok === false ? "no" : ""}">${ok === true ? "✓" : ok === false ? "✕" : "·"}</span><span>${html}</span></li>`);
+   if (!info) { add(null, "Waiting for the live contract"); }
+-  else if (info.error) { add(false, `Couldn't reach Ethereum mainnet to check the contract (${esc(info.error)}). Reload the page in a minute.`); }
++  else if (info.error) { add(false, `Couldn't reach ${esc(NETWORK_LABEL)} to check the contract (${esc(info.error)}). Reload the page in a minute.`); }
+   else {
+-    add(info.code, info.code ? "The deposit address is a live contract on Ethereum mainnet" : "No contract found at this address on Ethereum mainnet. Don't send anything.");
++    add(info.code, info.code ? `The deposit address is a live contract on ${esc(NETWORK_LABEL)}` : `No contract found at this address on ${esc(NETWORK_LABEL)}. Don't send anything.`);
+     add(info.depositOk, info.depositOk ? `The deposit is exactly ${esc(DEP)}` : `The deposit amount is ${esc(eth(info.deposit, 18))}, not ${esc(DEP)}. Don't send anything.`);
+     add(info.klerosOk, info.klerosOk ? "Attendance disputes go to Kleros Court" : "It is set up with a different dispute service. Don't send anything.");
+     if (info.phase !== PHASE.Open) add(false, info.phase === PHASE.Listed ? "The attendance list is published and the challenge window is running. Deposits are closed."
+@@ -599,7 +600,7 @@ async function switchNetwork() {
+   } catch (e) {
+     if (e && (e.code === 4902 || /unrecognized|not added|unknown chain/i.test(e.message || ""))) {
+       await window.ethereum.request({ method: "wallet_addEthereumChain", params: [{ chainId: CHAIN_HEX, chainName: CONFIG.chainName, rpcUrls: [CONFIG.rpc], nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, blockExplorerUrls: [CONFIG.explorer] }] });
+-    } else { setNote($("net-wrong"), "bad", `The wallet didn't switch: ${esc(e.message || e)}. Switch to Ethereum mainnet in your wallet's network menu.`); return; }
++    } else { setNote($("net-wrong"), "bad", `The wallet didn't switch: ${esc(e.message || e)}. Switch to ${esc(NETWORK_LABEL)} in your wallet's network menu.`); return; }
+   }
+   state.chainId = Number(await window.ethereum.request({ method: "eth_chainId" }));
+   afterWalletChange();
+@@ -625,7 +626,7 @@ async function afterWalletChange() {
+ // (otherwise the hosts may have returned it since). It is forgotten once it failed, once the wallet replaced it (sped
+ // up or cancelled: the history shows another deposit, or a later transaction used its nonce), or when the network
+ // still doesn't know it 30 minutes on (dropped).
+-const SENT_KEY = "gt-last-tx";
++const SENT_KEY = `gt-last-tx:${CONFIG.environment || "local"}:${CONFIG.eventId || CONFIG.contract}:${CONFIG.chainId}:${String(CONFIG.contract).toLowerCase()}`;
+ let sentHere = null; // what this tab sent, also when the browser can't save it
+ function saveSentTx(rec) { sentHere = rec; try { localStorage.setItem(SENT_KEY, JSON.stringify(rec)); } catch {} }
+ function forgetSentTx(hash) {
+@@ -703,18 +704,18 @@ function verdict() {
+   // a deposit the history shows comes before one this browser is still waiting for (that one may have been replaced)
+   const deps = p ? p.live.filter((d) => d.tx.toLowerCase() !== lastTx) : [];
+   if (deps.length) return { kind: "warn", text: `We already see a deposit from this wallet: ${txA(deps[deps.length - 1].tx)}. Don't send it twice. Paste that link on Luma (shown in step 5).`, send: false };
+-  if (state.lastTx && state.pending) return { kind: "warn", text: `Your deposit ${txA(state.lastTx)} is waiting for Ethereum mainnet to confirm it. Don't send another one: you can already paste its link on Luma (step 5).`, send: false };
++  if (state.lastTx && state.pending) return { kind: "warn", text: `Your deposit ${txA(state.lastTx)} is waiting for ${esc(NETWORK_LABEL)} to confirm it. Don't send another one: you can already paste its link on Luma (step 5).`, send: false };
+   if (state.lastTx) return { kind: "good", text: "Deposit sent from this wallet. Now finish registering on Luma (step 5).", send: false };
+   if (p === null || st === null) return { kind: "bad", text: "Couldn't check for an earlier deposit. Reload the page.", send: false };
+   if (state.eth === null) return { kind: "bad", text: "Couldn't read this wallet's balance. Reload the page.", send: false };
+   const f = feeEstimate();
+-  if (state.eth < DEPOSIT) return { kind: "bad", send: false, text: `You need ${esc(DEP)} on Ethereum mainnet, plus a little for the network fee. If your ETH is on Arbitrum, Base, Optimism or another network, move it to Ethereum mainnet first, or withdraw from your exchange choosing the Ethereum network (sometimes called ERC20).` };
+-  if (f !== null && state.eth < DEPOSIT + f) return { kind: "bad", send: false, text: `You have the ${esc(DEP)} for the deposit, but not enough left for the network fee (${esc(fee(f))} right now). Add a little more ETH on Ethereum mainnet.` };
++  if (state.eth < DEPOSIT) return { kind: "bad", send: false, text: `You need ${esc(DEP)} on ${esc(NETWORK_LABEL)}, plus a little for the network fee. If your ETH is on Arbitrum, Base, Optimism or another network, move it to ${esc(NETWORK_LABEL)} first, or withdraw from your exchange choosing the Ethereum network (sometimes called ERC20).` };
++  if (f !== null && state.eth < DEPOSIT + f) return { kind: "bad", send: false, text: `You have the ${esc(DEP)} for the deposit, but not enough left for the network fee (${esc(fee(f))} right now). Add a little more ETH on ${esc(NETWORK_LABEL)}.` };
+   const send = !!(state.info && state.info.ok);
+   if (st === 3) return { kind: "warn", text: "This wallet was refunded before. Only send again if the hosts asked you to.", send };
+   if (p.short > 0n) return { kind: "warn", text: shortNote(p.short), send };
+   if (p.returned) return { kind: "good", text: "All set. An earlier deposit from this wallet was sent back to it, so send a new one and paste the new link on Luma.", send };
+-  return { kind: "good", text: "All set. You have enough ETH on Ethereum mainnet for the deposit and the network fee.", send };
++  return { kind: "good", text: `All set. You have enough ETH on ${esc(NETWORK_LABEL)} for the deposit and the network fee.`, send };
+ }
+ function refresh() {
+   const connected = !!state.account, onChain = state.chainId === CONFIG.chainId;
+@@ -728,7 +729,7 @@ function refresh() {
+   $("net-pill").textContent = net;
+   $("net-pill").className = "pill" + (connected ? (onChain ? " ok" : " no") : "");
+   $("switch").disabled = !connected || onChain;
+-  setNote($("net-wrong"), "bad", connected && !onChain ? `You're on <strong>${esc(net)}</strong>. Don't send from here: ETH sent on ${esc(net)} to this address can't be counted and would be lost. Switch to Ethereum mainnet first.` : "");
++  setNote($("net-wrong"), "bad", connected && !onChain ? `You're on <strong>${esc(net)}</strong>. Don't send from here: ETH sent on ${esc(net)} to this address can't be counted and would be lost. Switch to ${esc(NETWORK_LABEL)} first.` : "");
+ 
+   const checkReady = connected && onChain;
+   $("s-check").classList.toggle("locked", !checkReady);
+@@ -741,7 +742,7 @@ function refresh() {
+   $("s-send").classList.toggle("locked", !v.send && !state.lastTx);
+   $("s-send").classList.toggle("done", !!state.lastTx);
+   $("send").disabled = !v.send || state.sending;
+-  if (isAddr(CONFIG.contract)) $("send-summary").innerHTML = `You'll send <strong>${esc(DEP)}</strong> on <strong>Ethereum mainnet</strong> to the deposit contract <span class="mono">${esc(short(CONFIG.contract))}</span>. Your wallet asks you to confirm and shows the network fee.`;
++  if (isAddr(CONFIG.contract)) $("send-summary").innerHTML = `You'll send <strong>${esc(DEP)}</strong> on <strong>${esc(NETWORK_LABEL)}</strong> to the deposit contract <span class="mono">${esc(short(CONFIG.contract))}</span>. Your wallet asks you to confirm and shows the network fee.`;
+ 
+   // the link for Luma: the deposit just sent, or else the latest deposit still in the contract
+   const live = state.prior ? state.prior.live : [];
+@@ -768,14 +769,14 @@ async function send() {
+     if (!account || state.account !== account) throw new Error("Your wallet switched accounts, so nothing was sent. Check the steps above and try again.");
+     const v = verdict();
+     if (!v.send) throw Object.assign(new Error(""), { html: `${v.text} Nothing was sent.` });
+-    setNote(msg, "", `Confirm in your wallet: ${esc(DEP)} on Ethereum mainnet.`);
++    setNote(msg, "", `Confirm in your wallet: ${esc(DEP)} on ${esc(NETWORK_LABEL)}.`);
+     // the wallet's next nonce (the transaction's own replaces it once the network knows it): if a later transaction
+     // uses it while this one never went through, the wallet replaced this one (sped up or cancelled)
+     let nonce = null;
+     try { nonce = Number(big(await rpc("eth_getTransactionCount", [account, "pending"]))); } catch {}
+     // the network is read last, right before the wallet prompt, and pinned in the request so the wallet refuses any other one
+     state.chainId = Number(await window.ethereum.request({ method: "eth_chainId" }));
+-    if (state.chainId !== CONFIG.chainId) throw new Error("Your wallet is no longer on Ethereum mainnet. Switch back and try again.");
++    if (state.chainId !== CONFIG.chainId) throw new Error(`Your wallet is no longer on ${esc(NETWORK_LABEL)}. Switch back and try again.`);
+     // A call to deposit() with the ETH attached, not a plain transfer (both count the same in the contract): with call
+     // data, every wallet estimates the gas from the contract itself. Some wallets give a plain "send ETH" a fixed 21,000
+     // gas, which isn't enough for the contract to log the deposit, so the transfer would fail and cost the guest a fee.
+@@ -785,7 +786,7 @@ async function send() {
+     const rec = { hash, account, contract: CONFIG.contract, at: Date.now(), nonce };
+     saveSentTx(rec);
+     rpc("eth_getTransactionByHash", [hash]).then((t) => { if (t && t.nonce && sentHere === rec) { rec.nonce = Number(big(t.nonce)); saveSentTx(rec); } }).catch(() => {});
+-    setNote(msg, "", `Sent. Waiting for Ethereum mainnet to confirm it… ${txA(hash)}`);
++    setNote(msg, "", `Sent. Waiting for ${esc(NETWORK_LABEL)} to confirm it… ${txA(hash)}`);
+     const receipt = await waitReceipt(hash);
+     if (receipt && receipt.status !== "0x1") { forgetSentTx(hash); throw Object.assign(new Error(""), { html: `The deposit failed on-chain, so the ETH stayed in your wallet (only the network fee was spent). ${txA(hash, "See it on Etherscan")}.` }); }
+     if (state.account !== account) return; // the guest switched accounts meanwhile: this link belongs to the old one
+@@ -812,7 +813,7 @@ async function sendTx({ onlyFrom = null, to = CONFIG.contract, data, value = 0n,
+   const from = state.account;
+   if (!from) { setNote(out, "bad", "Connect your wallet first (step 1)."); return false; }
+   if (onlyFrom && from.toLowerCase() !== onlyFrom.toLowerCase()) { setNote(out, "bad", `Connect the wallet ${esc(short(onlyFrom))} first (step 1). Only that wallet can do this.`); return false; }
+-  if (state.chainId !== CONFIG.chainId) { setNote(out, "bad", "Switch your wallet to Ethereum mainnet first (step 2)."); return false; }
++  if (state.chainId !== CONFIG.chainId) { setNote(out, "bad", `Switch your wallet to ${esc(NETWORK_LABEL)} first (step 2).`); return false; }
+   const tx = { from, to, data, value: "0x" + value.toString(16) };
+   try {
+     // a dry run first, so a refusal is explained in plain words instead of a wallet error
+@@ -827,7 +828,7 @@ async function sendTx({ onlyFrom = null, to = CONFIG.contract, data, value = 0n,
+     } catch {}
+     // the network is read last, right before the wallet prompt, and pinned in the request so the wallet refuses any other one
+     state.chainId = Number(await window.ethereum.request({ method: "eth_chainId" }));
+-    if (state.chainId !== CONFIG.chainId) { refresh(); setNote(out, "bad", "Your wallet is no longer on Ethereum mainnet. Switch back (step 2) and try again."); return false; }
++    if (state.chainId !== CONFIG.chainId) { refresh(); setNote(out, "bad", `Your wallet is no longer on ${esc(NETWORK_LABEL)}. Switch back (step 2) and try again.`); return false; }
+     const hash = await window.ethereum.request({ method: "eth_sendTransaction", params: [{ ...tx, ...(gas ? { gas } : {}), chainId: CHAIN_HEX }] });
+     if (!isHash(hash)) throw new Error("The wallet didn't return a transaction link. Check your wallet's activity.");
+     setNote(out, "", `Sent. Waiting for confirmation… ${txA(hash)}`);
+@@ -999,9 +1000,9 @@ async function sendEvidence() {
+   if (file && file.size > MAX_FILE) { setNote(out, "bad", "That file is bigger than 4 MB. Make it smaller, or upload it somewhere and paste a link instead."); return; }
+   let proxy;
+   try { ({ proxy } = await klerosContracts()); }
+-  catch (e) { setNote(out, "bad", `Couldn't reach Ethereum mainnet right now (${esc(e.message)}). Nothing was sent. Try again in a minute.`); return; }
++  catch (e) { setNote(out, "bad", `Couldn't reach ${esc(NETWORK_LABEL)} right now (${esc(e.message)}). Nothing was sent. Try again in a minute.`); return; }
+   // the case description names the wallet too; repeating it keeps each piece of evidence clear on its own
+-  const description = `${text}${link && !ipfsLink ? `\n\nLink: ${link}` : ""}\n\n(Case about the guest wallet ${evCase.staker}, deposit contract ${CONFIG.contract} on Ethereum mainnet.)`;
++  const description = `${text}${link && !ipfsLink ? `\n\nLink: ${link}` : ""}\n\n(Case about the guest wallet ${evCase.staker}, deposit contract ${CONFIG.contract} on ${esc(NETWORK_LABEL)}.)`;
+   let uri, fileURI = ipfsLink;
+   try {
+     setNote(out, "", "Saving your evidence on IPFS (Kleros's file storage)…");
+@@ -1187,7 +1188,7 @@ async function lookup() {
+       else if (!hist) { kind = "warn"; text = "Couldn't check this wallet's deposits right now, so we can't tell whether one arrived. Reload the page and try again before sending anything."; }
+       else if (hist.short > 0n) { kind = "warn"; text = shortNote(hist.short); }
+       else if (hist.returned) { text = "No deposit waiting: an earlier deposit from this wallet was sent back to it."; }
+-      else { text = "No deposit found from this wallet yet. Make sure you sent it on Ethereum mainnet from this exact wallet."; }
++      else { text = `No deposit found from this wallet yet. Make sure you sent it on ${esc(NETWORK_LABEL)} from this exact wallet.`; }
+     } else if (status === 1 && (phase === PHASE.Listed || (phase === PHASE.Finalized && ch.state >= 2))) {
+       if (ch.state === 3) {
+         kind = attended ? "good" : "bad";
+diff --git a/test/console.e2e.mjs b/test/console.e2e.mjs
+index 6bb130d..ce2779b 100644
+--- a/test/console.e2e.mjs
++++ b/test/console.e2e.mjs
+@@ -21,13 +21,13 @@ import path from "node:path";
+ import { EventEmitter } from "node:events";
+ import { spawn } from "node:child_process";
+ import { createRequire } from "node:module";
+-const proj = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
++import { fileURLToPath } from "node:url";
++const proj = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+ const req = createRequire(path.join(proj, "package.json"));
+ const ganache = req("ganache");
+ const { ethers } = req("ethers");
+ const { loadConfig, deployArgs, ipfsCidV0 } = await import(path.join(proj, "scripts/lib.mjs"));
+-let chromium;
+-try { ({ chromium } = req("playwright")); } catch { ({ chromium } = createRequire("/opt/node-tools/node_modules/")("playwright")); }
++const { chromium } = req("playwright");
+ const E = (x) => ethers.parseEther(String(x));
+ const load = (n) => JSON.parse(fs.readFileSync(path.join(proj, "build", `${n}.json`), "utf8"));
+ const keys = Array.from({ length: 5 }, (_, i) => "0x" + (i + 7).toString(16).padStart(64, "0"));
+diff --git a/test/contract.test.mjs b/test/contract.test.mjs
+index f241b70..e18abe9 100644
+--- a/test/contract.test.mjs
++++ b/test/contract.test.mjs
+@@ -20,7 +20,7 @@ import { caseTemplate, renderCase, ipfsCidV0, ipfsPathOf } from "../scripts/lib.
+ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+ const load = (n) => JSON.parse(fs.readFileSync(path.join(root, "build", `${n}.json`), "utf8"));
+ const E = (x) => ethers.parseEther(String(x));
+-const PORT = 18546;
++let PORT;
+ const N = 160; // accounts: owner + 159 guests
+ 
+ let server, prov, owner, guests, liquid, proxy, kickIface;
+@@ -118,7 +118,8 @@ before(async () => {
+     miner: { blockGasLimit: 120_000_000 },
+     wallet: { accounts: keys.map((k) => ({ secretKey: k, balance: "0x56BC75E2D63100000" })) },
+   });
+-  await server.listen(PORT);
++  await server.listen(0, "127.0.0.1");
++  PORT = server.address().port;
+   // cacheTimeout -1: ethers otherwise reuses an identical read (a balance) for 250 ms, which can predate a fast tx
+   prov = new ethers.JsonRpcProvider(`http://127.0.0.1:${PORT}`, 1337, { staticNetwork: true, cacheTimeout: -1 });
+   prov.pollingInterval = 50; // local chain mines instantly; the 4 s default makes 450+ txs crawl
+@@ -1267,3 +1268,53 @@ test("case description: the IPFS path matches `ipfs add` (known vectors, varint
+   }
+   for (const w of [ethers.ZeroAddress, "0xffffffffffffffffffffffffffffffffffffffff"]) assert.equal((await kick.caseMetaEvidence(w))[0], renderCase(TPL, w, kick.target));
+ });
++
++// Separate instances are the multi-event custody boundary. No shared application model is
++// allowed to merge their owners, registration, cases or reserves.
++test("two concurrent v7 events: one wallet, independent owners/deposits/schedules; B settles while A holds an open case", async () => {
++  const [participant, attendeeA, noShowA, attendeeB, ownerB, matcher] = guests.slice(120, 126);
++  const t = await now();
++  const ownerAAddress = await addr(owner), ownerBAddress = await addr(ownerB);
++  const templateA = caseTemplate({ eventName: "Synthetic Event A", depositUnits: D, owner: ownerAAddress,
++    explorer: "https://example.invalid", kleros: { policyURI: POLICY } });
++  const depositB = D * 2n;
++  const templateB = caseTemplate({ eventName: "Synthetic Event B", depositUnits: depositB, owner: ownerBAddress,
++    explorer: "https://example.invalid", kleros: { policyURI: POLICY } });
++  const a = await deploy("TruthPaysKickback", owner, D, "Synthetic Event A", ownerAAddress, t + 3600, t + 14 * DAY, arb(templateA));
++  const b = await deploy("TruthPaysKickback", ownerB, depositB, "Synthetic Event B", ownerBAddress, t + 7200, t + 21 * DAY, arb(templateB));
++  const wallet = await addr(participant);
++  for (const guest of [participant, attendeeA, noShowA]) await send(a.connect(guest).deposit({ value: D }));
++  for (const guest of [participant, attendeeB]) await send(b.connect(guest).deposit({ value: depositB }));
++  // Deposits alone never register an attendee.
++  assert.equal(await a.status(wallet), 0n); assert.equal(await b.status(wallet), 0n);
++  await reverts(a.connect(ownerB), "registerStakers", [[wallet]], "NotOwner");
++  await reverts(b.connect(owner), "registerStakers", [[wallet]], "NotOwner");
++  await send(a.registerStakers(await Promise.all([participant, attendeeA, noShowA].map(addr))));
++  await send(b.registerStakers(await Promise.all([participant, attendeeB].map(addr))));
++  assert.equal(await a.depositAmount(), D); assert.equal(await b.depositAmount(), depositB);
++  assert.equal(await a.stakerCount(), 3n); assert.equal(await b.stakerCount(), 2n);
++  assert.notEqual(await a.owner(), await b.owner()); assert.notEqual(await a.eventStart(), await b.eventStart());
++  await warp(7201);
++  await send(a.postAttendance([await addr(attendeeA)], 3n * D));
++  await send(b.postAttendance([wallet, await addr(attendeeB)], depositB));
++  await send(a.connect(participant).challenge({ value: FEE }));
++  await send(a.connect(matcher).matchChallenge(wallet, { value: FEE, gasLimit: 1_000_000 }));
++  await warp(DAY + 1);
++  const receivedA = await bal(attendeeA), receivedB = await bal(participant);
++  await send(a.releasePayouts({ gasLimit: 3_000_000 }));
++  const held = (3n * D) / 2n;
++  assert.equal(await a.heldBack(), held);
++  assert.equal((await a.challenges(wallet)).heldShare, held);
++  assert.equal(await bal(attendeeA), receivedA + held);
++  await send(b.connect(attendeeB).releasePayouts({ gasLimit: 3_000_000 }));
++  assert.equal(await bal(participant), receivedB + depositB);
++  assert.equal(await b.heldBack(), 0n); assert.equal(await b.pendingChallenges(), 0n);
++  assert.equal(await b.reserved(), 0n); assert.equal(await bal(b), 0n);
++  const c = await a.challenges(wallet);
++  await send(liquid.giveFinalRuling(c.arbitratorDisputeID, 1, KGAS));
++  await send(a.resolveChallenge(wallet, { gasLimit: 3_000_000 }));
++  assert.equal(await a.heldBack(), 0n); assert.equal(await a.challengeEscrow(), 0n); assert.equal(await a.reserved(), 0n);
++  assert.equal(await a.status(wallet), 2n); assert.equal(await b.status(wallet), 2n);
++  assert.equal(await b.phase(), 2n); assert.equal(await bal(b), 0n);
++  await reverts(a, "resolveChallenge", [wallet], "WrongChallengeState");
++});
+diff --git a/test/kickback.test.mjs b/test/kickback.test.mjs
+index 88ec9e4..96adf87 100644
+--- a/test/kickback.test.mjs
++++ b/test/kickback.test.mjs
+@@ -18,12 +18,32 @@ const execFileP = promisify(execFile);
+ import ganache from "ganache";
+ import { ethers } from "ethers";
+ import { parse } from "csv-parse/sync";
++import { identity, configHash, fileHash, bindOutput } from "../scripts/provenance.mjs";
+ import {
+   csvCell, uncell, pairReturns, getLogsChunked, depKey, isContractCode, verifyTx, otherNetworkOf, fmtEth, DEFAULT_LOG_CHUNK,
+-  caseTemplate, renderCase, ipfsPathOf,
++  caseTemplate, renderCase, ipfsPathOf, loadConfig,
+ } from "../scripts/lib.mjs";
+ 
+ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
++// Synthetic fixtures still exercise the explicit organiser provenance-review boundary. Never
++// use this helper for real exports: real organisers must inspect and record the source origin.
++function fixtureReview(dir, script, params) {
++  const kinds = script === "verify-deposits.mjs" ? [["--guests", "guests"]]
++    : script === "build-payout.mjs" ? [["--checkins", "checkins"], ["--extra-checkins", "manual"]] : [];
++  if (!kinds.length || params.includes("--provenance-review")) return [];
++  let config;
++  try { config = loadConfig(path.join(dir, "config.json")); } catch { return []; }
++  const sources = kinds.flatMap(([flag, kind]) => {
++    const index = params.indexOf(flag);
++    if (index < 0) return [];
++    const file = path.resolve(dir, params[index + 1]);
++    return fs.existsSync(file) ? [{ kind, sha256: fileHash(file) }] : [];
++  });
++  const file = path.join(dir, "synthetic-review.json");
++  fs.writeFileSync(file, JSON.stringify({ schema: "kickback-source-review/v1", ...identity(config), configHash: configHash(config),
++    reviewer: "Synthetic test organiser", reason: "Generated test fixture with known event origin", reviewedAt: new Date().toISOString(), sources }));
++  return ["--provenance-review", file];
++}
+ const load = (n) => JSON.parse(fs.readFileSync(path.join(root, "build", `${n}.json`), "utf8"));
+ // Amounts in thousandths of an ETH, so the numbers read like the old USDC ones: U(25) = 0.025 ETH.
+ const U = (x) => ethers.parseEther(String(x)) / 1000n;
+@@ -155,7 +175,7 @@ test("full flow: verify → curate on Luma → register / refund declined → ch
+ 
+   // async exec: ganache runs in this process, so a sync child call would deadlock
+   const run = async (script, ...extra) => {
+-    const out = (await execFileP("node", [path.join(root, "scripts", script), "--config", "config.json", "--out", "out", ...extra], { cwd: tmp, encoding: "utf8" })).stdout;
++    const out = (await execFileP("node", [path.join(root, "scripts", script), "--config", "config.json", "--out", "out", ...extra, ...fixtureReview(tmp, script, extra)], { cwd: tmp, encoding: "utf8" })).stdout;
+     resetNonces();
+     return out;
+   };
+@@ -337,7 +357,7 @@ async function scenario() {
+   config();
+   const exec = async (script, params, env = {}) => {
+     try {
+-      return await execFileP("node", [path.join(root, "scripts", script), "--config", "config.json", ...params], { cwd: dir, encoding: "utf8", env: { ...process.env, ...env } });
++      return await execFileP("node", [path.join(root, "scripts", script), "--config", "config.json", ...params, ...fixtureReview(dir, script, params)], { cwd: dir, encoding: "utf8", env: { ...process.env, ...env } });
+     } finally {
+       resetNonces();
+     }
+@@ -767,7 +787,11 @@ test("a copied tx link never knocks out the real guest, and build-payout still p
+   assert.match(log, /Showed up \| 2/);
+   // a registered staker with no verified registration at all: no quiet "no-show" advice
+   fs.writeFileSync(path.join(s.dir, "empty.csv"), "wallet,email\n");
+-  const err = await s.fails("build-payout.mjs", ["--out", "out", "--checkins", "after2.csv", "--verified", "empty.csv", "--claims", "empty.csv"]);
++  fs.writeFileSync(path.join(s.dir, "emptyclaims.csv"), "wallet,email\n");
++  const emptyConfig = loadConfig(path.join(s.dir, "config.json"));
++  bindOutput(path.join(s.dir, "empty.csv"), emptyConfig, "verified", []);
++  bindOutput(path.join(s.dir, "emptyclaims.csv"), emptyConfig, "claims", []);
++  const err = await s.fails("build-payout.mjs", ["--out", "out", "--checkins", "after2.csv", "--verified", "empty.csv", "--claims", "emptyclaims.csv"]);
+   assert.match(err, /--allow-missing would count every one of them as a no-show/);
+   assert.match(err, /only use it after checking each of them by hand/);
+   assert.ok(!fs.existsSync(s.outFile("payout-plan.json")), "a failed run leaves no payout plan behind");
+@@ -965,3 +989,41 @@ test("live mode needs the deploy block; a stopped run leaves no stale lists behi
+   assert.match(await s.fails("owner.mjs", ["register"], { PRIVATE_KEY: ownerKey }), /was made for a deposit of 0\.01 ETH, but the contract takes 0\.025 ETH/);
+   assert.equal(await s.k.stakerCount(), 0n);
+ });
++
++test("concurrent event imports reject cross-event intermediates, conflicting raw metadata and stale same-size registration plans", async () => {
++  const a = await scenario(), b = await scenario();
++  a.config({ eventId: "synthetic-a" }); b.config({ eventId: "synthetic-b" });
++  const wallet = await addr(guests[0]), second = await addr(guests[1]), replacement = await addr(guests[2]);
++  const txA = await a.pay(guests[0], 25);
++  const txB = await b.pay(guests[0], 25), txB2 = await b.pay(guests[1], 25);
++  await a.verify([a.row("Synthetic", wallet, "approved", txA)]);
++  await b.verify([b.row("Synthetic", wallet, "approved", txB), b.row("Second", second, "approved", txB2)]);
++  await (await b.k.registerStakers([wallet, second])).wait();
++  fs.writeFileSync(path.join(b.dir, "after.csv"), "email,checked_in_at\nsynthetic@x.io,2026-10-28T12:00:00Z\n");
++  const cross = await b.fails("build-payout.mjs", ["--out", "out", "--checkins", "after.csv", "--verified", a.outFile("verified.csv"), "--claims", a.outFile("claims.csv")]);
++  assert.match(cross, /eventId mismatch/);
++  assert.ok(!fs.existsSync(b.outFile("payout-plan.json")));
++  const noReview = await b.fails("build-payout.mjs", ["--out", "out", "--checkins", "after.csv", "--provenance-review", "nonexistent.json"]);
++  assert.match(noReview, /origin cannot be verified automatically/);
++  fs.writeFileSync(path.join(b.dir, "wrong.csv"), "event_id,email,checked_in_at\nsynthetic-a,synthetic@x.io,yes\n");
++  const conflict = await b.fails("build-payout.mjs", ["--out", "out", "--checkins", "wrong.csv"]);
++  assert.match(conflict, /proven source event_id mismatch/);
++  await b.run("build-payout.mjs", "--checkins", "after.csv");
++  const plan = b.jsonOut("payout-plan.json");
++  assert.equal(plan.eventId, "synthetic-b"); assert.equal(plan.sources[0].reviewer, "Synthetic test organiser");
++  assert.deepEqual(plan.attendees, [wallet]);
++  assert.deepEqual(plan.stakerWallets, [wallet, second].sort());
++  // Replace an omitted registered wallet with another while keeping count/share unchanged.
++  await (await b.k.rejectAndRefund([second])).wait();
++  await b.pay(guests[2], 25);
++  await (await b.k.registerStakers([replacement])).wait();
++  resetNonces();
++  let error;
++  try {
++    await execFileP("node", [path.join(root, "scripts/owner.mjs"), "--config", "config.json", "post-attendance"],
++      { cwd: b.dir, encoding: "utf8", env: { ...process.env, PRIVATE_KEY: ownerKey } });
++  } catch (e) { error = e.stderr + e.stdout; }
++  assert.match(error, /registered stakers changed; rebuild the stale plan/);
++  assert.equal(await b.k.phase(), 0n);
++  assert.equal(await a.k.stakerCount(), 0n); // A's deposit never implicitly registered it.
++});
+diff --git a/test/site.e2e.mjs b/test/site.e2e.mjs
+index a4f3405..1d353f7 100644
+--- a/test/site.e2e.mjs
++++ b/test/site.e2e.mjs
+@@ -10,13 +10,13 @@ import http from "node:http";
+ import os from "node:os";
+ import { execFileSync } from "node:child_process";
+ import { createRequire } from "node:module";
++import { fileURLToPath } from "node:url";
+ import { caseTemplate, ipfsCidV0 } from "../scripts/lib.mjs";
+-const proj = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
++const proj = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+ const req = createRequire(path.join(proj, "package.json"));
+ const ganache = req("ganache");
+ const { ethers } = req("ethers");
+-let chromium;
+-try { ({ chromium } = req("playwright")); } catch { ({ chromium } = createRequire("/opt/node-tools/node_modules/")("playwright")); }
++const { chromium } = req("playwright");
+ const E = (x) => ethers.parseEther(String(x));
+ const D = E("0.01"); // the deposit
+ const load = (n) => JSON.parse(fs.readFileSync(path.join(proj, "build", `${n}.json`), "utf8"));
+@@ -64,7 +64,7 @@ const build = (contract, name, extra = {}) => {
+   const cfg = path.join(outDir, `${name}.json`);
+   fs.mkdirSync(outDir, { recursive: true });
+   // logChunk 7: the page reads the history in many small chunks, like 5,000-block chunks on mainnet
+-  fs.writeFileSync(cfg, JSON.stringify({ eventName: "E2E", chain: "local", chainId: 1337, rpcUrl: `http://127.0.0.1:${RPC}`, logChunk: 7, explorer: "https://etherscan.io", deposit: "0.01", receiver: contract || "0x0000000000000000000000000000000000000001", contract, eventStart: new Date((now + 86400) * 1000).toISOString(), claimDeadline: new Date((now + 86400 * 9) * 1000).toISOString(), owner: "0x0000000000000000000000000000000000000001", deployBlock, kleros: { disputeResolver: proxy.target, arbitrator: liquid.target, policyURI: POLICY }, ...extra }));
++  fs.writeFileSync(cfg, JSON.stringify({ eventName: "E2E", lumaUrl: "https://luma.com/qewnqhas", chainName: "Ethereum mainnet", chain: "local", chainId: 1337, rpcUrl: `http://127.0.0.1:${RPC}`, logChunk: 7, explorer: "https://etherscan.io", deposit: "0.01", receiver: contract || "0x0000000000000000000000000000000000000001", contract, eventStart: new Date((now + 86400) * 1000).toISOString(), claimDeadline: new Date((now + 86400 * 9) * 1000).toISOString(), owner: "0x0000000000000000000000000000000000000001", deployBlock, kleros: { disputeResolver: proxy.target, arbitrator: liquid.target, policyURI: POLICY }, ...extra }));
+   execFileSync("node", ["scripts/build-site.mjs", "--config", cfg, "--out", path.join(outDir, name), ...(contract ? [] : ["--preview"])], { cwd: proj, stdio: "pipe" });
+ };
+ build(kick.target, "live"); build(bad.target, "bad"); build(late.target, "late"); build(otherKleros.target, "otherkleros"); build("", "preview");
+@@ -428,7 +428,7 @@ await connect(p);
+ await toDeposit(p); await p.click("#send");
+ await waitText(p, "send-msg", /Waiting for Ethereum mainnet to confirm|failed|cancelled|Nothing was sent/);
+ const heldHash = p.held.length === 1 ? ethers.keccak256(p.held[0]) : "none";
+-const savedTx = await p.evaluate(() => JSON.parse(localStorage.getItem("gt-last-tx") || "{}"));
++const savedTx = await p.evaluate(() => JSON.parse(localStorage.getItem(SENT_KEY) || "{}"));
+ check("deposit sent: saved in the browser (with its nonce) as soon as the wallet gives its hash", savedTx.hash === heldHash && String(savedTx.account).toLowerCase() === gp.address.toLowerCase() && savedTx.contract === kick.target
+   && savedTx.nonce === 0 && !(await prov.getTransactionReceipt(heldHash)), JSON.stringify(savedTx));
+ await p.reload(); await p.waitForTimeout(800); await connect(p);
+@@ -445,15 +445,15 @@ const gf = await fundNew();
+ const failedDep = await gf.sendTransaction({ to: kick.target, data: "0xd0e30db0", value: 0, gasLimit: 100000 }); // deposit() of nothing: fails
+ await failedDep.wait().catch(() => {});
+ p = await open("live", gf);
+-const saveTx = (hash, at) => p.evaluate(([h, a, c, t]) => localStorage.setItem("gt-last-tx", JSON.stringify({ hash: h, account: a, contract: c, at: Date.now() - t })), [hash, gf.address, kick.target, at]);
++const saveTx = (hash, at) => p.evaluate(([h, a, c, t]) => localStorage.setItem(SENT_KEY, JSON.stringify({ hash: h, account: a, contract: c, at: Date.now() - t })), [hash, gf.address, kick.target, at]);
+ await saveTx(failedDep.hash, 0); await p.reload(); await p.waitForTimeout(800); await connect(p);
+ check("a saved deposit that failed on-chain is forgotten: Send allowed", (await prov.getTransactionReceipt(failedDep.hash)).status === 0 && /All set/.test(await txt(p, "check-msg")) && !(await dis(p, "send"))
+-  && (await p.evaluate(() => localStorage.getItem("gt-last-tx"))) === null, await txt(p, "check-msg"));
++  && (await p.evaluate(() => localStorage.getItem(SENT_KEY))) === null, await txt(p, "check-msg"));
+ await saveTx("0x" + "ab".repeat(32), 31 * 60e3); await p.reload(); await p.waitForTimeout(800); await connect(p);
+-check("a saved deposit the network still doesn't know 30 minutes on is forgotten: Send allowed", !(await dis(p, "send")) && (await p.evaluate(() => localStorage.getItem("gt-last-tx"))) === null, await txt(p, "check-msg"));
++check("a saved deposit the network still doesn't know 30 minutes on is forgotten: Send allowed", !(await dis(p, "send")) && (await p.evaluate(() => localStorage.getItem(SENT_KEY))) === null, await txt(p, "check-msg"));
+ await saveTx("0x" + "cd".repeat(32), 60e3); await p.reload(); await p.waitForTimeout(800); await connect(p);
+ check("... but a minute on it may still be on its way: Send blocked", (await dis(p, "send")) && /waiting for Ethereum mainnet to confirm/.test(await txt(p, "check-msg")), await txt(p, "check-msg"));
+-await p.evaluate(() => localStorage.removeItem("gt-last-tx"));
++await p.evaluate(() => localStorage.removeItem(SENT_KEY));
+ await p.close();
+ // the wallet sped the deposit up (same nonce, higher fee, new hash): once the faster one is in, the page notices by
+ // itself, shows that one and forgets the first; the same after a reload
+@@ -474,7 +474,7 @@ check("sped up: the first one waits for confirmation at first", /is waiting for
+ await (await prov.broadcastTransaction(fast)).wait();
+ out = await waitText(p, "check-msg", /already see a deposit/);
+ check("sped up in the wallet: the page notices by itself, shows the faster deposit, forgets the first", /already see a deposit/.test(out) && (await txt(p, "tx-link")) === fastLink && (await dis(p, "send"))
+-  && (await p.evaluate(() => localStorage.getItem("gt-last-tx"))) === null, `${out} | ${await txt(p, "tx-link")}`);
++  && (await p.evaluate(() => localStorage.getItem(SENT_KEY))) === null, `${out} | ${await txt(p, "tx-link")}`);
+ await p.reload(); await p.waitForTimeout(800); await connect(p);
+ check("sped up, after a reload: the faster deposit only", /already see a deposit/.test(await txt(p, "check-msg")) && (await txt(p, "tx-link")) === fastLink && (await dis(p, "send")), await txt(p, "check-msg"));
+ check("no page errors (sped up)", p.errs.length === 0, p.errs.join("; "));
+@@ -482,17 +482,17 @@ await p.close();
+ // the wallet cancelled it (another transaction, an empty one to itself, used its nonce): forgotten, Send allowed
+ const gk = await fundNew();
+ p = await sendHeld(gk);
+-const keptTx = await p.evaluate(() => JSON.parse(localStorage.getItem("gt-last-tx") || "{}"));
++const keptTx = await p.evaluate(() => JSON.parse(localStorage.getItem(SENT_KEY) || "{}"));
+ await (await gk.sendTransaction({ to: gk.address, value: 0, nonce: 0 })).wait();
+ await p.reload(); await p.waitForTimeout(800); await connect(p);
+ check("cancelled in the wallet (a later transaction used its nonce): forgotten, Send allowed", keptTx.nonce === 0 && /All set/.test(await txt(p, "check-msg")) && !(await dis(p, "send")) && !(await vis(p, "luma-box"))
+-  && (await p.evaluate(() => localStorage.getItem("gt-last-tx"))) === null, await txt(p, "check-msg"));
++  && (await p.evaluate(() => localStorage.getItem(SENT_KEY))) === null, await txt(p, "check-msg"));
+ await p.close();
+ // the history can't be read: a confirmed deposit saved in this browser isn't taken for granted (the hosts declined
+ // and refunded this one), so the page doesn't say it was sent and Send stays blocked
+ const g2Dep = (await kick.queryFilter(kick.filters.Deposited(g2a)))[0].transactionHash;
+ p = await open("live", g2, 1337, { failLogs: true });
+-await p.evaluate(([h, a, c]) => localStorage.setItem("gt-last-tx", JSON.stringify({ hash: h, account: a, contract: c, at: Date.now(), nonce: 0 })), [g2Dep, g2a, kick.target]);
++await p.evaluate(([h, a, c]) => localStorage.setItem(SENT_KEY, JSON.stringify({ hash: h, account: a, contract: c, at: Date.now(), nonce: 0 })), [g2Dep, g2a, kick.target]);
+ await p.reload(); await p.waitForTimeout(800); await connect(p);
+ check("history unreadable, a refunded deposit saved in the browser: not shown as sent, Send blocked", /Couldn't check for an earlier deposit/.test(await txt(p, "check-msg")) && !/Deposit sent/.test(await txt(p, "check-msg"))
+   && (await dis(p, "send")) && !(await vis(p, "luma-box")), await txt(p, "check-msg"));

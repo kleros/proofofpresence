@@ -1,0 +1,56 @@
+/* The site assistant: a floating button and a chat panel, bottom right; a sheet on phones. */
+.ask-fab {
+  position: fixed; right: max(var(--s-4), env(safe-area-inset-right, 0px)); bottom: max(var(--s-4), env(safe-area-inset-bottom, 0px)); z-index: 40;
+  display: inline-flex; align-items: center; gap: var(--s-2); padding: 10px 18px; border-radius: 999px;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer;
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.35);
+}
+.ask-fab:hover { filter: brightness(1.08); }
+
+.ask-panel {
+  position: fixed; right: max(var(--s-4), env(safe-area-inset-right, 0px)); bottom: max(var(--s-4), env(safe-area-inset-bottom, 0px)); z-index: 40;
+  width: min(420px, calc(100vw - 2 * var(--s-4))); height: min(640px, calc(100dvh - var(--header-h) - 2 * var(--s-4)));
+  display: grid; grid-template-rows: auto 1fr auto auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 18px 60px rgb(0 0 0 / 0.5); overflow: hidden;
+}
+.ask-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4); border-bottom: 1px solid var(--line); }
+.ask-head > div:first-child { display: grid; line-height: 1.3; }
+.ask-head b { color: var(--white); }
+
+.ask-log { overflow-y: auto; padding: var(--s-4); display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-3); align-content: start; overscroll-behavior: contain; }
+.ask-empty { display: grid; gap: var(--s-3); }
+.ask-chips { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.ask-chip { border: 1px solid var(--line); background: var(--sunk); color: var(--fg); border-radius: 999px; padding: 6px 12px; font-size: 0.875rem; cursor: pointer; text-align: left; }
+.ask-chip:hover { border-color: var(--accent); }
+
+.ask-msg { font-size: 0.94rem; line-height: 1.55; max-width: 100%; overflow-wrap: anywhere; }
+.ask-msg.user { justify-self: end; background: var(--accent-soft); border: 1px solid rgb(167 139 250 / 0.3); padding: var(--s-2) var(--s-3); border-radius: 12px 12px 4px 12px; max-width: 88%; white-space: pre-wrap; }
+.ask-msg.assistant { justify-self: start; }
+.ask-msg.err p { color: var(--warn); }
+.ask-md { display: grid; gap: var(--s-2); }
+.ask-md ul, .ask-md ol { margin: 0; padding-left: 1.25em; display: grid; gap: 4px; }
+.ask-md h4 { margin: var(--s-1) 0 0; font-size: 0.94rem; color: var(--white); }
+.ask-md b { color: var(--white); }
+.ask-sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--s-2); }
+.ask-source { font-size: 0.78rem; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); text-decoration: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ask-source:hover { color: var(--fg); border-color: var(--accent); }
+.ask-status { display: flex; align-items: center; gap: var(--s-2); }
+.ask-dots { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: ask-pulse 1s ease-in-out infinite; }
+@keyframes ask-pulse { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .ask-dots { animation: none; } }
+
+.ask-form { display: flex; gap: var(--s-2); align-items: flex-end; padding: var(--s-3); border-top: 1px solid var(--line); }
+.ask-form textarea { flex: 1; resize: none; min-height: 40px; max-height: 140px; field-sizing: content; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); color: var(--fg); font-size: max(16px, 0.94rem); line-height: 1.4; }
+.ask-form textarea:focus { outline: none; border-color: var(--accent); }
+.ask-form .btn { min-height: 40px; }
+.ask-foot { font-size: 0.72rem; padding: 0 var(--s-3) var(--s-2); }
+
+@media (max-width: 560px) {
+  .ask-panel { right: 0; left: 0; bottom: 0; width: 100%; height: min(86dvh, 720px); border-radius: var(--r) var(--r) 0 0; border-bottom: 0; }
+}
+
+/* a link to a moment of a talk: offer to play from there */
+.start-at { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; padding: var(--s-2) var(--s-3); border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--blue-soft); }
+.ask-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+/* the recorder's sticky action bar sits where the button would */
+body:has(.rec-actions) .ask-fab { display: none; }

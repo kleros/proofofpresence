@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#120b33">
+<title>Kleros Booth Leads</title>
+<link rel="icon" href="assets/kleros-symbol-white-flat.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #120b33; --bg-2: #1a1046; --panel: rgba(255,255,255,.05); --line: rgba(255,255,255,.11);
+    --text: #f5f1ff; --muted: #a89cd2; --kleros: #9013fe; --kleros-deep: #4d00b4; --pink: #de4fd0;
+    --gold: #f2c46d; --teal: #7ff0e0; --hot: #ff7a9a; --warm: #f2c46d; --nurture: #7ff0e0;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; font: 14px/1.45 Inter, system-ui, sans-serif; color: var(--text); background: linear-gradient(180deg, var(--bg), var(--bg-2)) fixed; background-color: var(--bg); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 16px 60px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-bottom: 18px; }
+  header img { height: 26px; }
+  header h1 { font: 700 18px Cinzel, serif; margin: 0; color: var(--gold); letter-spacing: .03em; }
+  header .sp { flex: 1; }
+  .mode { font-size: 12px; color: var(--muted); }
+  .mode b { color: var(--teal); font-weight: 600; }
+  button, .btn { font: 600 13px Inter; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 9px 13px; cursor: pointer; }
+  button:hover { border-color: rgba(255,255,255,.25); }
+  button.pri { background: linear-gradient(95deg, var(--kleros-deep), var(--kleros) 50%, var(--pink)); border: 0; }
+  input, select { font: 500 14px Inter; color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; outline: none; min-width: 0; }
+  input:focus, select:focus { border-color: var(--teal); }
+  select option { color: #111; }
+
+  .grid { display: grid; gap: 14px; }
+  .kpis { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; min-width: 0; }
+  .kpi .n { font: 700 30px/1.1 Inter; font-variant-numeric: tabular-nums; }
+  .kpi .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; margin-top: 4px; }
+  .kpi.hot .n { color: var(--hot); }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+
+  .pipes { grid-template-columns: repeat(4, 1fr); margin-top: 14px; }
+  @media (max-width: 760px) { .pipes { grid-template-columns: repeat(2, 1fr); } }
+  .pipe { cursor: pointer; text-align: left; font: inherit; color: var(--text); border-top: 2px solid var(--gold); }
+  .pipe.on { background: rgba(144,19,254,.18); border-color: #b77bff; border-top-color: var(--teal); }
+  .pipe .t { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--gold); font-weight: 600; }
+  .pipe .n { font: 700 26px/1.2 Inter; font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .pipe .s { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .pipe .s b { color: var(--hot); font-weight: 600; }
+  .pill.call { background: rgba(127,240,224,.12); color: var(--teal); margin-left: 4px; }
+  .two { grid-template-columns: 1.15fr 1fr 1fr; margin-top: 14px; }
+  @media (max-width: 980px) { .two { grid-template-columns: 1fr; } }
+  .bar { display: grid; grid-template-columns: minmax(0, 1fr) 34px; gap: 4px 10px; align-items: center; margin-bottom: 9px; cursor: pointer; }
+  .bar .name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+  .bar .track { grid-column: 1 / -1; height: 7px; border-radius: 4px; background: rgba(255,255,255,.06); overflow: hidden; }
+  .bar .fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--kleros), var(--pink)); }
+  .bar.role .fill { background: linear-gradient(90deg, #3aa79a, var(--teal)); }
+  .bar.active .name { color: var(--gold); }
+
+  .merch .row { display: flex; gap: 8px; }
+  .merch input { flex: 1; font: 700 18px ui-monospace, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+  .merch .res { margin-top: 12px; min-height: 92px; }
+  .merch .hit { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; margin-bottom: 8px; }
+  .merch .hit .who { flex: 1; min-width: 0; }
+  .merch .hit b { display: block; }
+  .merch .hit small { color: var(--muted); }
+  .merch .hit .conf { display: block; font-size: 11.5px; margin-top: 2px; color: var(--muted); }
+  .merch .hit .conf.ok { color: var(--teal); }
+  .given { color: var(--teal); font-weight: 600; }
+
+  .tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 12px; align-items: center; }
+  .tools input[type=search] { flex: 1 1 220px; }
+  .count { color: var(--muted); font-size: 13px; margin-left: auto; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; cursor: pointer; }
+  td { padding: 11px 10px; border-bottom: 1px solid rgba(255,255,255,.06); vertical-align: top; }
+  tr.lead { cursor: pointer; }
+  tr.lead:hover td { background: rgba(255,255,255,.03); }
+  td .sub { color: var(--muted); font-size: 12.5px; }
+  .pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill.Hot { background: rgba(255,122,154,.16); color: var(--hot); }
+  .pill.Warm { background: rgba(242,196,109,.15); color: var(--warm); }
+  .pill.Nurture { background: rgba(127,240,224,.12); color: var(--nurture); }
+  .score { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .uc { font-size: 13px; }
+  tr.detail td { background: rgba(144,19,254,.08); padding: 14px 16px; }
+  .dgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 22px; }
+  .dgrid .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+  .dgrid a { color: var(--teal); }
+  .nowrap { white-space: nowrap; }
+  @media (max-width: 760px) { .hide-sm { display: none; } }
+  .empty { text-align: center; color: var(--muted); padding: 40px 10px; }
+  .keybox { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .note { font-size: 12px; color: var(--muted); }
+  .err { color: var(--hot); font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="assets/logo-kleros-white.svg" alt="Kleros">
+    <h1>Devcon Booth Leads</h1>
+    <span class="sp"></span>
+    <span class="mode" id="mode"></span>
+    <button id="refresh">Refresh</button>
+    <button id="csv" class="pri">Export CSV</button>
+  </header>
+
+  <div class="panel" id="keypanel" hidden>
+    <h2>Connect to the lead database</h2>
+    <div class="keybox">
+      <input id="key" type="password" placeholder="Dashboard key (from the Sheet: Kleros menu → Show dashboard key)" style="flex:1 1 320px">
+      <button class="pri" id="savekey">Connect</button>
+    </div>
+    <div class="err" id="keyerr"></div>
+  </div>
+
+  <div class="grid kpis" style="margin-top:4px">
+    <div class="panel kpi"><div class="n" id="k-total">0</div><div class="l">Check-ins</div></div>
+    <div class="panel kpi hot"><div class="n" id="k-hot">0</div><div class="l">Hot leads</div></div>
+    <div class="panel kpi"><div class="n" id="k-call">0</div><div class="l">Want a call</div></div>
+    <div class="panel kpi"><div class="n" id="k-merch">0</div><div class="l">Merch given</div></div>
+  </div>
+
+  <div class="grid pipes" id="pipes"></div>
+
+  <div class="grid two">
+    <div class="panel"><h2>Matched Kleros use case</h2><div id="by-uc"></div></div>
+    <div class="panel"><h2>Roles</h2><div id="by-role"></div></div>
+    <div class="panel merch">
+      <h2>Merch desk</h2>
+      <div class="row"><input id="ticket" placeholder="Ticket code or name" autocomplete="off" autocapitalize="characters"></div>
+      <div class="res" id="merch-res"><div class="note">Type the code from the visitor's screen to find them and mark merch as given.</div></div>
+    </div>
+  </div>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="Search name, company, email, handle…">
+    <select id="f-pri"><option value="">All priorities</option><option>Hot</option><option>Warm</option><option>Nurture</option></select>
+    <select id="f-level"><option value="">All levels</option><option>Decision-maker</option><option>Influencer</option><option>Practitioner</option><option>Community</option></select>
+    <select id="f-pipe"><option value="">All pipelines</option></select>
+    <select id="f-uc"><option value="">All use cases</option></select>
+    <select id="f-owner"><option value="">All owners</option></select>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="panel" style="padding:4px 6px; overflow-x:auto">
+    <table>
+      <thead><tr>
+        <th data-sort="name">Visitor</th>
+        <th data-sort="position" class="hide-sm">Role</th>
+        <th data-sort="primary">Use case</th>
+        <th data-sort="fitScore">Fit</th>
+        <th data-sort="priority">Priority</th>
+        <th data-sort="ts" class="hide-sm">Checked in</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="matching.js"></script>
+<script>
+(function () {
+  var CFG = window.KLEROS_BOOTH_CONFIG || {};
+  var ENDPOINT = (CFG.endpoint || '').trim();
+  var K_KEY = 'kleros_devcon_admin_key', K_DEMO = 'kleros_devcon_demo_leads', K_DEMO_MERCH = 'kleros_devcon_demo_merch';
+  var SHOW_MAX = 300;
+  var leads = [], openId = null, sortKey = 'ts', sortDir = -1, ucFilterFromBar = '';
+
+  function $(id) { return document.getElementById(id); }
+  function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem(k) || 'null'); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { return null; } }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+  // Turn a raw check-in (demo) or a Sheet row (live) into one shape.
+  function fromRaw(d, merchSet) {
+    var m = matchLead(d);
+    return {
+      id: d.id, ts: d.ts, ticket: d.ticket, name: d.name, company: d.company, position: d.position, seniority: d.seniority || '',
+      email: d.email, telegram: d.telegram ? '@' + d.telegram : '', linkedin: d.linkedin, x: d.x ? '@' + d.x : '',
+      interests: (d.interests || []).join(', '), otherInterest: d.otherInterest || '', klerosUse: d.klerosUse || '', building: d.building, newsletter: d.newsletter ? 'Yes' : 'No',
+      wantsCall: d.wantsCall ? 'Yes' : 'No', pipeline: m.pipeline, level: m.level, primary: m.primary, secondary: m.secondary, fitScore: m.fitScore, priority: m.priority, product: m.product,
+      owner: m.owner, nextStep: m.nextStep, reasons: m.reasons, merch: !!(merchSet && (merchSet[d.id] || merchSet[d.ticket])),
+      status: 'New', notes: '', returning: '', researchStatus: 'Pending', flags: '', flagType: '', relevance: ''
+    };
+  }
+  function fromRow(r) {
+    return {
+      id: r['Client ID'] || r['Ticket'], ts: r['Checked in at'], ticket: r['Ticket'], name: r['Name'], company: r['Company'], position: r['Role'], seniority: r['Seniority'],
+      email: r['Email'], telegram: r['Telegram'], linkedin: r['LinkedIn'], x: r['X'],
+      interests: r['Interests'], otherInterest: r['Other interest'], klerosUse: r['Kleros use case idea'], building: r['Working on'], newsletter: r['Newsletter'],
+      wantsCall: r['Wants call'], pipeline: r['Pipeline'], level: r['Level'], primary: r['Primary use case'], secondary: r['Secondary use case'], fitScore: Number(r['Fit score']) || 0,
+      priority: r['Priority'], product: r['Suggested product'], owner: r['Owner'], nextStep: r['Next step'],
+      reasons: r['Match reasons'], merch: r['Merch given'] === true || r['Merch given'] === 'TRUE',
+      returning: r['Returning visitor'], notes: r['Team notes'], status: r['Status'],
+      researchStatus: r['Research status'], flags: r['Flags'], flagType: r['Flag type'], relevance: r['Relevance to Kleros'],
+      tier: r['Tier'], claim: r['Claim']
+    };
+  }
+
+  var SAMPLE_SENIORITY = {
+    'Founder / C-level': 'Founder / C-suite', 'Business Development / Partnerships': 'VP / Head / Director', 'Product Manager': 'Manager / Team lead',
+    'Legal / Compliance': 'VP / Head / Director', 'Investor / VC': 'VP / Head / Director', 'Government / Public Sector': 'VP / Head / Director',
+    'Student': 'Student / Early career'
+  };
+  function sampleLeads() {
+    var people = [
+      ['Aarav Mehta', 'Seer', 'Founder / C-level', ['Prediction Market Resolution'], 'Conditional markets on Gnosis', true],
+      ['Priya Nair', 'Razorpay', 'Product Manager', ['Enterprise & Customer Disputes'], 'Dispute flows for crypto payouts', false],
+      ['Lena Fischer', 'Olas', 'Engineer / Developer', ['Disputes for AI Agents'], 'Agent-to-agent marketplace', true, '', 'Arbitrating failed jobs between agents on our marketplace'],
+      ['Rohan Gupta', 'IIT Bombay', 'Student', ['Becoming a Juror'], '', false],
+      ['Maya Cohen', 'Gitcoin', 'Business Development / Partnerships', ['Proof of Humanity', 'DAOs & Governance'], 'Sybil defence for grants rounds', false],
+      ['Arjun Rao', 'Khaitan & Co', 'Legal / Compliance', ['Legal & Arbitration'], 'Crypto regulation practice', false],
+      ['Sofia Alvarez', 'Blockscout', 'Product Manager', ['DeFi Curation & Token Lists'], 'Address tags in the explorer', false],
+      ['Kenji Sato', 'Polymarket', 'Engineer / Developer', [], 'resolution infra', false],
+      ['Ananya Iyer', 'CoinDCX', 'Business Development / Partnerships', ['Enterprise & Customer Disputes'], 'customer support for 15M users', true],
+      ['Tom Becker', 'Independent', 'Engineer / Developer', ['Running an AI Juror Agent'], 'local LLM agents', false],
+      ['Neha Joshi', 'Rabby Wallet', 'Founder / C-level', ['DeFi Curation & Token Lists'], 'scam token warnings', false, 'Wallet security', 'Community-curated scam address list'],
+      ['Omar Haddad', 'Paradigm', 'Investor / VC', ['Disputes for AI Agents', 'Prediction Market Resolution'], '', false],
+      ['Ishaan Kapoor', 'x402 payments startup', 'Founder / C-level', ['Disputes for AI Agents'], 'payment rails for AI agents', true],
+      ['Divya Menon', 'Ministry of Electronics & IT', 'Government / Public Sector', ['Legal & Arbitration'], 'ODR for consumer complaints', false]
+    ];
+    var now = Date.now();
+    return people.map(function (p, i) {
+      return { id: 'demo' + i, ticket: 'K-DM' + (10 + i), ts: new Date(now - i * 47 * 60000).toISOString(),
+        name: p[0], company: p[1], position: p[2], seniority: SAMPLE_SENIORITY[p[2]] || 'Individual contributor', interests: p[3], building: p[4], wantsCall: p[5], otherInterest: p[6] || '', klerosUse: p[7] || '',
+        email: p[0].split(' ')[0].toLowerCase() + '@' + p[1].toLowerCase().replace(/[^a-z]/g, '') + '.xyz', telegram: p[0].split(' ')[0].toLowerCase(), newsletter: i % 3 !== 0 };
+    });
+  }
+
+  function load() {
+    if (!ENDPOINT) {
+      var own = ls(K_DEMO) || [];
+      var merchSet = ls(K_DEMO_MERCH) || {};
+      leads = own.concat(own.length ? [] : sampleLeads()).map(function (d) { return fromRaw(d, merchSet); });
+      $('mode').innerHTML = own.length ? '<b>Demo mode</b>: check-ins from this device' : '<b>Demo mode</b>: sample data. Set endpoint in config.js to go live.';
+      render(); return;
+    }
+    var key = ls(K_KEY);
+    if (!key) { $('keypanel').hidden = false; return; }
+    $('mode').innerHTML = 'Live · syncing…';
+    fetch(ENDPOINT + '?key=' + encodeURIComponent(key))
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.error || 'failed');
+        $('keypanel').hidden = true;
+        leads = res.rows.filter(function (r) { return r['Ticket']; }).map(fromRow);
+        $('mode').innerHTML = '<b>Live</b> · updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        render();
+      })
+      .catch(function (e) {
+        $('mode').textContent = 'Offline: showing last data';
+        if (/unauthor/.test(e.message)) { ls(K_KEY, null); $('keypanel').hidden = false; $('keyerr').textContent = 'That key was not accepted.'; }
+      });
+  }
+
+  function bars(el, counts, cls, onClick, active) {
+    var entries = Object.keys(counts).map(function (k) { return [k, counts[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+    var max = entries.length ? entries[0][1] : 1;
+    el.innerHTML = entries.length ? entries.map(function (e) {
+      return '<div class="bar ' + cls + (active === e[0] ? ' active' : '') + '" data-k="' + esc(e[0]) + '"><span class="name">' + esc(e[0]) + '</span><span class="v">' + e[1] +
+        '</span><div class="track"><div class="fill" style="width:' + (e[1] / max * 100).toFixed(1) + '%"></div></div></div>';
+    }).join('') : '<div class="note">No check-ins yet.</div>';
+    if (onClick) el.querySelectorAll('.bar').forEach(function (b) { b.onclick = function () { onClick(b.getAttribute('data-k')); }; });
+  }
+
+  function fillSelect(sel, values) {
+    var cur = sel.value, first = sel.options[0].outerHTML;
+    sel.innerHTML = first + values.map(function (v) { return '<option>' + esc(v) + '</option>'; }).join('');
+    sel.value = values.indexOf(cur) >= 0 ? cur : '';
+  }
+
+  function filtered() {
+    var q = $('q').value.trim().toLowerCase(), p = $('f-pri').value, u = $('f-uc').value, o = $('f-owner').value, pp = $('f-pipe').value, lv = $('f-level').value;
+    return leads.filter(function (l) {
+      if (pp && l.pipeline !== pp) return false;
+      if (lv && l.level !== lv) return false;
+      if (p && l.priority !== p) return false;
+      if (u && l.primary !== u) return false;
+      if (o && l.owner !== o) return false;
+      if (!q) return true;
+      return [l.name, l.company, l.email, l.telegram, l.linkedin, l.x, l.ticket, l.building, l.position, l.otherInterest, l.klerosUse].join(' ').toLowerCase().indexOf(q) >= 0;
+    }).sort(function (a, b) {
+      var x = a[sortKey], y = b[sortKey];
+      if (sortKey === 'priority') { var r = { Hot: 3, Warm: 2, Nurture: 1 }; x = r[x] || 0; y = r[y] || 0; }
+      return (x > y ? 1 : x < y ? -1 : 0) * sortDir;
+    });
+  }
+
+  function contactLinks(l) {
+    var out = [];
+    if (l.email) out.push('<a href="mailto:' + esc(l.email) + '">' + esc(l.email) + '</a>');
+    if (l.telegram) out.push('<a href="https://t.me/' + esc(String(l.telegram).replace(/^@/, '')) + '" target="_blank" rel="noopener">' + esc(l.telegram) + '</a>');
+    // Visitor-supplied URL: only http(s) becomes a link (a "javascript:" one would run here, where the key is stored).
+    if (l.linkedin) out.push(/^https?:\/\//i.test(l.linkedin) ? '<a href="' + esc(l.linkedin) + '" target="_blank" rel="noopener">LinkedIn</a>' : esc(l.linkedin));
+    if (l.x) out.push('<a href="https://x.com/' + esc(String(l.x).replace(/^@/, '')) + '" target="_blank" rel="noopener">' + esc(l.x) + '</a>');
+    return out.join(' · ') || '<span class="note">none</span>';
+  }
+
+  function timeStr(ts) {
+    var d = new Date(ts); if (isNaN(d)) return '';
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  var PIPES = KLEROS_USE_CASES.filter(function (u) { return u.focus; });
+  function renderPipes() {
+    var cur = $('f-pipe').value;
+    $('pipes').innerHTML = PIPES.map(function (u) {
+      var mine = leads.filter(function (l) { return l.pipeline === u.short; });
+      var hot = mine.filter(function (l) { return l.priority === 'Hot'; }).length;
+      var calls = mine.filter(function (l) { return l.wantsCall === 'Yes'; }).length;
+      return '<button class="panel pipe' + (cur === u.short ? ' on' : '') + '" data-p="' + esc(u.short) + '"><div class="t">' + esc(u.short) + '</div>' +
+        '<div class="n">' + mine.length + '</div><div class="s"><b>' + hot + ' hot</b> · ' + calls + ' want a call</div></button>';
+    }).join('');
+    $('pipes').querySelectorAll('.pipe').forEach(function (b) {
+      b.onclick = function () { var p = b.getAttribute('data-p'); $('f-pipe').value = $('f-pipe').value === p ? '' : p; render(); };
+    });
+  }
+
+  function render() {
+    $('k-total').textContent = leads.length;
+    $('k-hot').textContent = leads.filter(function (l) { return l.priority === 'Hot'; }).length;
+    $('k-call').textContent = leads.filter(function (l) { return l.wantsCall === 'Yes'; }).length;
+    renderPipes();
+    $('k-merch').textContent = leads.filter(function (l) { return l.merch; }).length;
+
+    var uc = {}, role = {}, owners = {};
+    leads.forEach(function (l) { uc[l.primary] = (uc[l.primary] || 0) + 1; role[l.position] = (role[l.position] || 0) + 1; if (l.owner) owners[l.owner] = 1; });
+    bars($('by-uc'), uc, '', function (k) { $('f-uc').value = $('f-uc').value === k ? '' : k; render(); }, $('f-uc').value);
+    bars($('by-role'), role, 'role');
+    fillSelect($('f-uc'), KLEROS_USE_CASES.map(function (u) { return u.label; }));
+    fillSelect($('f-owner'), Object.keys(owners).sort());
+    fillSelect($('f-pipe'), KLEROS_USE_CASES.map(function (u) { return u.short; }).concat(['Other']));
+
+    var all = filtered();
+    // With thousands of leads, render the best SHOW_MAX rows; search or filter to narrow down.
+    var list = all.slice(0, SHOW_MAX);
+    $('count').textContent = (all.length > SHOW_MAX ? 'Top ' + SHOW_MAX + ' of ' + all.length + ' matching · ' : all.length + ' of ') + leads.length + (all.length > SHOW_MAX ? ' total' : '');
+    $('rows').innerHTML = list.length ? list.map(function (l) {
+      var row = '<tr class="lead" data-t="' + esc(l.id) + '"><td><b>' + esc(l.name) + '</b>' + (l.returning ? ' <span class="note">(returning)</span>' : '') +
+        '<div class="sub">' + esc(l.company) + ' · <span class="nowrap">' + esc(l.ticket) + '</span>' + (l.merch ? ' · <span class="given">merch ✓</span>' : '') + (l.flags ? ' · <span class="pill Warm">flag</span>' : '') + '</div></td>' +
+        '<td class="hide-sm">' + esc(l.position) + '<div class="sub">' + esc(l.seniority || '') + (l.level ? ' · <b>' + esc(l.level) + '</b>' : '') + '</div></td>' +
+        '<td class="uc">' + esc(l.primary) + (l.secondary ? '<div class="sub">+ ' + esc(l.secondary) + '</div>' : '') + '</td>' +
+        '<td class="score">' + esc(l.fitScore) + '</td>' +
+        '<td class="nowrap"><span class="pill ' + esc(l.priority) + '">' + esc(l.priority) + '</span>' + (l.wantsCall === 'Yes' ? '<span class="pill call">call</span>' : '') + '</td>' +
+        '<td class="hide-sm sub nowrap">' + timeStr(l.ts) + '</td></tr>';
+      if (openId === l.id) {
+        row += '<tr class="detail"><td colspan="6"><div class="dgrid">' +
+          '<div><div class="k">Next step</div>' + esc(l.nextStep) + '<div class="sub" style="margin-top:4px">Owner: ' + esc(l.owner) + '</div></div>' +
+          '<div><div class="k">Pitch: ' + esc(l.product) + '</div>' + esc((KLEROS_USE_CASES.filter(function (u) { return u.label === l.primary; })[0] || {}).pitch || '') + '</div>' +
+          '<div><div class="k">Contact</div>' + contactLinks(l) + '<div class="sub" style="margin-top:4px">Newsletter: ' + esc(l.newsletter) + '</div></div>' +
+          '<div><div class="k">They said</div>' + (esc(l.building) || '<span class="note">nothing</span>') + '<div class="sub" style="margin-top:4px">Interests: ' + (esc(l.interests) || 'none picked') + (l.otherInterest ? '; other: ' + esc(l.otherInterest) : '') + '</div></div>' +
+          (l.klerosUse ? '<div><div class="k">Would use Kleros for</div>' + esc(l.klerosUse) + '</div>' : '') +
+          '<div><div class="k">Background research</div>' + esc(l.researchStatus || 'Pending') + (l.relevance ? '<div class="sub" style="margin-top:4px">' + esc(l.relevance) + '</div>' : '') + (l.flags ? '<div style="margin-top:4px"><span class="pill Warm">' + esc(l.flagType || 'Flag') + '</span> ' + esc(l.flags) + '</div>' : '') + '</div>' +
+          '<div><div class="k">Why this match</div><span class="sub">' + esc(l.reasons) + '</span></div>' +
+          (l.notes ? '<div><div class="k">Team notes</div>' + esc(l.notes) + '</div>' : '') +
+          '</div></td></tr>';
+      }
+      return row;
+    }).join('') : '<tr><td colspan="6" class="empty">No leads match these filters.</td></tr>';
+    document.querySelectorAll('tr.lead').forEach(function (tr) {
+      tr.onclick = function () { var t = tr.getAttribute('data-t'); openId = openId === t ? null : t; render(); };
+    });
+    merchSearch();
+  }
+
+  // Merch desk
+  function merchSearch() {
+    var raw = $('ticket').value.trim().toUpperCase();
+    var code = /^K/.test(raw) ? raw.replace(/^K-?/, 'K-') : 'K-' + raw;   // "kab12", "ab12" and "K-AB12" all find K-AB12...
+    var el = $('merch-res');
+    if (!raw) { el.innerHTML = '<div class="note">Type the code from the visitor\'s screen to find them and mark merch as given.</div>'; return; }
+    // Names are matched on what was typed, so "Kenji" still finds Kenji. Several hits: pick by name.
+    var hits = leads.filter(function (l) { return String(l.ticket).toUpperCase().indexOf(code) === 0 || String(l.name).toUpperCase().indexOf(raw) >= 0; }).slice(0, 5);
+    el.innerHTML = hits.length ? hits.map(function (l) {
+      // Merch needs a confirmed Kleros blog subscription; "Give merch" re-checks it live, so a stale "not yet" still works.
+      var conf = l.claim === 'Already claimed' ? '<span class="conf">Already claimed on another check-in</span>'
+        : l.newsletter === 'Confirmed' ? '<span class="conf ok">Email confirmed ✓' + (l.tier ? ' · ' + esc(l.tier) + ' tier' : '') + '</span>' : '<span class="conf">Email not confirmed yet</span>';
+      return '<div class="hit"><div class="who"><b>' + esc(l.name) + '</b><small>' + esc(l.ticket) + ' · ' + esc(l.company) + '</small>' + conf + '</div>' +
+        (l.merch ? '<span class="given">Given ✓</span> <button data-undo="' + esc(l.id) + '">Undo</button>' : '<button class="pri" data-give="' + esc(l.id) + '">Give merch</button>') + '</div>';
+    }).join('') : '<div class="note">No match. Ask them to show their check-in screen, or check them in now.</div>';
+    el.querySelectorAll('[data-give],[data-undo]').forEach(function (b) {
+      b.onclick = function () { setMerch(b.getAttribute('data-give') || b.getAttribute('data-undo'), !!b.getAttribute('data-give')); };
+    });
+  }
+  // By the visitor's unique id, not the ticket code, so two people can never be marked by mistake.
+  function setMerch(id, value) {
+    var lead = leads.filter(function (l) { return l.id === id; })[0];
+    if (!lead) return;
+    lead.merch = value;
+    render();
+    if (!ENDPOINT) { var s = ls(K_DEMO_MERCH) || {}; s[id] = value; ls(K_DEMO_MERCH, s); return; }
+    fetch(ENDPOINT + '?action=merch&id=' + encodeURIComponent(id) + '&ticket=' + encodeURIComponent(lead.ticket) + '&value=' + value + '&key=' + encodeURIComponent(ls(K_KEY) || ''))
+      .then(function (r) { return r.json(); }).then(function (r) {
+        if (!r.ok) { lead.merch = !value; render(); alert(r.error); return; }
+        if (value) { lead.newsletter = 'Confirmed'; render(); }
+      })
+      .catch(function () { lead.merch = !value; render(); alert('Offline: merch status not saved. Try again when connected.'); });
+  }
+
+  function csv() {
+    var cols = ['ts', 'ticket', 'name', 'company', 'position', 'seniority', 'level', 'email', 'telegram', 'linkedin', 'x', 'interests', 'otherInterest', 'klerosUse', 'building', 'wantsCall', 'newsletter',
+      'pipeline', 'primary', 'secondary', 'fitScore', 'priority', 'researchStatus', 'flagType', 'flags', 'product', 'owner', 'nextStep', 'reasons', 'merch', 'tier', 'claim', 'status', 'notes'];
+    var lines = [cols.join(',')].concat(filtered().map(function (l) {
+      return cols.map(function (c) {
+        var v = l[c] == null ? '' : String(l[c]);
+        if (/^[=+\-@]/.test(v)) v = "'" + v;   // visitor text must never open as a formula in Excel or Sheets
+        return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+      }).join(',');
+    }));
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + lines.join('\n')], { type: 'text/csv' }));
+    a.download = 'kleros-devcon-leads-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+  }
+
+  document.querySelectorAll('th[data-sort]').forEach(function (th) {
+    th.onclick = function () { var k = th.getAttribute('data-sort'); sortDir = sortKey === k ? -sortDir : -1; sortKey = k; render(); };
+  });
+  ['q', 'f-pri', 'f-uc', 'f-owner', 'f-pipe', 'f-level'].forEach(function (id) { $(id).addEventListener('input', render); });
+  $('ticket').addEventListener('input', merchSearch);
+  $('refresh').onclick = load;
+  $('csv').onclick = csv;
+  $('savekey').onclick = function () { ls(K_KEY, $('key').value.trim()); $('keyerr').textContent = ''; load(); };
+  $('key').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('savekey').click(); });
+
+  load();
+  // Refresh every minute while the dashboard is visible; skip while the tab is in the background.
+  setInterval(function () { if (!document.hidden) load(); }, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+})();
+</script>
+</body>
+</html>

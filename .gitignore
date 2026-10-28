@@ -1,0 +1,17 @@
+node_modules/
+**/node_modules/
+**/build/
+**/.next/
+.DS_Store
+.env*
+!.env.example
+.runtime/
+artifacts/screenshots/
+test-results/
+playwright-report/
+private/
+**/private/
+**/out/
+**/out-*/
+KLEROS_CODEX_HANDOFF.zip
+references/**/.git/

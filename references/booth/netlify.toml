@@ -1,0 +1,16 @@
+# Static site, no build step: Netlify serves site/ as is.
+# site/_headers keeps config.js and matching.js uncached and the dashboard out of search engines.
+[build]
+  publish = "site"
+
+# The team dashboard at /admin as well as /admin.html.
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+# The "Connect with the Kleros team" page at /connect as well as /connect.html.
+[[redirects]]
+  from = "/connect"
+  to = "/connect.html"
+  status = 200

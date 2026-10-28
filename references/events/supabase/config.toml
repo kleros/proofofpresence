@@ -1,0 +1,29 @@
+# Supabase CLI settings for a local copy of the site (`supabase start`).
+# Anything not set here keeps the CLI default.
+#
+# The live project does not read this file. Its settings are in the Supabase
+# dashboard, and the ones the site depends on are listed in the README (Setup, step 3).
+# Do not run `supabase config push` against the live project, and do not add a
+# [remotes] block for it: the push would also send the local Site URL below and the
+# CLI's default redirect URLs, and sign-in links on the live site would stop working.
+
+project_id = "kleros-events"
+
+[auth]
+# Local only. The live values are under Authentication > URL Configuration.
+site_url = "http://localhost:3000"
+# The sign-in form creates an account the first time someone uses it.
+enable_signup = true
+# QR guests ask and upvote in event mode with an anonymous session.
+enable_anonymous_sign_ins = true
+
+[auth.email]
+enable_signup = true
+# Must stay on, here and in the live project
+# (Authentication > Sign In / Providers, the Confirm email switch).
+# Team access for @kleros.io addresses, the master admin and private-event
+# collaborators all rely on a confirmed email. With this off, Supabase marks every
+# new email as confirmed as soon as the account is created, before anyone opens a
+# link, so anyone could sign up with an @kleros.io address and get team access.
+# The CLI default is off, hence this line.
+enable_confirmations = true
