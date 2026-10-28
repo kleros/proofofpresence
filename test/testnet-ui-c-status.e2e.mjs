@@ -73,6 +73,22 @@ export const allowedStatusHttp = (method, pathname, api, files) =>
   (method === "POST" &&
     ["/api/auth/challenge", "/api/auth/verify"].includes(pathname));
 
+export function statusControlExpectations(phase, now, challengeEndsAt) {
+  must(
+    C_STATUS_PHASES.includes(phase) &&
+      Number.isSafeInteger(now) &&
+      now >= 0 &&
+      Number.isSafeInteger(challengeEndsAt) &&
+      challengeEndsAt >= 0,
+    "Invalid C control snapshot",
+  );
+  return {
+    release: phase === "matched" && now > challengeEndsAt,
+    resolve: phase === "ruled",
+    caseCount: phase === "admitted" ? 0 : 1,
+  };
+}
+
 export function assertCStatusPhase(phase, state, payments, scope) {
   must(C_STATUS_PHASES.includes(phase), "Unknown C status phase");
   const D = BigInt(scope.depositWei),
@@ -373,6 +389,12 @@ export function selfTest() {
     };
     const summary = assertCStatusPhase(phase, s, p, scope);
     accepted++;
+    assert.deepEqual(statusControlExpectations(phase, 301, s.challengeEndsAt), {
+      release: phase === "matched",
+      resolve: phase === "ruled",
+      caseCount: phase === "admitted" ? 0 : 1,
+    });
+    accepted++;
     for (const change of [
       (x) => (x.owner = "foreign"),
       (x) => (x.owedTotal = "1"),
@@ -485,6 +507,19 @@ export function selfTest() {
   }
   const files = new Set(["/index.html", "/app.js"]),
     api = "/api/events/event-c";
+  for (const now of [299, 300]) {
+    assert.equal(statusControlExpectations("matched", now, 300).release, false);
+    accepted++;
+  }
+  for (const args of [
+    ["unknown", 301, 300],
+    ["matched", NaN, 300],
+    ["matched", 301, -1],
+    ["matched", "301", 300],
+  ]) {
+    assert.throws(() => statusControlExpectations(...args));
+    rejected++;
+  }
   for (const method of [
     "eth_sendTransaction",
     "eth_signTransaction",
@@ -963,20 +998,42 @@ export async function main(argv = process.argv.slice(2)) {
         );
         if (role !== "owner") {
           await page.locator(".status-details summary").click();
-          const payout = page
-            .locator(".state-fact")
-            .filter({ has: page.locator("dt", { hasText: /^Payout$/ }) });
-          await expect(payout).toContainText(
+          const participantFact = (label) =>
+            page
+              .locator(".state-fact")
+              .filter({
+                has: page.locator("dt", { hasText: new RegExp(`^${label}$`) }),
+              })
+              .locator("dd strong");
+          for (const [label, value] of [
+            ["Admission", "Approved by host"],
+            ["Contract registration", "Registered in this event contract"],
+            ["Deposit receipt", units(scope.depositWei) + " · confirmed"],
+          ])
+            await expect(participantFact(label)).toHaveText(value);
+          await expect(page.locator(".credit-summary strong")).toHaveText(
+            "0 XDAI unused credit",
+          );
+          await expect(
+            page.locator(
+              '[data-tx="deposit"]:visible, [data-recovery="withdrawPending"]:visible',
+            ),
+          ).toHaveCount(0);
+          await expect(participantFact("Attendance dispute")).toHaveText(
+            role === "alice" || phase === "admitted"
+              ? "No attendance challenge"
+              : phase === "settled"
+                ? "Challenge settled"
+                : phase === "ruled"
+                  ? "Final result · settlement pending"
+                  : "Matched controlled test dispute · awaiting final result",
+          );
+          await expect(participantFact("Payout")).toHaveText(
             summary.paid[role] === "0"
               ? "No direct payout recorded"
               : units(summary.paid[role]) + " directly paid",
           );
-          const attendance = page
-            .locator(".state-fact")
-            .filter({
-              has: page.locator("dt", { hasText: /^Financial attendance$/ }),
-            });
-          await expect(attendance).toContainText(
+          await expect(participantFact("Financial attendance")).toHaveText(
             phase === "admitted"
               ? "Not established on chain"
               : role === "alice" || phase === "settled"
@@ -1000,6 +1057,34 @@ export async function main(argv = process.argv.slice(2)) {
         await capture(role === "owner" ? "manage" : "spot");
         await page.locator('[data-view="cases"]').click();
         await loaded("cases");
+        const casesDetail = await get(context.request, api);
+        assertCStatusDetail(casesDetail, role, before, summary, scope);
+        const [casesBlock, casesHead] = await Promise.all([
+          provider.getBlock(casesDetail.state.blockNumber),
+          provider.getBlock("latest"),
+        ]);
+        assertApiSnapshot(
+          casesDetail,
+          casesBlock,
+          casesHead,
+          before.indexedBlock.number,
+        );
+        const controls = statusControlExpectations(
+          phase,
+          casesDetail.now,
+          casesDetail.state.challengeEndsAt,
+        );
+        await expect(page.locator('[data-tx="release"]')).toBeEnabled({
+          enabled: controls.release,
+        });
+        await expect(page.locator(".case-card")).toHaveCount(
+          controls.caseCount,
+        );
+        if (controls.caseCount)
+          await expect(
+            page.locator('.case-card [data-tx="resolve"]'),
+          ).toBeEnabled({ enabled: controls.resolve });
+        else await expect(page.locator('[data-tx="resolve"]')).toHaveCount(0);
         await expect(page.locator(".money-summary")).toBeVisible();
         for (const [label, value] of [
           ["Sent", summary.sentWei],
