@@ -400,19 +400,27 @@ index 9f4afe3..03521a2 100644
  fs.writeFileSync(path.join(out, "index.html"), html);
  console.log(`Wrote ${path.join(out, "index.html")} for contract ${site.contract || "(preview, no address)"} on chain ${site.chainId}, deposit ${site.deposit} ETH`);
 diff --git a/scripts/console.mjs b/scripts/console.mjs
-index 29b3003..ffb78e9 100644
+index 29b3003..5b422a1 100644
 --- a/scripts/console.mjs
 +++ b/scripts/console.mjs
-@@ -15,7 +15,7 @@ import path from "node:path";
+@@ -13,11 +13,15 @@ import http from "node:http";
+ import fs from "node:fs";
+ import path from "node:path";
  import { fileURLToPath } from "node:url";
++import { createRequire } from "node:module";
  import { exec } from "node:child_process";
  import { ethers } from "ethers";
 -import { loadConfig, klerosConfig, deployArgs, KLEROS } from "./lib.mjs";
 +import { consoleSettings } from "./console-support.mjs";
  
  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
++// Resolve the installed package, supporting either this module's lockfile or root-hoisted deps.
++const ethersEntry = createRequire(import.meta.url).resolve("ethers");
++const ethersBrowser = path.resolve(path.dirname(ethersEntry), "../dist/ethers.umd.min.js");
  const PORT = Number(process.env.PORT || 8787);
-@@ -42,37 +42,7 @@ if (!fs.existsSync(path.join(root, "build/TruthPaysKickback.json"))) {
+ const arg = (k) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : undefined; };
+ const CONFIG = arg("--config") || "config.json";
+@@ -42,37 +46,7 @@ if (!fs.existsSync(path.join(root, "build/TruthPaysKickback.json"))) {
  
  // The config as the scripts see it, read fresh on every request. `configHash` lets the page check
  // that these settings come from the same config text it was opened with.
@@ -451,6 +459,16 @@ index 29b3003..ffb78e9 100644
  const toJson = (v) => JSON.stringify(v, (_, x) => (typeof x === "bigint" ? x.toString() : x));
  
  http
+@@ -93,7 +67,8 @@ http
+     }
+     if (!ALLOWED.includes(p)) return res.writeHead(404).end("not found");
+     // The page always asks for config.json and out/…; serve the chosen config and output folder.
+-    const file = path.join(root, p === "config.json" ? CONFIG : p.replace(/^out\//, OUT + "/"));
++    const file = p === "node_modules/ethers/dist/ethers.umd.min.js" ? ethersBrowser
++      : path.join(root, p === "config.json" ? CONFIG : p.replace(/^out\//, OUT + "/"));
+     if (!fs.existsSync(file)) return res.writeHead(404).end("missing: " + p);
+     res.writeHead(200, { "content-type": TYPES[path.extname(p)] || "application/octet-stream", "cache-control": "no-store" });
+     fs.createReadStream(file).on("error", () => res.end()).pipe(res);
 diff --git a/scripts/lib.mjs b/scripts/lib.mjs
 index 4d81d6c..700ab5d 100644
 --- a/scripts/lib.mjs

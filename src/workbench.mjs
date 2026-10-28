@@ -8,6 +8,8 @@ import {
   DAY,
 } from "./chain.mjs";
 import { importCsv } from "./imports.mjs";
+import { createImportPreviewService } from "./import-preview.mjs";
+import { projectPayments } from "./payments.mjs";
 import {
   hash,
   id,
@@ -346,19 +348,44 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     const participants = await Promise.all(
       [...r.participants.values()]
         .filter((p) => privileged || (s && lower(p.wallet) === lower(s.wallet)))
-        .map(async (p) => ({
-          ...p,
-          registered: [1, 2].includes(
-            Number(await contract(eventId).status(p.wallet)),
-          ),
-          attended: await contract(eventId).attended(p.wallet),
-          owedWei: String(await contract(eventId).owed(p.wallet)),
-        })),
+        .map(async (p) => {
+          const status = Number(await contract(eventId).status(p.wallet));
+          let verificationState = p.deposit ? "current" : "missing",
+            verificationError = null;
+          if (p.deposit)
+            try {
+              await verifyReceipt(eventId, p, p.deposit.txHash, true);
+            } catch (e) {
+              verificationState =
+                e.code === "RETURNED_DEPOSIT" ? "returned" : "unavailable";
+              verificationError = e.code ?? "VERIFICATION_UNAVAILABLE";
+            }
+          return {
+            ...p,
+            status,
+            registrationState: ["unregistered", "active", "paid", "rejected"][
+              status
+            ],
+            deposit: p.deposit
+              ? {
+                  ...p.deposit,
+                  receiptVerified: true,
+                  verified: verificationState === "current",
+                  verificationState,
+                  verificationError,
+                }
+              : null,
+            registered: [1, 2].includes(status),
+            attended: await contract(eventId).attended(p.wallet),
+            owedWei: String(await contract(eventId).owed(p.wallet)),
+          };
+        }),
     );
     const deposits = privileged ? await depositLedger(eventId) : [];
     return {
       event,
       state: st,
+      payments: await projectPayments(chain, r, { blockTag: st.blockNumber }),
       participants,
       deposits,
       unmatched: deposits.filter((x) => BigInt(x.unallocatedWei) > 0n),
@@ -747,6 +774,17 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     switch (action) {
       case "deposit": {
         requireThat(
+          !r.transactions.some(
+            (t) =>
+              t.action === "deposit" &&
+              lower(t.wallet) === lower(s.wallet) &&
+              ["pending", "mined"].includes(t.status),
+          ),
+          "An earlier deposit is submitted; verify its receipt before preparing another",
+          "PENDING_DEPOSIT",
+          409,
+        );
+        requireThat(
           st.now >= r.deployment.depositOpensAt &&
             st.now < r.deployment.depositDeadline,
           "Committed deposits close at the event start",
@@ -933,7 +971,13 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       case "fundAppeal":
       case "appealRewards": {
         const ch = await c.challenges(wallet());
-        requireThat(Number(ch.state) >= 2, "A matched case is required");
+        requireThat(
+          Number(ch.state) >= 2 &&
+            lower(ch.matcher) !== lower(ethers.ZeroAddress),
+          "A matched Court case is required",
+          "NOT_MATCHED_CASE",
+          409,
+        );
         target = chain.resolver;
         const localId = ch.localDisputeID;
         if (action === "evidence") {
@@ -1008,6 +1052,8 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       sessionId: s.id,
       chainId: 1337,
       contract: r.deployment.contract,
+      abiVersion: r.deployment.abiVersion,
+      contractVersion: r.deployment.contractVersion,
       valueWei: String(spec.value),
       method: spec.method,
       args: JSON.parse(json(spec.args)),
@@ -1038,7 +1084,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       409,
     );
     requireThat(
-      !d.used && d.expiresAt > Date.now(),
+      !d.used && !d.submittedHash && d.expiresAt > Date.now(),
       "Draft expired or already consumed",
       "STALE_DRAFT",
       409,
@@ -1090,16 +1136,16 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
         ...d.transaction,
         gasLimit,
       });
-      r.transactions.push({
+      const tx = {
         hash: sent.hash,
         status: "pending",
         action: d.action,
         wallet: s.wallet,
         eventId,
-      });
+      };
+      r.transactions.push(tx);
       const receipt = await sent.wait();
       requireThat(receipt.status === 1, "Transaction failed", "TX_FAILED", 409);
-      const tx = r.transactions.at(-1);
       tx.status = "confirmed";
       tx.blockNumber = receipt.blockNumber;
       r.revision++;
@@ -1136,7 +1182,15 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       409,
     );
     requireThat(
-      !r.transactions.some((t) => lower(t.hash) === lower(txHash)),
+      !d.submittedHash || lower(d.submittedHash) === lower(txHash),
+      "Confirmation differs from the submitted hash",
+      "TX_MISMATCH",
+      409,
+    );
+    requireThat(
+      !r.transactions.some(
+        (t) => lower(t.hash) === lower(txHash) && t.status === "confirmed",
+      ),
       "This transaction was already recorded",
       "DUPLICATE_TRANSACTION",
       409,
@@ -1176,9 +1230,107 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       eventId,
       blockNumber: receipt.blockNumber,
     };
-    r.transactions.push(result);
+    const pending = r.transactions.find((t) => lower(t.hash) === lower(txHash));
+    if (pending) Object.assign(pending, result);
+    else r.transactions.push(result);
     if (d.action === "deposit") await linkDeposit(eventId, s, { txHash });
     return result;
+  }
+  async function recordSubmitted(eventId, s, draftId, txHash) {
+    authenticated(s);
+    const r = record(eventId, s),
+      d = drafts.get(draftId);
+    requireThat(
+      d &&
+        d.eventId === eventId &&
+        d.sessionId === s.id &&
+        lower(d.wallet) === lower(s.wallet) &&
+        !d.used,
+      "Submission belongs to another review or wallet",
+      "DRAFT_SCOPE",
+      409,
+    );
+    requireThat(
+      /^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""),
+      "Invalid transaction hash",
+    );
+    requireThat(
+      d.expiresAt > Date.now(),
+      "Review expired; preserve the submitted hash and verify its receipt",
+      "STALE_DRAFT",
+      409,
+    );
+    requireThat(
+      !d.submittedHash || lower(d.submittedHash) === lower(txHash),
+      "This review already has another submitted transaction",
+      "SUBMITTED_DRAFT",
+      409,
+    );
+    const tx = await chain.provider.getTransaction(txHash);
+    if (tx)
+      requireThat(
+        lower(tx.from) === lower(d.wallet) &&
+          lower(tx.to) === lower(d.transaction.to) &&
+          tx.data === d.transaction.data &&
+          String(tx.value) === d.valueWei &&
+          Number(tx.chainId) === 1337,
+        "Submitted transaction differs from the reviewed transaction",
+        "TX_MISMATCH",
+        409,
+      );
+    const existing = r.transactions.find(
+      (t) => lower(t.hash) === lower(txHash),
+    );
+    if (existing) {
+      requireThat(
+        existing.draftId === draftId,
+        "Transaction hash is already recorded",
+        "DUPLICATE_TRANSACTION",
+        409,
+      );
+      return { ...existing };
+    }
+    d.submittedHash = txHash;
+    const entry = {
+      hash: txHash,
+      status: "pending",
+      action: d.action,
+      wallet: d.wallet,
+      eventId,
+      draftId,
+      chainId: d.chainId,
+      contract: d.contract,
+      submittedAt: Date.now(),
+    };
+    r.transactions.push(entry);
+    return { ...entry };
+  }
+  async function submissionStatus(eventId, s, txHash) {
+    authenticated(s);
+    const r = record(eventId, s),
+      entry = r.transactions.find((t) => lower(t.hash) === lower(txHash));
+    requireThat(
+      entry && lower(entry.wallet) === lower(s.wallet),
+      "No submission for this wallet/event",
+      "NOT_FOUND",
+      404,
+    );
+    const receipt = await chain.provider.getTransactionReceipt(txHash);
+    if (!receipt) return { ...entry, receiptStatus: "pending" };
+    requireThat(
+      (await chain.provider.getBlock(receipt.blockNumber))?.hash ===
+        receipt.blockHash,
+      "Receipt is not canonical",
+      "TX_REORG",
+      409,
+    );
+    if (entry.status !== "confirmed")
+      entry.status = receipt.status === 1 ? "mined" : "failed";
+    return {
+      ...entry,
+      receiptStatus: receipt.status === 1 ? "confirmed" : "failed",
+      blockNumber: receipt.blockNumber,
+    };
   }
   async function advance(seconds) {
     requireThat(
@@ -1232,7 +1384,12 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     authenticated(s);
     const r = record(eventId, s),
       c = await contract(eventId).challenges(wallet);
-    requireThat(Number(c.state) >= 2, "Matched case required");
+    requireThat(
+      Number(c.state) >= 2 && lower(c.matcher) !== lower(ethers.ZeroAddress),
+      "Matched Court case required",
+      "NOT_MATCHED_CASE",
+      409,
+    );
     const [content, uri] = await contract(eventId).caseMetaEvidence(wallet);
     const publication = {
       uri,
@@ -1266,6 +1423,8 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     validateDraft,
     executeDraft,
     confirmDraft,
+    recordSubmitted,
+    submissionStatus,
     advance,
     mockRuling,
     mockAppeal,
@@ -1273,5 +1432,8 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     close: chain.close,
   };
   w.importCsv = (eventId, s, input) => importCsv(w, eventId, s, input);
+  const previews = createImportPreviewService(w);
+  w.previewImport = previews.preview;
+  w.commitImport = previews.commit;
   return w;
 }

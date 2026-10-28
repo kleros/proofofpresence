@@ -1,0 +1,110 @@
+import assert from "node:assert/strict";
+import { after, before, test } from "node:test";
+import { localChain, deployEvent, contractFor, DAY } from "../src/chain.mjs";
+import { projectPayments } from "../src/payments.mjs";
+
+let chain;
+const D = 12_000_000_000_000_000n;
+before(async () => { chain = await localChain(0); });
+after(async () => { if (chain) await chain.close(); });
+const send = async transaction => (await transaction).wait();
+const warp = async seconds => {
+  await chain.provider.send("evm_increaseTime", [seconds]);
+  await chain.provider.send("evm_mine", []);
+};
+async function fixture(id) {
+  const now = (await chain.provider.getBlock("latest")).timestamp;
+  const definition = { id, title: `Synthetic ${id}`, location: "Local fixture venue", timezone: "Asia/Bangkok", startsAt: new Date((now + 3600) * 1000).toISOString() };
+  const record = { ...await deployEvent(chain, definition, chain.signers[0], D, now + 3600, now + 15 * DAY), definition };
+  return { record, c: contractFor(chain, record.deployment, chain.signers[0]) };
+}
+
+test("payment projection indexes actual attendance payouts and late top-ups at a fixed canonical block", async () => {
+  const { record, c } = await fixture("payment-attendance");
+  const [owner, alice, bob, carol] = chain.signers;
+  const wallets = await Promise.all([alice, bob, carol].map(signer => signer.getAddress()));
+  for (const person of [alice, bob, carol]) await send(c.connect(person).deposit({ value: D }));
+  await send(c.registerStakers(wallets));
+  await warp(3601);
+  await send(c.postAttendance([wallets[0]], 3n * D));
+  const fee = await c.challengeDeposit();
+  for (const [i, person] of [bob, carol].entries()) {
+    await send(c.connect(person).challenge({ value: fee, gasLimit: 4_000_000 }));
+    await send(c.matchChallenge(wallets[i + 1], { value: fee, gasLimit: 4_000_000 }));
+  }
+  await warp(DAY + 1);
+  const release = await send(c.releasePayouts({ gasLimit: 4_000_000 }));
+  const initial = await projectPayments(chain, record, { blockTag: release.blockNumber });
+  assert.equal(initial.attendancePaidWei, String(D));
+  assert.equal(initial.principalRefundedWei, "0");
+  assert.equal(initial.failedPaymentsWei, "0");
+  assert.equal(initial.claimedWei, "0");
+  assert.equal(initial.unclassifiedPayoutWei, "0");
+  assert.equal(initial.transfers.length, 1);
+  assert.equal(initial.transfers[0].type, "attendance-payout");
+  assert.equal(initial.transfers[0].wallet, wallets[0]);
+  assert.equal(await c.heldBack(), 2n * D);
+  const bobCase = await c.challenges(wallets[1]);
+  await send(chain.liquid.connect(owner).giveFinalRuling(bobCase.arbitratorDisputeID, 2, { gasLimit: 600_000 }));
+  await send(c.resolveChallenge(wallets[1], { gasLimit: 4_000_000 }));
+  const middle = await projectPayments(chain, record);
+  assert.equal(middle.attendancePaidWei, String(D + D / 2n));
+  assert.equal(await c.heldBack(), D + D / 2n);
+  const carolCase = await c.challenges(wallets[2]);
+  await send(chain.liquid.connect(owner).giveFinalRuling(carolCase.arbitratorDisputeID, 1, { gasLimit: 600_000 }));
+  await send(c.resolveChallenge(wallets[2], { gasLimit: 4_000_000 }));
+  const final = await projectPayments(chain, record);
+  assert.equal(final.attendancePaidWei, String(3n * D));
+  assert.equal(final.directAttendancePaidWei, final.attendancePaidWei);
+  assert.equal(final.totalExplicitSuccessfulTransfersWei, String(3n * D));
+  assert.equal(final.completeNativeTransferHistory, false, "challenge payments cannot be invented from a Payout-only ledger");
+  assert.match(final.scope, /challenge.*outside/i);
+  assert.equal(final.transfers.filter(t => t.wallet === wallets[0]).reduce((n, t) => n + BigInt(t.amountWei), 0n), 3n * D / 2n);
+  assert.equal(final.transfers.filter(t => t.wallet === wallets[2]).reduce((n, t) => n + BigInt(t.amountWei), 0n), 3n * D / 2n);
+  assert.ok(final.transfers.every(t => t.txHash && t.blockNumber <= final.blockNumber && Number.isInteger(t.logIndex)));
+  assert.deepEqual(await projectPayments(chain, record, { blockTag: release.blockNumber }), initial, "a historical projection must not include later settlement events");
+  assert.deepEqual(await projectPayments(chain, record), final, "replaying canonical logs is idempotent");
+});
+
+test("principal returns, failed credits and alternate-recipient claims stay separate without double counting", async () => {
+  const { record, c } = await fixture("payment-returns");
+  const [owner, alice, unregistered, recipient] = chain.signers;
+  const aliceAddress = await alice.getAddress(), rawAddress = await unregistered.getAddress(), destination = await recipient.getAddress();
+  const refusing = await chain.deploy("TestWallet", owner);
+  await send(c.connect(alice).deposit({ value: D }));
+  await send(c.connect(unregistered).deposit({ value: D }));
+  await send(refusing.exec(c.target, c.interface.encodeFunctionData("deposit"), { value: D }));
+  await send(c.deposit({ value: D / 2n }));
+  await send(c.registerStakers([aliceAddress, refusing.target]));
+  await send(c.rejectAndRefund([rawAddress]));
+  await send(c.refund(destination, D / 2n));
+  await send(refusing.setMode(1));
+  const cancelled = await send(c.cancel({ gasLimit: 4_000_000 }));
+  const failed = await projectPayments(chain, record);
+  assert.equal(failed.attendancePaidWei, "0");
+  assert.equal(failed.principalRefundedWei, String(2n * D));
+  assert.equal(failed.registeredPrincipalRefundedWei, String(D));
+  assert.equal(failed.unregisteredDepositReturnedWei, String(D));
+  assert.equal(failed.spareRefundedWei, String(D / 2n));
+  assert.equal(failed.failedPaymentsWei, String(D));
+  assert.equal(failed.outstandingCreditsWei, String(await c.owedTotal()));
+  assert.equal(failed.claimedWei, "0");
+  assert.ok(failed.transfers.some(t => t.type === "failed-credit" && t.successful === false));
+  await send(refusing.exec(c.target, c.interface.encodeFunctionData("claim", [destination])));
+  const recovered = await projectPayments(chain, record);
+  assert.equal(recovered.claimedWei, String(D));
+  assert.equal(recovered.principalRefundedWei, String(2n * D), "an unattributed claim must not be relabeled as a second direct refund");
+  assert.equal(recovered.failedPaymentsWei, String(D), "cumulative credit creation remains distinct from recovery");
+  assert.equal(recovered.outstandingCreditsWei, "0");
+  assert.equal(recovered.totalExplicitSuccessfulTransfersWei, String(3n * D + D / 2n));
+  const claim = recovered.transfers.find(t => t.type === "owed-claim");
+  assert.equal(claim.wallet, refusing.target);
+  assert.equal(claim.recipient, destination);
+  assert.equal(claim.sourceMethod, null, "a wrapper call must not be misrepresented as a top-level event-contract method");
+  assert.equal(await c.owedTotal(), 0n);
+  assert.equal((await projectPayments(chain, record, { blockTag: cancelled.blockNumber })).claimedWei, "0");
+  const other = await fixture("payment-empty-event");
+  const isolated = await projectPayments(chain, other.record);
+  assert.equal(isolated.transfers.length, 0);
+  assert.equal(isolated.totalExplicitSuccessfulTransfersWei, "0");
+});

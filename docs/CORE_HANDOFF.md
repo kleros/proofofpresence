@@ -1,8 +1,9 @@
 # Core application integration checkpoint
 
 28 October 2026. Main implementation owner: this chat (`Unify Kleros event deposits`).
-Core branch: `codex/core-application`. The exact code checkpoint SHA is recorded immediately after the
-initial local commit below. There is no upstream push or production deployment.
+Core branch: `codex/core-application`. Initial stable code checkpoint:
+`28f2c3f50563a699a62bf9e4085f0aa6a7464828`. There is no upstream push or production deployment.
+Later core additions and the final integration commit are recorded in this document as they land.
 
 ## Architecture and authoritative interfaces
 
@@ -62,11 +63,20 @@ or upstream merge is authorized by the handoff itself. Record the accepted/rejec
 
 ## Verification and remaining work
 
-See TEST_REPORT for actual completed runs. The final current-source `npm run verify` is running at this
-checkpoint after earlier passing app suites; clean retained compatibility has54/54, guest180/180 and
-console verification is finishing. Future updates replace this sentence with completed evidence.
+The initial checkpoint's consolidated `npm run verify` passed: build/typecheck,37/37Node tests and
+36 browser assertions plus interactions. Clean root-only dependency verification also passed retained
+contract/script/provenance54/54, guest180/180 and console159/159. TEST_REPORT records prior reproductions
+and the nonce/hoisted-dependency fixes. Subsequent core changes are checked before UI integration.
 
-Remaining local work: finish that consolidated verification, integrate/review the incoming UI handoff,
+Core additions now implemented and checked: explicit unmatched-versus-matched case projection/dispatch
+(unmatched resolved challenges never inherit resolver case0), login-instance scoping for drafts/previews,
+server-owned import previews, log-backed payment projections, submitted-hash routes and the nonvisual
+durable transaction journal. The bounded integration run passed34/34 tests (preview12, journal16,
+payments2, submissions2, unmatched1, appeal1); latest HTTP routes passed10/10. Build/typecheck pass.
+The full combined redesign suite is still required after its finished handoff is integrated.
+
+Remaining local work: integrate/review the incoming UI handoff, wire its presentation to those newer
+authoritative interfaces,
 and run the combined checks. External work remains persistent production auth/storage, staging RLS and
 private-content mapping rehearsal, a fresh mainnet fork, dependency remediation and an explicitly
 authorized rollout. Backend/financial behavior remains owned by the core implementation session.

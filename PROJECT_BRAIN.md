@@ -7,7 +7,8 @@ recommendations and unexecuted-test statements.
 ## Active workspace and decision
 
 - Workspace: `/Users/hashmanansala/Documents/ChatGPT/Kleros projects`; root Git began as unborn `main`.
-  A local checkpoint is being recorded on `codex/core-application`; no upstream push, deployment change or live data write was made.
+  Local core checkpoint `28f2c3f50563a699a62bf9e4085f0aa6a7464828` is on `codex/core-application`;
+  no upstream push, deployment change or live data write was made.
 - All three fetched `main` heads exactly match the original review. Source bases and packaging are
   recorded in [references/SOURCES.json](references/SOURCES.json). Reference trees are vendored,
   not gitlinks; original cloned metadata is preserved locally under ignored `.runtime/source-history/`.

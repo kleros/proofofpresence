@@ -85,6 +85,11 @@ could reuse the prior pending nonce. The CLI now uses `ethers.NonceManager` for 
 transactions within one invocation. This changes nonce handling only; Solidity and financial
 rules remain unchanged. The two relevant integration scenarios passed 2/2 after the fix,
 and the complete clean `npm run test:contracts` then passed **54/54 in 253.4 seconds**.
+The root-only clean guest browser suite passed **180/180**. Its standalone organiser server
+initially looked for ethers' browser bundle under a nonexistent nested `node_modules`; it now
+resolves the actual installed package location. After that path fix, the clean organiser browser
+suite passed **159/159**. Both browser commands exited 0 with Playwright 1.58.2 and ethers 6.16.0.
+Their external integrations remained mocked and all contract writes stayed on local Ganache.
 `test:fork` was not run: no local mainnet fork was supplied. Local mocks reproduce the V1 interface,
 not current production juror behavior or RPC availability. The inherited Ganache dependency audit
 advisories remain; no broad forced upgrade was made during a financial compatibility refactor.

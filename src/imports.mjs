@@ -3,15 +3,39 @@ import { parse } from "csv-parse/sync";
 import { ethers } from "ethers";
 import { hash, id, lower, requireThat, text } from "./utils.mjs";
 
-/** Raw CSV metadata detects conflicts; it does not authenticate the export's origin. */
-export async function importCsv(workbench, eventId, session, input) {
-  const record = workbench.record(eventId, session);
-  await workbench.owner(eventId, session);
+export const IMPORT_PARSER_VERSION = "csv-v2";
+export const IMPORT_ORIGIN_LIMITATION =
+  "Origin is organizer-reviewed; neither a CSV label nor a hash authenticates Luma.";
+
+/** Review is an origin attestation, never an override of hard validation failures. */
+export function provenanceReview(review) {
   requireThat(
-    ["attendance", "guests"].includes(input.kind),
-    "Unknown import kind",
+    review?.confirmed === true && text(review?.note ?? "", 1000).length >= 8,
+    "Raw CSV origin cannot be verified. Organizer must review source event and record a provenance note; hashes identify bytes, not origin.",
+    "PROVENANCE_REVIEW_REQUIRED",
+    409,
   );
-  const csv = text(input.csv, 512_000, 1);
+  return text(review.note, 1000);
+}
+
+/** Read-only validation shared by previews and the legacy direct import path. */
+export async function validateImportCsv(
+  workbench,
+  eventId,
+  session,
+  input,
+  { requireReview = true, expected = null } = {},
+) {
+  // Own primitive inputs before any RPC await; caller objects are not trusted storage.
+  const kind = input?.kind;
+  const sourceEventId = input?.sourceEventId;
+  text(input?.csv, 512_000, 1);
+  const csv = input.csv;
+  const review = input?.review
+    ? { confirmed: input.review.confirmed, note: input.review.note }
+    : undefined;
+  const record = await workbench.owner(eventId, session);
+  requireThat(["attendance", "guests"].includes(kind), "Unknown import kind");
   let rows;
   try {
     rows = parse(csv, {
@@ -44,13 +68,24 @@ export async function importCsv(workbench, eventId, session, input) {
   );
   const d = record.deployment;
   const startingRevision = record.revision;
+  const configHash = hash(d);
   const startingState = await workbench.state(eventId);
+  if (expected)
+    requireThat(
+      startingRevision === expected.revision &&
+        configHash === expected.configHash &&
+        startingState.fingerprint === expected.snapshot &&
+        hash(csv) === expected.sourceHash,
+      "The reviewed import changed; prepare a fresh preview",
+      "STALE_IMPORT_PREVIEW",
+      409,
+    );
   const seenParticipants = new Set(),
     seenFinancial = new Set();
   const planned = [];
   // Validate every row before mutating anything. Review can never override a mismatch.
   requireThat(
-    !input.sourceEventId || input.sourceEventId === eventId,
+    !sourceEventId || sourceEventId === eventId,
     "Source event conflicts with selected event",
     "EVENT_MISMATCH",
     409,
@@ -164,7 +199,7 @@ export async function importCsv(workbench, eventId, session, input) {
         409,
       );
     }
-    if (input.kind === "attendance") {
+    if (kind === "attendance") {
       // A personal history or merch field is deliberately never accepted here.
       requireThat(
         row.checked_in_at &&
@@ -193,17 +228,16 @@ export async function importCsv(workbench, eventId, session, input) {
       planned.push({ participant, row, deposit });
     }
   }
-  requireThat(
-    input.review?.confirmed === true &&
-      text(input.review?.note ?? "", 1000).length >= 8,
-    "Raw CSV origin cannot be verified. Organizer must review source event and record a provenance note; hashes identify bytes, not origin.",
-    "PROVENANCE_REVIEW_REQUIRED",
-    409,
-  );
+  const reviewNote = requireReview ? provenanceReview(review) : null;
   const sourceHash = hash(csv);
+  // Preserve duplicate protection for in-memory batches written by the old trimmed-hash parser.
+  const legacySourceHash = hash(csv.trim());
   requireThat(
     !record.batches.some(
-      (b) => b.sourceHash === sourceHash && b.kind === input.kind,
+      (b) =>
+        b.kind === kind &&
+        (b.sourceHash === sourceHash ||
+          (b.parserVersion === "csv-v1" && b.sourceHash === legacySourceHash)),
     ),
     "This exact import was already applied",
     "DUPLICATE_IMPORT",
@@ -212,30 +246,101 @@ export async function importCsv(workbench, eventId, session, input) {
   const snapshot = await workbench.state(eventId);
   requireThat(
     record.revision === startingRevision &&
-      snapshot.fingerprint === startingState.fingerprint,
+      snapshot.fingerprint === startingState.fingerprint &&
+      hash(record.deployment) === configHash,
     "State changed during import review; retry with fresh authoritative data",
+    "STALE_IMPORT",
+    409,
+  );
+  const stakers = new Set(snapshot.stakers.map(lower));
+  const proposedRows = planned.map((item, index) => {
+    const participant = item.participant;
+    const deposit = item.deposit ?? participant.deposit;
+    return {
+      rowNumber: index + 1,
+      eventId,
+      participantId: participant.id,
+      name: participant.name,
+      email: participant.email,
+      wallet: participant.wallet,
+      identityVerified: participant.identityVerified,
+      registered: stakers.has(lower(participant.wallet)),
+      currentAdmission: participant.admission,
+      proposedAdmission:
+        kind === "guests" ? item.row.admission : participant.admission,
+      deposit: deposit
+        ? {
+            txHash: deposit.txHash,
+            logIndex: deposit.logIndex,
+            amountWei: deposit.amountWei,
+            verified: deposit.verified,
+          }
+        : null,
+      checkedInAt:
+        kind === "attendance"
+          ? new Date(item.timestamp * 1000).toISOString()
+          : null,
+      alreadyObserved:
+        kind === "attendance" &&
+        record.observations.some((o) => o.participantId === participant.id),
+      originReviewRequired: true,
+    };
+  });
+  return {
+    record,
+    planned,
+    proposedRows,
+    csv,
+    kind,
+    sourceEventId,
+    sourceHash,
+    configHash,
+    startingRevision,
+    snapshot,
+    reviewNote,
+    parserVersion: IMPORT_PARSER_VERSION,
+    originReviewRequired: true,
+    limitation: IMPORT_ORIGIN_LIMITATION,
+  };
+}
+
+/** No await may occur between the final stale check and the complete mutation. */
+function applyValidatedImport(eventId, session, validated) {
+  const {
+    record,
+    planned,
+    kind,
+    snapshot,
+    configHash,
+    startingRevision,
+    sourceHash,
+    reviewNote,
+  } = validated;
+  requireThat(
+    record.revision === startingRevision &&
+      hash(record.deployment) === configHash,
+    "State changed before import commit; retry with fresh authoritative data",
     "STALE_IMPORT",
     409,
   );
   const batch = {
     id: id(),
     eventId,
-    chainId: d.chainId,
-    contract: d.contract,
-    kind: input.kind,
+    chainId: record.deployment.chainId,
+    contract: record.deployment.contract,
+    kind,
     sourceHash,
-    parserVersion: "csv-v1",
-    configHash: hash(d),
+    parserVersion: IMPORT_PARSER_VERSION,
+    configHash,
     snapshotBlock: snapshot.blockNumber,
     reviewer: session.wallet,
     reviewedAt: new Date().toISOString(),
-    reviewNote: input.review.note,
+    reviewNote,
     origin: "organizer-reviewed-unverified-export",
-    rowCount: rows.length,
+    rowCount: planned.length,
   };
-  // Deposits have all been verified above; committing rows is atomic in this single process.
   for (const item of planned) {
-    if (input.kind === "attendance")
+    if (kind === "attendance")
       record.observations.push({
         id: id(),
         eventId,
@@ -245,7 +350,7 @@ export async function importCsv(workbench, eventId, session, input) {
         timestamp: item.timestamp,
         batchId: batch.id,
         sourceHash,
-        note: input.review.note,
+        note: reviewNote,
       });
     else {
       if (item.deposit) item.participant.deposit = item.deposit;
@@ -256,9 +361,27 @@ export async function importCsv(workbench, eventId, session, input) {
   record.revision++;
   return {
     batch,
-    rows: rows.length,
+    rows: planned.length,
     errors: [],
-    limitation:
-      "Origin is organizer-reviewed; neither a CSV label nor a hash authenticates Luma.",
+    limitation: IMPORT_ORIGIN_LIMITATION,
   };
+}
+
+/** Compatibility route: validates and commits immediately after explicit provenance review. */
+export async function importCsv(
+  workbench,
+  eventId,
+  session,
+  input,
+  { expected = null, beforeCommit = () => {} } = {},
+) {
+  const validated = await validateImportCsv(
+    workbench,
+    eventId,
+    session,
+    input,
+    { requireReview: true, expected },
+  );
+  beforeCommit();
+  return applyValidatedImport(eventId, session, validated);
 }

@@ -27,3 +27,31 @@ All API failures JSON `{error,code}` with HTTP 400/401/403/404/409. Amounts inte
 the arbitrator using its dispute ID to advance an expired appeal and deliver the final vote to the
 resolver. The resolver's one-sided funding override still decides finality; `resolve` applies it to the
 event separately. These are permissionless contract operations and do not choose a new vote.
+
+Cases additionally expose `matched` and `outcome`. An expired unmatched case has
+`outcome:'attended-unmatched'` and null resolver/arbitrator IDs, finalRuling, caseURI and appeal data.
+It never reads or acts on resolver case0. Evidence, appeal, rewards and publication require an actual
+nonzero matcher. HTTP demo login instances use unique internal session IDs even for the same wallet.
+
+New core integration interfaces:
+
+- Bootstrap includes `instanceId`; persisted transaction context must include it alongside mode,
+  stable event ID, chain, contract/ABI version and wallet. Restarted deterministic demo chains are separate environments.
+- `POST /api/events/:id/imports/preview` accepts the existing CSV input and returns an opaque,
+  five-minute `id/previewId`, proposed rows, exact received-text source hash, parser/config hash,
+  revision/block/fingerprint and `originReviewRequired`. It makes no record mutations.
+  `POST /api/events/:id/imports/:previewId/commit` `{review:{confirmed:true,note}}` atomically revalidates
+  stored bytes, current owner/session/deployment/revision/state, then applies once. No acknowledgement
+  overrides known mismatches or stale data. Direct `/imports` remains a compatibility interface.
+- Detail includes `payments`: canonical-block-bound successful direct attendance payouts, principal
+  refunds, spare returns/sweeps, failed credits and separately reported claims. Read its semantics and
+  limitations; a sent total must never be derived from current pool/balance/reserves.
+- `POST /api/events/:id/drafts/:draftId/submitted` `{hash}` records a scoped pending reference without
+  verifying admission/deposit or changing financial state. It checks an available transaction against
+  exact reviewed terms and blocks reuse of the review/another pending deposit. `GET
+  /api/events/:id/submissions/:hash` reports the wallet's canonical receipt state. A mined reference
+  remains distinct from `/confirm`, which verifies and records the reviewed action exactly once.
+- `public/transaction-context.js` supplies a nonvisual signing/journal helper. It captures original
+  context, revalidates before signing, durably saves the returned hash before async confirmation, never
+  resends automatically and preserves hashes on navigation or post-submission errors. Integrate it with
+  the redesigned view's pending-reference presentation.

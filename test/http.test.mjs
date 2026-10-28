@@ -13,6 +13,71 @@ before(async () => {
 after(async () => {
   await app?.close();
 });
+test("HTTP import preview never applies rows before explicit reviewed single-use commit", async () => {
+  const login = await post("/api/session", { identity: "organizer-a" }),
+    cookie = login.headers.get("set-cookie").split(";")[0];
+  const boot = await (
+    await fetch(base + "/api/bootstrap", { headers: { cookie } })
+  ).json();
+  assert.equal(typeof boot.instanceId, "string");
+  const alice = boot.identities.find((p) => p.id === "alice");
+  const csv = `event_id,participant_id,email,wallet,admission\nevent-a,event-a-alice,alice@example.test,${alice.wallet},approved\n`;
+  const result = await post(
+    "/api/events/event-a/imports/preview",
+    { kind: "guests", csv },
+    { cookie },
+  );
+  assert.equal(result.status, 200);
+  const preview = await result.json();
+  assert.equal(preview.originReviewRequired, true);
+  assert.equal(preview.proposedRows.length, 1);
+  let detail = await (
+    await fetch(base + "/api/events/event-a", { headers: { cookie } })
+  ).json();
+  assert.equal(detail.imports.length, 0);
+  assert.equal(
+    detail.participants.find((p) => p.id === "event-a-alice").admission,
+    "pending",
+  );
+  const missing = await post(
+    `/api/events/event-a/imports/${preview.id}/commit`,
+    {},
+    { cookie },
+  );
+  assert.equal((await missing.json()).code, "PROVENANCE_REVIEW_REQUIRED");
+  const review = {
+    confirmed: true,
+    note: "Reviewed the synthetic source event and raw export origin limitation.",
+  };
+  assert.equal(
+    (
+      await post(
+        `/api/events/event-a/imports/${preview.id}/commit`,
+        { review },
+        { cookie },
+      )
+    ).status,
+    201,
+  );
+  detail = await (
+    await fetch(base + "/api/events/event-a", { headers: { cookie } })
+  ).json();
+  assert.equal(detail.imports.length, 1);
+  assert.equal(
+    detail.participants.find((p) => p.id === "event-a-alice").admission,
+    "approved",
+  );
+  assert.equal(
+    (
+      await post(
+        `/api/events/event-a/imports/${preview.id}/commit`,
+        { review },
+        { cookie },
+      )
+    ).status,
+    409,
+  );
+});
 test("local evidence upload preserves exact bytes and reports their SHA256 without a public pin", async () => {
   const login = await post("/api/session", { identity: "alice" }),
     cookie = login.headers.get("set-cookie").split(";")[0];
@@ -253,6 +318,31 @@ test("wallet authentication verifies domain-bound expiring signed nonce and reje
     ).status,
     403,
   );
+});
+test("logging into the same demo wallet creates a new signing context and invalidates an earlier draft", async () => {
+  const first = await post("/api/session", { identity: "alice" }),
+    firstCookie = first.headers.get("set-cookie").split(";")[0];
+  const draft = await (
+    await post(
+      "/api/events/event-a/drafts",
+      { action: "deposit" },
+      { cookie: firstCookie },
+    )
+  ).json();
+  assert.ok(draft.id);
+  const second = await post(
+      "/api/session",
+      { identity: "alice" },
+      { cookie: firstCookie },
+    ),
+    secondCookie = second.headers.get("set-cookie").split(";")[0];
+  const result = await post(
+    `/api/events/event-a/drafts/${draft.id}/execute`,
+    {},
+    { cookie: secondCookie },
+  );
+  assert.equal(result.status, 409);
+  assert.equal((await result.json()).code, "DRAFT_SCOPE");
 });
 test("legacy local modules contain only selected event and loopback RPC/upload configuration", async () => {
   const login = await post("/api/session", { identity: "organizer-a" });

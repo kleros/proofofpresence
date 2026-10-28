@@ -35,6 +35,7 @@ export interface EventDefinition {
   organizers: string[];
   staff: string[];
   lumaEventId?: string;
+  contentEventId?: string;
   lumaUrl?: string;
   contentUrl?: string;
   deployment?: Deployment;

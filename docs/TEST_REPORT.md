@@ -57,6 +57,24 @@ The booth remains unchanged outside finance. Three VM-based tests execute legacy
 
 ## Latest full verification
 
+Primary core checkpoint `28f2c3f50563a699a62bf9e4085f0aa6a7464828` on `codex/core-application`:
+`npm run verify` passed build, checked JS/TypeScript, **37/37 Node tests** and **36 browser assertions**.
+Subsequent bounded core integration checks passed **34/34** for the server-owned preview, durable
+journal, payment projection, submission recording, unmatched-case scoping and appeal delivery;
+the latest HTTP suite passed **10/10**. These are actual separate runs, not a claim that every later
+glob test was rerun together before the parallel UI handoff. Logs are in `artifacts/`.
+
+A clean `/private/tmp/kleros-clean.6VRQLU` copy with no nested reference dependencies passed
+`npm ci --ignore-scripts`, build and typecheck. Its retained compatibility suite first exposed a
+sequential nonce-cache defect (53/54); NonceManager fixed the actual failing sequence (targeted2/2),
+then the complete clean suite passed **54/54**. Clean guest **180/180** and console **159/159** also
+passed after standalone console UMD resolution was made compatible with hoisted ethers.
+Versions were ethers6.16.0, Playwright1.58.2, Node25.8.1. A first console attempt found the missing
+hoisted script and stopped before financial actions; the final corrected run passed.
+
+Parallel redesign tests remain independent evidence until their committed handoff is integrated and
+the combined source is verified. See CORE_HANDOFF and UI_INTEGRATION_REVIEW for the merge gates.
+
 The final consolidated Node run passed 34/34; the subsequent latest HTTP suite passed 7/7 after adding exact compatibility-window assertions and the editorial-draft recovery/privacy scenario. The latter run supersedes the six-test HTTP subset from the consolidated run. The Workbench result includes event-specific ERC-1497 policy/alias validation and exact-byte repeatable local publication.
 
 Temporary logs: `/tmp/workbench-final.log` and `/tmp/workbench-http-final.log`. Ganache emitted a MaxListenersExceededWarning while the suite deployed many independent events. It did not fail tests or change asserted outcomes; this report does not certify unbounded long-running event creation or production process resource behavior.

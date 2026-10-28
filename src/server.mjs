@@ -240,11 +240,15 @@ export async function startServer({
       )
         guardMutation(req, p === "/local-upload");
       if (p === "/api/bootstrap" && req.method === "GET")
-        return send(res, 200, await w.bootstrap(s));
+        return send(res, 200, { ...(await w.bootstrap(s)), instanceId });
       if (p === "/api/session" && req.method === "POST") {
         const b = await body(req),
           selected = w.session(b.identity);
-        setSession(req, res, selected);
+        setSession(req, res, {
+          ...selected,
+          identityId: selected.id,
+          id: id(),
+        });
         return send(res, 200, {
           wallet: selected.wallet,
           label: selected.label,
@@ -446,6 +450,31 @@ export async function startServer({
           return send(res, 200, w.personal(eventId, s, await body(req)));
         if (tail === "imports" && req.method === "POST")
           return send(res, 201, await w.importCsv(eventId, s, await body(req)));
+        if (tail === "imports/preview" && req.method === "POST")
+          return send(
+            res,
+            200,
+            await w.previewImport(eventId, s, await body(req)),
+          );
+        const importCommit = tail.match(/^imports\/([^/]+)\/commit$/);
+        if (importCommit && req.method === "POST")
+          return send(
+            res,
+            201,
+            await w.commitImport(
+              eventId,
+              s,
+              importCommit[1],
+              (await body(req)).review,
+            ),
+          );
+        const submission = tail.match(/^submissions\/(0x[0-9a-fA-F]{64})$/);
+        if (submission && req.method === "GET")
+          return send(
+            res,
+            200,
+            await w.submissionStatus(eventId, s, submission[1]),
+          );
         if (tail === "drafts" && req.method === "POST")
           return send(
             res,
@@ -453,10 +482,16 @@ export async function startServer({
             await w.createDraft(eventId, s, await body(req)),
           );
         const draft = tail.match(
-          /^drafts\/([^/]+)\/(execute|confirm|validate)$/,
+          /^drafts\/([^/]+)\/(execute|confirm|validate|submitted)$/,
         );
         if (draft && req.method === "POST") {
           const b = await body(req);
+          if (draft[2] === "submitted")
+            return send(
+              res,
+              200,
+              await w.recordSubmitted(eventId, s, draft[1], b.hash),
+            );
           if (draft[2] === "validate") {
             const result = await w.validateDraft(eventId, s, draft[1]);
             return send(res, 200, result.d.transaction);
@@ -632,7 +667,14 @@ export async function startServer({
       }
       if (
         req.method === "GET" &&
-        ["/", "/index.html", "/app.js", "/styles.css", "/ethers.js"].includes(p)
+        [
+          "/",
+          "/index.html",
+          "/app.js",
+          "/styles.css",
+          "/ethers.js",
+          "/transaction-context.js",
+        ].includes(p)
       ) {
         const file =
           p === "/ethers.js"

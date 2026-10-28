@@ -231,7 +231,8 @@ export async function chainState(chain, record) {
       let finalRuling = null,
         appeal = null,
         caseURI = null;
-      if (Number(challenge.state) >= 2) {
+      const matched = lower(challenge.matcher) !== lower(ethers.ZeroAddress);
+      if (matched && Number(challenge.state) >= 2) {
         const resolverCase = await chain.resolver.disputes(
           challenge.localDisputeID,
           at,
@@ -252,19 +253,27 @@ export async function chainState(chain, record) {
       }
       return {
         wallet,
+        matched,
+        outcome:
+          !matched && Number(challenge.state) === 3
+            ? "attended-unmatched"
+            : null,
         state: ["None", "Waiting", "Disputed", "Resolved"][
           Number(challenge.state)
         ],
         matcher: challenge.matcher,
         matchEndsAt: Number(challenge.matchEndsAt),
         depositWei: String(challenge.deposit),
-        localDisputeID: String(challenge.localDisputeID),
-        arbitratorDisputeID: String(challenge.arbitratorDisputeID),
+        localDisputeID: matched ? String(challenge.localDisputeID) : null,
+        arbitratorDisputeID: matched
+          ? String(challenge.arbitratorDisputeID)
+          : null,
         heldShareWei: String(challenge.heldShare),
         finalRuling,
         caseURI,
-        publication:
-          record.publications?.get(lower(wallet))?.status ?? "unpublished",
+        publication: matched
+          ? (record.publications?.get(lower(wallet))?.status ?? "unpublished")
+          : "not-applicable",
         appeal,
       };
     }),
