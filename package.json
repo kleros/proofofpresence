@@ -14,7 +14,10 @@
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "test:contracts": "npm --prefix references/kickback test",
     "test:browser": "node test/app.e2e.mjs",
-    "verify": "npm run build && npm run typecheck && npm test && npm run test:browser"
+    "verify": "npm run build && npm run typecheck && npm test && npm run test:browser && npm run test:ui && npm run test:ui:safety && npm run test:ui:context",
+    "test:ui": "node test/ui-redesign.e2e.mjs",
+    "test:ui:safety": "node test/ui-safety.e2e.mjs",
+    "test:ui:context": "node test/ui-context.e2e.mjs"
   },
   "dependencies": {
     "csv-parse": "5.6.0",

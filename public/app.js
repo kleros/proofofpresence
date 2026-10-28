@@ -1,4 +1,15 @@
 // @ts-check
+import { analyzeImport } from "./reconciliation.js";
+import {
+  createTransactionJournal,
+  submitWalletDraft,
+} from "./transaction-context.js";
+let transactionJournal;
+try {
+  transactionJournal = createTransactionJournal(localStorage);
+} catch {
+  transactionJournal = null;
+}
 /** @param {string} selector @param {ParentNode} [parent] @returns {any} DOM selectors have element types determined by their HTML IDs. */
 const $ = (selector, parent = document) => parent.querySelector(selector);
 const $$ = (selector, parent = document) => [
@@ -109,6 +120,11 @@ const app = {
   generation: 0,
   draft: null,
   busy: false,
+  importReview: null,
+  pending: [],
+  pendingInstanceId: null,
+  focusTab: false,
+  csvReadToken: 0,
 };
 let toastTimer;
 
@@ -152,6 +168,7 @@ function toast(message, error = false) {
 }
 function invalidateDraft() {
   app.draft = null;
+  app.importReview = null;
   const dialog = $("#review-dialog");
   if (dialog.open) dialog.close();
 }
@@ -192,10 +209,35 @@ function isIn(list, wallet) {
     same(typeof item === "string" ? item : item.wallet, wallet),
   );
 }
+let dialogReturnFocus = null;
+function focusKey(element) {
+  if (!(element instanceof HTMLElement)) return null;
+  if (element.id) return `#${CSS.escape(element.id)}`;
+  for (const key of [
+    "data-tx",
+    "data-recovery",
+    "data-view",
+    "data-import-preview",
+    "data-checkin",
+  ])
+    if (element.hasAttribute(key))
+      return `[${key}="${CSS.escape(element.getAttribute(key))}"]`;
+  return null;
+}
 function showDialog(html) {
+  if (!$("#review-dialog").open)
+    dialogReturnFocus = {
+      element: document.activeElement,
+      selector: focusKey(document.activeElement),
+    };
   $("#dialog-body").innerHTML = html;
   const dialog = $("#review-dialog");
   if (!dialog.open) dialog.showModal();
+  const title = $("#dialog-title");
+  if (title) {
+    title.tabIndex = -1;
+    title.focus();
+  }
 }
 
 function identityOptions() {
@@ -318,6 +360,7 @@ async function connectWallet() {
 }
 
 async function load({ silent = false } = {}) {
+  const focused = focusKey(document.activeElement);
   const generation = ++app.generation;
   invalidateDraft();
   app.route = readRoute();
@@ -329,14 +372,108 @@ async function load({ silent = false } = {}) {
     const bootstrap = await api("/api/bootstrap");
     if (generation !== app.generation) return;
     app.bootstrap = bootstrap;
-    app.detail = app.route.eventId
+    if (bootstrap.instanceId) {
+      if (app.pendingInstanceId !== bootstrap.instanceId) {
+        app.pending = [];
+        app.pendingInstanceId = bootstrap.instanceId;
+      }
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(pendingKey()) ?? "[]");
+        if (Array.isArray(saved)) {
+          const key = (item) =>
+            item.id ??
+            `${item.eventId}:${item.wallet}:${item.action}:${item.hash}`;
+          const current = new Set(app.pending.map(key));
+          app.pending = saved
+            .filter((item) => !current.has(key(item)))
+            .concat(app.pending)
+            .slice(-50);
+        }
+      } catch {
+        /* Preserve in-flight memory guards if this browser blocks sessionStorage. */
+      }
+    }
+    const detail = app.route.eventId
       ? await api(`/api/events/${encodeURIComponent(app.route.eventId)}`)
       : null;
     if (generation !== app.generation) return;
+    app.detail = detail;
+    restoreTransactionJournal();
+    let recoveredChange = false;
+    if (detail)
+      for (const pending of app.pending.slice()) {
+        if (
+          pending.eventId !== app.route.eventId ||
+          pending.status === "confirmed"
+        )
+          continue;
+        if (
+          pending.hash &&
+          pending.draftId &&
+          same(pending.wallet, currentIdentity()?.wallet) &&
+          pending.status !== "failed"
+        ) {
+          const capturedContext = transactionContext(
+            detail.event,
+            pending.wallet,
+          );
+          try {
+            const recovered = await post(
+              `/api/events/${encodeURIComponent(pending.eventId)}/submissions/reconcile`,
+              { draftId: pending.draftId, hash: pending.hash },
+            );
+            if (["confirmed", "failed"].includes(recovered.status)) {
+              rememberPending({ ...pending, status: recovered.status });
+              if (
+                capturedContext &&
+                transactionJournal?.get(capturedContext, pending.hash)
+              )
+                transactionJournal.update(capturedContext, pending.hash, {
+                  status: recovered.status,
+                  blockNumber: recovered.blockNumber,
+                  error: null,
+                });
+              recoveredChange = true;
+            }
+          } catch {
+            /* Keep an unresolved hash visible; never send again automatically. */
+          }
+        }
+        const confirmed =
+          detail.transactions.some(
+            (tx) =>
+              (tx.hash ?? tx.txHash) === pending.hash &&
+              tx.status === "confirmed",
+          ) ||
+          detail.participants.some(
+            (person) =>
+              person.deposit?.verified &&
+              person.deposit.txHash === pending.hash,
+          );
+        if (confirmed) {
+          rememberPending({ ...pending, status: "confirmed" });
+          const context = transactionContext();
+          if (context && transactionJournal)
+            try {
+              if (transactionJournal.get(context, pending.hash))
+                transactionJournal.update(context, pending.hash, {
+                  status: "confirmed",
+                  error: null,
+                });
+            } catch {}
+        }
+      }
+    if (generation !== app.generation) return;
+    if (recoveredChange) return load({ silent: true });
     sidebar();
     $("#content").innerHTML = app.detail ? renderEvent() : renderHome();
     $("#loading").hidden = true;
     $("#content").hidden = false;
+    enhanceTables();
+    if (app.focusTab) {
+      $(`[data-view="${app.route.view}"]`)?.focus();
+      app.focusTab = false;
+    } else if (silent && focused) $(focused)?.focus();
     document.title = app.detail
       ? `${app.detail.event.title} · Kleros`
       : "Kleros · Events & commitments";
@@ -344,6 +481,7 @@ async function load({ silent = false } = {}) {
     if (generation !== app.generation) return;
     $("#loading").hidden = true;
     $("#content").hidden = false;
+    app.detail = null;
     $("#content").innerHTML =
       `<div class="page-header"><div><div class="eyebrow">Event workbench</div><h1>We couldn’t load this view.</h1></div></div><div class="error-panel">${escape(error.message)}</div><div class="button-row"><button class="button button-primary" data-reload>Try again</button><a href="#" class="button button-secondary">All events</a></div>`;
   }
@@ -359,10 +497,23 @@ function renderHome() {
     ${renderDemoControls()}`;
 }
 
+function renderEventContext() {
+  const { event, state, now } = app.detail;
+  const hasChallengeWindow = Number(state.challengeEndsAt) > 0;
+  const deadline = hasChallengeWindow
+    ? state.challengeEndsAt
+    : event.claimDeadline;
+  const deadlineLabel = hasChallengeWindow
+    ? Number(now) > Number(state.challengeEndsAt)
+      ? "Omission challenge ended"
+      : "Omission challenge ends"
+    : "Attendance-list deadline";
+  return `<section class="event-context" aria-label="Selected event and verified deployment"><div class="context-main"><div class="event-switch"><label for="event-switch">Selected event</label><select id="event-switch">${app.bootstrap.events.map((item) => `<option value="${escape(item.id)}" ${item.id === event.id ? "selected" : ""}>${escape(item.title)}</option>`).join("")}</select></div><div><span class="tiny-label">${escape(event.id)}</span><div>${badge(phaseName(state.phase), phaseStyle(state.phase))} ${badge(`Local chain ${event.chainId}`, "purple")}</div></div></div><dl class="context-details"><div><dt>Trusted deployment · ${escape(event.contractVersion)}</dt><dd class="mono">${escape(event.contract)}</dd></div><div><dt>${deadlineLabel}</dt><dd>${escape(formatTime(deadline, event.timezone))}</dd></div><div><dt>Last verified · block ${escape(state.blockNumber)}</dt><dd>${escape(formatTime(now, event.timezone))}</dd></div></dl><details class="disclosure"><summary>Policy and deployment terms</summary><p class="mono">${escape(event.policyURI)}</p><p>Native ETH · Kleros V1 · ${escape(event.abiVersion)}. Attendance-list deadline governs posting and no-list recovery, not every later claim.</p></details></section>`;
+}
 function renderEvent() {
   const { event, state } = app.detail;
   const phase = phaseName(state.phase);
-  return `<a class="back-link" href="#">← All events</a><div class="event-heading"><div><div class="eyebrow">${escape(event.id)} / EVENTS & COMMITMENTS</div><h1>${escape(event.title)}</h1><div class="event-subtitle"><span>◷ ${escape(formatTime(event.startsAt, event.timezone))}</span><span>⌖ ${escape(event.location ?? "")}</span></div></div><div class="badges">${badge(phase, phaseStyle(phase))}${badge("LOCAL DEMO", "purple")}</div></div>
+  return `<a class="back-link" href="#">← All events</a>${renderEventContext()}<div class="event-heading"><div><div class="eyebrow">KLEROS COMMUNITY / EVENTS & COMMITMENTS</div><h1>${escape(event.title)}</h1><div class="event-subtitle"><span>◷ ${escape(formatTime(event.startsAt, event.timezone))}</span><span>⌖ ${escape(event.location ?? "")}</span></div></div><div class="badges">${badge(phase, phaseStyle(phase))}${badge("LOCAL DEMO", "purple")}</div></div>
     <div class="event-layout"><div class="event-main"><div class="tabs" role="tablist" aria-label="Event view">${[
       ["participant", "Your participation"],
       ["organizer", "Organizer desk"],
@@ -370,11 +521,141 @@ function renderEvent() {
     ]
       .map(
         ([key, title]) =>
-          `<button class="tab ${key === app.route.view ? "active" : ""}" role="tab" aria-selected="${key === app.route.view}" data-view="${key}">${title}</button>`,
+          `<button id="tab-${key}" class="tab ${key === app.route.view ? "active" : ""}" role="tab" tabindex="${key === app.route.view ? "0" : "-1"}" aria-controls="event-panel" aria-selected="${key === app.route.view}" data-view="${key}">${title}</button>`,
       )
       .join(
         "",
-      )}</div>${app.route.view === "organizer" ? renderOrganizer() : app.route.view === "cases" ? renderCases() : renderParticipant()}</div><aside class="event-aside">${renderAside()}</aside></div>${renderDemoControls()}`;
+      )}</div><div id="event-panel" role="tabpanel" aria-labelledby="tab-${app.route.view}" tabindex="0">${app.route.view === "organizer" ? renderOrganizer() : app.route.view === "cases" ? renderCases() : renderParticipant()}</div></div><aside class="event-aside">${renderAside()}</aside></div>${renderDemoControls()}`;
+}
+function enhanceTables() {
+  const source = $("#source-review"),
+    people = $("#people-review"),
+    deposit = $("#deposit-review"),
+    attendance = $("#attendance-review");
+  if (source && people) people.before(source);
+  if (deposit && attendance) attendance.before(deposit);
+  for (const table of $$("#content table")) {
+    const labels = $$("thead th", table).map((item) => item.textContent);
+    $$("thead th", table).forEach((item) => item.setAttribute("scope", "col"));
+    $$("tbody tr", table).forEach((row) =>
+      $$("td", row).forEach(
+        (cell, index) => (cell.dataset.label = labels[index]),
+      ),
+    );
+  }
+}
+function transactionContext(
+  event = app.detail?.event,
+  wallet = currentIdentity()?.wallet,
+) {
+  if (!event || !wallet || !app.bootstrap?.instanceId) return null;
+  return {
+    eventId: event.id,
+    wallet,
+    chainId: event.chainId,
+    contract: event.contract,
+    abiVersion: event.abiVersion,
+    mode: app.bootstrap.mode,
+    instanceId: app.bootstrap.instanceId,
+  };
+}
+function restoreTransactionJournal() {
+  const context = transactionContext();
+  if (!context || !transactionJournal) return;
+  try {
+    for (const entry of transactionJournal.list(context)) {
+      const existing = app.pending.find(
+        (p) =>
+          p.hash === entry.hash &&
+          p.eventId === context.eventId &&
+          same(p.wallet, context.wallet),
+      );
+      rememberPending({
+        ...entry,
+        ...context,
+        id: existing?.id ?? `journal:${entry.draftId}`,
+        status: ["confirmed", "failed"].includes(entry.status)
+          ? entry.status
+          : "submitted",
+      });
+    }
+  } catch {
+    /* Signing will show a storage error before a wallet prompt. */
+  }
+}
+function pendingKey(instanceId = app.bootstrap?.instanceId) {
+  return `kleros-ui-pending:${location.origin}:${instanceId}`;
+}
+function rememberPending(entry) {
+  const instanceId = entry.instanceId ?? app.bootstrap?.instanceId;
+  const sameInstance = instanceId === app.bootstrap?.instanceId;
+  let entries = app.pending;
+  if (!sameInstance) {
+    try {
+      entries = JSON.parse(
+        sessionStorage.getItem(pendingKey(instanceId)) ?? "[]",
+      );
+    } catch {
+      entries = [];
+    }
+  }
+  const key =
+    entry.id ??
+    `${entry.eventId}:${entry.wallet}:${entry.action}:${entry.hash}`;
+  const next = entries
+    .filter(
+      (item) =>
+        (item.id ??
+          `${item.eventId}:${item.wallet}:${item.action}:${item.hash}`) !== key,
+    )
+    .concat({ ...entry, instanceId })
+    .slice(-50);
+  if (sameInstance) app.pending = next;
+  if (instanceId) {
+    try {
+      sessionStorage.setItem(pendingKey(instanceId), JSON.stringify(next));
+    } catch {
+      /* In-memory references remain available in this tab. */
+    }
+  }
+}
+function pendingAction(
+  action,
+  eventId = app.route.eventId,
+  wallet = currentIdentity()?.wallet,
+) {
+  return app.pending.find(
+    (item) =>
+      item.eventId === eventId &&
+      same(item.wallet, wallet) &&
+      item.action === action &&
+      !["confirmed", "failed"].includes(item.status),
+  );
+}
+function forgetPending(id, instanceId = app.bootstrap?.instanceId) {
+  if (instanceId !== app.bootstrap?.instanceId) return;
+  app.pending = app.pending.filter((item) => item.id !== id);
+  if (app.bootstrap?.instanceId) {
+    try {
+      sessionStorage.setItem(pendingKey(), JSON.stringify(app.pending));
+    } catch {
+      /* Keep the current page usable without storage. */
+    }
+  }
+}
+function renderPending() {
+  const entries = app.pending.filter(
+    (item) =>
+      item.eventId === app.route.eventId &&
+      same(item.wallet, currentIdentity()?.wallet) &&
+      item.status !== "confirmed",
+  );
+  return entries
+    .map(
+      (item) =>
+        `<div class="notice warning" role="status"><strong>${item.status === "failed" ? "Transaction reverted · no successful action" : item.hash ? "Transaction submitted · receipt still needs verification" : "Wallet request unresolved · check your wallet"}</strong><p>${escape(actionNames[item.action] ?? item.action)} · <span class="mono">${escape(item.hash ?? "No transaction hash returned yet")}</span></p><p>Keep any transaction reference and check your wallet activity. Closing a review does not cancel a wallet request. Verify the original event before sending the same action again.</p></div>`,
+    )
+    .join("");
 }
 function renderAside() {
   const { event, state, now } = app.detail;
@@ -395,31 +676,279 @@ function safeLink(value) {
   }
 }
 
+function participantPayments(wallet) {
+  const projection = app.detail?.payments;
+  if (!projection || !wallet) return null;
+  const rows = projection.transfers.filter(
+    (t) => same(t.wallet, wallet) && t.successful,
+  );
+  const sum = (predicate) =>
+    rows
+      .filter(predicate)
+      .reduce((total, t) => total + BigInt(t.amountWei), 0n);
+  return {
+    attendance: sum((t) => t.type === "attendance-payout"),
+    refunds: sum((t) =>
+      [
+        "registered-principal-refund",
+        "registered-no-list-refund",
+        "unregistered-deposit-return",
+      ].includes(t.type),
+    ),
+    claims: sum((t) => t.type === "owed-claim"),
+    block: projection.blockNumber,
+  };
+}
 function renderParticipant() {
-  const { event, state, personal } = app.detail;
-  const identity = currentIdentity();
-  const person = ownParticipant();
+  const { event, state, personal, attendance = [] } = app.detail;
+  const identity = currentIdentity(),
+    person = ownParticipant();
+  const delivery = participantPayments(identity?.wallet);
   const registered =
     !!person?.registered || isIn(state.stakers, identity?.wallet);
   const attended =
     !!person?.attended || isIn(state.attendees, identity?.wallet);
-  const deposit = person?.deposit;
-  const phase = phaseName(state.phase);
-  const depositWindowOpen =
-    phase === "Open" &&
-    Number(app.detail.now) < Date.parse(event.startsAt) / 1000;
+  const deposit = person?.deposit,
+    phase = phaseName(state.phase);
   const ownCase = state.cases?.find((item) =>
     same(item.wallet, identity?.wallet),
   );
-  const owed = person?.owedWei ?? state.owedWei ?? "0";
-  const progress = [!!person, !!deposit?.verified, registered, attended];
-  const current = progress.findIndex((value) => !value);
-  return `<section class="panel"><div class="panel-header"><div><h2>Your place at this event</h2><p>Free participation. Optional financial commitment.</p></div>${person ? badge(person.admission ?? "pending", person.admission === "approved" ? "green" : "amber") : badge("Not registered")}</div><p>${escape(event.description ?? "")}</p><div class="process">${["Link identity", "Verify deposit", "Admission", "Attendance"].map((text, index) => `<div class="process-step ${progress[index] ? "complete" : current === index ? "current" : ""}"><span class="process-number">${progress[index] ? "✓" : index + 1}</span><span class="process-label">${text}</span></div>`).join("")}</div>
-    ${!identity ? `<div class="notice">Choose a local demo identity to view your independent participation in this event.</div><button class="button button-primary" data-choose-identity>Choose demo identity</button>` : !person ? `<form data-form="registration"><div class="form-grid"><div><label for="reg-name">Name</label><input id="reg-name" name="name" required maxlength="120" autocomplete="name" placeholder="Your name"></div><div><label for="reg-email">Email</label><input id="reg-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.invalid"></div></div><p class="field-help">Your authenticated wallet is linked explicitly to this registration. The organizer approves admission.</p><div class="button-row"><button class="button button-primary" type="submit">Register interest</button></div></form>` : `<div class="status-grid"><div class="status-box"><span>Deposit evidence</span><strong>${deposit?.verified ? "✓ Confirmed on chain" : "No verified deposit"}</strong><p>${deposit?.verified ? `${eth(deposit.amountWei)} ETH · ${escape(short(deposit.txHash))}` : "A transfer alone does not approve admission."}</p></div><div class="status-box"><span>Admission</span><strong>${registered ? "✓ Registered staker" : escape(person.admission ?? "pending")}</strong><p>${registered ? "Included in this event’s financial pool." : person.admission === "free" ? "Free participation stays outside the reward pool." : "The organizer reviews verified deposits."}</p></div><div class="status-box"><span>Financial attendance</span><strong>${attended ? "✓ On-chain attendee" : ownCase ? "Attendance under challenge" : "Not yet established"}</strong><p>Trusted evidence and the contract determine this status.</p></div><div class="status-box"><span>Failed-transfer credit</span><strong>${eth(owed)} ETH owed</strong><p>Claim to this or an alternate destination.</p></div></div>`}
-    <div class="amount-block"><div><small>OPTIONAL COMMITTED SPOT</small><strong>${eth(state.depositWei ?? event.depositWei)} <span>ETH</span></strong></div><button class="button button-primary" data-tx="deposit" ${!identity || !person || deposit?.verified || !depositWindowOpen ? "disabled" : ""}>${deposit?.verified ? "Deposit verified" : "Review deposit"} <span aria-hidden="true">↗</span></button></div><p class="small">The v7 contract accepts ETH without automatically registering your wallet. Admission follows organizer verification. Approved free guests stay outside the deposited reward pool.</p>
-    ${deposit?.verified ? `<div class="tx-line"><span class="tx-state"></span>Confirmed receipt <code>${escape(short(deposit.txHash))}</code></div>` : ""}
-    ${identity && person ? `<details class="disclosure"><summary>Verify an existing local deposit receipt</summary><form data-form="receipt"><label for="receipt-hash">Transaction hash</label><input id="receipt-hash" name="txHash" required pattern="0x[a-fA-F0-9]{64}" placeholder="0x…"><div class="button-row"><button class="button button-secondary button-small">Verify receipt</button></div></form></details>` : ""}</section>
-    <section class="panel"><div class="panel-header"><div><h2>Your next available actions</h2><p>The contract validates each action again before signing.</p></div></div><div class="button-row">${same(state.pendingOwner, identity?.wallet) ? '<button class="button button-primary" data-tx="acceptOwnership">Accept pending ownership</button>' : ""}<button class="button button-secondary" data-tx="challenge" ${!identity || !registered || attended || ownCase || phase !== "Listed" || Number(app.detail.now) > Number(state.challengeEndsAt) ? "disabled" : ""}>Challenge omission</button><button class="button button-secondary" data-tx="emergencyWithdraw" ${!identity || !registered || phase !== "Open" || Number(app.detail.now) <= Number(event.claimDeadline) ? "disabled" : ""}>No-list recovery</button><button class="button button-secondary" data-recovery="claim" ${!identity || BigInt(owed) === 0n ? "disabled" : ""}>Claim failed transfer</button></div><div class="notice">An omitted registered attendee has one day to challenge after attendance is posted, followed by a separate one-day matching period. Unmatched expired challenges count as attended. Open matched cases keep their reserved share while other payouts proceed.</div>${ownCase ? `<a class="button button-secondary button-small" href="#${new URLSearchParams({ event: event.id, view: "cases" })}">View your attendance case →</a>` : ""}</section>
+  const owed = person?.owedWei ?? "0";
+  const observed =
+    !!person &&
+    attendance.some(
+      (record) =>
+        record.participantId === person.id ||
+        same(record.wallet, person.wallet),
+    );
+  const pendingDeposit = app.pending.some(
+    (item) =>
+      item.eventId === event.id &&
+      same(item.wallet, identity?.wallet) &&
+      item.action === "deposit" &&
+      !["confirmed", "failed"].includes(item.status),
+  );
+  const depositOpen =
+    phase === "Open" &&
+    Number(app.detail.now) <
+      Number(event.depositDeadline ?? Date.parse(event.startsAt) / 1000);
+  const challengeOpen =
+    identity &&
+    registered &&
+    !attended &&
+    !ownCase &&
+    phase === "Listed" &&
+    Number(app.detail.now) <= Number(state.challengeEndsAt);
+  const noList =
+    identity &&
+    isIn(state.activeStakers, identity.wallet) &&
+    phase === "Open" &&
+    Number(app.detail.now) > Number(event.claimDeadline);
+  const caseState = ownCase?.state;
+  const disputeText = !ownCase
+    ? "No attendance challenge"
+    : caseState === "Waiting"
+      ? "Waiting for a match"
+      : caseState === "Disputed"
+        ? ownCase.finalRuling == null
+          ? "Matched Court case open"
+          : "Final result · settlement pending"
+        : "Challenge settled";
+  const facts = [
+    [
+      "Admission",
+      person
+        ? ({
+            approved: "Approved by host",
+            free: "Approved free guest",
+            declined: "Declined by host",
+            pending: "Host decision pending",
+          }[person.admission] ?? person.admission)
+        : "No linked registration",
+      "Host approval is separate from payment and contract registration.",
+    ],
+    [
+      "Deposit receipt",
+      deposit?.verificationState === "returned"
+        ? "Principal returned · historical receipt confirmed"
+        : deposit?.verified
+          ? `${eth(deposit.amountWei)} ETH · confirmed`
+          : pendingDeposit
+            ? "Submitted · awaiting verification"
+            : "No verified deposit",
+      deposit?.verified
+        ? `Receipt ${deposit.txHash}`
+        : "A transfer alone never confirms admission.",
+    ],
+    [
+      "Contract registration",
+      registered
+        ? "Registered in this event contract"
+        : person?.admission === "free"
+          ? "Outside the reward pool"
+          : "Not registered on chain",
+      "Only the event owner can register reviewed commitments.",
+    ],
+    [
+      "Staff check-in",
+      observed ? "Staff observation recorded" : "No staff observation recorded",
+      "A trusted observation is evidence for the owner’s attendance review.",
+    ],
+    [
+      "Financial attendance",
+      attended
+        ? "Included in on-chain attendance"
+        : ownCase
+          ? ownCase.state === "Resolved"
+            ? "Excluded after final case settlement"
+            : "Under attendance challenge"
+          : "Not established on chain",
+      "The contract’s list and case settlement determine financial attendance.",
+    ],
+    [
+      "Attendance dispute",
+      disputeText,
+      ownCase?.state === "Waiting"
+        ? `Separate matching deadline: ${formatTime(ownCase.matchEndsAt, event.timezone)}`
+        : "Resolver finality and settlement are distinct.",
+    ],
+    [
+      "Payout",
+      BigInt(owed) > 0n
+        ? `${eth(owed)} ETH still owed`
+        : delivery?.attendance > 0n
+          ? `${eth(delivery.attendance)} ETH directly paid`
+          : delivery?.claims > 0n
+            ? `${eth(delivery.claims)} ETH claimed`
+            : delivery?.refunds > 0n
+              ? `${eth(delivery.refunds)} ETH principal returned`
+              : "No direct payout recorded",
+      delivery
+        ? `Canonical payment logs at block ${delivery.block}: ${eth(delivery.attendance)} ETH direct attendance payments; ${eth(delivery.refunds)} ETH principal refunds; ${eth(delivery.claims)} ETH claimed. Claims can combine credit types.`
+        : "Verified payment history is unavailable. Check confirmed receipts and owed credits for delivery.",
+    ],
+  ];
+  let next = {
+    title: "Await the next event update",
+    reason:
+      "The current snapshot has no eligible participant action. Refresh for verified changes.",
+    control:
+      '<button class="button button-secondary" data-reload>Refresh status</button>',
+  };
+  if (!identity)
+    next = {
+      title: "View your participation",
+      reason:
+        "Choose a local demo identity or authenticate your wallet to read your event-specific state.",
+      control:
+        '<button class="button button-primary" data-choose-identity>Choose demo identity</button>',
+    };
+  else if (phase === "Cancelled")
+    next = {
+      title: "Review the cancellation outcome",
+      reason:
+        "Registered-staker refunds and any failed-transfer credits follow the contract. Unregistered payer returns need a separate organizer review.",
+      control: `<a class="button button-primary" href="#${new URLSearchParams({ event: event.id, view: "cases" })}">View refunds & obligations →</a>`,
+    };
+  else if (!person)
+    next = {
+      title: "Link your registration for this event",
+      reason:
+        "Create a local registration tied to your authenticated wallet. Host admission is a separate decision.",
+      control:
+        '<button class="button button-primary" data-start-registration>Enter registration details</button>',
+    };
+  else if (BigInt(owed) > 0n)
+    next = {
+      title: "Recover your owed ETH",
+      reason:
+        "A failed transfer remains reserved for your wallet. Review this or an alternate receiving address.",
+      control:
+        '<button class="button button-primary" data-recovery="claim">Review owed-ETH claim</button>',
+    };
+  else if (noList)
+    next = {
+      title: "Review no-list recovery",
+      reason:
+        "The attendance-list deadline passed while the contract remains Open. The contract checks your withdrawal eligibility.",
+      control:
+        '<button class="button button-primary" data-tx="emergencyWithdraw">No-list recovery</button>',
+    };
+  else if (ownCase)
+    next = {
+      title: disputeText,
+      reason:
+        "Review the case deadline, evidence, finality and any remaining settlement action.",
+      control: `<a class="button button-primary" href="#${new URLSearchParams({ event: event.id, view: "cases" })}">View your attendance case →</a>`,
+    };
+  else if (challengeOpen)
+    next = {
+      title: "Missing from the attendance list?",
+      reason: `If you attended, challenge by ${formatTime(state.challengeEndsAt, event.timezone)}. Current contract challenge deposit: ${eth(state.challengeDepositWei)} ETH.`,
+      control:
+        '<button class="button button-primary" data-tx="challenge">Challenge omission</button>',
+    };
+  else if (person?.admission === "free")
+    next = {
+      title: "Your free admission is approved",
+      reason:
+        "No deposit or reward-pool registration is required. Check in with event staff when you arrive.",
+      control:
+        '<button class="button button-secondary" data-reload>Refresh status</button>',
+    };
+  else if (person?.admission === "declined")
+    next = {
+      title: "Admission was declined",
+      reason:
+        "Do not send a new deposit. Any unregistered payment needs the organizer’s reviewed return process.",
+      control:
+        '<button class="button button-secondary" data-reload>Refresh status</button>',
+    };
+  else if (deposit?.verified && !registered)
+    next = {
+      title:
+        person?.admission === "approved"
+          ? "Await contract registration"
+          : "Deposit received · admission pending",
+      reason:
+        "Your receipt is verified. The organizer must approve admission and separately register your wallet before it enters the financial pool.",
+      control:
+        '<button class="button button-secondary" data-reload>Refresh status</button>',
+    };
+  else if (pendingDeposit)
+    next = {
+      title: "Check your pending deposit",
+      reason:
+        "A wallet request or submitted transaction remains unresolved. Check your wallet and any receipt reference before trying again.",
+      control:
+        '<button class="button button-secondary" data-reload>Refresh status</button>',
+    };
+  else if (person && !registered && depositOpen)
+    next = {
+      title: "Review an optional commitment",
+      reason:
+        "A commitment requires receipt verification and host approval. A free route remains outside the reward pool.",
+      control:
+        '<button class="button button-primary" data-tx="deposit">Review deposit <span aria-hidden="true">↗</span></button>',
+    };
+  else if (registered && phase === "Open")
+    next = {
+      title: observed
+        ? "Your staff check-in is recorded"
+        : "You’re registered · check in at the event",
+      reason:
+        "Financial attendance will be established through the owner’s on-chain proposal and any challenges.",
+      control:
+        '<button class="button button-secondary" data-reload>Refresh status</button>',
+    };
+  return `${renderPending()}<section class="panel next-action" aria-labelledby="next-action-title"><div class="eyebrow">Your next action</div><h2 id="next-action-title">${escape(next.title)}</h2><p>${escape(next.reason)}</p>${next.control}</section>
+    <section class="panel"><div class="panel-header"><div><h2>Your place at this event</h2><p>Each fact has its own source. A receipt, approval and attendance are separate.</p></div>${person ? badge(person.admission ?? "pending", person.admission === "approved" ? "green" : "amber") : badge("Not registered")}</div><dl class="state-grid">${facts.map(([label, value, note]) => `<div class="state-fact"><dt>${escape(label)}</dt><dd><strong>${escape(value)}</strong><p>${escape(note)}</p></dd></div>`).join("")}</dl>
+    ${identity && !person ? `<form data-form="registration"><h3>Link a local registration</h3><div class="form-grid"><div><label for="reg-name">Name</label><input id="reg-name" name="name" required maxlength="120" autocomplete="name" placeholder="Your name"></div><div><label for="reg-email">Email</label><input id="reg-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.invalid"></div></div><p class="field-help">This local record links your authenticated wallet. Host admission remains pending.</p><button class="button button-primary" type="submit">Register interest</button></form>` : ""}
+    <div class="amount-block"><div><small>OPTIONAL COMMITTED SPOT</small><strong>${eth(state.depositWei)} <span>ETH</span></strong></div><span class="small">${deposit?.verified ? "Deposit verified" : depositOpen ? "Admission reviewed separately" : "Deposit window closed"}</span></div>
+    ${identity && person ? `<details class="disclosure"><summary>Verify an existing local deposit receipt</summary><form data-form="receipt"><label for="receipt-hash">Transaction hash</label><input id="receipt-hash" name="txHash" required pattern="0x[a-fA-F0-9]{64}" placeholder="0x…"><div class="button-row"><button class="button button-secondary button-small">Verify receipt</button></div></form></details>` : ""}
+    ${same(state.pendingOwner, identity?.wallet) ? '<button class="button button-secondary" data-tx="acceptOwnership">Accept pending ownership</button>' : ""}</section>
+    <section class="panel"><h2>Attend without a deposit</h2><p>Free guests need host approval and stay outside the deposited reward pool. Browsing this route does not require a wallet.</p>${safeLink(event.lumaUrl) ? `<a class="button button-secondary" href="${escape(event.lumaUrl)}" target="_blank" rel="noopener">Request a free place on Luma ↗</a>` : '<div class="notice">Free requests are handled by the organizer. No wallet-free registration service is connected to this local workbench.</div>'}</section>
+    <section class="panel event-story"><h2>About the event</h2><p>${escape(event.description ?? "")}</p>${safeLink(event.contentUrl) ? `<a class="button button-secondary" href="${escape(event.contentUrl)}" target="_blank" rel="noopener">Talks, recordings, materials & Q&A ↗</a>` : '<p class="small muted">Content and recordings remain in the retained Events application. No content link is configured for this local event.</p>'}</section>
     <section class="panel"><div class="panel-header"><div><h2>Your personal event history</h2><p>A private reminder, independent of deposits and trusted attendance.</p></div></div><button class="button button-secondary button-small" data-personal ${!identity ? "disabled" : ""}>${personal?.attended ? "✓ Marked as personally attended" : "I was there"}</button><p class="field-help">This self-reported record, newsletter consent and merch state have no financial effect.</p></section>`;
 }
 
@@ -436,27 +965,151 @@ function renderOrganizer() {
     return `<div class="panel"><h2>Organizer desk</h2><p>Select Organizer A, Organizer B or Staff A to explore event-specific authority.</p><button class="button button-primary" data-choose-identity>Choose demo identity</button></div>`;
   if (!owner && !staff)
     return `<div class="panel"><h2>This identity cannot manage this event.</h2><p>Financial actions belong to the selected event’s contract owner. Trusted door check-in requires an event-specific staff role.</p><div class="notice">Current wallet: <span class="mono">${escape(currentIdentity().wallet)}</span><br>Event owner: <span class="mono">${escape(state.owner)}</span></div><button class="button button-secondary" data-choose-identity>Switch demo identity</button></div>`;
-  return `<div class="access-banner"><span aria-hidden="true">◇</span><span>${owner ? "You are the contract owner for this event. Every financial action uses a fresh on-chain review." : "You are authorized door staff for this event. Financial signing remains with its contract owner."}</span></div>
-    <section class="panel"><div class="panel-header"><div><div class="step-label">01 / Admission & verified deposits</div><h2>People, with evidence</h2><p>Only approved, verified commitments can become registered stakers.</p></div><span class="pill-note">${participants.length} people</span></div>${participants.length ? `<div class="table-scroll"><table><thead><tr><th>Participant</th><th>Deposit</th><th>Admission</th><th>Check-in</th></tr></thead><tbody>${participants.map((person) => `<tr><td class="person-cell"><strong>${escape(person.name)}</strong><small>${escape(short(person.wallet))}</small></td><td>${person.deposit?.verified ? `<strong>${eth(person.deposit.amountWei)} ETH</strong><br><span class="small muted">${escape(short(person.deposit.txHash))}</span>` : '<span class="muted">Not verified</span>'}${person.registered ? '<br><span class="badge green">Staker</span>' : ""}</td><td>${owner ? `<select aria-label="Admission for ${escape(person.name)}" data-admission="${escape(person.id)}">${["pending", "approved", "declined", "free"].map((admission) => `<option value="${admission}" ${person.admission === admission ? "selected" : ""}>${admission}</option>`).join("")}</select>` : badge(person.admission)}</td><td>${attendance.some((record) => record.participantId === person.id || same(record.wallet, person.wallet)) ? badge("Observed", "green") : `<button class="button button-secondary button-small" data-checkin="${escape(person.id)}">Check in</button>`}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty"><span class="empty-icon">◉</span>No linked participants yet.</div>'}<div class="button-row"><button class="button button-primary" data-tx="register" ${!owner ? "disabled" : ""}>Review staker registration</button><button class="button button-secondary" data-tx="reject" ${!owner ? "disabled" : ""}>Review rejection / refunds</button></div><p class="field-help">Changing admission alone does not write to the contract. Registration checks the successful receipt, exact event, linked wallet and duplicate financial evidence.</p></section>
-    ${renderDepositReview()}
-    ${owner ? `<section class="panel"><div class="panel-header"><div><div class="step-label">02 / Source review</div><h2>Import guests or attendance</h2><p>Source hashes detect substitution. They do not prove which event an export came from.</p></div></div><form data-form="import"><div class="form-grid"><div><label for="import-kind">Import type</label><select id="import-kind" name="kind"><option value="attendance">Trusted attendance</option><option value="guests">Guest / deposit review</option></select></div><div><label for="import-event">Source event identity</label><input id="import-event" name="sourceEventId" value="${escape(app.route.eventId)}" placeholder="Stable source event ID"></div><div class="full"><label for="import-file">Choose a CSV (optional)</label><input id="import-file" type="file" accept=".csv,text/csv" data-csv-file><p class="field-help"><a href="${eventPath("/fixture?kind=attendance")}" download>Download this event’s synthetic attendance CSV</a> · <a href="${eventPath("/fixture?kind=guests")}" download>Guest fixture</a></p></div><div class="full"><label for="import-csv">CSV contents</label><textarea id="import-csv" name="csv" required spellcheck="false" placeholder="event_id,chain_id,contract,participant_id,email,wallet,checked_in_at,tx_hash,admission"></textarea></div></div><label class="checkbox-label"><input type="checkbox" name="reviewConfirmed"><span>I have reviewed the source event and export. If its origin cannot be verified automatically, record my provenance review. This cannot override a known event, contract or chain mismatch.</span></label><label for="review-note">Provenance review note</label><input id="review-note" name="reviewNote" placeholder="Where this export came from and how you verified it" maxlength="1000"><div class="button-row"><button class="button button-secondary" type="submit">Validate & review import</button></div></form><div id="import-result"></div>${imports.length ? `<details class="disclosure"><summary>${imports.length} recorded import ${imports.length === 1 ? "batch" : "batches"}</summary>${imports.map((batch) => `<p><strong>${escape(batch.kind ?? "import")}</strong> · ${escape(batch.status ?? batch.reviewStatus ?? "reviewed")}<br><span class="mono">${escape(batch.sourceHash ?? batch.sha256 ?? batch.id)}</span></p>`).join("")}</details>` : ""}</section>` : ""}
-    <section class="panel"><div class="panel-header"><div><div class="step-label">03 / Attendance & payout review</div><h2>Publish the attendance proposal</h2><p>Only registered wallets with trusted observations enter this list.</p></div></div><div class="result-summary"><div><span>Trusted observations</span><strong>${attendance.length}</strong></div><div><span>Registered stakers</span><strong>${escape(state.stakerCount)}</strong></div><div><span>Registered pool</span><strong>${eth(state.poolWei)} <small>ETH</small></strong></div></div><div class="button-row"><button class="button button-primary" data-tx="postAttendance" ${!owner ? "disabled" : ""}>Review attendance & share</button><button class="button button-secondary" data-correction ${!owner ? "disabled" : ""}>Correct an omission</button></div><p class="field-help">Posting starts the one-day omission challenge window. The preview validates current contract state and expected per-attendee share. An empty list is refused.</p></section>
-    ${owner ? renderRecovery() : ""}`;
+  return `<nav class="workflow-steps" aria-label="Organizer reconciliation">${owner ? '<a class="workflow-step" href="#source-review" data-workflow="source-review">1 · Select source</a>' : '<span class="workflow-step" aria-disabled="true">1 · Source review · owner only</span>'}<a class="workflow-step" href="#people-review" data-workflow="people-review">2 · Reconcile people</a><a class="workflow-step" href="#deposit-review" data-workflow="deposit-review">3 · Review receipts</a><a class="workflow-step" href="#attendance-review" data-workflow="attendance-review">4 · Review transaction</a></nav><div class="access-banner"><span aria-hidden="true">◇</span><span>${owner ? "You are the contract owner for this event. Every financial action uses a fresh on-chain review." : "You are authorized door staff for this event. Financial signing remains with its contract owner."}</span></div>
+    <section class="panel" id="people-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">02 / Admission & verified deposits</div><h2>People, with evidence</h2><p>Only approved, verified commitments can become registered stakers.</p></div><span class="pill-note">${participants.length} people</span></div>${participants.length ? `<div class="table-scroll"><table><thead><tr><th>Participant</th><th>Deposit</th><th>Admission</th><th>Check-in</th></tr></thead><tbody>${participants.map((person) => `<tr><td class="person-cell"><strong>${escape(person.name)}</strong><small>${escape(short(person.wallet))}</small></td><td>${person.deposit?.verified ? `<strong>${eth(person.deposit.amountWei)} ETH</strong><br><span class="small muted">${escape(short(person.deposit.txHash))}</span>` : '<span class="muted">Not verified</span>'}${person.registered ? '<br><span class="badge green">Staker</span>' : ""}</td><td>${owner ? `<select aria-label="Admission for ${escape(person.name)}" data-admission="${escape(person.id)}">${["pending", "approved", "declined", "free"].map((admission) => `<option value="${admission}" ${person.admission === admission ? "selected" : ""}>${admission}</option>`).join("")}</select>` : badge(person.admission)}</td><td>${attendance.some((record) => record.participantId === person.id || same(record.wallet, person.wallet)) ? badge("Observed", "green") : `<button class="button button-secondary button-small" data-checkin="${escape(person.id)}">Check in</button>`}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty"><span class="empty-icon">◉</span>No linked participants yet.</div>'}<div class="button-row"><button class="button button-primary" data-tx="register" ${!owner ? "disabled" : ""}>Review staker registration</button><button class="button button-secondary" data-tx="reject" ${!owner ? "disabled" : ""}>Review rejection / refunds</button></div><p class="field-help">Changing admission alone does not write to the contract. Registration checks the successful receipt, exact event, linked wallet and duplicate financial evidence.</p></section>
+    ${owner ? `<section class="panel" id="source-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">01 / Source review</div><h2>Import guests or attendance</h2><p>Source hashes detect substitution. They do not prove which event an export came from.</p></div></div><form data-form="import"><div class="form-grid"><div><label for="import-kind">Import type</label><select id="import-kind" name="kind"><option value="attendance">Trusted attendance</option><option value="guests">Guest / deposit review</option></select></div><div><label for="import-event">Source event identity</label><input id="import-event" name="sourceEventId" value="${escape(app.route.eventId)}" placeholder="Stable source event ID"></div><div class="full"><label for="import-file">Choose a CSV (optional)</label><input id="import-file" type="file" accept=".csv,text/csv" data-csv-file><p class="field-help"><a href="${eventPath("/fixture?kind=attendance")}" download>Download this event’s synthetic attendance CSV</a> · <a href="${eventPath("/fixture?kind=guests")}" download>Guest fixture</a></p></div><div class="full"><label for="import-csv">CSV contents</label><textarea id="import-csv" name="csv" required spellcheck="false" placeholder="event_id,chain_id,contract,participant_id,email,wallet,checked_in_at,tx_hash,admission"></textarea></div></div><label class="checkbox-label"><input type="checkbox" name="reviewConfirmed"><span>I have reviewed the source event and export. If its origin cannot be verified automatically, record my provenance review. This cannot override a known event, contract or chain mismatch.</span></label><label for="review-note">Provenance review note</label><input id="review-note" name="reviewNote" minlength="8" placeholder="Where this export came from and how you verified it" maxlength="1000"><div class="button-row"><button class="button button-secondary" type="submit" data-import-preview>Validate & review import</button></div></form><div id="import-result" aria-live="polite"></div><div id="import-preview" tabindex="-1"></div>${imports.length ? `<details class="disclosure"><summary>${imports.length} recorded import ${imports.length === 1 ? "batch" : "batches"}</summary>${imports.map((batch) => `<p><strong>${escape(batch.kind ?? "import")}</strong> · ${escape(batch.status ?? batch.reviewStatus ?? "reviewed")}<br><span class="mono">${escape(batch.sourceHash ?? batch.sha256 ?? batch.id)}</span></p>`).join("")}</details>` : ""}</section>` : ""}
+    <section class="panel" id="attendance-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">04 / Attendance & payout review</div><h2>Publish the attendance proposal</h2><p>Only registered wallets with trusted observations enter this list.</p></div></div><div class="result-summary"><div><span>Trusted observations</span><strong>${attendance.length}</strong></div><div><span>Registered stakers</span><strong>${escape(state.stakerCount)}</strong></div><div><span>Registered pool</span><strong>${eth(state.poolWei)} <small>ETH</small></strong></div></div><div class="button-row"><button class="button button-primary" data-tx="postAttendance" ${!owner ? "disabled" : ""}>Review attendance & share</button><button class="button button-secondary" data-correction ${!owner ? "disabled" : ""}>Correct an omission</button></div><p class="field-help">Posting starts the one-day omission challenge window. The preview validates current contract state and expected per-attendee share. An empty list is refused.</p></section>
+    ${renderDepositReview()}${owner ? renderRecovery() : ""}`;
 }
 
 function renderDepositReview() {
   const records = app.detail.deposits ?? [];
-  return `<section class="panel"><div class="panel-header"><div><h2>Deposit reconciliation</h2><p>Successful receipts, returned amounts and current allocation, scoped to this contract.</p></div></div>${records.length ? `<div class="table-scroll"><table><thead><tr><th>Wallet</th><th>Received</th><th>Returned</th><th>Unallocated</th></tr></thead><tbody>${records.map((record) => `<tr><td class="person-cell"><strong class="mono">${escape(short(record.wallet))}</strong><small>${record.linked ? "Linked participant" : "Unmatched payer"}</small></td><td>${eth(record.receivedWei)} ETH</td><td>${eth(record.returnedWei)} ETH</td><td><strong>${eth(record.unallocatedWei)} ETH</strong></td></tr>`).join("")}</tbody></table></div>` : "<p>No deposit logs found for this event.</p>"}<dl class="details-list" style="margin-top:15px"><div><dt>Contract balance</dt><dd>${eth(app.detail.state.balanceWei)} ETH</dd></div><div><dt>Reserved</dt><dd>${eth(app.detail.state.reservedWei)} ETH</dd></div><div><dt>Spare, before a return</dt><dd>${eth(app.detail.state.spareWei)} ETH</dd></div></dl><p class="field-help">Unallocated ETH can include an unregistered payer or excess payment. Review original receipts and any previous returns before preparing a refund. A pooled v7 contract does not prove per-wallet deposit ownership.</p>${isOwner() ? '<div class="button-row"><button class="button button-secondary button-small" data-recovery="refund">Review unmatched ETH return</button></div>' : ""}</section>`;
+  return `<section class="panel" id="deposit-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">03 / Receipt ledger</div><h2>Deposit reconciliation</h2><p>Successful receipts, returned amounts and current allocation, scoped to this contract.</p></div></div>${records.length ? `<div class="table-scroll"><table><thead><tr><th>Wallet</th><th>Received</th><th>Returned</th><th>Unallocated</th></tr></thead><tbody>${records.map((record) => `<tr><td class="person-cell"><strong class="mono">${escape(short(record.wallet))}</strong><small>${record.linked ? "Linked participant" : "Unmatched payer"}</small></td><td>${eth(record.receivedWei)} ETH</td><td>${eth(record.returnedWei)} ETH</td><td><strong>${eth(record.unallocatedWei)} ETH</strong></td></tr>`).join("")}</tbody></table></div>` : "<p>No deposit logs found for this event.</p>"}<dl class="details-list" style="margin-top:15px"><div><dt>Contract balance</dt><dd>${eth(app.detail.state.balanceWei)} ETH</dd></div><div><dt>Reserved</dt><dd>${eth(app.detail.state.reservedWei)} ETH</dd></div><div><dt>Spare, before a return</dt><dd>${eth(app.detail.state.spareWei)} ETH</dd></div></dl><p class="field-help">Unallocated ETH can include an unregistered payer or excess payment. Review original receipts and any previous returns before preparing a refund. A pooled v7 contract does not prove per-wallet deposit ownership.</p>${isOwner() ? '<div class="button-row"><button class="button button-secondary button-small" data-recovery="refund">Review unmatched ETH return</button></div>' : ""}</section>`;
 }
 
+function importProjection(detail) {
+  return JSON.stringify({
+    event: detail.event,
+    participants: detail.participants,
+    attendance: detail.attendance,
+    imports: detail.imports,
+  });
+}
+function renderImportPreview(review) {
+  const { analysis: result, sourceHash, input } = review;
+  const provenance =
+    input.review?.confirmed && input.review.note.trim().length >= 8;
+  return `<div class="section-heading"><h3>Reconciliation exceptions & consequences</h3>${badge(result.errors.length ? "Blocked" : "Preview only", result.errors.length ? "red" : "amber")}</div><p>Every source row is retained. “Outside reward pool” describes its financial effect; it is not silently removed from this import.</p><div class="exception-counts result-summary"><div><span>Source rows</span><strong>${result.rowCount}</strong></div><div><span>Blocked exceptions</span><strong>${result.errors.length}</strong></div><div><span>Outside pool / blocked</span><strong>${result.excludedCount}</strong></div></div>${result.errors.length ? `<div class="notice warning" role="alert"><strong>Correct these exceptions in the source</strong><ul>${result.errors.map((error) => `<li>${escape(error)}</li>`).join("")}</ul></div>` : ""}<div class="table-scroll"><table class="reconciliation-table"><caption>Source preview · selected event ${escape(review.eventId)}</caption><thead><tr><th>Row / participant</th><th>Receipt evidence</th><th>Admission</th><th>Review result</th></tr></thead><tbody>${result.rows.map((row) => `<tr><td><strong>${row.line} · ${escape(row.participantLabel)}</strong><br><code>${escape(row.wallet)}</code></td><td>${escape(row.receipt)}<br><code>${escape(row.txHash)}</code></td><td>${escape(row.admission)}</td><td>${badge(row.status, row.issues.length ? "red" : "amber")}<p>${escape(row.issues.join(" ") || row.exclusionReason || "Candidate for server validation; no financial registration is approved here.")}</p></td></tr>`).join("")}</tbody></table></div><div class="source-hash">SHA-256 · ${escape(sourceHash)}<br>Snapshot block · ${escape(review.blockNumber)}</div><div class="notice">${result.warnings.map(escape).join("<br>")}</div>${!provenance ? '<div class="notice warning">Record the provenance acknowledgment and a note of at least 8 characters in the source form, then validate again. A hash cannot establish origin.</div>' : `<p>Provenance review: ${escape(input.review.note)}</p>`}<div class="button-row"><button class="button button-primary" data-review-import ${result.errors.length || !provenance ? "disabled" : ""}>Review import consequences</button></div>`;
+}
+function assertImportSource(review) {
+  const form = $('form[data-form="import"]');
+  if (
+    !form ||
+    JSON.stringify([...new FormData(form)]) !== review.sourceValues
+  ) {
+    app.importReview = null;
+    throw new Error(
+      "Source contents changed. Validate the current source again.",
+    );
+  }
+}
+function reviewImportConsequences() {
+  const review = app.importReview;
+  if (
+    !review ||
+    review.eventId !== app.route.eventId ||
+    !same(review.wallet, currentIdentity()?.wallet)
+  )
+    throw new Error("Review this event’s source again.");
+  if (
+    review.analysis.errors.length ||
+    !review.input.review?.confirmed ||
+    review.input.review.note.trim().length < 8
+  )
+    throw new Error("Resolve exceptions and provenance before continuing.");
+  assertImportSource(review);
+  showDialog(
+    `<div class="dialog-eyebrow">Organizer import review</div><h2 id="dialog-title" class="dialog-title">Apply this reviewed import?</h2><p class="dialog-body-text">This records off-chain ${escape(review.input.kind)} for ${escape(app.detail.event.title)}. It does not register stakers or post financial attendance.</p><dl class="details-list"><div><dt>Stable event</dt><dd>${escape(review.eventId)}</dd></div><div><dt>Network / contract</dt><dd>Local chain ${escape(app.detail.event.chainId)}<br><code>${escape(app.detail.event.contract)}</code></dd></div><div><dt>Source SHA-256</dt><dd class="mono">${escape(review.sourceHash)}</dd></div><div><dt>Rows / outside pool</dt><dd>${review.analysis.rowCount} / ${review.analysis.excludedCount}</dd></div><div><dt>Provenance note</dt><dd>${escape(review.input.review.note)}</dd></div></dl><div class="notice warning">The server validates all rows, receipts, current owner and duplicate evidence atomically. Any exception rejects the entire import. The server-owned preview binds these exact source bytes and current state. It still cannot authenticate Luma origin.</div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" data-import-commit>Apply reviewed import</button></div>`,
+  );
+}
+async function commitReviewedImport(button) {
+  const review = app.importReview;
+  if (
+    !review ||
+    review.eventId !== app.route.eventId ||
+    !same(review.wallet, currentIdentity()?.wallet) ||
+    review.generation !== app.generation
+  )
+    throw new Error("This source review is stale. Validate it again.");
+  assertImportSource(review);
+  button.disabled = true;
+  const fresh = await api(eventPath(""));
+  if (
+    review !== app.importReview ||
+    fresh.state.fingerprint !== review.fingerprint ||
+    importProjection(fresh) !== review.projection
+  )
+    throw new Error(
+      "Event data or contract state changed. Validate the source against a fresh snapshot.",
+    );
+  assertImportSource(review);
+  if (!review.serverPreview?.id)
+    throw new Error(
+      "Prepare an authoritative server preview before applying this import.",
+    );
+  const result = await post(
+    `/api/events/${encodeURIComponent(review.eventId)}/imports/${encodeURIComponent(review.serverPreview.id)}/commit`,
+    { review: review.input.review },
+  );
+  if (
+    review.eventId !== app.route.eventId ||
+    review.generation !== app.generation
+  )
+    return;
+  await load({ silent: true });
+  if ($("#import-result"))
+    $("#import-result").innerHTML =
+      `<div class="notice success"><strong>Import applied · ${result.rows} rows</strong><p>${escape(result.limitation)}</p><div class="source-hash">${escape(result.batch.sourceHash)}</div></div>`;
+  toast(
+    "Import applied after atomic server validation. Financial transactions remain separate.",
+  );
+}
+function renderMoneySummary() {
+  const { state } = app.detail;
+  const summaries = [
+    [
+      "Sent",
+      app.detail.payments?.attendancePaidWei == null
+        ? "Unavailable"
+        : `${eth(app.detail.payments.attendancePaidWei)} ETH`,
+      "Direct successful attendance payments from canonical contract logs. Claims, principal refunds and Court funds are separate; balance is not a sent total.",
+    ],
+    [
+      "Reserved case shares",
+      `${eth(state.heldBackWei)} ETH`,
+      "Held shares for open matched cases after the ordinary batch. Before release, the pool remains reserved.",
+    ],
+    [
+      "Still owed",
+      `${eth(state.owedTotalWei)} ETH`,
+      "Failed transfers remain claimable by the credited wallet, including to an alternate recipient.",
+    ],
+    [
+      "Challenge escrow",
+      `${eth(state.challengeEscrowWei)} ETH`,
+      "Challenge and matching deposits. Appeal contributions go directly to the resolver; its balance is not included here.",
+    ],
+  ];
+  return `<div class="money-summary" aria-label="Money and obligations">${summaries.map(([label, value, note]) => `<div class="money-card"><span class="stat-label">${label}</span><strong>${escape(value)}</strong><p>${note}</p></div>`).join("")}</div>`;
+}
 function renderCases() {
   const { state, event } = app.detail;
-  const cases = state.cases ?? [];
-  const owner = isOwner();
-  return `<div class="panel"><div class="panel-header"><div><h2>Settlement, without losing the details</h2><p>Live contract accounting for ${escape(event.title)}.</p></div>${badge(phaseName(state.phase), phaseStyle(state.phase))}</div><div class="status-grid"><div class="status-box"><span>Established attendees</span><strong>${escape(state.attendeeCount)} wallets</strong><p>Current on-chain attendee set</p></div><div class="status-box"><span>Open held shares</span><strong>${eth(state.heldBackWei)} ETH</strong><p>Reserved while matched cases remain open</p></div><div class="status-box"><span>Failed-transfer credits</span><strong>${eth(state.owedTotalWei)} ETH</strong><p>Claimable by the credited wallet</p></div><div class="status-box"><span>Total reserved</span><strong>${eth(state.reservedWei)} ETH</strong><p>Includes pool / held shares, credits and escrow</p></div></div><div class="details-list"><div><dt>Contract balance</dt><dd>${eth(state.balanceWei)} ETH</dd></div><div><dt>Challenge escrow</dt><dd>${eth(state.challengeEscrowWei)} ETH</dd></div><div><dt>Challenge window ends</dt><dd>${escape(formatTime(state.challengeEndsAt, event.timezone))}</dd></div></div><div class="button-row"><button class="button button-primary" data-tx="release" ${!currentIdentity() ? "disabled" : ""}>Review normal payouts</button><button class="button button-secondary" data-recovery="claim" ${!currentIdentity() ? "disabled" : ""}>Claim failed transfer</button></div><p class="field-help">After challenges and pending matches close, established attendees can be paid while each unresolved matched case retains a full provisional share. Later losses redistribute top-ups; later winners receive their accumulated held share. Integer rounding remains in the contract.</p></div>
-    <section class="panel"><div class="panel-header"><div><h2>Attendance cases</h2><p>Resolver local IDs and arbitrator dispute IDs are separate.</p></div><span class="pill-note">${cases.length} ${cases.length === 1 ? "case" : "cases"}</span></div>${cases.length ? cases.map(renderCase).join("") : '<div class="empty"><span class="empty-icon">◇</span><h3>No attendance cases</h3><p>Omitted registered participants can challenge after the attendance list is posted.</p></div>'}<div class="button-row"><button class="button button-secondary button-small" data-tx="challenge" ${!currentIdentity() ? "disabled" : ""}>Challenge my omission</button></div></section>
-    ${owner ? renderRecovery() : ""}
-    <section class="panel"><div class="panel-header"><div><h2>Transaction activity</h2><p>Success appears only after a confirmed receipt.</p></div></div>${renderTransactions()}</section>`;
+  const cases = state.cases ?? [],
+    owner = isOwner();
+  const phase = phaseName(state.phase),
+    now = Number(app.detail.now);
+  const waiting = cases.some(
+    (item) => item.state === "Waiting" && now <= Number(item.matchEndsAt),
+  );
+  const mayRelease =
+    currentIdentity() &&
+    phase === "Listed" &&
+    now > Number(state.challengeEndsAt) &&
+    !waiting;
+  const own = ownParticipant();
+  return `${renderPending()}<section class="panel"><div class="panel-header"><div><div class="eyebrow">Money & obligations</div><h2>Settlement, without losing the details</h2><p>Verified contract accounting for ${escape(event.title)}.</p></div>${badge(phase === "Finalized" ? "Ordinary batch processed" : phase, phaseStyle(state.phase))}</div>${renderMoneySummary()}<dl class="details-list"><div><dt>Contract balance</dt><dd>${eth(state.balanceWei)} ETH</dd></div><div><dt>Total protected reserves</dt><dd>${eth(state.reservedWei)} ETH</dd></div><div><dt>Established attendees</dt><dd>${escape(state.attendeeCount)} wallets</dd></div><div><dt>Omission challenge ends</dt><dd>${state.challengeEndsAt ? escape(formatTime(state.challengeEndsAt, event.timezone)) : "Not opened · attendance list not posted"}</dd></div></dl><p class="small muted">Protected reserves include overlapping pool / held-share, owed-credit and challenge obligations. The figures above are not four amounts to add together. A Finalized phase does not establish that every case or payment is complete.</p><div class="button-row"><button class="button button-primary" data-tx="release" ${!mayRelease ? "disabled" : ""}>Review normal payouts</button><button class="button button-secondary" data-recovery="claim" ${!currentIdentity() || BigInt(own?.owedWei ?? "0") === 0n ? "disabled" : ""}>Claim failed transfer</button></div>${!mayRelease ? '<p class="field-help">Ordinary payout review requires an authenticated wallet, a posted attendance list, and closed omission and pending matching windows. Every request is simulated and checked by the contract.</p>' : ""}<div class="notice">Ordinary attendees can be paid while each unresolved matched case retains a full provisional share. Later losses redistribute top-ups; later winners receive the accumulated held share. Ruling 0 excludes attendance and splits the remaining challenge funds under v7; that split is separate from attendance payout.</div></section>
+    <section class="panel"><div class="panel-header"><div><h2>Attendance cases</h2><p>Waiting for a match, Court finality, settlement and delivery are distinct.</p></div><span class="pill-note">${cases.length} ${cases.length === 1 ? "case" : "cases"}</span></div>${cases.length ? cases.map(renderCase).join("") : '<div class="empty"><span class="empty-icon">◇</span><h3>No attendance cases</h3><p>Omitted registered participants can challenge after the attendance list is posted.</p></div>'}</section>
+    ${owner ? renderRecovery() : ""}<section class="panel"><div class="panel-header"><div><h2>Transaction activity</h2><p>Only confirmed receipts appear here. A confirmed settlement action does not prove every transfer succeeded.</p></div></div>${renderTransactions()}</section>`;
 }
 function renderCase(item) {
   const owner = isOwner();
@@ -465,14 +1118,46 @@ function renderCase(item) {
       ? (["None", "Awaiting match", "Matched", "Resolved"][item.state] ??
         String(item.state))
       : item.state;
+  const waiting = item.state === "Waiting" || item.state === 1;
+  const matched = item.state === "Disputed" || item.state === 2;
+  const hasCourtCase = item.matched === true;
+  const resolved = item.state === "Resolved" || item.state === 3;
+  const matchExpired = Number(app.detail.now) > Number(item.matchEndsAt);
+  const final = item.finalRuling !== null && item.finalRuling !== undefined;
+  const title = waiting
+    ? matchExpired
+      ? "Unmatched window expired · settlement available"
+      : "Challenge waiting for a match"
+    : matched
+      ? final
+        ? "Final result available · settlement pending"
+        : "Matched Court case open"
+      : resolved
+        ? "Challenge settled"
+        : state;
+  const statusNote = waiting
+    ? "No Court case has been created. Its separate matching window determines whether an unmatched challenge can be accepted at settlement."
+    : matched
+      ? final
+        ? "Resolver finality is verified. The event contract still needs a confirmed settlement transaction."
+        : "A current jury vote or open appeal is not a final resolver ruling. Ordinary payouts can proceed after the relevant windows while a share is reserved."
+      : final
+        ? "The challenge is settled on the event contract. Check owed credits and confirmed transfer records for delivery."
+        : "This challenge was settled without a final matched resolver ruling. Expired unmatched challenges follow the acceptance path.";
   const caseWallet = escape(item.wallet);
   const publication =
     typeof item.publication === "object"
       ? item.publication.status
       : item.publication;
-  return `<article class="case-card"><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(state ?? "Challenge", /resolved/i.test(state) ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(formatTime(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ETH</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ETH</dd></div><div><dt>Resolver local ID</dt><dd><code>${escape(item.localDisputeID ?? "—")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${escape(item.arbitratorDisputeID ?? "—")}</code></dd></div><div><dt>Final ruling</dt><dd>${item.finalRuling === null || item.finalRuling === undefined ? "Not final" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][Number(item.finalRuling)] ?? item.finalRuling)}</dd></div></dl><div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Deliver final ruling</button></div><details class="disclosure"><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p><div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify local publication" : "Publish exact bytes locally"}</button></div><form data-form="evidence" data-wallet="${caseWallet}"><label>Store an evidence file locally (optional)</label><input type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored only in this local server; no IPFS upload occurs.</p><label style="margin-top:12px">Evidence URI</label><input name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form><form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label>Ruling side</label><select name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label>Contribution (ETH)</label><input name="amount" inputmode="decimal" required value="0.001"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. Current appeal status: ${escape(typeof item.appeal === "object" ? JSON.stringify(item.appeal) : (item.appeal ?? "No open appeal reported"))}.</p></form></details>${owner ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real v7 event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
+  return `<article class="case-card case-summary"><h3>${escape(title)}</h3><p>${escape(statusNote)}</p><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(title ?? "Challenge", resolved ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(formatTime(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ETH</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ETH</dd></div><div><dt>Resolver local ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.localDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.arbitratorDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Final ruling</dt><dd>${item.finalRuling === null || item.finalRuling === undefined ? "Not final" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][Number(item.finalRuling)] ?? item.finalRuling)}</dd></div></dl><div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() || !waiting || matchExpired ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() || resolved || !((waiting && matchExpired) || (matched && final)) ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() || !matched || final ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() || !matched || final ? "disabled" : ""}>Deliver final ruling</button></div><details class="disclosure" ${!hasCourtCase ? "hidden" : ""}><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p><div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify local publication" : "Publish exact bytes locally"}</button></div><form data-form="evidence" data-wallet="${caseWallet}"><label for="evidence-file-${caseWallet}">Store an evidence file locally (optional)</label><input id="evidence-file-${caseWallet}" type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored only in this local server; no IPFS upload occurs.</p><label for="evidence-uri-${caseWallet}" style="margin-top:12px">Evidence URI</label><input id="evidence-uri-${caseWallet}" name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form>${renderAppealStatus(item)}<form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label for="appeal-side-${caseWallet}">Ruling side</label><select id="appeal-side-${caseWallet}" name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label for="appeal-amount-${caseWallet}">Contribution (ETH)</label><input id="appeal-amount-${caseWallet}" name="amount" inputmode="decimal" required placeholder="Enter contribution"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. A contribution is separate from the attendance share reserved by the event contract.</p></form></details>${owner ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real v7 event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
 }
 
+function renderAppealStatus(item) {
+  const appeal = item.appeal;
+  if (!appeal || !appeal.end)
+    return '<p class="small muted">No open appeal period reported in this snapshot. The resolver validates every contribution before signing.</p>';
+  return `<dl class="details-list"><div><dt>Current vote · not a final ruling</dt><dd>${escape(["0 · Refused", "1 · Attended", "2 · Absent"][appeal.ruling] ?? "Unavailable")}</dd></div><div><dt>Appeal period ends</dt><dd>${escape(formatTime(appeal.end, app.detail.event.timezone))}</dd></div><div><dt>Losing side contribution deadline</dt><dd>${escape(formatTime(appeal.loserEnd, app.detail.event.timezone))}</dd></div><div><dt>Attended side cost</dt><dd>${eth(appeal.costAttended)} ETH</dd></div><div><dt>Absent side cost</dt><dd>${eth(appeal.costAbsent)} ETH</dd></div></dl>`;
+}
 function renderRecovery() {
   return `<section class="panel"><div class="panel-header"><div><h2>Recovery & administration</h2><p>Each operation is simulated and reviewed against current contract rules.</p></div></div><div class="button-row"><button class="button button-secondary button-small" data-edit-event>Edit event settings</button><button class="button button-danger button-small" data-tx="cancel">Review cancellation</button><button class="button button-secondary button-small" data-recovery="refund">Return unmatched ETH</button><button class="button button-secondary button-small" data-recovery="sweep">Sweep spare ETH</button><button class="button button-secondary button-small" data-recovery="transferOwnership">Transfer ownership</button><button class="button button-secondary button-small" data-tx="acceptOwnership">Accept ownership</button></div><p class="field-help">Cancellation is available only while Open under the contract’s deadline rules. No-list withdrawal is available only after the attendance-posting deadline when no list was posted. Neither bypasses an unresolved matched dispute. Reserved pool, held shares, owed balances and challenge escrow cannot be swept.</p></section>`;
 }
@@ -495,6 +1180,10 @@ function renderDemoControls() {
 }
 
 async function prepareTransaction(action, params = {}) {
+  if (pendingAction(action))
+    throw new Error(
+      "A wallet request or submitted transaction for this action is still unresolved. Check its activity before preparing another.",
+    );
   if (!currentIdentity()) {
     showIdentityDialog();
     return;
@@ -540,6 +1229,22 @@ async function executeTransaction() {
   const draft = app.draft;
   if (!draft || draft.eventId !== app.route.eventId)
     throw new Error("This transaction review is no longer valid.");
+  if (pendingAction(draft.action, draft.eventId, draft.wallet))
+    throw new Error(
+      "This action already has an unresolved submission. Check your wallet before trying again.",
+    );
+  const submission = {
+    id: crypto.randomUUID(),
+    draftId: draft.id,
+    instanceId: app.bootstrap?.instanceId,
+    eventId: draft.eventId,
+    wallet: draft.wallet,
+    action: draft.action,
+    status: "preparing",
+  };
+  rememberPending(submission);
+  let submissionStarted = false,
+    submissionHash = null;
   const button = $("#execute-transaction");
   button.disabled = true;
   button.textContent = "Submitting…";
@@ -548,72 +1253,138 @@ async function executeTransaction() {
   try {
     let result;
     if (currentIdentity()?.mode === "wallet") {
-      const provider = walletProvider();
-      const tx = await post(
-        eventPath(`/drafts/${encodeURIComponent(draft.id)}/validate`),
-        {},
-      );
-      const [accounts, chain] = await Promise.all([
-        provider.request({ method: "eth_accounts" }),
-        provider.request({ method: "eth_chainId" }),
-      ]);
-      if (
-        Number(BigInt(chain)) !== 1337 ||
-        !same(accounts?.[0], draft.wallet) ||
-        app.draft?.id !== draft.id
-      )
-        throw new Error(
-          "Wallet, network or event changed. Prepare a fresh review.",
+      const context = transactionContext(app.detail.event, draft.wallet);
+      if (!transactionJournal)
+        throw Object.assign(
+          new Error(
+            "Durable transaction storage is unavailable. Enable local storage before opening a financial wallet request.",
+          ),
+          { code: "TRANSACTION_STORAGE_UNAVAILABLE" },
         );
-      $("#transaction-status").innerHTML =
-        '<div class="notice">Awaiting your wallet signature on local chain 1337…</div>';
-      const hash = await provider.request({
-        method: "eth_sendTransaction",
-        params: [
-          {
-            to: tx.to,
-            from: tx.from,
-            data: tx.data,
-            value: `0x${BigInt(tx.value).toString(16)}`,
-            chainId: "0x539",
-          },
-        ],
-      });
-      if (app.draft?.id !== draft.id)
-        throw new Error(
-          `Wallet submitted ${hash}. Refresh the original event to inspect its receipt before preparing another action.`,
-        );
-      $("#transaction-status").innerHTML =
-        `<div class="notice">Submitted ${escape(short(hash))}. Verifying the exact transaction and confirmed receipt…</div>`;
-      for (let attempt = 0; attempt < 15; attempt++) {
-        try {
-          result = await post(
-            eventPath(`/drafts/${encodeURIComponent(draft.id)}/confirm`),
+      const rawProvider = walletProvider();
+      const guardedProvider = {
+        request: (request) => {
+          if (request.method === "eth_sendTransaction") {
+            submissionStarted = true;
+            rememberPending({ ...submission, status: "awaiting-wallet" });
+          }
+          return rawProvider.request(request);
+        },
+      };
+      result = await submitWalletDraft({
+        draft,
+        context,
+        provider: guardedProvider,
+        journal: transactionJournal,
+        isCurrentContext: (captured) =>
+          app.draft?.id === draft.id &&
+          app.route.eventId === captured.eventId &&
+          same(currentIdentity()?.wallet, captured.wallet) &&
+          app.bootstrap?.instanceId === captured.instanceId,
+        validate: (eventId, id) =>
+          post(
+            `/api/events/${encodeURIComponent(eventId)}/drafts/${encodeURIComponent(id)}/validate`,
+            {},
+          ),
+        recordSubmitted: async (eventId, id, hash) => {
+          submissionHash = hash;
+          rememberPending({ ...submission, hash, status: "submitted" });
+          await post(
+            `/api/events/${encodeURIComponent(eventId)}/drafts/${encodeURIComponent(id)}/submitted`,
             { hash },
-          );
-          break;
-        } catch (error) {
-          if (attempt === 14) throw error;
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-      }
-    } else
+          ).catch((error) => {
+            if (["DRAFT_SCOPE", "STALE_DRAFT"].includes(error.code))
+              return post(
+                `/api/events/${encodeURIComponent(eventId)}/submissions/reconcile`,
+                { draftId: id, hash },
+              );
+            throw error;
+          });
+        },
+        confirm: async (eventId, id, hash) => {
+          let last;
+          for (let attempt = 0; attempt < 15; attempt++)
+            try {
+              return await post(
+                `/api/events/${encodeURIComponent(eventId)}/submissions/reconcile`,
+                { draftId: id, hash },
+              );
+            } catch (error) {
+              last = error;
+              if (
+                !["TX_MISMATCH", "TX_PENDING"].includes(error.code) ||
+                attempt === 14
+              )
+                throw error;
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+          throw last;
+        },
+      });
+    } else {
+      submissionStarted = true;
+      rememberPending({ ...submission, status: "submitting" });
       result = await post(
-        eventPath(`/drafts/${encodeURIComponent(draft.id)}/execute`),
+        `/api/events/${encodeURIComponent(draft.eventId)}/drafts/${encodeURIComponent(draft.id)}/execute`,
         {},
       );
+    }
     if (result.status !== "confirmed")
       throw new Error(
         `Transaction is ${result.status ?? "unconfirmed"}. Refresh to verify its receipt.`,
       );
-    app.draft = null;
-    await load({ silent: true });
+    if (result.hash)
+      rememberPending({
+        ...submission,
+        eventId: draft.eventId,
+        wallet: draft.wallet,
+        action: draft.action,
+        hash: result.hash,
+        status: "confirmed",
+      });
+    if (app.draft?.id === draft.id) app.draft = null;
+    if (
+      app.route.eventId === draft.eventId &&
+      same(currentIdentity()?.wallet, draft.wallet) &&
+      app.bootstrap?.instanceId === submission.instanceId
+    )
+      await load({ silent: true });
     toast(
-      `Confirmed ${actionNames[result.action ?? draft.action] ?? draft.action}. Block ${result.blockNumber} · ${short(result.hash)}`,
+      `Confirmed in ${draft.eventId}: ${actionNames[result.action ?? draft.action] ?? draft.action}. Block ${result.blockNumber} · ${short(result.hash)}`,
     );
   } catch (error) {
-    app.draft = null;
-    if ($("#transaction-status"))
+    if (error.submittedHash) {
+      submissionHash = error.submittedHash;
+      rememberPending({
+        ...submission,
+        hash: submissionHash,
+        status: error.code === "TRANSACTION_REVERTED" ? "failed" : "submitted",
+      });
+    }
+    if (
+      !submissionHash &&
+      (!submissionStarted ||
+        [
+          "STALE_DRAFT",
+          "DRAFT_SCOPE",
+          "NOT_OWNER",
+          "SIMULATION_FAILED",
+          "PENDING_DEPOSIT",
+          "BUSY",
+        ].includes(error.code) ||
+        error.code === "TRANSACTION_STORAGE_UNAVAILABLE" ||
+        error.code === "TRANSACTION_CONTEXT_CHANGED" ||
+        error.code === "TRANSACTION_WALLET_CHANGED" ||
+        error.code === "TRANSACTION_WRONG_CHAIN" ||
+        (!submissionHash &&
+          (error.code === 4001 || error.code === "ACTION_REJECTED")))
+    )
+      forgetPending(submission.id, submission.instanceId);
+    else if (!submissionHash)
+      rememberPending({ ...submission, status: "outcome-unknown" });
+    const ownsReview = app.draft?.id === draft.id;
+    if (ownsReview) app.draft = null;
+    if (ownsReview && $("#transaction-status"))
       $("#transaction-status").innerHTML =
         `<div class="error-panel">${escape(error.message)}<br>This review is invalidated. Close it and prepare a fresh transaction.</div>`;
     if (button?.isConnected) button.textContent = "Review invalidated";
@@ -679,6 +1450,15 @@ document.addEventListener("change", async (event) => {
   )
     return;
   try {
+    if (target.id === "event-switch") {
+      invalidateDraft();
+      navigate(target.value, app.route.view);
+      return;
+    }
+    if (target.closest('[data-form="import"]')) {
+      app.importReview = null;
+      if ($("#import-preview")) $("#import-preview").innerHTML = "";
+    }
     if (target.matches("[data-identity]")) {
       await switchIdentity(target.value);
     }
@@ -703,7 +1483,28 @@ document.addEventListener("change", async (event) => {
     ) {
       if (target.files[0].size > 2 * 1024 * 1024)
         throw new Error("Use a CSV smaller than 2 MB.");
-      $("#import-csv").value = await target.files[0].text();
+      const generation = app.generation,
+        token = ++app.csvReadToken;
+      const file = target.files[0],
+        field = $("#import-csv"),
+        preview = $("[data-import-preview]");
+      if (preview) preview.disabled = true;
+      try {
+        const contents = await file.text();
+        if (
+          generation !== app.generation ||
+          token !== app.csvReadToken ||
+          !field?.isConnected ||
+          target.files[0] !== file
+        )
+          return;
+        app.importReview = null;
+        if ($("#import-preview")) $("#import-preview").innerHTML = "";
+        field.value = contents;
+      } finally {
+        if (token === app.csvReadToken && preview?.isConnected)
+          preview.disabled = false;
+      }
     }
     if (
       target instanceof HTMLInputElement &&
@@ -736,10 +1537,30 @@ document.addEventListener("change", async (event) => {
 
 document.addEventListener("click", async (event) => {
   if (!(event.target instanceof Element)) return;
+  const workflow = event.target.closest("[data-workflow]");
+  if (workflow) {
+    event.preventDefault();
+    const target = $(`#${workflow.getAttribute("data-workflow")}`);
+    target?.scrollIntoView({ block: "start" });
+    target?.focus();
+    return;
+  }
   const button = event.target.closest("button");
   if (!button || button.disabled) return;
   const data = button.dataset;
   try {
+    if ("startRegistration" in data) {
+      $("#reg-name")?.focus();
+      return;
+    }
+    if ("reviewImport" in data) {
+      reviewImportConsequences();
+      return;
+    }
+    if ("importCommit" in data) {
+      await commitReviewedImport(button);
+      return;
+    }
     if ("close" in data) {
       invalidateDraft();
       return;
@@ -864,6 +1685,15 @@ document.addEventListener("click", async (event) => {
   }
 });
 
+document.addEventListener("input", (event) => {
+  if (
+    event.target instanceof Element &&
+    event.target.closest('[data-form="import"]')
+  ) {
+    app.importReview = null;
+    if ($("#import-preview")) $("#import-preview").innerHTML = "";
+  }
+});
 document.addEventListener("submit", async (event) => {
   if (!(event.target instanceof Element)) return;
   const form = event.target.closest("form[data-form]");
@@ -897,21 +1727,84 @@ document.addEventListener("submit", async (event) => {
         toast("Trusted event check-in recorded with reviewer and nonce.");
         break;
       case "import": {
-        const result = await post(eventPath("/imports"), {
-          kind: values.kind,
-          csv: values.csv,
+        invalidateDraft();
+        const input = {
+          kind: String(values.kind),
+          csv: String(values.csv),
           ...(values.sourceEventId
-            ? { sourceEventId: values.sourceEventId }
+            ? { sourceEventId: String(values.sourceEventId) }
             : {}),
           ...(values.reviewConfirmed
-            ? { review: { confirmed: true, note: values.reviewNote } }
+            ? {
+                review: {
+                  confirmed: true,
+                  note: String(values.reviewNote ?? ""),
+                },
+              }
             : {}),
-        });
-        const batch = result.batch ?? {};
-        const resultHTML = `<div class="notice success"><strong>Import validated</strong><br>${Array.isArray(result.rows) ? result.rows.length : (result.rows ?? 0)} rows reviewed. ${escape(result.limitation ?? "")}</div>${result.errors?.length ? `<div class="notice warning">${escape(JSON.stringify(result.errors))}</div>` : ""}<div class="source-hash">Source hash: ${escape(batch.sourceHash ?? batch.sha256 ?? "Recorded by server")}<br>Batch: ${escape(batch.id ?? "Recorded")}</div>`;
-        await load({ silent: true });
-        if ($("#import-result")) $("#import-result").innerHTML = resultHTML;
-        toast("Import reviewed and bound to the selected event.");
+        };
+        const sourceValues = JSON.stringify([...new FormData(form)]);
+        const analysis = analyzeImport(input, app.detail);
+        const scope = {
+          eventId: app.route.eventId,
+          generation: app.generation,
+          wallet: currentIdentity()?.wallet,
+        };
+        const projection = importProjection(app.detail);
+        const bytes = await crypto.subtle.digest(
+          "SHA-256",
+          new TextEncoder().encode(input.csv),
+        );
+        const sourceHash = [...new Uint8Array(bytes)]
+          .map((n) => n.toString(16).padStart(2, "0"))
+          .join("");
+        if (
+          sourceValues !== JSON.stringify([...new FormData(form)]) ||
+          scope.generation !== app.generation ||
+          scope.eventId !== app.route.eventId ||
+          !same(scope.wallet, currentIdentity()?.wallet)
+        )
+          return;
+        let serverPreview = null;
+        if (!analysis.errors.length) {
+          serverPreview = await post(
+            `/api/events/${encodeURIComponent(scope.eventId)}/imports/preview`,
+            input,
+          );
+          if (
+            scope.generation !== app.generation ||
+            scope.eventId !== app.route.eventId ||
+            !same(scope.wallet, currentIdentity()?.wallet) ||
+            sourceValues !== JSON.stringify([...new FormData(form)])
+          )
+            return;
+          if (serverPreview.sourceHash !== sourceHash)
+            throw new Error(
+              "Server source hash differs. Reload and review this source again.",
+            );
+        }
+        app.importReview = {
+          serverPreview,
+          sourceValues,
+          projection,
+          input,
+          analysis,
+          sourceHash,
+          eventId: app.route.eventId,
+          wallet: currentIdentity()?.wallet,
+          fingerprint: app.detail.state.fingerprint,
+          blockNumber: app.detail.state.blockNumber,
+          generation: app.generation,
+        };
+        $("#import-preview").innerHTML = renderImportPreview(app.importReview);
+        enhanceTables();
+        $("#import-preview").focus();
+        toast(
+          analysis.errors.length
+            ? "Import blocked. Correct every exception before reviewing."
+            : "Source preview ready. Review consequences before applying any rows.",
+          analysis.errors.length > 0,
+        );
         break;
       }
       case "recovery":
@@ -969,6 +1862,48 @@ document.addEventListener("submit", async (event) => {
 
 $("#review-dialog").addEventListener("close", () => {
   app.draft = null;
+  app.importReview = null;
+  const restore = dialogReturnFocus;
+  dialogReturnFocus = null;
+  if (restore?.element?.isConnected) restore.element.focus();
+  else if (restore?.selector) $(restore.selector)?.focus();
+});
+document.addEventListener("keydown", (event) => {
+  const dialog = $("#review-dialog");
+  if (dialog.open && event.key === "Tab") {
+    const controls = $$(
+      'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), summary, [tabindex="0"]',
+      dialog,
+    ).filter((element) => element.getClientRects().length > 0);
+    if (controls.length) {
+      event.preventDefault();
+      const index = controls.indexOf(document.activeElement);
+      const next = event.shiftKey
+        ? index <= 0
+          ? controls.length - 1
+          : index - 1
+        : (index + 1) % controls.length;
+      controls[next].focus();
+    }
+    return;
+  }
+  if (
+    !(event.target instanceof Element) ||
+    !event.target.matches('[role="tab"]')
+  )
+    return;
+  const tabs = $$('.tabs [role="tab"]');
+  const index = tabs.indexOf(event.target);
+  let next;
+  if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+  else if (event.key === "ArrowLeft")
+    next = (index + tabs.length - 1) % tabs.length;
+  else if (event.key === "Home") next = 0;
+  else if (event.key === "End") next = tabs.length - 1;
+  else return;
+  event.preventDefault();
+  app.focusTab = true;
+  navigate(app.route.eventId, tabs[next].dataset.view);
 });
 $("#refresh").addEventListener("click", () => load());
 $("#demo-help").addEventListener("click", showDemoHelp);

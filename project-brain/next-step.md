@@ -1,6 +1,9 @@
 # Resume here
 
 Read the canonical [PROJECT_BRAIN](../PROJECT_BRAIN.md), then [TEST_REPORT](../docs/TEST_REPORT.md).
+The parallel Option B UI handoff has been integrated by the core owner; review
+[UI_INTEGRATION](../docs/UI_INTEGRATION.md) and [CORE_HANDOFF](../docs/CORE_HANDOFF.md) for source commits
+and authoritative interfaces. The full combined verification and final checkpoint are being recorded.
 The local exercise code is in `src/`, `public/`, and `references/kickback/`; run the root README commands
 to seed a fresh two-event demo. It resets on restart. Financial logic is the preserved v7 contract.
 

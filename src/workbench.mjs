@@ -669,6 +669,21 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     if (input.participantId) await owner(eventId, s);
     const p = participantFor(r, s, input.participantId);
     p.deposit = await verifyReceipt(eventId, p, input.txHash);
+    const submitted = r.transactions.find(
+      (t) =>
+        lower(t.hash) === lower(input.txHash) &&
+        t.action === "deposit" &&
+        lower(t.wallet) === lower(p.wallet),
+    );
+    if (submitted) {
+      submitted.status = "confirmed";
+      submitted.blockNumber = p.deposit.blockNumber;
+      const draft = drafts.get(submitted.draftId);
+      if (draft) {
+        draft.used = true;
+        draft.confirmedHash = input.txHash;
+      }
+    }
     r.revision++;
     return p;
   }
@@ -1136,17 +1151,26 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
         ...d.transaction,
         gasLimit,
       });
+      d.submittedHash = sent.hash;
       const tx = {
         hash: sent.hash,
         status: "pending",
         action: d.action,
         wallet: s.wallet,
         eventId,
+        draftId: d.id,
       };
       r.transactions.push(tx);
-      const receipt = await sent.wait();
+      const receipt = await sent.wait().catch((error) => {
+        if (error.receipt?.status === 0) {
+          tx.status = "failed";
+          tx.blockNumber = error.receipt.blockNumber;
+        }
+        throw error;
+      });
       requireThat(receipt.status === 1, "Transaction failed", "TX_FAILED", 409);
       tx.status = "confirmed";
+      d.confirmedHash = sent.hash;
       tx.blockNumber = receipt.blockNumber;
       r.revision++;
       if (["transferOwnership", "acceptOwnership"].includes(d.action))
@@ -1221,6 +1245,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       "Noncanonical transaction",
     );
     d.used = true;
+    d.confirmedHash = txHash;
     r.revision++;
     const result = {
       hash: txHash,
@@ -1332,6 +1357,118 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       blockNumber: receipt.blockNumber,
     };
   }
+  async function reconcileSubmission(eventId, s, draftId, txHash) {
+    // This records an already-signed on-chain fact. It never revives signing authority.
+    authenticated(s);
+    const r = record(eventId, s),
+      d = drafts.get(draftId);
+    requireThat(
+      d && d.eventId === eventId && lower(d.wallet) === lower(s.wallet),
+      "No review for this wallet/event",
+      "DRAFT_SCOPE",
+      409,
+    );
+    requireThat(
+      /^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""),
+      "Invalid transaction hash",
+    );
+    requireThat(
+      d.registryHash === hash(r.deployment),
+      "Deployment identity changed",
+      "DEPLOYMENT_MISMATCH",
+      409,
+    );
+    requireThat(
+      !d.submittedHash || lower(d.submittedHash) === lower(txHash),
+      "Another hash belongs to this review",
+      "TX_MISMATCH",
+      409,
+    );
+    requireThat(
+      !d.used || lower(d.confirmedHash ?? d.submittedHash) === lower(txHash),
+      "Consumed review cannot record another transaction",
+      "DRAFT_SCOPE",
+      409,
+    );
+    const [tx, receipt] = await Promise.all([
+      chain.provider.getTransaction(txHash),
+      chain.provider.getTransactionReceipt(txHash),
+    ]);
+    requireThat(
+      tx &&
+        lower(tx.from) === lower(s.wallet) &&
+        lower(tx.to) === lower(d.transaction.to) &&
+        tx.data === d.transaction.data &&
+        String(tx.value) === d.valueWei &&
+        Number(tx.chainId) === d.chainId,
+      "Transaction differs from the original reviewed terms",
+      "TX_MISMATCH",
+      409,
+    );
+    let status = "pending";
+    if (receipt) {
+      requireThat(
+        receipt.blockNumber > d.reviewBlock,
+        "Transaction predates this review",
+        "TX_PREDATES_REVIEW",
+        409,
+      );
+      requireThat(
+        (await chain.provider.getBlock(receipt.blockNumber))?.hash ===
+          receipt.blockHash,
+        "Receipt is not canonical",
+        "TX_REORG",
+        409,
+      );
+      status = receipt.status === 1 ? "confirmed" : "failed";
+    }
+    d.submittedHash = txHash;
+    const entry = r.transactions.find(
+      (t) => lower(t.hash) === lower(txHash),
+    ) ?? {
+      hash: txHash,
+      action: d.action,
+      eventId,
+      wallet: d.wallet,
+      draftId,
+      chainId: d.chainId,
+      contract: d.contract,
+    };
+    Object.assign(entry, {
+      status,
+      recovered: true,
+      ...(receipt ? { blockNumber: receipt.blockNumber } : {}),
+    });
+    if (!r.transactions.includes(entry)) r.transactions.push(entry);
+    if (receipt) {
+      d.used = true;
+      d.confirmedHash = txHash;
+    }
+    if (status === "confirmed" && d.action === "deposit") {
+      const p = [...r.participants.values()].find(
+        (p) => lower(p.wallet) === lower(s.wallet),
+      );
+      let mayLink =
+        p && (!p.deposit || lower(p.deposit.txHash) === lower(txHash));
+      if (p && !mayLink)
+        try {
+          await verifyReceipt(eventId, p, p.deposit.txHash, true);
+        } catch (error) {
+          if (error.code === "RETURNED_DEPOSIT") mayLink = true;
+        }
+      if (p && mayLink)
+        try {
+          const evidence = await verifyReceipt(eventId, p, txHash, true);
+          if (!p.deposit || lower(p.deposit.txHash) !== lower(txHash)) {
+            p.deposit = evidence;
+            r.revision++;
+          }
+        } catch (error) {
+          entry.verificationError = error.code ?? "VERIFICATION_UNAVAILABLE";
+        }
+    }
+    return { ...entry };
+  }
   async function advance(seconds) {
     requireThat(
       Number.isInteger(seconds) && seconds > 0 && seconds <= 30 * DAY,
@@ -1425,6 +1562,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     confirmDraft,
     recordSubmitted,
     submissionStatus,
+    reconcileSubmission,
     advance,
     mockRuling,
     mockAppeal,

@@ -48,6 +48,8 @@ const mime = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".md": "text/plain; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
 };
 
 export async function startServer({
@@ -469,6 +471,14 @@ export async function startServer({
             ),
           );
         const submission = tail.match(/^submissions\/(0x[0-9a-fA-F]{64})$/);
+        if (tail === "submissions/reconcile" && req.method === "POST") {
+          const b = await body(req);
+          return send(
+            res,
+            200,
+            await w.reconcileSubmission(eventId, s, b.draftId, b.hash),
+          );
+        }
         if (submission && req.method === "GET")
           return send(
             res,
@@ -674,18 +684,20 @@ export async function startServer({
           "/styles.css",
           "/ethers.js",
           "/transaction-context.js",
+          "/reconciliation.js",
+          "/assets/kleros-logo.svg",
+          "/assets/kleros-symbol.svg",
+          "/assets/geist-latin.woff2",
+          "/assets/geist-mono-latin.woff2",
+          "/assets/instrument-serif-regular.woff2",
+          "/assets/instrument-serif-italic.woff2",
         ].includes(p)
       ) {
         const file =
           p === "/ethers.js"
             ? path.join(root, "node_modules/ethers/dist/ethers.umd.min.js")
             : path.join(root, "public", p === "/" ? "index.html" : p.slice(1));
-        return send(
-          res,
-          200,
-          fs.readFileSync(file, "utf8"),
-          mime[path.extname(file)],
-        );
+        return send(res, 200, fs.readFileSync(file), mime[path.extname(file)]);
       }
       send(res, 404, { error: "Not found", code: "NOT_FOUND" });
     } catch (e) {

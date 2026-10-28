@@ -5,7 +5,7 @@ const PREFIX = "kleros-transactions:v1:";
 const UINT256_MAX = (1n << 256n) - 1n;
 const activeSubmissions = new WeakMap();
 const journalStorage = new WeakMap();
-const statuses = new Set(["submitted", "confirmed", "needs-confirmation"]);
+const statuses = new Set(["submitted", "confirmed", "failed", "needs-confirmation"]);
 
 function fail(message, code) {
   throw Object.assign(new Error(message), { code });
@@ -165,6 +165,8 @@ export function createTransactionJournal(storage) {
       if (!statuses.has(patch.status)) fail("Invalid transaction journal status.", "INVALID_TRANSACTION_STATUS");
       if (item.status === "confirmed" && patch.status !== "confirmed")
         fail("A confirmed transaction cannot be demoted by a stale response.", "TRANSACTION_ALREADY_CONFIRMED");
+      if (item.status === "failed" && patch.status !== "failed")
+        fail("A failed transaction cannot be changed by a stale response.", "TRANSACTION_ALREADY_FAILED");
       item.status = patch.status;
     }
     if (patch.blockNumber !== undefined) {
@@ -176,6 +178,7 @@ export function createTransactionJournal(storage) {
     if (patch.error === null) delete item.error;
     item.updatedAt = Date.now();
     if (item.status === "confirmed") item.confirmedAt = item.updatedAt;
+    if (item.status === "failed") item.failedAt = item.updatedAt;
     write(context, state);
     return detached(item);
   }
@@ -290,12 +293,21 @@ export async function submitWalletDraft({
     journal.record(original, { hash, draftId: reviewed.id, action: reviewed.action });
     if (recordSubmitted) await recordSubmitted(original.eventId, reviewed.id, hash, original);
     const result = await confirm(original.eventId, reviewed.id, hash);
-    if (result?.status !== "confirmed")
+    if (result?.status !== "confirmed" && result?.status !== "failed")
       fail("The transaction is submitted but has no verified confirmation yet. Reconcile its recorded hash.", "TRANSACTION_UNCONFIRMED");
-    if ((result.hash !== undefined && transactionHash(result.hash) !== hash) ||
+    const failed = result.status === "failed";
+    if ((failed && (typeof result.hash !== "string" || typeof result.eventId !== "string" ||
+          typeof result.wallet !== "string" || !Number.isSafeInteger(result.blockNumber) || result.blockNumber < 0)) ||
+        (result.hash !== undefined && transactionHash(result.hash) !== hash) ||
         (result.eventId !== undefined && result.eventId !== original.eventId) ||
-        (result.wallet !== undefined && !sameAddress(address(result.wallet, "confirmed wallet"), original.wallet)))
+        (result.wallet !== undefined && !sameAddress(address(result.wallet, "receipt wallet"), original.wallet)) ||
+        (result.chainId !== undefined && chainId(result.chainId) !== chainId(original.chainId)))
       fail("The confirmation does not match the submitted event transaction.", "TRANSACTION_CONFIRMATION_MISMATCH");
+    if (failed) {
+      journal.update(original, hash, { status: "failed", blockNumber: result.blockNumber,
+        error: "The submitted transaction reverted on chain." });
+      fail("The submitted transaction reverted on chain. Review current event state before preparing a new action.", "TRANSACTION_REVERTED");
+    }
     journal.update(original, hash, { status: "confirmed", ...(result.blockNumber !== undefined ? { blockNumber: result.blockNumber } : {}), error: null });
     return { ...result, hash, context: original };
   } catch (error) {

@@ -336,10 +336,11 @@ try {
   ).text();
   // The UI must expose raw-export limitations, even with an event label supplied.
   await page.locator("#import-csv").fill(fixtureA);
-  await page.locator('form[data-form="import"] button[type="submit"]').click();
-  await expect(page.locator("#toast")).toContainText(
-    "Raw CSV origin cannot be verified",
+  await page.locator("[data-import-preview]").click();
+  await expect(page.locator("#import-preview")).toContainText(
+    "Record the provenance acknowledgment",
   );
+  await expect(page.locator("[data-review-import]")).toBeDisabled();
   check(
     (await detail("event-a")).attendance.length,
     0,
@@ -349,10 +350,24 @@ try {
   await page
     .locator("#review-note")
     .fill("Synthetic local source export reviewed against Event A guest list.");
-  await page.locator('form[data-form="import"] button[type="submit"]').click();
-  await expect(page.locator("#import-result")).toContainText(
-    "Import validated",
+  await page.locator("[data-import-preview]").click();
+  await expect(page.locator("[data-review-import]")).toBeEnabled();
+  check(
+    (await detail("event-a")).attendance.length,
+    0,
+    "Source preview does not apply reviewed observations before approval",
   );
+  await page.locator("[data-review-import]").click();
+  await expect(page.locator("#review-dialog")).toBeVisible();
+  await expect(page.locator("#dialog-body")).toContainText("event-a");
+  check(
+    (await detail("event-a")).attendance.length,
+    0,
+    "Review dialog does not apply an import before explicit confirmation",
+  );
+  await page.locator("[data-import-commit]").click();
+  await expect(page.locator("#review-dialog")).not.toBeVisible();
+  await expect(page.locator("#import-result")).toContainText("Import applied");
   check(
     (await detail("event-a")).attendance.length,
     1,
@@ -366,8 +381,25 @@ try {
   await page
     .locator("#review-note")
     .fill("Cannot override the Event A identity, even when checked.");
-  await page.locator('form[data-form="import"] button[type="submit"]').click();
-  await expect(page.locator("#toast")).toContainText("wrong event");
+  await page.locator("[data-import-preview]").click();
+  await expect(page.locator("#import-preview")).toContainText("Wrong event");
+  await expect(page.locator("[data-review-import]")).toBeDisabled();
+  await expect(page.locator("#review-dialog")).not.toBeVisible();
+  await expect(page.locator("[data-import-commit]")).not.toBeVisible();
+  const wrongEventImport = await api("/api/events/event-b/imports", {
+    kind: "attendance",
+    csv: fixtureA,
+    sourceEventId: "event-b",
+    review: {
+      confirmed: true,
+      note: "Synthetic bypass attempt cannot override the Event A identity.",
+    },
+  });
+  check(
+    wrongEventImport.status(),
+    409,
+    "Server also refuses wrong-event CSV when the preview gate is bypassed",
+  );
   check(
     (await detail("event-b")).attendance.length,
     0,
@@ -458,7 +490,9 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await navigate("event-a");
   await identity("alice");
-  await expect(page.locator(".mobile-brand")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Kleros events home" }),
+  ).toBeVisible();
   check(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -474,7 +508,9 @@ try {
     fullPage: true,
   });
   await navigate("event-a", "cases");
-  await expect(page.locator("#content")).toContainText("Total reserved");
+  await expect(page.locator("#content")).toContainText(
+    "Total protected reserves",
+  );
 
   check(external, [], "Browser made no external network request");
   check(pageErrors, [], "No uncaught browser errors");

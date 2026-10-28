@@ -15,3 +15,6 @@ private/
 **/out-*/
 KLEROS_CODEX_HANDOFF.zip
 references/**/.git/
+
+# Generated design-prototype browser screenshots; review report is committed explicitly.
+KLEROS_REDESIGN_HANDOFF/qa/browser-results/

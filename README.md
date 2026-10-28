@@ -83,6 +83,7 @@ requires the compiler output to equal the pinned v7 ABI/bytecode. It cannot be u
 - [REPO_AUDIT](docs/REPO_AUDIT.md): current source and verified findings.
 - [IMPLEMENTATION_PLAN](docs/IMPLEMENTATION_PLAN.md): completion evidence and external work.
 - [API](docs/API.md): local endpoint contracts and error behavior.
+- [UI integration](docs/UI_INTEGRATION.md): delivered Option B source, preserved core interfaces and combined review.
 - [PROJECT_BRAIN](PROJECT_BRAIN.md): **canonical project memory**; the original handoff is historical input.
 
 The npm audit report retains inherited Ganache/bundled dependency advisories. This runtime is an

@@ -55,3 +55,12 @@ New core integration interfaces:
   context, revalidates before signing, durably saves the returned hash before async confirmation, never
   resends automatically and preserves hashes on navigation or post-submission errors. Integrate it with
   the redesigned view's pending-reference presentation.
+
+`POST /api/events/:id/submissions/reconcile` `{draftId,hash}` is a read-only factual recovery operation
+for the same authenticated wallet, including a new session or an expired review. It verifies original
+reviewed terms, deployment, sender, chain and canonical post-review receipt. It never revives signing
+authority or broadcasts. It returns pending/confirmed/failed and idempotently updates receipt projections;
+a valid deposit can regain its verified identity link. Reverted receipts are terminal failed journal
+states. Successful manual deposit linking also resolves its pending record, so a later genuine refund
+does not permanently block readmission. New UI requests fail before wallet signing when durable journal
+storage is unavailable; post-submission errors always retain the returned hash.

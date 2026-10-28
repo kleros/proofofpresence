@@ -75,8 +75,9 @@ durable transaction journal. The bounded integration run passed34/34 tests (prev
 payments2, submissions2, unmatched1, appeal1); latest HTTP routes passed10/10. Build/typecheck pass.
 The full combined redesign suite is still required after its finished handoff is integrated.
 
-Remaining local work: integrate/review the incoming UI handoff, wire its presentation to those newer
-authoritative interfaces,
-and run the combined checks. External work remains persistent production auth/storage, staging RLS and
+The delivered UI923f517 is now integrated with those newer authoritative interfaces; see
+[UI_INTEGRATION](UI_INTEGRATION.md) for accepted files, deliberate adaptations and race/recovery fixes.
+Remaining local work is completing the final combined verification and recording its results/commit.
+External work remains persistent production auth/storage, staging RLS and
 private-content mapping rehearsal, a fresh mainnet fork, dependency remediation and an explicitly
 authorized rollout. Backend/financial behavior remains owned by the core implementation session.

@@ -271,6 +271,60 @@ test("pending or wrong-event confirmations preserve a submitted record rather th
   }
 });
 
+test("a canonical reverted receipt is terminal failed, preserves its hash and cannot resend the reviewed draft", async () => {
+  const fixture = setup();
+  const failure = { status: "failed", hash: HASH, eventId: fixture.context.eventId,
+    wallet: fixture.context.wallet, chainId: fixture.context.chainId, blockNumber: 44 };
+  await assert.rejects(() => submitWalletDraft({ ...fixture, confirm: async () => failure }), error => {
+    assert.equal(error.code, "TRANSACTION_REVERTED");
+    assert.equal(error.submittedHash, HASH);
+    assert.equal(error.transactionContext.eventId, "event-a");
+    assert.equal(error.draftId, "synthetic-draft-1");
+    return true;
+  });
+  const failed = fixture.journal.get(fixture.context, HASH);
+  assert.equal(failed.status, "failed", "the generic submission catch must preserve the known reverted receipt");
+  assert.equal(failed.blockNumber, 44);
+  assert.ok(Number.isSafeInteger(failed.failedAt));
+  assert.match(failed.error, /reverted/);
+  for (const status of ["submitted", "needs-confirmation", "confirmed"])
+    assert.throws(() => fixture.journal.update(fixture.context, HASH, { status }), error => error.code === "TRANSACTION_ALREADY_FAILED");
+  const reloaded = createTransactionJournal(fixture.storage), priorRequests = fixture.requests.length;
+  await assert.rejects(() => submitWalletDraft({ ...fixture, journal: reloaded }),
+    error => error.code === "TRANSACTION_ALREADY_SUBMITTED" && error.submittedHash === HASH);
+  assert.equal(fixture.requests.length, priorRequests, "a reverted draft is never automatically sent again");
+  assert.equal(reloaded.get(fixture.context, HASH).status, "failed");
+});
+
+test("mismatched or incomplete failed receipt identities never mark the submitted transaction failed", async () => {
+  const canonical = { status: "failed", hash: HASH, eventId: "event-a", wallet: WALLET_A, blockNumber: 44 };
+  const responses = [
+    { ...canonical, hash: OTHER_HASH }, { ...canonical, eventId: "event-b" },
+    { ...canonical, wallet: WALLET_B }, { ...canonical, chainId: 1 },
+    { ...canonical, hash: undefined }, { ...canonical, wallet: undefined },
+    { ...canonical, eventId: undefined }, { ...canonical, blockNumber: undefined },
+    { ...canonical, blockNumber: -1 }, { ...canonical, blockNumber: Number.MAX_SAFE_INTEGER + 1 },
+  ];
+  for (const result of responses) {
+    const fixture = setup();
+    await assert.rejects(() => submitWalletDraft({ ...fixture, confirm: async () => result }),
+      error => error.code === "TRANSACTION_CONFIRMATION_MISMATCH" && error.submittedHash === HASH);
+    const entry = fixture.journal.get(fixture.context, HASH);
+    assert.equal(entry.status, "needs-confirmation");
+    assert.equal(entry.failedAt, undefined);
+    assert.equal(fixture.requests.filter(item => item.method === "eth_sendTransaction").length, 1);
+  }
+});
+
+test("the existing confirmed terminal guard also rejects a late failed status", () => {
+  const fixture = setup();
+  fixture.journal.record(fixture.context, { hash: HASH, draftId: "synthetic-draft-1" });
+  fixture.journal.update(fixture.context, HASH, { status: "confirmed", blockNumber: 43 });
+  assert.throws(() => fixture.journal.update(fixture.context, HASH, { status: "failed", blockNumber: 44 }),
+    error => error.code === "TRANSACTION_ALREADY_CONFIRMED");
+  assert.equal(fixture.journal.get(fixture.context, HASH).status, "confirmed");
+});
+
 test("a frozen confirmation error cannot hide the submitted hash", async () => {
   const fixture = setup();
   const original = Object.freeze(Object.assign(new Error("Frozen RPC error"), { code: "SYNTHETIC_RPC" }));
