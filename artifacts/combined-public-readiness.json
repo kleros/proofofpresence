@@ -1,0 +1,20 @@
+{
+  "performedAt": "2026-10-28T20:12:30Z",
+  "mode": "hosted-testnet",
+  "chainId": 10200,
+  "instanceId": "68ea73ac-e739-40a2-95d3-0eb322d3a515",
+  "events": [
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b"
+  ],
+  "capabilities": {
+    "sharedDemo": false,
+    "browserWallet": true,
+    "createEvents": false,
+    "timeControls": false,
+    "contractInbox": true,
+    "batchActions": true
+  },
+  "appSourceMatches": true,
+  "sourceCommit": "f4643f8b3a2938d4cbcebe233e202656847a3084"
+}

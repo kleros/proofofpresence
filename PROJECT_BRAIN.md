@@ -55,9 +55,10 @@ omitted and challenged through the actual public UI. His challenge was matched b
 Evidence:247 live wallet/API/UI checks;34 UI challenge checks with exactly one broadcast;
 [matched proof](artifacts/chiado-dispute-proof.json), [attendance](artifacts/chiado-attendance-proof.json),
 [app bridge](artifacts/chiado-app-sync-proof.json), and durable receipt/registration upgrade checks.
-Local validation: the latest complete Node suite passed206/206 (555.8seconds); build/types passed.
-Later batch-status/recovery, durable browser journal, selected-registration and C operator changes
-have separate focused passing checks; that earlier complete run is not presented as a later rerun.
+Local validation: the final complete Node suite passed221/221 (618.65seconds), including the final
+batch-status/recovery, durable browser journal, selected-registration and C operator/reserve changes;
+final typecheck and actual Linux build/pinned compilation passed. Sourcecheckpoint
+`f4643f8b3a2938d4cbcebe233e202656847a3084` integrates the final portable UI and these interfaces.
 The initial164-test compatibility regression was fixed before that successful run. Focused tooling10/10,
 adapter/runtime9/9, app bridge6/6, status UI10, v7 redesign49 and v8 simpleUI18 passed; earlier combined
 browser174 plus expectations also passed. A new real-HTTP wallet/plain-transfer regression proves
@@ -89,8 +90,8 @@ there is no Luma Plus. No Luma key, guest fetch, source module, route or feature
 Current additional scope is automatic contract depositor monitoring, plus separate batch curated
 approval and trusted check-in. The portable inbox and separate batch UI handoff is final commit
 `1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0` in the isolated UI worktree (monitor milestone `dc62a5b`). Backend owner-only inbox tests passed18 focused financial regressions and14 final
-checks; independent review approved cache/reorg/timeout/ownership hardening. Integration remains
-in progress until source-bound hosting and actual owner browser acceptance finish.
+checks; independent review approved cache/reorg/timeout/ownership hardening. Integration is complete on deployed sourcef4643f8, with actual main owner-inbox141 and role226
+checks passed. Additional visual polish remains deferred.
 
 The human in the contract chat explicitly asked for fresh UI-origin deposit→dispute→kickback testing.
 A/B deposit windows are closed. Prepare separate scenario C using the existing reviewed factory and
@@ -106,7 +107,25 @@ One fresh child `0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef` and three exact1e13
 role grants are confirmed: four operations, child creation block23735598, transaction
 `0x4aae6f292e9f6e7dbc65751631218a99f3c7bb74e68ea4d768d12f0235efc9cf`.
 Manifest `registry/chiado-v8-ui-c.json` and `artifacts/ui-c-deployment-proof.json` bind the result.
-No actual UI deposit or C continuation job exists yet; hosting is not published. Isolated C resources are configured: Netlify `db303622-4c6c-4034-b289-ccea38f029fc`,
+C hosting from integrated source `f4643f8b3a2938d4cbcebe233e202656847a3084` is healthy,
+Railway `626ddcee-0c2c-4315-81d5-70d42ba2156a`, Netlify `6ae254742b594eb08bab8df5`,
+uid1000 and isolated `/data`. See `artifacts/ui-c-hosting.json`. Both C UI deposits have now passed42 checks with exactly2 wallet submissions/broadcasts and
+canonical UI reconciliation, leaving pending2D/pool0/stakers0 before admission. Proof:
+`artifacts/ui-c/deposits-2026-10-28T20-14-09.270Z-9dcf605b/proof.json`; Alice hash
+`0x78763b7529bb0a37d6d3f363c4ec74286b2e94ede6539c16f963292c3c630d91`, Bob
+`0x18c491e15bf50d8b10ba2f1b50fdf0dc36e3076bcd611e5ce9b4e345c7a38425`.
+Independent receipt checks accepted both; C observer90 passed at the post-deposit checkpoint.
+Owner approval/separate on-chain registration passed39 checks with exactly one UI broadcast:
+`0x5a67239bb778dea7a9607b1a5240d1ca25b1b9fa8ccf8942e02afdd8f7333367`, block23735984.
+C is Open, stakers2/pending0/pool2D/attendance0/owed0. Independent post-admit observer93 passed.
+C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE29October04:50Bangkok; it owns C only and
+reschedules the SAME job after the actual posted challenge deadline, preserving A/B00:20.
+First admitted role audit passed3nonce logins/6desktop captures/zero financials; the final strengthened
+read-only audit0b62229 PASSED83auth/read requests,3nonce logins,6desktop captures,zero
+financial signatures/broadcasts and no failures. `artifacts/ui-c-status-admitted.json` binds its
+immutable proof and current scriptSHA. It has18 accepted/117 rejected pure phase/API/HTTP/wallet guards. Earlier pre-auth0-broadcast failure was Netlify-injected HTML. C badge only was disabled;
+exact326-byte benign C-site comment is recognized for hash comparison while all other bytes and
+the actual served response remain preserved. Anonymous18-request/15-asset validation passed. Isolated C resources are configured: Netlify `db303622-4c6c-4034-b289-ccea38f029fc`,
 `https://kleros-ui-c-20261029-9fe71683.netlify.app`; Railway service
 `44d00bdc-2d7e-46cb-aa9c-18f4d3fa2547`, backend
 `https://workbench-ui-rehearsal-c-production.up.railway.app`, separate volume
@@ -114,13 +133,13 @@ No actual UI deposit or C continuation job exists yet; hosting is not published.
 never the A/B key; it is not a transaction wallet. Preserve the chosen plan and schedule; require
 healthy reviewed hosting/harness and sufficient real deposit margin before browser deposits.
 C gets a12-hour synthetic check-in window after its fresh start; the actual contract deposit cutoff,
-24-hour challenge/match and7-day claim terms stay unchanged. Current C tooling5/5 local tests plus
+24-hour challenge/match and7-day claim terms stay unchanged. Current C tooling6/6 local tests (including resumed-funding reserve hardening) plus
 UI pure guards20accepted/109rejected pass; actual C browser execution is still unrun. A/B gas reserve
 5e12wei is protected before any new C role funding.
 No billing upgrade/new paid commitment. Ordinary temporary resources within existing plans are
 an implementation option; avoid broad auth/routing changes only to avoid a fictional restriction.
 
-Core source `27377f19f8bf801fd5dd27a86119850f19471de2` rollout is Railway
+Historical recovery release27377f1 rollout was Railway
 `90ac1c01-63ec-41b4-bc78-f9075a876237`, uploaded17:55:47UTC28October. Linux compile/pinned equality
 passed. A confirmed global Railway deployment incident caused the interim502. Recovery is now
 verified: deployment SUCCESS, image `sha256:0d64a1497bcbcd0985a069cbd288ad578ac52245b62994c6ad84d896cfae5822`,
@@ -130,6 +149,19 @@ broadcasts at `artifacts/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a
 Independent observer208 and historical deposit receipt checks passed after recovery. Existing
 volume/journals/contracts stayed preserved. Earlier135-check browser retry failure is archived,
 not reported as success; no application/source change was needed for its clean retry.
+
+Combined core source `f4643f8b3a2938d4cbcebe233e202656847a3084` is now healthy on BOTH primary
+frontend/backend: Railway `0a5786ec-e555-4d74-ac1f-9091b3f919ef`, Netlify
+`6ae256bf680f9cc3dd92092c`, uid1000/durable state, exact unchanged A/B manifest/volume.
+Actual public bootstrap and app.js source matched at20:12:30Z; see
+`artifacts/combined-public-readiness.json`. New matched role audit PASSED226 at
+`artifacts/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/proof.json`,
+3 nonce signatures/zero financial signatures or broadcasts. Updated independent observer209 passed
+with unchanged B baseline. Owner-only inbox acceptance PASSED141 with2nonce logins/zero financials, including private
+role denials and exact historical deposits/actual returns/current principal kept separate.
+C harness correction `66715b4` recognizes only the exact fixed non-executable hosting comment
+for byte comparison, leaving actual served HTML and all financial guards intact;22/117pure guards
+passed. Backend/frontend remain sourcef4643f8; no redeploy is needed for this local operator-only fix.
 
 ## Historical checkpoints below
 

@@ -7,6 +7,11 @@ Branch `codex/core-application`. The simpler UI and explicit v8 adapter are depl
 contracts. [V8_APP_RELEASE](V8_APP_RELEASE.md) and
 [hosting evidence](../artifacts/testnet-hosting.json) identify exact current source/deployments.
 The existing local v7 runtime remains compatible; historical v7 hosting sections below are archived.
+Deployed combined application source: `f4643f8b3a2938d4cbcebe233e202656847a3084`; final Node221/221,
+local inbox26/batch28, live main role226/owner inbox141 and independent observer209 passed.
+Operator guard66715b4 and C read-only phase auditor0b62229 are separate local tools.
+C real UI deposits42/registration39 are confirmed; its ACTIVE04:50Bangkok29October continuation
+uses actual future attendance deadlines, while A/B remains ACTIVE00:20Bangkok30October.
 
 Public interfaces remain directory and event participant/organizer/cases routes; bootstrap/event reads,
 signed wallet nonce authentication, private registration and approval, canonical receipt reconciliation,

@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "runId": "2026-10-28T20-17-57-634Z-f934db38",
+  "checks": 141,
+  "nonceSignatures": 2,
+  "contractSignatures": 0,
+  "contractBroadcasts": 0,
+  "apiWrites": "nonce authentication only",
+  "screenshots": [
+    "artifacts/screenshots/testnet-inbox-readonly/2026-10-28T20-17-57-634Z-f934db38/owner-overview-desktop.png",
+    "artifacts/screenshots/testnet-inbox-readonly/2026-10-28T20-17-57-634Z-f934db38/owner-overview-mobile.png",
+    "artifacts/screenshots/testnet-inbox-readonly/2026-10-28T20-17-57-634Z-f934db38/alice-deposit-review-desktop.png",
+    "artifacts/screenshots/testnet-inbox-readonly/2026-10-28T20-17-57-634Z-f934db38/alice-deposit-review-mobile.png"
+  ],
+  "source": {
+    "manifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+    "harnessSha256": "426ab05d4997a607228e099802df8b26126fce25454999e05189c70c247f7ecb",
+    "backendInstanceId": "68ea73ac-e739-40a2-95d3-0eb322d3a515",
+    "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+    "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2"
+  },
+  "checkedAt": "2026-10-28T20:21:20.966Z",
+  "ownerInbox": {
+    "indexedBlock": {
+      "number": 23735855,
+      "hash": "0xd881b802048ad8a49c61b0c9ad3acfd1d4a6cd18986ff65979b8f7b8bd6fc78a",
+      "timestamp": 1793218745
+    },
+    "counts": {
+      "payers": 3,
+      "linked": 3,
+      "unlinked": 0,
+      "transactions": 3
+    },
+    "rows": [
+      {
+        "wallet": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+        "receivedWei": "2000000000000",
+        "pendingCreditWei": "0",
+        "committedPrincipalWei": "1000000000000",
+        "returnedWei": "1000000000000",
+        "creditWithdrawnWei": "1000000000000",
+        "owedWei": "0",
+        "attendancePaidWei": "0",
+        "receiptLots": 1,
+        "secureContactLink": true
+      },
+      {
+        "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+        "receivedWei": "1000000000000",
+        "pendingCreditWei": "0",
+        "committedPrincipalWei": "1000000000000",
+        "returnedWei": "0",
+        "creditWithdrawnWei": "0",
+        "owedWei": "0",
+        "attendancePaidWei": "0",
+        "receiptLots": 1,
+        "secureContactLink": true
+      },
+      {
+        "wallet": "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F",
+        "receivedWei": "1000000000000",
+        "pendingCreditWei": "0",
+        "committedPrincipalWei": "1000000000000",
+        "returnedWei": "0",
+        "creditWithdrawnWei": "0",
+        "owedWei": "0",
+        "attendancePaidWei": "0",
+        "receiptLots": 1,
+        "secureContactLink": true
+      }
+    ],
+    "contactStringsIncludedInProof": false,
+    "contactStringsMaskedInScreenshots": true
+  },
+  "privacy": {
+    "anonymousDenied": true,
+    "participantDenied": true,
+    "foreignOwnerDenied": true
+  },
+  "limitations": [
+    "All three live A payers were already securely linked; unknown-payer behavior remains covered by local tests rather than a new public deposit"
+  ]
+}

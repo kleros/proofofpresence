@@ -24,8 +24,13 @@ upstream push or billing upgrade.
 Real Court follows a separate deployed ABI/provider review and funding check.
 
 
-The separately authorized fresh UI-deposit scenario C now has one confirmed child and three role
-grants. Read [TESTNET_UI_C](../docs/TESTNET_UI_C.md) and its separate manifest/journal. Its immutable
-start is29October04:45:35Bangkok; actual UI deposits/admission and hosting acceptance are pending.
-C must never be appended to A/B manifests/state. Its attended ruling1 complements A's absent ruling2;
-use the shared operator lock and same-wallet Bob UI kickback proof.
+The separately authorized fresh UI-deposit C has completed actual UI deposits42/2broadcasts and
+owner admission/registration39/1broadcast. Read [TESTNET_UI_C](../docs/TESTNET_UI_C.md), its separate
+manifest/journal and current role proof. C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE,
+first29October04:50Bangkok, after immutable start04:45:35. It owns C only and reschedules the same
+job after ACTUAL attendance challengeEndsAt; never append C to A/B manifests/state. C's attended
+ruling1 must pay the SAME Bob UI depositor after ordinary Alice payment/Bob held-share proof,
+while A's absent ruling2 independently tests top-ups. Every future phase requires strict role UI
+and canonical-chain checks before dependent financial work. Both schedules require Codex/computer
+running. Sourcef4643f8 is deployed; operator guard66715b4 and read-only C audit0b62229 are local
+source-bound tools. Final future-phase audit readiness/proof is recorded in the C runbook.

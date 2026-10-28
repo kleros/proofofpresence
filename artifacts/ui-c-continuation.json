@@ -1,0 +1,9 @@
+{
+  "id": "finish-kleros-ui-testnet-flow-c",
+  "active": true,
+  "nextBangkok": "2026-10-29 04:50",
+  "nextStage": "actual UI attendance, Bob challenge, owner match",
+  "eligibilitySource": "actual fresh chain time within immutable event hours; future payout deadline is the actual attendance post challengeEndsAt, plus any Waiting case gate",
+  "rescheduleSameJobAfterMatching": true,
+  "separateABJobPreserved": true
+}

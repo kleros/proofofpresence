@@ -2,7 +2,9 @@
 
 ## Current controlled Chiado v8 deployment
 
-The primary [app](https://kleros-event-workbench-preview.netlify.app) now uses `hosted-testnet`,
+The primary [app](https://kleros-event-workbench-preview.netlify.app) serves combined source
+`f4643f8b3a2938d4cbcebe233e202656847a3084`, including the contract inbox and separate batch controls.
+It uses `hosted-testnet`,
 real unchanged v8 contracts on Chiado10200 and deliberately controlled arbitration. It requires
 signed wallet authentication and has no demo identity impersonation or time/faucet/ruling controls.
 Netlify serves the frontend and fixed HTTPS gateway; the isolated persistent Railway service is
@@ -29,6 +31,20 @@ No paid secret-scoping feature or billing upgrade was enabled.
 are confirmed. Full public kickbacks/settlement remain gated by the real challenge window; the
 existing user-approved local heartbeat resumes00:20Bangkok30October. See the rehearsal runbook for
 once-only journals, phase audits and recovery. TestXDAI is valueless and mocks have no independent jury.
+
+## Isolated C UI rehearsal hosting
+
+Source `f4643f8b3a2938d4cbcebe233e202656847a3084` is published at
+[the isolated C app](https://kleros-ui-c-20261029-9fe71683.netlify.app), with one separate backend,
+volume and proxy key. [C hosting evidence](../artifacts/ui-c-hosting.json) records exact deployment
+IDs/image/uid1000. Health and one-event bootstrap passed; this is hosting readiness, not a deposit
+receipt. [TESTNET_UI_C](TESTNET_UI_C.md) records the fixed real-time window and once-only stages.
+The first actual browser run stopped at its home-page source guard before authentication/signing;
+no C UI deposit was consumed. Its archived stopped proof is retained rather than reported as success.
+Only C's optional [Netlify badge](https://docs.netlify.com/manage/projects/powered-by-netlify-badge/)
+was disabled. The fixed326-byte non-executable C-site hosting comment is recognized solely for HTML
+hash comparison; all remaining bytes/scripts must match, and the browser receives the unchanged
+published response. Harness correction66715b4 passed22positive/117negative pure guards.
 
 ## Historical v7 hosted demo — superseded
 

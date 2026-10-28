@@ -10,10 +10,17 @@ controlled and has no independent jury. Private application records persist on a
 
 The current branch is `codex/core-application`. [V8_APP_RELEASE](docs/V8_APP_RELEASE.md) and
 [deployment evidence](artifacts/testnet-hosting.json) record exact source and hosting IDs.
-Public acceptance passed **247 checks**, then **34 challenge checks** including one actual UI
-transaction. Deposits, excess-credit recovery, admission, attendance and a matched dispute are
-confirmed. Public kickbacks and settlement remain pending the unchanged challenge window;
-the user-approved follow-up is scheduled for **30 October2026 at00:20Asia/Bangkok**.
+The combined app source is `f4643f8b3a2938d4cbcebe233e202656847a3084`: contract depositor inbox,
+separate batch admission/check-in and durable uncertain-save recovery. **221/221 Node tests**,
+build/types,226 live role checks and141 live owner-inbox checks passed. The earlier247 acceptance
+and34 UI-challenge checks remain separate historical evidence.
+
+The [isolated C UI rehearsal](https://kleros-ui-c-20261029-9fe71683.netlify.app) confirmed two real
+UI-origin deposits and one reviewed organizer registration (42/39 checks, three broadcasts).
+Its continuation is ACTIVE at **29October04:50Asia/Bangkok** for actual attendance/dispute steps;
+payout timing follows the actual attendance challenge deadline. Original A/B kickbacks remain gated
+by their unchanged window, with continuation **30October00:20Asia/Bangkok**. See
+[TESTNET_UI_C](docs/TESTNET_UI_C.md). Local scheduled runs require the computer awake and Codex running.
 
 The [v8 event factory](docs/EVENT_FACTORY_V8.md) creates isolated contracts with payer-owned credits,
 independent recovery and bounded admission. Historical v7 source/deployments and the default local

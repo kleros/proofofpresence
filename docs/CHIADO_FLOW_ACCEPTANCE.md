@@ -5,6 +5,124 @@ Checkpoint date: 29 October 2026, Asia/Bangkok. This record covers only the exis
 synthetic plan `9fe71683-1e9b-48a0-94bd-274da4cf3029` on chain10200. The contract
 sources, deployed children, owners and real chain deadlines stay unchanged.
 
+First actual C UI deposit accepted: Alice submitted exactly1e12wei through the app,
+transaction `0x78763b7529bb0a37d6d3f363c4ec74286b2e94ede6539c16f963292c3c630d91`,
+block23735838. [UI operation proof](../artifacts/ui-c/deposits-2026-10-28T20-14-09.270Z-9dcf605b/ui-c-deposit-alice.proof.json)
+records one `eth_sendTransaction`, one broadcast, the captured reviewed draft and
+canonical event. Parent visual review confirmed exact C child/network/payer/value
+in the review dialog and "Deposit received · admission pending" with1e12wei unused
+credit/zero registered stakers afterward. All7recorded operator source hashes,
+both manifests and the public app hash match the current reviewed files; protected
+A/B before/after financial records are identical.
+
+The parent independently passed Alice's canonical receipt, isolated historical
+credit/reserve/custody increase, unchanged on-chain registration and fresh public
+API/head checks:
+[independent receipt proof](../artifacts/chiado-deposit-receipt-audit/2026-10-28T20-20-30-371Z-cc0a2d8e-9924-49aa-8c99-9ef476b126cf.json).
+That chain-only checker deliberately reports UI initiation unverified on its own;
+the paired source-bound browser evidence establishes UI origin. Bob's deposit is
+still pending at this checkpoint. C admission, dispute and kickback remain future
+stages. These actual UI deposits use a restricted EIP1193 bridge with disposable
+keys held in Node; normal browser-extension wallet UI has not been tested.
+
+Bob's later UI deposit is now accepted too: exact1e12wei, transaction
+`0x18c491e15bf50d8b10ba2f1b50fdf0dc36e3076bcd611e5ce9b4e345c7a38425`,
+block23735879. [Bob UI proof](../artifacts/ui-c/deposits-2026-10-28T20-14-09.270Z-9dcf605b/ui-c-deposit-bob.proof.json)
+records one wallet transaction and one broadcast. The parent reviewed Bob's actual
+review/confirmed screenshots, matched all operator/manifest/app fingerprints, and
+confirmed protected A/B records are identical across the action.
+[Independent Bob receipt proof](../artifacts/chiado-deposit-receipt-audit/2026-10-28T20-23-13-555Z-dd0392ab-c74e-46fb-b437-538a28940acc.json)
+passed canonical deposit and historical credit checks. The independent C flow
+observer passed90 checks:
+[post-deposit C proof](../artifacts/chiado-ui-c-flow-audit/2026-10-28T20-23-16-455Z.json).
+C was Open with2e12wei pending/balance/reserves, zero committed pool, zero
+registered stakers/cases/owed funds, and150lifetime admission slots. Each payer's
+credit was1e12wei. **UI deposit initiation is now tested for both Alice and Bob.**
+Owner approval/registration and all later C stages remain separate required facts.
+
+Owner approval and UI contract registration have now passed as a separate39-check
+stage with one financial submission/broadcast:
+[admission stage](../artifacts/ui-c/admit-2026-10-28T20-24-27.545Z-3ec384d7/proof.json).
+Registration transaction
+`0x5a67239bb778dea7a9607b1a5240d1ca25b1b9fa8ccf8942e02afdd8f7333367`
+in block23735984 calls `registerStakers([AliceC,BobC])` from the C owner with0value.
+It consumes each payer's1e12wei credit, changes both statuses to Staker, and keeps
+the2e12wei balance/reserves protected as committed principal. A/B financial records
+remain unchanged. The parent independently passed93 checks and reconciled the two
+canonical registration logs:
+[post-admission C proof](../artifacts/chiado-ui-c-flow-audit/2026-10-28T20-32-31-934Z.json).
+Current C has2registered stakers,148remaining lifetime slots, pool2e12wei,
+pending/owed/cases0. Attendance is not yet posted; dispute and kickback are pending
+the real event start/challenge period. Fresh nonce-auth-only participant UI checks
+after admission were requested separately from the owner's confirmed screenshot.
+
+The first C read-only admitted role audit passed for Alice, Bob and owner, with
+three nonce logins, six screenshots and **zero financial signatures/broadcasts**:
+[role proof](../artifacts/ui-c/status-admitted-2026-10-28T20-35-31-038Z-fb8c69a2/proof.json).
+The parent matched its harness/manifest/public-app hashes and visually confirmed
+both participant screens show approved host admission, a confirmed1e12wei receipt,
+registration in the correct C child, zero unused credit, no withdrawal/new-deposit
+action, and no financial attendance or payout yet. The actual UI is correct at
+this checkpoint. The auditor is receiving a bounded test-only follow-up to assert
+those visible facts and release/settlement button eligibility automatically for
+later phases, followed by one final admitted run; no financial action is repeated.
+
+C continuation `finish-kleros-ui-testnet-flow-c` is **ACTIVE at29October04:50Bangkok**
+in the sole operator's core chat. The parent inspected the native automation view,
+its saved configuration and [continuation evidence](../artifacts/ui-c-continuation.json).
+It pins the exact C plan/fingerprint/child/origin, preserves the independent A/B job,
+uses the shared operator lock, and requires current source/receipts/UI evidence.
+The first eligible run posts Alice's attendance, opens Bob's UI challenge and
+matches through the UI. It then reschedules this same C job using actual
+`challengeEndsAt` plus margin. Ordinary held-share, final-delivered-but-unsettled
+and settled states each require role UI and `--scenario c` observer checks before
+the next financial action. Controlled ruling1 and the same Bob's actual attendance
+payment plus separate collateral delivery must be proven before C completion.
+This is local scheduling: the machine must be awake with Codex running.
+
+C setup checkpoint, **29October2026 around03:04Bangkok**: the new child
+`0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef` is deployed under the existing reviewed
+factory, with separate C owner/Alice/Bob roles and an isolated app origin:
+<https://kleros-ui-c-20261029-9fe71683.netlify.app>.
+The parent independently passed26 creation/funding/initial-state checks at
+block23735685: [creation review](../artifacts/ui-c-parent-creation-review.json).
+It confirmed exact canonical role grants/creator transaction, full factory and
+immutable provenance, unchanged v8 artifact/compiler/source bindings, empty Open C
+state, A/B financial preservation and protected A/B gas coverage. C's immutable
+deposit cutoff is **29October04:45:35Bangkok**. The actual C public page shows only
+that event, the correct child, Open/Chiado10200 and1e12wei deposit; PNG/AX evidence
+is under `artifacts/screenshots/ui-c-parent/`.
+
+**No C UI deposit is yet established at this checkpoint.** The first browser run
+stopped before authentication/signing because raw home-page HTML differs from the
+source by Netlify's known C-site metadata comment. Its stopped proof is
+`artifacts/ui-c/deposits-2026-10-28T20-02-25.834Z-e65c6463/proof.json`; operations and
+screenshots were empty. The operator is correcting that narrow guard; fresh UI
+execution still must prove a single wallet submission and canonical receipt.
+See [C's operator record](TESTNET_UI_C.md) and
+[C manifest](../registry/chiado-v8-ui-c.json). A/B's existing continuation remains
+separate. This C deployment supersedes earlier "no C contract" planning statements
+below; those remain historical preparation records.
+
+The subsequent C GET-only browser probe passed18 requests and15 static assets,
+with0authentication/signature/broadcast activity:
+[probe](../artifacts/ui-c/root-source-readonly-probe.json). It validated the exact
+326-byte hosting comment for the C site at byte71 and delivered the published
+response unchanged. Other HTML bytes and scripts remain fully checked. This
+clears the first browser guard problem, while actual deposits remain a separate
+required execution step.
+
+After the main combined release was confirmed healthy, the parent A/B regression
+audit passed209 checks:
+[current A/B proof](../artifacts/chiado-flow-audit/2026-10-28T20-14-01-924Z.json).
+An intervening502 corresponded to the authorized main rollout; its failed proof
+was retained and was not called a contract regression. The generic observer now
+accepts `--scenario c` for the exact C planID/fingerprint/event/child/origin, writes
+only separate C evidence/latest paths, and leaves A/B's control baseline unchanged.
+Pure tests reject substituted C plans, fingerprints, event IDs and child contracts.
+C's future phase audit must still pair those API/chain checks with actual UI proof
+and the operator's per-operation A/B financial comparisons.
+
 Latest parent checkpoint, **29October2026 around01:55Bangkok**: the public app is
 healthy again on source `27377f19f8bf801fd5dd27a86119850f19471de2`. The stronger
 observer passed **208** checks, including head balance/reserve/surplus agreement

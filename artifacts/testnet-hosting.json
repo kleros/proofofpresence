@@ -2,12 +2,12 @@
   "kind": "controlled-chiado-v8-app",
   "publicOrigin": "https://kleros-event-workbench-preview.netlify.app",
   "backendOrigin": "https://workbench-testnet-api-production.up.railway.app",
-  "state": "healthy-controlled-testnet-through-matched",
+  "state": "healthy-combined-inbox-batch-controlled-testnet",
   "sourceBranch": "codex/core-application",
-  "sourceCommit": "27377f19f8bf801fd5dd27a86119850f19471de2",
+  "sourceCommit": "f4643f8b3a2938d4cbcebe233e202656847a3084",
   "railwayProjectId": "23ab879a-90d0-4f8f-a56a-d63baa85eed5",
   "railwayServiceId": "127e805c-b341-45e5-8a6b-822e432ee134",
-  "railwayDeploymentId": "90ac1c01-63ec-41b4-bc78-f9075a876237",
+  "railwayDeploymentId": "0a5786ec-e555-4d74-ac1f-9091b3f919ef",
   "railwayVolumeId": "36657a45-ed66-4497-9711-248aac82b3cf",
   "volumeMount": "/data",
   "netlifySiteId": "f6b82f41-9e30-49b0-a836-40fedbab93a4",
@@ -18,16 +18,16 @@
     "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
     "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB"
   ],
-  "netlifyDeployId": "6ae243f22ce33c282d882583",
+  "netlifyDeployId": "6ae256bf680f9cc3dd92092c",
   "railwayState": "SUCCESS",
-  "railwayImageDigest": "sha256:0d64a1497bcbcd0985a069cbd288ad578ac52245b62994c6ad84d896cfae5822",
+  "railwayImageDigest": "sha256:7bafa537dc40b82bd77985ee1ea34f55ef2564bdbe204decf1047151e9bb9d91",
   "runtimeUid": 1000,
   "chainStateCache": false,
   "initialObservedSeconds": {
     "bootstrap": 7.57,
     "anonymousEventDetail": 18.92
   },
-  "frontendSourceCommit": "27377f19f8bf801fd5dd27a86119850f19471de2",
+  "frontendSourceCommit": "f4643f8b3a2938d4cbcebe233e202656847a3084",
   "currentHealthVerified": true,
   "providerIncident": {
     "url": "https://status.railway.com/incident/Z1JDWW1W",
@@ -60,7 +60,7 @@
     "ordinaryRuledSettledAuditsRequired": true
   },
   "newCScenario": {
-    "status": "four canonical funding/child-creation transactions confirmed; C hosting not yet deployed, no UI deposits",
+    "status": "actual C UI deposits42 and registration39 passed; no attendance/dispute/payout yet",
     "isolation": "Separate manifest/journal/keys/backend volume/Netlify origin; A/B manifest unchanged",
     "expectedRuling": 1,
     "sameUIDepositorReceivesKickback": true,
@@ -69,7 +69,48 @@
     "publicOrigin": "https://kleros-ui-c-20261029-9fe71683.netlify.app",
     "contract": "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
     "manifest": "registry/chiado-v8-ui-c.json",
-    "deploymentProof": "artifacts/ui-c-deployment-proof.json"
+    "deploymentProof": "artifacts/ui-c-deployment-proof.json",
+    "hostingProof": "artifacts/ui-c-hosting.json",
+    "uiHarnessCommit": "66715b4",
+    "uiDepositProof": "artifacts/ui-c/deposits-2026-10-28T20-14-09.270Z-9dcf605b/proof.json",
+    "uiAdmissionProof": "artifacts/ui-c/admit-2026-10-28T20-24-27.545Z-3ec384d7/proof.json",
+    "continuation": {
+      "id": "finish-kleros-ui-testnet-flow-c",
+      "active": true,
+      "firstBangkok": "2026-10-29 04:50",
+      "payoutTiming": "derive from actual attendance challengeEndsAt; strict chain gates required"
+    },
+    "admittedRoleProof": "artifacts/ui-c-status-admitted.json",
+    "admittedRoleStatus": "passed-strengthened-auth-and-read-only"
   },
-  "luma": "Deferred by human; no key/fetch/module/routes activated"
+  "luma": "Deferred by human; no key/fetch/module/routes activated",
+  "combinedRelease": {
+    "nodeTests": 221,
+    "nodePassed": 221,
+    "durationSeconds": 618.65,
+    "typecheck": "passed",
+    "inboxBrowserChecks": 26,
+    "batchBrowserChecks": 28,
+    "readinessProof": "artifacts/combined-public-readiness.json",
+    "postRolloutMatchedRoleAudit": {
+      "checksPassed": 226,
+      "proof": "artifacts/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/proof.json",
+      "financialTransactionsSigned": 0,
+      "financialTransactionsBroadcast": 0,
+      "authNonceSignatures": 3
+    },
+    "sameABManifestAndVolume": true,
+    "independentObserver": {
+      "comparisons": 209,
+      "status": "passed-current-checkpoint",
+      "proof": "artifacts/chiado-flow-audit/2026-10-28T20-14-01-924Z.json"
+    },
+    "ownerInboxAcceptance": {
+      "checksPassed": 141,
+      "proof": "artifacts/testnet-inbox-readonly/2026-10-28T20-17-57-634Z-f934db38/proof.json",
+      "financialSignatures": 0,
+      "broadcasts": 0,
+      "authNonceSignatures": 2
+    }
+  }
 }

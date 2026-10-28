@@ -14,7 +14,38 @@ C plan fingerprint: `3637ba50a2b8f1d46cedbe6d678b747c25d19c15e976ae6ea87e63c8be0
 are canonically confirmed; creation hash
 `0x4aae6f292e9f6e7dbc65751631218a99f3c7bb74e68ea4d768d12f0235efc9cf`, block23735598.
 [Deployment proof](../artifacts/ui-c-deployment-proof.json) contains all four receipts and fee budget.
-No UI deposit or admission is claimed by this checkpoint. Hosting publication is pending.
+The actual C UI deposit stage **passed42 checks** with exactly two wallet submissions and two
+broadcasts. Alice and Bob self-registered through the real forms, reviewed the exact1e12wei calls,
+and canonically reconciled their receipts through the UI:
+
+- Alice: `0x78763b7529bb0a37d6d3f363c4ec74286b2e94ede6539c16f963292c3c630d91`, block23735838.
+- Bob: `0x18c491e15bf50d8b10ba2f1b50fdf0dc36e3076bcd611e5ce9b4e345c7a38425`, block23735879.
+
+[Actual UI proof](../artifacts/ui-c/deposits-2026-10-28T20-14-09.270Z-9dcf605b/proof.json) binds
+per-operation source hashes, review/confirmed screenshots, canonical receipts and unchanged A/B
+financial before/after states. Independent receipt checks accepted both; C's generic observer passed90
+at the post-deposit checkpoint: pending2e12wei, balance/reserved2e12wei, pool0, stakers0, no cases.
+Owner UI approval and separately signed registration **passed39 checks**, with exactly one
+financial wallet request/broadcast. Registration hash
+`0x5a67239bb778dea7a9607b1a5240d1ca25b1b9fa8ccf8942e02afdd8f7333367`, block23735984.
+[Admission UI proof](../artifacts/ui-c/admit-2026-10-28T20-24-27.545Z-3ec384d7/proof.json)
+shows exact Alice/Bob registration, pending0, stakers2, balance/reserved/pool2D and no cases or
+attendance. Each C operation left A/B financial state unchanged. Independent post-admission
+C observer93 passed. Final strengthened read-only role audit **passed**83 auth/read requests,3 nonce logins and6
+desktop captures, with zero financial signatures/broadcasts and no failures.
+[Latest readiness pointer](../artifacts/ui-c-status-admitted.json) binds the source0b62229 and
+[immutable role proof](../artifacts/ui-c/status-admitted-2026-10-28T20-44-19-428Z-07236594/proof.json). It explicitly verifies visible approval,
+registered contract state, confirmed D receipts, zero unused credit/no deposit-withdraw actions,
+no attendance/payout yet and disabled premature payout/settlement controls. Desktop-only C
+captures are distinct from the main desktop/mobile audit.
+
+Hosting from source `f4643f8b3a2938d4cbcebe233e202656847a3084` is healthy;
+[hosting evidence](../artifacts/ui-c-hosting.json) records C Netlify/Railway IDs and uid1000.
+The first stopped pre-auth attempt was a genuine source-guard refusal, with zero signatures or
+broadcasts. Only C's optional Netlify badge was disabled; operator correction66715b4 recognizes the
+exact non-executable hosting comment for hash verification and passes the unchanged served response
+to the browser. All other HTML/script/style bytes and financial guards remain strict. Pure guards22/117
+and an anonymous18-request/15-asset probe passed before the successful financial run.
 
 The app origin is `https://kleros-ui-c-20261029-9fe71683.netlify.app`; separate backend service
 `44d00bdc-2d7e-46cb-aa9c-18f4d3fa2547` and `/data` volume
@@ -71,7 +102,12 @@ separate C stages is permitted; an individual C operation must leave A/B unchang
 browser evidence with `scripts/chiado-deposit-receipt-audit.mjs` for independent canonical receipt
 checks; that receipt-only tool deliberately reports `uiInitiationVerified:false`.
 
-The existing `finish-kleros-testnet-kickbacks` job owns A/B only. Once C deposits/admission are
-confirmed, C needs its own concrete continuation schedule after its actual start, then after the
-observed attendance challenge deadline. Keep each job scoped, use the shared lock, and pause a job
-only after its own verified completion. Local scheduling requires the computer awake and Codex running.
+The existing `finish-kleros-testnet-kickbacks` job owns A/B only. C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE, first scheduled **29October04:50Bangkok**,
+after its actual start. It will execute actual UI attendance/challenge/match only after fresh gates,
+then reschedule the SAME C job after the observed on-chain attendance challenge deadline.
+[Continuation evidence](../artifacts/ui-c-continuation.json) records scope and timing. Every matched,
+ordinary, ruled-before-settlement and settled phase requires nonce-authenticated GET-only
+`test/testnet-ui-c-status.e2e.mjs --phase PHASE` plus the C observer; failed audits stop dependent
+financial stages. The final read-only auditor has18 accepted/117 rejected pure guards; source0b62229.
+Keep each job scoped, use the shared lock, and pause only after its own verified completion.
+Local scheduling requires the computer awake and Codex running.

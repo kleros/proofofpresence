@@ -6,7 +6,7 @@ The current hosted app uses real chain10200, unchanged v8 bytecode and controlle
 
 | Executed check | Actual result |
 |---|---|
-| Latest complete `npm test` | **206/206 passed**,555.8seconds; `artifacts/combined-inbox-batch-node-tests.log`. Later focused additions listed below were verified separately. |
+| Latest complete `npm test` | **221/221 passed**,618.65seconds; `artifacts/combined-final-node-tests.log`. This includes the final batch status/journal/selection and C tooling/resumed-funding guards. |
 | Profile-free recovery regression | **1/1 passed** with real local HTTP nonce auth, plain transfer, different payout destination, stable detail/draft fingerprint, no contact record and unchanged committed principal/B state. |
 | Status/browser guards on recovery release | Build/types passed; GET-only status10, v7 redesign49 and v8 simplified18 passed. These are local rendering/regression checks. |
 | Wallet/API/UI acceptance `test/testnet-live.e2e.mjs` | **247 checks** plus browser expectations passed; fully loaded desktop/mobile screenshots. No contract transaction signed by this harness; canonical existing receipts linked. |
@@ -43,14 +43,14 @@ hashes are recorded in `artifacts/portable-batch-assets-sha.json`.
 | Batch status/recovery focused |7 added status tests passed; terminal expired previews cannot be revived and post-auth completion races are covered. Earlier14 batch tests also passed. |
 | Durable batch journal |4 tests passed; fail-closed storage, no contacts, preserved external-chain intent across instance changes, isolated local instances. |
 | Selected on-chain registration |1 actual local v8 test passed: an unselected returned receipt does not block the explicitly selected valid payer; duplicate/invalid selection stops. |
-| C foundation/operator |5 tests passed,38.05seconds, on isolated local10200: one-child/four-operation recovery, dynamic case targeting, attended winner payment and separate collateral proof. |
+| C foundation/operator |6 tests passed across focused suites (foundation4/4 and operator2/2), on isolated local10200: one-child/four-operation recovery, dynamic case targeting, attended winner payment and separate collateral proof. |
 | C browser pure guards |20 accepted/109 rejected; no actual public browser transaction is claimed by this self-test. |
 | Regression/build |v7 redesign49, v8 simplified18, build/pinned v7 and v8 equality/typecheck passed. |
-| Recovered A/B public role audit |202 checks passed with8 fully loaded screenshots,3 nonce-auth signatures and zero financial signatures/broadcasts. Independent observer208 comparisons passed. |
+| Recovered A/B public role audit |202 checks passed with8 fully loaded screenshots,3 nonce-auth signatures and zero financial signatures/broadcasts. Independent observer208 comparisons passed on the recovery release; combined f4643f8 rollout observer209 and fully loaded role audit226 passed (3nonceauth/0financial). |
 
-The full Node206-test run preceded the final status retirement/race, browser journal, selected
-registration and C tooling additions; those later changes have focused evidence above. Public C UI
-execution remains pending actual hosting and canonical browser-origin receipts. The first A/B deposits
+The final full Node221-test run includes the status retirement/race, browser journal, selected
+registration and C tooling/resumed-funding changes. Final typecheck also passed. Public C UI
+execution remains pending canonical browser-origin receipts. The first A/B deposits
 were CLI-origin; their browser receipt linkage is not labeled UI initiation. Luma remains deferred.
 
 ## Simplified v8 application and testnet integration — latest phase
@@ -357,3 +357,53 @@ mode hosted-demo, chain1337 and the same instance as live acceptance. Public art
 `artifacts/hosted-live-verification.json`, `artifacts/hosted-readiness.json` and
 `artifacts/hosted-deployment.json`. [HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md) records operations and limits.
 This is a shared synthetic demo with valueless ETH, mock Court and restart resets, not a production rollout.
+
+
+## C HTML source guard correction
+
+Operator-only commit66715b4 followed the221-test application run. Its pure guards passed22 accepted/117 rejected.
+The exact non-executable C-site hosting comment is excluded only from hash comparison; all other
+HTML/script/style bytes must match and the actual published response reaches the browser unchanged.
+A GET-only anonymous browser probe passed18 requests/15 verified assets with zero auth/signatures/
+broadcasts. No application/frontend/backend change was needed. The first pre-auth stopped attempt is
+archived and does not count as a deposit; public C receipts are recorded separately once reconciled.
+
+
+## Actual isolated C UI deposits
+
+Public sourcef4643f8/operator66715b4 passed42 checks with exactly2 nonce logins,2 wallet submissions
+and2 canonical broadcasts. Both synthetic registrations, financial reviews and receipt reconciliation
+used the real UI. Alice hash0x78763b7529bb0a37d6d3f363c4ec74286b2e94ede6539c16f963292c3c630d91,
+Bob0x18c491e15bf50d8b10ba2f1b50fdf0dc36e3076bcd611e5ce9b4e345c7a38425.
+Separate immutable per-operation proofs and actual review/confirmed screenshots are under
+`artifacts/ui-c/deposits-2026-10-28T20-14-09.270Z-9dcf605b/`. Both have independent canonical
+receipt acceptance; the C observer passed90 with pending2D/reserved2D/balance2D, pool0, stakers0
+and no cases at the post-deposit checkpoint. C UI admission/registration subsequently passed39 checks with one canonical UI registration; attendance,
+dispute, ordinary held-share batch, controlled ruling1 and same-Bob kickback remain future steps.
+A/B financial facts were unchanged across each C operation and the complete C deposit stage.
+
+The combined main owner-only inbox also passed141 public read-only checks,2 nonce logins and zero
+financial signatures/broadcasts: exact canonical A payer rows, indexed financial amounts, historical
+Alice2D deposit/currentD principal/actualD unused-credit return kept separate, role/privacy401/403,
+participant UI hidden and no record writes. Its contact-masked screenshots/public proof are in
+`artifacts/testnet-inbox-readonly/2026-10-28T20-17-57-634Z-f934db38/`. All actual A payers were
+already linked; unknown-payer behavior remains local-test coverage.
+
+
+## Final admitted C role readiness
+
+Source0b62229 passed the strengthened actual three-role audit:83 auth/read requests,3 nonce
+logins,6 desktop screenshots, zero financial signatures/broadcasts, failures[].
+[Latest pointer](../artifacts/ui-c-status-admitted.json) binds the immutable proof/sourceSHA.
+Visible admission, exact D receipt, contract registration, zero unused credit and no extra
+deposit/credit withdrawal were verified for both actual depositors. No attendance, case or payout
+was invented; normal release is disabled and there is no case to settle. Future matched/ordinary/
+ruled/settled guards check dynamic IDs, held/owed/sent categories, finality and actual action states.
+Pure guards18 accepted/117 rejected passed. The earlier admitted audit used80 auth/read requests;
+its separate original proof remains archived and is superseded by this strengthened readiness.
+
+Both local heartbeat jobs were verified ACTIVE in the root chat: C at29October04:50Bangkok for
+attendance/dispute steps, and original A/B at30October00:20Bangkok for eligible payout stages.
+C will reschedule the SAME job after its ACTUAL posted attendance challenge deadline. Source
+f4643f8 remains deployed; these observer-only changes require no app redeployment. Full public
+controlled kickbacks/settlement and later real Court remain outstanding, with actual gates recorded.

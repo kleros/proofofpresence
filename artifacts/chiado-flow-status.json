@@ -1,32 +1,34 @@
 {
   "status": "passed-current-checkpoint",
-  "checkedAt": "2026-10-28T18:56:02.193Z",
+  "checkedAt": "2026-10-28T20:15:03.865Z",
   "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "scenario": "ab",
+  "manifestFile": "registry/chiado-v8-controlled.json",
   "chainId": 10200,
   "arbitration": "controlled",
-  "instanceId": "dd656a04-4a59-4446-a837-b2bd41c78b24",
+  "instanceId": "68ea73ac-e739-40a2-95d3-0eb322d3a515",
   "manifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
   "controlBaseline": {
     "file": "artifacts/chiado-flow-audit/9fe71683-1e9b-48a0-94bd-274da4cf3029-control-baseline.json",
     "blockNumber": 23734393,
     "sha256": "b7e4e1ca71bcd74949066b596786bfa50fb38c303ec4965bc0ef5d6336c06600"
   },
-  "checks": 208,
+  "checks": 209,
   "readOnly": true,
   "signatures": 0,
   "broadcasts": 0,
-  "observerSha256": "6808afb20bcf1bee59dd302faea2885192271bdb773099976522587720fb1704",
+  "observerSha256": "87419114a362b7bd0b3d1397c0c79480ee486c53eeab9449d5d35baf574692e8",
   "events": [
     {
       "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
       "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
-      "blockNumber": 23734930,
-      "blockHash": "0x253155205fd1400a25a8f212879caa75e567831f66e3c49b5ea967f69620840e",
-      "now": 1793213695,
+      "blockNumber": 23735804,
+      "blockHash": "0x0870c7c5df83a4715696629d07eb16d95e36fc0cba433f87d0676ccdb06a0ca7",
+      "now": 1793218450,
       "observedHead": {
-        "blockNumber": 23734936,
-        "blockHash": "0x807ec8bb28007983ef0032e4aab43f5dfdf1f2f21320597ee283404d21335131",
-        "now": 1793213730
+        "blockNumber": 23735809,
+        "blockHash": "0xc718db6d78aef4c01a1d95406b1113099dcf565eecc8183c6681b7fd7eee68dc",
+        "now": 1793218480
       },
       "state": {
         "phase": "Listed",
@@ -101,8 +103,8 @@
         "lifetimeAdmittedCount": 3,
         "remainingAdmissionSlots": 147,
         "fingerprint": "2c403f9d8ec90733ad30f1c1613698d520966f0cbdb4581375a76edf739d2ea2",
-        "blockNumber": 23734930,
-        "now": 1793213695
+        "blockNumber": 23735804,
+        "now": 1793218450
       },
       "expectedUi": {
         "depositsOpen": false,
@@ -124,8 +126,8 @@
         "chainId": 10200,
         "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
         "contractVersion": "kleros-event-v8",
-        "blockNumber": 23734930,
-        "blockHash": "0x253155205fd1400a25a8f212879caa75e567831f66e3c49b5ea967f69620840e",
+        "blockNumber": 23735804,
+        "blockHash": "0x0870c7c5df83a4715696629d07eb16d95e36fc0cba433f87d0676ccdb06a0ca7",
         "attendancePaidWei": "0",
         "principalRefundedWei": "0",
         "registeredPrincipalRefundedWei": "0",
@@ -406,13 +408,13 @@
     {
       "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
       "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
-      "blockNumber": 23734938,
-      "blockHash": "0xcc932fc7b5a6d495558aaf7ef7bbe8061c0222ff4ade4591485c2e9824840a83",
-      "now": 1793213740,
+      "blockNumber": 23735810,
+      "blockHash": "0x652829f625ea9aa417e74e41a4e9bcfe1c5431006b9299e8822d5a56dd9e8784",
+      "now": 1793218485,
       "observedHead": {
-        "blockNumber": 23734941,
-        "blockHash": "0x292e9d6b7770b361951636ef0a81308ad13c62484cafe719e1431492335baa38",
-        "now": 1793213755
+        "blockNumber": 23735813,
+        "blockHash": "0x3152e3b48a8092d3a8e24f12523656555661dbb88fd4801d8a34151b7f4d7c79",
+        "now": 1793218500
       },
       "state": {
         "phase": "Listed",
@@ -453,8 +455,8 @@
         "lifetimeAdmittedCount": 1,
         "remainingAdmissionSlots": 149,
         "fingerprint": "4723379bf164ba9fb7faf4fe25732ce299f949cb040dd2978b26b1eaf52b2409",
-        "blockNumber": 23734938,
-        "now": 1793213740
+        "blockNumber": 23735810,
+        "now": 1793218485
       },
       "expectedUi": {
         "depositsOpen": false,
@@ -468,8 +470,8 @@
         "chainId": 10200,
         "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
         "contractVersion": "kleros-event-v8",
-        "blockNumber": 23734938,
-        "blockHash": "0xcc932fc7b5a6d495558aaf7ef7bbe8061c0222ff4ade4591485c2e9824840a83",
+        "blockNumber": 23735810,
+        "blockHash": "0x652829f625ea9aa417e74e41a4e9bcfe1c5431006b9299e8822d5a56dd9e8784",
         "attendancePaidWei": "0",
         "principalRefundedWei": "0",
         "registeredPrincipalRefundedWei": "0",
@@ -582,5 +584,5 @@
     }
   ],
   "notice": "This observer verifies public API and canonical chain facts. UI screenshots and authenticated role assertions are separate evidence; waiting stages are not completed.",
-  "evidenceFile": "artifacts/chiado-flow-audit/2026-10-28T18-54-48-312Z.json"
+  "evidenceFile": "artifacts/chiado-flow-audit/2026-10-28T20-14-01-924Z.json"
 }

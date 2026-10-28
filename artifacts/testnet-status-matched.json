@@ -4,8 +4,8 @@
   "chainId": 10200,
   "origin": "https://kleros-event-workbench-preview.netlify.app",
   "arbitration": "controlled test arbitrator; no independent jury",
-  "checkedAt": "2026-10-28T19:02:41.210Z",
-  "checks": 202,
+  "checkedAt": "2026-10-28T20:17:47.055Z",
+  "checks": 226,
   "observed": "matched",
   "case": {
     "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
@@ -74,33 +74,33 @@
     "alice"
   ],
   "screenshots": [
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-desktop.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-mobile.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-participant-desktop.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-participant-mobile.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-ownerA-desktop.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-ownerA-mobile.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-alice-desktop.png",
-    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-alice-mobile.png"
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-bob-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-bob-mobile.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-bob-participant-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-bob-participant-mobile.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-ownerA-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-ownerA-mobile.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-alice-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/matched-alice-mobile.png"
   ],
   "limitations": [
     "Disposable Node-held wallets supplied login signatures through a restricted EIP1193 test provider; no normal wallet extension was used",
     "Attendance sent, reserved case shares and failed-transfer credit are verified separately; claims are not relabeled as attendance payouts"
   ],
-  "runId": "matched-2026-10-28T18-58-28-661Z-89fe64a9",
-  "archivedProof": "artifacts/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/proof.json",
+  "runId": "matched-2026-10-28T20-14-18-594Z-5e865b35",
+  "archivedProof": "artifacts/testnet-status/matched-2026-10-28T20-14-18-594Z-5e865b35/proof.json",
   "sourceContext": {
     "manifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
     "matchedCheckpointSha256": "8d08dcca3629ef895e03d15294cb044bac1d98299d2d7c06d5d1ef2f56759f06",
     "harnessSha256": "739abe981889481143280d2bf80b543b0befa10355b235de32d59ab5929c740d",
-    "liveFrontendSha256": "192a6566ee8eb972af5904cbd3513bb68ace86986434070888aa631e3da5dda9",
-    "backendInstanceId": "dd656a04-4a59-4446-a837-b2bd41c78b24",
+    "liveFrontendSha256": "88067cba325b7f154aa7c7bb40d012e59bacfad41a5c51c083cd14b1596cf85e",
+    "backendInstanceId": "68ea73ac-e739-40a2-95d3-0eb322d3a515",
     "eventA": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
     "eventB": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
-    "eventASnapshotBlock": 23734973,
-    "eventASnapshotHash": "0xc45e16ed34ef93bb2469a9dc32599c3dde05553d82d9c7520325f2b2c3b5748f",
-    "eventBSnapshotBlock": 23734973,
-    "eventBSnapshotHash": "0xc45e16ed34ef93bb2469a9dc32599c3dde05553d82d9c7520325f2b2c3b5748f"
+    "eventASnapshotBlock": 23735807,
+    "eventASnapshotHash": "0x8b69adade116399c0a08c7da0163ec7a3071a20066faf620f041a8e0d2a6715c",
+    "eventBSnapshotBlock": 23735807,
+    "eventBSnapshotHash": "0x8b69adade116399c0a08c7da0163ec7a3071a20066faf620f041a8e0d2a6715c"
   },
   "httpFailures": []
 }

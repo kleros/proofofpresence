@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "probe": "GET-only anonymous C browser; exact-comment verification only; unchanged responses delivered",
+  "eventSelected": true,
+  "requestCount": 18,
+  "blocked": [],
+  "errors": [],
+  "rootAudit": {
+    "pathname": "/",
+    "publishedSha256": "f9c9a570c3fcbb2ec7e1e93a936b39762ea52bf92372e621499187147299ff3a",
+    "expectedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+    "verifiedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+    "transform": "strip-exact-c-netlify-hosting-comment-for-hash-only",
+    "removedBytes": 326,
+    "exception": "C-Netlify-static-comment-v1",
+    "locationByteOffset": 71,
+    "removedSha256": "dec70c6eb647ad5096525d6a94fbe9ffd543273400372665170c3af5e4630c8f",
+    "delivered": "unchanged published response; only an HTML comment excluded from byte comparison"
+  },
+  "staticAssetsVerified": 15,
+  "authRequests": 0,
+  "walletsLoaded": 0,
+  "signatures": 0,
+  "broadcasts": 0
+}

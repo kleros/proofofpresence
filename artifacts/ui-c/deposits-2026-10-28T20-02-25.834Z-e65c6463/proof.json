@@ -1,0 +1,117 @@
+{
+  "status": "stopped",
+  "stage": "deposits",
+  "performedAt": "2026-10-28T20:02:25.831Z",
+  "checks": [
+    "C manifest, separate origin, roles, schedule and immutable plan agree.",
+    "C is separate from both protected A/B child contracts.",
+    "Exact compiled source/artifact provenance matches C.",
+    "Separate C site serves strict same-origin security headers.",
+    "Current public app.js bytes match the reviewed local UI source.",
+    "Published /styles.css bytes match the reviewed source.",
+    "Published /transaction-context.js bytes match the reviewed source.",
+    "Published /hosted-wallet.js bytes match the reviewed source.",
+    "Published /reconciliation.js bytes match the reviewed source.",
+    "Published /contract-inbox.js bytes match the reviewed source.",
+    "Published /contract-inbox.css bytes match the reviewed source.",
+    "C RPC transport must use an HTTPS endpoint; chain identity is verified independently.",
+    "Canonical C creation transaction, nonce, block and opening time match the exact plan-bound factory call.",
+    "C signing file is an owner-only regular file.",
+    "Only the three isolated C role identities are loaded in Node."
+  ],
+  "operations": [],
+  "blockedRequests": [
+    "GET / blocked"
+  ],
+  "screenshots": [],
+  "counts": {
+    "nodeHttp": 9,
+    "browserHttp": 1,
+    "browserPaths": {
+      "GET /": 1
+    },
+    "rpc": {
+      "eth_chainId": 58,
+      "eth_getTransactionReceipt": 7,
+      "eth_getTransactionByHash": 4,
+      "eth_getBlockByNumber": 15,
+      "eth_getCode": 12,
+      "eth_call": 180,
+      "eth_getBalance": 8
+    },
+    "nonceSignatures": 0,
+    "walletTransactions": 0,
+    "broadcasts": 0
+  },
+  "source": {
+    "origin": "https://kleros-ui-c-20261029-9fe71683.netlify.app",
+    "instanceId": "8a3208b1-7eab-4aa9-8d5a-af5bb1536c65",
+    "planFingerprint": "3637ba50a2b8f1d46cedbe6d678b747c25d19c15e976ae6ea87e63c8be0126fb",
+    "manifestSha256": "282e7326548e5a06dda7616fe530afeb31a420b87defc25184f83d1b94d22ab3",
+    "protectedManifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+    "manifestFileSha256": "282e7326548e5a06dda7616fe530afeb31a420b87defc25184f83d1b94d22ab3",
+    "protectedManifestFileSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+    "harnessSha256": "04bdb994f845aea597a8dde7f2e3e9207243c1e56a1326bc93726cb941b2689c",
+    "operatorFiles": {
+      "test/testnet-ui-c.e2e.mjs": "04bdb994f845aea597a8dde7f2e3e9207243c1e56a1326bc93726cb941b2689c",
+      "scripts/chiado-ui-deposit-guards.mjs": "dbb665a34b40a9c925e8c9180c4cb480015e1cdac9f911c21463f8f899f455ee",
+      "scripts/testnet-ui-scenario.mjs": "f3a9a14c4bef9cb2800fb990a3e1fd35f54e3ca0fc8860b0699894ff0294ded8",
+      "src/testnet-config.mjs": "fba088255aa81212e5d25bdef9489269e1184e26c6e12b55672b6c8c0a6f3d53",
+      "src/chain.mjs": "986eeb4004d0eef84064cb6b0ceea3f6a70cf13b45c37272c673c64ce7da06f2",
+      "src/contracts-v8.mjs": "7acdb65ee6d32c6329fd60e1370912c679ce6104a26e567fdd42aa9ddfd30ca7",
+      "src/utils.mjs": "4bc9f2512e348748ccbfe11e0adef9f5ef64f49fbc5ef4a934ebd950e72fc4b9"
+    },
+    "publicFiles": {
+      "/app.js": "88067cba325b7f154aa7c7bb40d012e59bacfad41a5c51c083cd14b1596cf85e",
+      "/assets/ASSET_PROVENANCE.md": "fe03990a05ef0350c12b6b904d3ca2eb27f43d4eaf228ea9c7e10399feaf8ee3",
+      "/assets/FONT_PROVENANCE.json": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a",
+      "/assets/GEIST_MONO_OFL.txt": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691",
+      "/assets/GEIST_OFL.txt": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691",
+      "/assets/INSTRUMENT_SERIF_OFL.txt": "b6b2292aa580937fb63796878d65a027a27f8c3db2d97601d0c34d9031f4ca17",
+      "/assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "/assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "/assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+      "/assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "/assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "/assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+      "/batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "/batch-actions.js": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "/batch-pending.js": "deadbd1c243b83a86656be918157e481ee4bfc45dedbd9ffbbb132c368ac9e20",
+      "/batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "/contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "/contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "/hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "/index.html": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "/policies/v8-testnet.md": "e9e36be8e8bb1741bda4413820d0c4691cc31df0767d41ca269200424b5ea542",
+      "/reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "/styles.css": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af"
+    },
+    "provenance": {
+      "v8Compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "v7MockCompiler": "0.8.28+commit.7893614a.Emscripten.clang",
+      "sources": {
+        "contracts/KlerosEventV8.sol": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769",
+        "contracts/KlerosEventFactoryV8.sol": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505",
+        "references/kickback/test/MockKleros.sol": "beae9a66702d986159e2d06f0d5dfe4cd18df95906a56f7a2e1117c808884136"
+      },
+      "creationCodeHashes": {
+        "KlerosEventV8": "0xd134f9fe0a23e6ea15c04d43c1b3603419486729bb148e3c7a182002a2e81714",
+        "KlerosEventFactoryV8": "0x2d6a01f0c2638745cfb4c9ab64c56463a944f242a6a92f5602612a55b3e9bc76",
+        "MockKlerosLiquid": "0xcd44ded079384e526257177ded33e2dd78ead605dd118b56a6f449e5d883adf7",
+        "MockArbitrableProxy": "0xeebf0efd791c1c659aca493517d0cace0e3c8eae6051dbf388ce60a6afdd54c0"
+      }
+    },
+    "contract": {
+      "address": "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
+      "codeHash": "0x5721bcb2e08ad69e3206d569cb371dbea74ce0a9d318f496a833acd00f99713f",
+      "factory": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+      "factoryCodeHash": "0x6f0477c136eea26f0c0de3a1ee81b7fafc089fb904a39808834eb46224e11554",
+      "deploymentTxHash": "0x4aae6f292e9f6e7dbc65751631218a99f3c7bb74e68ea4d768d12f0235efc9cf",
+      "deploymentBlock": 23735598,
+      "configurationHash": "0x99e77521a445080cc9521de83fa245905e3d9df025b6c8c78a99ac98e8e36787"
+    }
+  },
+  "error": "C UI operation stopped. Transport, signing and browser diagnostics are redacted. Inspect existing journal hashes; never replay/reset.",
+  "knownTransactions": []
+}

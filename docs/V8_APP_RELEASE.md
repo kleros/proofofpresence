@@ -38,6 +38,37 @@ held-share settlement remain pending until their exact chain prerequisites. Do n
 rebroadcast, reset or modify public contract deadlines. See `docs/TESTNET_REHEARSAL.md` for stage
 commands and recovery; transaction hashes are journaled before a single submission.
 
+## Combined inbox/batch release and fresh UI scenario C
+
+Application source `f4643f8b3a2938d4cbcebe233e202656847a3084` is healthy on the primary A/B and
+isolated C sites. Portable UI source1b0ea0e was integrated around the current authoritative
+controller. New interfaces are current-owner deposit-inbox/refresh, separate off-chain batch
+preview/commit/GET-status recovery, and exact selected contract-registration review. No Solidity
+source changed. Contact-free durable markers survive a reload without automatically retrying POST.
+Unknown wallets stay unlinked; curator approval and trusted check-in do not themselves move funds.
+
+Final combined Node221/221, build/types, inbox26/batch28 integrated local browser checks, main
+role226 and owner-only inbox141 public checks passed. A/B observer209 passed after the rollout.
+[Combined evidence](../artifacts/combined-release-verification.json) and [API](API.md) give scope
+and limits; earlier164/175/206 runs above/below are historical checkpoints.
+
+C's actual public UI deposit stage passed42 checks with two canonical broadcasts, and its owner
+admission/registration stage passed39 with one. Both exact synthetic depositors are now Stakers,
+pending0/pool2D/attendance0/no payouts; immediate A/B comparisons stayed unchanged. The first
+nonce-authenticated C role audit passed with three nonce logins/six desktop captures and zero
+financial signatures. The strengthened future-phase auditor0b62229 passes18 accepted/117 rejected
+pure guards; the strengthened admitted run passed83auth/read requests,3nonce logins,6desktop captures,
+zero financial signatures/broadcasts. [Latest pointer](../artifacts/ui-c-status-admitted.json)
+binds the immutable proof. C public role captures are desktop-only.
+
+C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE29October04:50Bangkok, independent of the
+existing A/B00:20Bangkok30October job. C's future payout schedule must derive from the ACTUAL
+posted attendance challengeEndsAt; do not use eventStart+24hours or A/B's deadlines. Matched,
+ordinary, ruled-before-settlement and settled stages require C role UI/API/chain proofs and the
+scoped observer. Same-Bob attended ruling1 complements A's absent ruling2/top-ups. Full public
+kickbacks and real Court are not yet complete. [C runbook](TESTNET_UI_C.md) records exact hashes,
+real-time gates, separate manifests/storage and once-only recovery.
+
 ## Live loading correction
 
 The first public run exposed7.57second bootstrap and18.92second anonymous event-detail reads from
