@@ -7,6 +7,10 @@ node_modules/
 !.env.example
 .runtime/
 artifacts/screenshots/
+# Preserve the final combined evidence; keep intermediate diagnostics local.
+artifacts/*.log
+!artifacts/final-verification.log
+artifacts/ui-safety-results.json
 test-results/
 playwright-report/
 private/

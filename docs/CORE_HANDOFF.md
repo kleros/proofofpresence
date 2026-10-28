@@ -1,9 +1,10 @@
 # Core application integration checkpoint
 
 28 October 2026. Main implementation owner: this chat (`Unify Kleros event deposits`).
-Core branch: `codex/core-application`. Initial stable code checkpoint:
-`28f2c3f50563a699a62bf9e4085f0aa6a7464828`. There is no upstream push or production deployment.
-Later core additions and the final integration commit are recorded in this document as they land.
+Core branch: `codex/core-application`. Integrated stable code checkpoint:
+`52b66cc5687936cbdbb2eed3578105bb5b215d2d`. Initial core:
+`28f2c3f50563a699a62bf9e4085f0aa6a7464828`; authoritative preview/payment/journal checkpoint:
+`b81607ac2bbb86973f3b48b9dd93c2beb756de32`. No upstream push or production deployment occurred.
 
 ## Architecture and authoritative interfaces
 
@@ -50,34 +51,28 @@ state/version checks are `src/chain.mjs`. `public/app.js` currently consumes the
 ## Redesign ownership and integration
 
 The parallel chat `Implement Option B UI redesign` owns presentation/accessibility/responsiveness.
-It currently works from a separate snapshot repository at `/private/tmp/kleros-ui-snapshot-20261028`
+It delivered from a separate snapshot repository at `/private/tmp/kleros-ui-snapshot-20261028`
 and worktree `/private/tmp/kleros-ui-redesign`, branch `codex/kleros-ui-redesign`. This was necessary
 because the main repository was initially unborn. Do not assume shared Git ancestry.
 
-The main owner defers further visual polish. Once `UI_HANDOFF.md` is available, read its starting
-commit, changed files, data assumptions and actual tests. Compare its patch to that starting snapshot
-and to this latest core; preserve new financial actions and backend contracts. Import only compatible
-UI/assets/tests/documentation, resolve conflicts in the main branch, and rerun build/typecheck/Node,
-browser, desktop/mobile and relevant financial compatibility checks. No automatic whole-tree overwrite
-or upstream merge is authorized by the handoff itself. Record the accepted/rejected changes and results.
+The delivered commit `923f517fccdd0bddefbd9acaf5454309ee6c9ecf` and original
+[UI_HANDOFF](UI_HANDOFF.md) were reviewed against the current core and imported locally as
+`refs/remotes/ui-handoff/redesign`. Compatible UI/assets/tests were applied with scoped three-way
+integration; newer backend files and canonical project records were retained. Static asset serving
+was adapted manually. [UI_INTEGRATION](UI_INTEGRATION.md) records the accepted changes and corrections.
+The main owner deferred further visual polish and completed the combined application checks.
 
 ## Verification and remaining work
 
-The initial checkpoint's consolidated `npm run verify` passed: build/typecheck,37/37Node tests and
-36 browser assertions plus interactions. Clean root-only dependency verification also passed retained
-contract/script/provenance54/54, guest180/180 and console159/159. TEST_REPORT records prior reproductions
-and the nonce/hoisted-dependency fixes. Subsequent core changes are checked before UI integration.
+Final `npm run verify` at the integrated code checkpoint passed build/typecheck, **91/91 Node tests**,
+and four browser suites: lifecycle39, redesign49, safety16 and context4 assertions, plus their
+interaction/expectation checks. A fresh archive of that commit passed offline root-only installation,
+build and typecheck. Clean retained compatibility checks passed contract/script/provenance54/54,
+guest180/180 and console159/159. [TEST_REPORT](TEST_REPORT.md) records the commands and limits.
 
-Core additions now implemented and checked: explicit unmatched-versus-matched case projection/dispatch
-(unmatched resolved challenges never inherit resolver case0), login-instance scoping for drafts/previews,
-server-owned import previews, log-backed payment projections, submitted-hash routes and the nonvisual
-durable transaction journal. The bounded integration run passed34/34 tests (preview12, journal16,
-payments2, submissions2, unmatched1, appeal1); latest HTTP routes passed10/10. Build/typecheck pass.
-The full combined redesign suite is still required after its finished handoff is integrated.
-
-The delivered UI923f517 is now integrated with those newer authoritative interfaces; see
-[UI_INTEGRATION](UI_INTEGRATION.md) for accepted files, deliberate adaptations and race/recovery fixes.
-Remaining local work is completing the final combined verification and recording its results/commit.
+The local implementation and UI integration are complete. Explicit unmatched case dispatch, scoped
+sessions/previews, log-backed payment facts, durable submission hashes, terminal failed receipts,
+factual re-login recovery and event-switch response guards all use the authoritative core interfaces.
 External work remains persistent production auth/storage, staging RLS and
 private-content mapping rehearsal, a fresh mainnet fork, dependency remediation and an explicitly
 authorized rollout. Backend/financial behavior remains owned by the core implementation session.

@@ -21,7 +21,11 @@ All mutations require same-origin JSON and a session cookie. This server support
 - `POST /api/demo/advance` `{seconds:...}` local-chain time only, bounded 1..30days; all sessions allowed in explicit demo. Useful buttons: `+1 hour`, `+1 day`, `+15 days`.
 - `POST /api/events/:id/demo/ruling` `{wallet,ruling:0|1|2}` owner only; writes to **mock** KlerosLiquid then still requires `resolve` action for real contract settlement. `POST .../demo/appeal` `{wallet,ruling,duration:3600}` opens mock voting/appeal period. These endpoints never exist for a live deployment.
 
-All API failures JSON `{error,code}` with HTTP 400/401/403/404/409. Amounts integer strings in wei, times Unix seconds; public schedule ISO+IANA timezone. Dates from local chain are explicit demo time. Root /finance/:id/guest/ and /finance/:id/console/ retain advanced v7 financial surfaces with scoped config and local endpoints; shared UI primary actions above.
+API failures return JSON `{error,code}` with an appropriate HTTP error status. Amounts are integer
+strings in wei. Chain `now` and financial deadlines use Unix seconds; auth challenges, transaction
+reviews and import previews use wall-clock milliseconds for `createdAt`/`expiresAt`. Public schedules
+use ISO dates plus an IANA timezone. Chain dates are explicit demo time. Root `/finance/:id/guest/`
+and `/finance/:id/console/` retain advanced v7 surfaces with scoped config and local endpoints.
 
 `passPeriod` and `deliverRuling` are additional reviewed participant actions with `{wallet}`. They call
 the arbitrator using its dispute ID to advance an expired appeal and deliver the final vote to the
@@ -56,7 +60,7 @@ New core integration interfaces:
   resends automatically and preserves hashes on navigation or post-submission errors. Integrate it with
   the redesigned view's pending-reference presentation.
 
-`POST /api/events/:id/submissions/reconcile` `{draftId,hash}` is a read-only factual recovery operation
+`POST /api/events/:id/submissions/reconcile` `{draftId,hash}` is a factual receipt-recovery operation
 for the same authenticated wallet, including a new session or an expired review. It verifies original
 reviewed terms, deployment, sender, chain and canonical post-review receipt. It never revives signing
 authority or broadcasts. It returns pending/confirmed/failed and idempotently updates receipt projections;

@@ -33,7 +33,7 @@ storage is labeled `local-only`; a CID alone is never reported as a successful p
 
 ```sh
 npx playwright install chromium
-npm run verify           # build, checked JS/TypeScript, root integration and browser checks
+npm run verify           # build, types, Node integration, lifecycle/UI/safety/context browser checks
 npm run test:contracts   # unchanged-v7 accounting + enhanced script/provenance checks (~5 min)
 npm --prefix references/kickback run test:site
 npm --prefix references/kickback run test:console

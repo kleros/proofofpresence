@@ -4,6 +4,7 @@ The primary core branch is `codex/core-application`. Integration anchors:
 
 - Initial core: `28f2c3f50563a699a62bf9e4085f0aa6a7464828`.
 - Backend review/journal/payment checkpoint: `b81607ac2bbb86973f3b48b9dd93c2beb756de32`.
+- Integrated code: `52b66cc5687936cbdbb2eed3578105bb5b215d2d`.
 - UI snapshot base: `a0bdecd636b3320e6cf81808c4fae4d9a37c6b95`.
 - Delivered UI: `923f517fccdd0bddefbd9acaf5454309ee6c9ecf`, preserved locally as
   `refs/remotes/ui-handoff/redesign` after importing its self-contained local bundle.
@@ -54,6 +55,10 @@ mobile, keyboard/dialog, enlarged-text and async-safety checks remain part of ve
 and their regression tests. Actual combined results are in [TEST_REPORT](TEST_REPORT.md) and
 `artifacts/final-verification.log`. Source UI test results are historical handoff evidence; they are
 not substituted for checks on this integrated application.
+
+The final combined command completed successfully: build/typecheck,91/91 Node tests and browser suites
+with39 lifecycle,49 redesign,16 safety and4 context assertions, plus interaction/expectation checks.
+A fresh archive of integrated commit52b66cc also passed offline installation, build and typecheck.
 
 No further visual polish was added. New changes after the handoff are interface wiring, financial
 truthfulness, transaction recovery and demonstrated race corrections. No production deployment,

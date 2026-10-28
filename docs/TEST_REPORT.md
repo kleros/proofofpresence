@@ -1,80 +1,118 @@
 # Verification report
 
-Local verification on 28 October 2026. Tests use synthetic contacts/wallets and localhost Ganache. No production RPC transactions, Court cases, guest submissions, emails, live database migrations or upstream writes were performed. Node v25.8.1 / npm 11.11.0 were observed on this machine; Ganache used its JavaScript fallbacks when native bindings were unavailable. Those warnings did not prevent the passing runs below.
+Verified locally on 28 October 2026 at integrated source commit
+`52b66cc5687936cbdbb2eed3578105bb5b215d2d`, branch `codex/core-application`.
+The delivered UI source was `923f517fccdd0bddefbd9acaf5454309ee6c9ecf`; its compatible changes were
+integrated against the newer core, with the adaptations in [UI_INTEGRATION](UI_INTEGRATION.md).
 
-## Current application
+Tests use synthetic contacts/wallets and localhost Ganache. No production transactions, real Court
+cases, guest submissions, emails, live database migrations, public IPFS writes or upstream pushes
+were performed. Node25.8.1/npm11.11.0 were observed on macOS arm64. Ganache used JavaScript fallbacks
+for unavailable native bindings. Those warnings did not prevent the passing runs below.
 
-| Check | Executed result |
+## Final combined application checks
+
+`npm run verify` completed with exit0 on the integrated source. Its complete output is preserved in
+[`artifacts/final-verification.log`](../artifacts/final-verification.log).
+
+| Check executed by `verify` | Result |
 |---|---|
-| `npm run build` | Passed in the root agent's implementation run; final build is recorded below when rerun. |
-| `npm run typecheck` | Passed in the root agent's implementation run; final check is recorded below when rerun. |
-| `node --test --test-concurrency=1 --test-timeout=30000 test/http.test.mjs` | **7/7 passed** in 14.7 seconds after the final configuration-window and draft-privacy changes, including concurrent independent servers, private/draft event routes, sessions, nonce signatures, request origin/Host validation and event-scoped compatibility views. |
-| `test/workbench.test.mjs` within the final `npm test` | **25/25 passed** using actual local EVM state/receipts. Earlier runs and focused reproductions identified bugs that were repaired and covered by this final run. |
-| Focused deployment-corruption regression | **1/1 passed** for wrong chain, contract, ABI version and immutable deposit terms. |
-| Focused unmatched-deposit regression | **1/1 passed** for independent event ledgers, spare ETH return and reserved principal protection. |
-| `npm test > /tmp/workbench-final.log 2>&1` | **34/34 passed**, 0 skipped, in 246.4 seconds: 25 Workbench integration tests, 6 HTTP tests and 3 retained-boundary reproductions. One HTTP draft-privacy test was added afterwards; the complete latest HTTP suite then passed 7/7. The current tree therefore contains 35 distinct Node tests, covered across those two runs. An intermediate HTTP assertion failed on `new URL(relativePath)` without a base; the corrected test resolves local URLs against the origin. |
+| `npm run build` | Passed: original v7 compilation, pinned ABI/bytecode equality and application syntax checks. |
+| `npm run typecheck` | Passed for the checked JavaScript and TypeScript interfaces. |
+| `npm test` | **91/91 passed**, zero skipped/failed, 370.2 seconds. |
+| `npm run test:browser` | **39 assertions passed**, plus browser wait/interaction checks. |
+| `npm run test:ui` | **49 assertions passed**, plus Playwright expectations. |
+| `npm run test:ui:safety` | **16 assertions passed**, plus Playwright expectations; no wallet transaction broadcast. |
+| `npm run test:ui:context` | **4 assertions passed**, plus Playwright expectations. |
 
-The Workbench integration tests execute unchanged v7 bytecode and inspect successful receipts, contract state, emitted payment events and real local ETH balance changes. Mock V1 Court controls supply adjudication outcomes only. Tests prove:
+The four browser suites total108 explicit assertions, plus their interaction/expectation checks.
+The main desktop/mobile images are `artifacts/demo-desktop.png` and `artifacts/demo-mobile.png`.
+Additional local viewport screenshots are under ignored `artifacts/screenshots/ui-redesign/`.
+The core owner visually inspected the integrated desktop participant and mobile organizer views;
+the UI suite also checks 400px mobile, desktop, keyboard/dialog behavior and enlarged text.
 
-- Two deployments with different organizers, deposits and schedules; one wallet participates independently in both.
-- Authenticated staff are event-scoped; attendee contacts and private events are access-controlled.
-- Known event/chain/contract/participant-ID mismatches cannot be relabeled by manual provenance review; unknown raw CSV origin remains an explicitly recorded organizer trust assumption.
-- Personal history and merch payloads have no financial effect. Deposit evidence, admission, registration and door evidence remain separate.
-- Normal payouts proceed with matched cases open; held reserves grow after losses and pay late winners. Both mixed settlement orders produce equal cumulative attendee entitlements in the tested exact-divisibility fixtures. Ruling 0 excludes the challenger and splits only the remaining challenge deposits.
-- Event B continues while A has open cases; cancellation, no-list recovery, expired unmatched acceptance, duplicate recovery refusal and alternate-destination failed-payment claims use actual contract paths.
-- Drafts bind event/wallet/deployment/snapshot, are single-use, and revalidate authoritative state. New regressions cover historical transaction confirmation, expiry and concurrent import admission changes.
+The Node and lifecycle browser tests execute unchanged v7 bytecode and inspect actual successful or
+reverted local receipts, state, payment logs and ETH balances. V1 mocks supply adjudication only.
+The tests cover:
 
-The tests exercise a finite local demonstration, not production authentication, distributed persistence or a live Court integration. Browser extension signing is a real wallet nonce path on the local chain; the demo identity picker is explicitly simulated authentication.
+- Two deployments with distinct owners, deposits, schedules and pools; one wallet participates in both.
+- Event roles, private/draft recovery access, two-step financial ownership and authenticated staff scope.
+- Canonical receipts, wrong deployment/amount/time/sender, duplicates, principal/stray return pairing,
+  unmatched deposits, fresh readmission and separate admission/registration.
+- Server-owned import previews, exact-byte source hashes, expiry/session/revision binding, atomic
+  commit, duplicate evidence and known event/chain/contract/participant mismatch rejection. Unknown
+  raw CSV origin remains an explicit organizer trust assumption.
+- Personal attendance, merch and consent having no financial authority.
+- Normal payouts with open cases and held reserves; late losses/top-ups, late winners, both settlement
+  orders, ruling0/1/2 and independent EventB progression. Tested equal-entitlement fixtures use exact
+  divisibility; retained contract tests additionally cover rounding and reserve accounting.
+- Unmatched challenges using their own matching period without borrowing resolver case0; correct
+  resolver-local versus arbitrator IDs, evidence, appeal funding/rewards and finality/override behavior.
+- Cancellation, no-list emergency withdrawal, duplicate recovery refusal, failed recipients and
+  alternate-destination owed claims.
+- Exact expiring transaction reviews, one-use execution, stale context rejection, canonical submission
+  confirmation, durable hash journaling, terminal reverts and factual receipt recovery after re-login
+  or review expiry. Recovery never restores old signing authority or automatically rebroadcasts.
+- Delayed event responses and captured transaction callbacks preserving the newly selected event;
+  failed storage probes stopping new wallet prompts, and post-submission errors preserving the hash.
+- Exact-byte local evidence publication/retry and per-event policy/participant aliases.
 
-## Retained Kickback compatibility module
+These results supersede the earlier37-test core checkpoint and bounded integration runs. Earlier
+failures were reproduced, fixed and covered in the final run; they are not outstanding failures.
+Ganache emitted a MaxListenersExceededWarning while many independent events were deployed. The
+finite checks passed; this does not certify unbounded production process resource behavior.
 
-The Kickback worker reported these final local runs. The root agent received the results; logs are local temporary diagnostic artifacts.
+## Reproducible setup and retained Kickback compatibility
 
-| Command in `references/kickback` | Result |
+A fresh `git archive` of integrated commit52b66cc in
+`/private/tmp/kleros-integrated-clean.tXU1Ra` passed `npm ci --ignore-scripts --offline --no-audit --no-fund`,
+`npm run build` and `npm run typecheck`. It installed363 packages with only root dependencies; no
+nested reference node_modules, user handoff directory or machine-global JavaScript packages were copied.
+
+The earlier clean `/private/tmp/kleros-clean.6VRQLU` copy also passed installation/build/typecheck and
+the complete retained compatibility suites using root-installed ethers6.16.0/Playwright1.58.2:
+
+| Executed in the clean copy | Result |
 |---|---|
-| `npm test` | **54/54 passed**: 36 contract, 11 script and 7 provenance tests; reported duration 277.6 seconds. Log: `/tmp/kickback-final.log`. |
-| `npm run test:site` | **180/180 checks passed**. Log: `/tmp/kickback-site-updated.log`. |
-| `npm run test:console` | **159/159 checks passed**. Log: `/tmp/kickback-console-final.log`. |
+| `npm --prefix references/kickback test` | **54/54 passed**: contract, script and provenance checks; 253.4 seconds. |
+| `npm --prefix references/kickback run test:site` | **180/180 passed**. |
+| `npm --prefix references/kickback run test:console` | **159/159 passed**. |
 
-The deployed v7 Solidity and recorded historical policy/deployment inputs are preserved. The local suites cover held shares, reserves, rounding, failed transfer recovery, final V1 rulings and appeal logic. No live mainnet fork or production deployment verification is claimed here.
+The initial clean contract run exposed a sequential nonce-cache failure (53/54). NonceManager fixed
+the failing sequence (targeted2/2), then the complete suite passed54/54. The initial clean console
+attempt exposed a nested ethers UMD path assumption and stopped before financial actions; resolving
+the package from the root dependency tree fixed it. Final logs are `/private/tmp/kleros-clean-contracts-final.log`,
+`/private/tmp/kleros-clean-site.log` and `/private/tmp/kleros-clean-console.log`.
 
-## Existing content application
+The deployed Solidity, historical policy/template, deployment records and verification inputs remain
+preserved. Compiler output must match the pinned v7 artifact. No fresh mainnet-fork execution or
+current live deployment verification is claimed.
 
-`references/events` remains at the handoff HEAD `fa732b8ea20e57648516b6e46e1076c0bf2ab434`. All 14 migrations were read in order and effective final policies inspected. See [EVENTS_AUDIT.md](EVENTS_AUDIT.md).
+## Retained content and booth modules
+
+`references/events` retains source base `fa732b8ea20e57648516b6e46e1076c0bf2ab434`. All14 migrations
+were read in order and effective final policies inspected; see [EVENTS_AUDIT](EVENTS_AUDIT.md).
 
 | Command in `references/events` | Result |
 |---|---|
-| `npm ci --ignore-scripts --no-audit --no-fund --fetch-retries=0 --fetch-timeout=15000` | Passed; 80 packages installed. |
+| `npm ci --ignore-scripts --no-audit --no-fund --fetch-retries=0 --fetch-timeout=15000` | Passed;80 packages installed. |
 | `npm run typecheck` | Passed. |
-| `NEXT_TELEMETRY_DISABLED=1 npm run build` with backend/AI environment unset | Passed after granting network access for declared Google Fonts; no backend credentials used. Sandbox-only attempt first failed DNS. |
-| `npm run lint` | Failed: interactive ESLint setup, no declared ESLint dependency/config. This retained reference has no reproducible lint gate. |
+| `NEXT_TELEMETRY_DISABLED=1 npm run build` with backend/AI environment unset | Passed after network access for declared Google Fonts; no backend credentials used. The sandbox-only attempt first failed DNS. |
+| `npm run lint` | Failed: interactive ESLint setup, no declared ESLint dependency/config. This retained module has no reproducible lint gate. |
 
-No Supabase CLI was available and no disposable database was started. No migrations or live RLS/storage/auth tests were executed. The existing private-event/material/assistant boundaries are retained as a linked module; production migration state is unknown. This limitation is separate from passing local Workbench role/privacy checks.
+No Supabase CLI/disposable database was available; migrations and live RLS/storage/auth behavior were
+not executed. Existing private-event/material/assistant controls remain in the linked module. That
+limitation is separate from passing workbench role/privacy tests.
 
-## Retained booth boundary
+The booth remains unchanged and outside finance. Three VM tests execute legacy queue/tier functions
+with fake fetch and synthetic payloads. They reproduce demo-origin queues flushing after a config
+switch and promotional client reports affecting merch progression. These are retained legacy defects,
+not fixes. The financial application never loads those queues or uses merch/newsletter state for payouts.
 
-The booth remains unchanged outside finance. Three VM-based tests execute legacy queue/tier functions with fake fetch and synthetic payloads. They reproduce that demo-origin queues can flush after a configuration switch and that merch progression accepts promotional client reports. These are retained legacy risks, not fixed behavior. The new financial application neither loads those queues nor consumes merch/newsletter state as payout authority.
+## Operational limits
 
-## Latest full verification
-
-Primary core checkpoint `28f2c3f50563a699a62bf9e4085f0aa6a7464828` on `codex/core-application`:
-`npm run verify` passed build, checked JS/TypeScript, **37/37 Node tests** and **36 browser assertions**.
-Subsequent bounded core integration checks passed **34/34** for the server-owned preview, durable
-journal, payment projection, submission recording, unmatched-case scoping and appeal delivery;
-the latest HTTP suite passed **10/10**. These are actual separate runs, not a claim that every later
-glob test was rerun together before the parallel UI handoff. Logs are in `artifacts/`.
-
-A clean `/private/tmp/kleros-clean.6VRQLU` copy with no nested reference dependencies passed
-`npm ci --ignore-scripts`, build and typecheck. Its retained compatibility suite first exposed a
-sequential nonce-cache defect (53/54); NonceManager fixed the actual failing sequence (targeted2/2),
-then the complete clean suite passed **54/54**. Clean guest **180/180** and console **159/159** also
-passed after standalone console UMD resolution was made compatible with hoisted ethers.
-Versions were ethers6.16.0, Playwright1.58.2, Node25.8.1. A first console attempt found the missing
-hoisted script and stopped before financial actions; the final corrected run passed.
-
-Parallel redesign tests remain independent evidence until their committed handoff is integrated and
-the combined source is verified. See CORE_HANDOFF and UI_INTEGRATION_REVIEW for the merge gates.
-
-The final consolidated Node run passed 34/34; the subsequent latest HTTP suite passed 7/7 after adding exact compatibility-window assertions and the editorial-draft recovery/privacy scenario. The latter run supersedes the six-test HTTP subset from the consolidated run. The Workbench result includes event-specific ERC-1497 policy/alias validation and exact-byte repeatable local publication.
-
-Temporary logs: `/tmp/workbench-final.log` and `/tmp/workbench-http-final.log`. Ganache emitted a MaxListenersExceededWarning while the suite deployed many independent events. It did not fail tests or change asserted outcomes; this report does not certify unbounded long-running event creation or production process resource behavior.
+This is a loopback local demo with ephemeral chain and projections, explicit identity impersonation
+or verified EOA nonce linkage, and mock Court adjudication. General smart-wallet/UserOperation identity,
+production auth/persistence, staging content RLS/migrations, public IPFS publishing and a fresh mainnet
+fork remain external work. Dependency audit advisories remain in the development stack. No remote
+CI or production rollout has been run. Follow [RUNBOOK](RUNBOOK.md) for the next authorized phase.

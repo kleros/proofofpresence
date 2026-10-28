@@ -7,7 +7,7 @@ recommendations and unexecuted-test statements.
 ## Active workspace and decision
 
 - Workspace: `/Users/hashmanansala/Documents/ChatGPT/Kleros projects`; root Git began as unborn `main`.
-  Local core checkpoint `28f2c3f50563a699a62bf9e4085f0aa6a7464828` is on `codex/core-application`;
+  Integrated code checkpoint `52b66cc5687936cbdbb2eed3578105bb5b215d2d` is on `codex/core-application`;
   no upstream push, deployment change or live data write was made.
 - All three fetched `main` heads exactly match the original review. Source bases and packaging are
   recorded in [references/SOURCES.json](references/SOURCES.json). Reference trees are vendored,
@@ -44,7 +44,8 @@ recommendations and unexecuted-test statements.
 ## Evidence and compatibility
 
 Current executed commands/results are maintained in [TEST_REPORT](docs/TEST_REPORT.md) and the final
-`artifacts/verification.log`; build, typecheck and a clean isolated install have passed. The retained
+`artifacts/final-verification.log`; build, typecheck and a fresh archive install have passed. The final
+integrated run passed **91/91 Node tests and 108 browser assertions** plus interaction checks. The retained
 Kickback final suite passed54/54, guest checks180/180 and console checks159/159. Root Node and browser
 final counts are in that report. Desktop/mobile screenshots are in `artifacts/`.
 
@@ -55,6 +56,8 @@ mainnet-fork execution or production migration status is asserted from local tes
 Independent review found and corrected event-ID overwrite, foreign-ID relabeling, partial-import commits,
 excess-return misclassification, refunded-attendee leakage, blocked readmission, private ownership
 acceptance, stale confirmation reuse, deposit cutoff and generated-config environment collisions.
+The UI integration also corrected unmatched resolver case0 leakage, delayed event-response races,
+lost/mis-scoped submission hashes, terminal reverted-receipt handling and same-wallet session recovery.
 
 ## Operating boundary and remaining work
 
@@ -77,10 +80,14 @@ needed for the completed local exercise. No production action is authorized by t
 
 ## Parallel redesign integration
 
-The user has assigned presentation work to a separate isolated UI session. This chat retains core and
-final integration ownership. Defer duplicate visual polish. Review incoming UI_HANDOFF.md against the
-authoritative routes and financial invariants in [CORE_HANDOFF](docs/CORE_HANDOFF.md), integrate compatible
-changes only, and run combined checks. Its snapshot Git history may differ from this root history.
+The separate UI session delivered `923f517fccdd0bddefbd9acaf5454309ee6c9ecf` on
+`codex/kleros-ui-redesign`. Its isolated snapshot history was imported and preserved locally; compatible
+presentation/assets/tests were integrated at the code checkpoint above. The core owner reviewed its
+[UI_HANDOFF](docs/UI_HANDOFF.md), retained the newer backend and financial interfaces, resolved races
+and recovery gaps, and completed the combined verification. See [CORE_HANDOFF](docs/CORE_HANDOFF.md)
+for routes/interfaces and [UI_INTEGRATION](docs/UI_INTEGRATION.md) for source anchors and adaptations.
+No additional visual polish or upstream push was performed. The local exercise is complete; the next
+phase is the explicitly documented production preparation above.
 
 ## Navigation
 
