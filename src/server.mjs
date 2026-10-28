@@ -3,9 +3,10 @@ import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { ethers } from "ethers";
+import { assertDemoChainInstance } from "../public/hosted-wallet.js";
 import { createWorkbench } from "./workbench.mjs";
 import {
   json,
@@ -52,13 +53,59 @@ const mime = {
   ".woff2": "font/woff2",
 };
 
+/**
+ * @param {{port?:number,rpcPort?:number,deployment?:{mode?:string,publicOrigin?:string,backendOrigin?:string,proxySecret?:string,runtimeRoot?:string}}} [options]
+ */
 export async function startServer({
   port = Number(process.env.PORT ?? 3000),
   rpcPort = Number(process.env.RPC_PORT ?? 18545),
+  deployment = {},
 } = {}) {
+  const mode = deployment.mode ?? process.env.MODE ?? "local-demo";
   requireThat(
-    !process.env.MODE || process.env.MODE === "local-demo",
-    "Only local-demo mode is supported; live writes are disabled",
+    ["local-demo", "hosted-demo"].includes(mode),
+    "Only isolated local-demo or explicitly configured hosted-demo is supported",
+  );
+  const hosted = mode === "hosted-demo";
+  const configuredOrigin = (value, label) => {
+    let parsed;
+    try {
+      parsed = new URL(value);
+    } catch {}
+    requireThat(
+      parsed &&
+        parsed.protocol === "https:" &&
+        parsed.origin === value &&
+        !parsed.username &&
+        !parsed.password,
+      `${label} must be an exact HTTPS origin without a path`,
+    );
+    return parsed;
+  };
+  const publicUrl = hosted
+    ? configuredOrigin(
+        deployment.publicOrigin ?? process.env.PUBLIC_ORIGIN,
+        "PUBLIC_ORIGIN",
+      )
+    : null;
+  const backendUrl = hosted
+    ? configuredOrigin(
+        deployment.backendOrigin ?? process.env.BACKEND_ORIGIN,
+        "BACKEND_ORIGIN",
+      )
+    : null;
+  const proxySecret = deployment.proxySecret ?? process.env.PROXY_SECRET;
+  requireThat(
+    !hosted || /^[A-Za-z0-9_-]{43,256}$/.test(proxySecret ?? ""),
+    "Hosted demo requires a high-entropy PROXY_SECRET of at least 43 URL-safe characters",
+  );
+  const proxyDigest = hosted
+    ? createHash("sha256").update(proxySecret).digest()
+    : null;
+  const runtimeRoot = path.resolve(
+    deployment.runtimeRoot ??
+      process.env.RUNTIME_ROOT ??
+      path.join(root, ".runtime"),
   );
   const w = await createWorkbench({ rpcPort }),
     sessions = new Map(),
@@ -66,7 +113,38 @@ export async function startServer({
     localFiles = new Map(),
     configCache = new Map();
   const instanceId = id();
+  let instanceMarker = null;
+  if (hosted) {
+    // Chain1337 can already exist in a visitor's wallet. A unique zero-value
+    // self-transfer distinguishes this process from another deterministic demo.
+    const marker = await w.chain.signers[0].sendTransaction({
+      to: await w.chain.signers[0].getAddress(),
+      value: 0n,
+      data: `0x${randomBytes(32).toString("hex")}`,
+      gasLimit: 100_000,
+    });
+    const receipt = await marker.wait();
+    instanceMarker = {
+      blockNumber: receipt.blockNumber,
+      blockHash: receipt.blockHash,
+    };
+  }
   let listeningPort = port;
+  function protectHostedFinance(html) {
+    if (!hosted) return html;
+    const metadata = json({
+      marker: instanceMarker,
+      rpcUrl: `${publicUrl.origin}/rpc`,
+    }).replaceAll("<", "\\u003c");
+    const guard = `<script>\nconst hostedChainMetadata=${metadata};\nconst hostedChainCheck=${assertDemoChainInstance.toString()};\nasync function hostedWalletRequest(request){\n const provider=window.ethereum;\n if(!provider) throw new Error("Connect a browser wallet to the hosted sandbox first.");\n if(!["eth_chainId","eth_accounts","eth_requestAccounts","wallet_switchEthereumChain","wallet_addEthereumChain"].includes(request.method)){\n  const chain=await provider.request({method:"eth_chainId"});\n  if(BigInt(chain)!==1337n) throw new Error("Select sandbox chain1337 before using these tools.");\n  await hostedChainCheck(provider,hostedChainMetadata.marker,hostedChainMetadata.rpcUrl);\n }\n return provider.request(request);\n}\n</script>`;
+    return html
+      .replaceAll("window.ethereum.request(", "hostedWalletRequest(")
+      .replaceAll(
+        "new ethers.BrowserProvider(window.ethereum)",
+        "new ethers.BrowserProvider({request:hostedWalletRequest})",
+      )
+      .replace("<head>", `<head>${guard}`);
+  }
   async function body(req, max = 1_000_000) {
     const chunks = [];
     let n = 0;
@@ -120,12 +198,13 @@ export async function startServer({
     sessions.set(token, { session: s, expiry: Date.now() + 8 * 3600_000 });
     res.setHeader(
       "set-cookie",
-      `kleros_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800`,
+      `kleros_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${hosted ? "; Secure" : ""}`,
     );
   }
   function guardMutation(req, upload = false) {
     requireThat(
-      req.headers.origin === `http://${req.headers.host}`,
+      req.headers.origin ===
+        (hosted ? publicUrl.origin : `http://${req.headers.host}`),
       "Mutation requires the same origin",
       "BAD_ORIGIN",
       403,
@@ -145,7 +224,7 @@ export async function startServer({
     const observed = await w.state(eventId);
     const key = `${eventId}:${d.contract}:${r.revision}:${observed.owner}`;
     if (configCache.has(key)) return configCache.get(key);
-    const dir = path.join(root, ".runtime", instanceId, eventId);
+    const dir = path.join(runtimeRoot, instanceId, eventId);
     fs.mkdirSync(dir, { recursive: true });
     const cfg = {
       eventId,
@@ -155,8 +234,8 @@ export async function startServer({
       timezone: r.definition.timezone,
       chain: "local",
       chainId: 1337,
-      chainName: "Local demo ETH · no monetary value",
-      rpcUrl: w.chain.rpcUrl,
+      chainName: `${hosted ? "Hosted" : "Local"} demo ETH · no monetary value`,
+      rpcUrl: hosted ? `${publicUrl.origin}/rpc` : w.chain.rpcUrl,
       explorer: "",
       deposit: ethers.formatEther(d.depositWei),
       receiver: d.contract,
@@ -167,7 +246,7 @@ export async function startServer({
       eventStart: r.definition.startsAt,
       claimDeadline: new Date(d.claimDeadline * 1000).toISOString(),
       deployBlock: d.deploymentBlock,
-      mode: "local-demo",
+      mode,
       abiVersion: "v7",
       logChunk: 5000,
       lumaUrl: "",
@@ -179,7 +258,7 @@ export async function startServer({
         policyURI: d.policyURI,
         ipfsUpload: "/local-upload",
         ipfsGateway: "/local-ipfs",
-        courtUrl: `http://127.0.0.1:${listeningPort}/#event=${eventId}&view=cases`,
+        courtUrl: `${hosted ? publicUrl.origin : `http://127.0.0.1:${listeningPort}`}/#event=${eventId}&view=cases`,
       },
     };
     const file = path.join(dir, "config.json");
@@ -225,24 +304,56 @@ export async function startServer({
   const server = http.createServer(async (req, res) => {
     try {
       const host = req.headers.host;
+      const url = new URL(req.url, "http://request.invalid"),
+        p = decodeURIComponent(url.pathname);
+      // Platform probes reveal no chain, identity, session or deployment information.
+      if (p === "/healthz" && req.method === "GET")
+        return send(res, 200, { status: "ok", mode });
       requireThat(
-        host === `127.0.0.1:${listeningPort}` ||
-          host === `localhost:${listeningPort}`,
-        "Loopback host required",
+        hosted
+          ? host === backendUrl.host
+          : host === `127.0.0.1:${listeningPort}` ||
+              host === `localhost:${listeningPort}`,
+        hosted ? "Configured backend host required" : "Loopback host required",
         "BAD_HOST",
         403,
       );
-      const url = new URL(req.url, `http://${host}`),
-        p = decodeURIComponent(url.pathname),
-        s = getSession(req);
+      if (hosted) {
+        const key = req.headers["x-kleros-proxy-key"];
+        const received = createHash("sha256")
+          .update(typeof key === "string" ? key : "")
+          .digest();
+        requireThat(
+          timingSafeEqual(proxyDigest, received),
+          "Trusted demo gateway required",
+          "PROXY_REQUIRED",
+          403,
+        );
+      }
+      const s = getSession(req);
+      const authOrigin = hosted ? publicUrl.origin : `http://${host}`;
       if (
         req.method === "POST" ||
         req.method === "PATCH" ||
         req.method === "DELETE"
       )
         guardMutation(req, p === "/local-upload");
-      if (p === "/api/bootstrap" && req.method === "GET")
-        return send(res, 200, { ...(await w.bootstrap(s)), instanceId });
+      if (p === "/api/bootstrap" && req.method === "GET") {
+        const bootstrap = await w.bootstrap(s);
+        return send(res, 200, {
+          ...bootstrap,
+          mode,
+          instanceId,
+          chain: {
+            ...bootstrap.chain,
+            rpcUrl: hosted ? `${publicUrl.origin}/rpc` : bootstrap.chain.rpcUrl,
+            ...(hosted ? { instanceMarker } : {}),
+          },
+          ...(hosted
+            ? { capabilities: { sharedDemo: true, browserWallet: true } }
+            : {}),
+        });
+      }
       if (p === "/api/session" && req.method === "POST") {
         const b = await body(req),
           selected = w.session(b.identity);
@@ -262,7 +373,7 @@ export async function startServer({
         sessions.delete(t);
         res.setHeader(
           "set-cookie",
-          "kleros_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0",
+          `kleros_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${hosted ? "; Secure" : ""}`,
         );
         return send(res, 200, { ok: true });
       }
@@ -271,12 +382,12 @@ export async function startServer({
         requireThat(ethers.isAddress(b.wallet), "Invalid wallet");
         const nonce = randomBytes(20).toString("hex"),
           expiresAt = Date.now() + 300_000;
-        const message = `Kleros local event workbench\nDomain: ${host}\nURI: http://${host}\nChain ID: 1337\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this local wallet. No financial transaction.`;
+        const message = `Kleros ${hosted ? "hosted demo" : "local event"} workbench\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: 1337\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this isolated demo wallet. No financial transaction.`;
         nonces.set(nonce, {
           wallet: ethers.getAddress(b.wallet),
           message,
           expiresAt,
-          host,
+          origin: authOrigin,
         });
         return send(res, 200, { nonce, message, expiresAt });
       }
@@ -284,7 +395,7 @@ export async function startServer({
         const b = await body(req),
           n = nonces.get(b.nonce);
         requireThat(
-          n && n.expiresAt > Date.now() && n.host === host,
+          n && n.expiresAt > Date.now() && n.origin === authOrigin,
           "Nonce expired or wrong domain",
           "BAD_NONCE",
           403,
@@ -336,7 +447,7 @@ export async function startServer({
           hash: tx.hash,
           blockNumber: receipt.blockNumber,
           amountWei: String(ethers.parseEther("1")),
-          mode: "local-demo",
+          mode,
         });
       }
       if (p === "/local-upload" && req.method === "POST") {
@@ -586,11 +697,70 @@ export async function startServer({
         const b = await body(req),
           batch = Array.isArray(b) ? b : [b];
         requireThat(
-          batch.length <= 50 && batch.every((x) => readMethods.has(x.method)),
-          "RPC is read-only",
+          batch.length > 0 &&
+            batch.length <= 50 &&
+            batch.every(
+              (x) =>
+                readMethods.has(x?.method) ||
+                (hosted && x?.method === "eth_sendRawTransaction"),
+            ) &&
+            batch.filter((x) => x?.method === "eth_sendRawTransaction")
+              .length <= 1,
+          hosted
+            ? "RPC allows bounded reads and one signed demo transaction"
+            : "RPC is read-only",
           "RPC_METHOD_FORBIDDEN",
           403,
         );
+        // The public wallet transport never exposes unlocked Ganache accounts or
+        // administrative methods. Validate the entire batch before forwarding any call.
+        for (const x of batch.filter(
+          (x) => x.method === "eth_sendRawTransaction",
+        )) {
+          let tx;
+          try {
+            requireThat(
+              Array.isArray(x.params) &&
+                x.params.length === 1 &&
+                typeof x.params[0] === "string" &&
+                ethers.isHexString(x.params[0]) &&
+                x.params[0].length <= 2 + 2 * (65_536 + 1024),
+              "Invalid signed demo transaction",
+            );
+            tx = ethers.Transaction.from(x.params[0]);
+          } catch {
+            throw Object.assign(
+              new Error("A valid bounded signed demo transaction is required"),
+              {
+                status: 403,
+                code: "RPC_TRANSACTION_FORBIDDEN",
+              },
+            );
+          }
+          const destinations = new Set(
+            [...w.events.values()].flatMap((r) =>
+              [
+                r.deployment.contract,
+                r.deployment.resolver,
+                r.deployment.arbitrator,
+              ].map((value) => String(value).toLowerCase()),
+            ),
+          );
+          requireThat(
+            tx.isSigned() &&
+              tx.from &&
+              tx.chainId === 1337n &&
+              tx.to &&
+              destinations.has(tx.to.toLowerCase()) &&
+              tx.gasLimit > 0n &&
+              tx.gasLimit <= 6_000_000n &&
+              ethers.getBytes(tx.data).length <= 65_536 &&
+              [0, 1, 2].includes(tx.type ?? 0),
+            "Signed transaction must target a registered demo contract on chain 1337 within gas/data bounds",
+            "RPC_TRANSACTION_FORBIDDEN",
+            403,
+          );
+        }
         const results = await Promise.all(
           batch.map(async (x) => {
             try {
@@ -637,7 +807,9 @@ export async function startServer({
           return send(
             res,
             200,
-            fs.readFileSync(path.join(dir, "guest/index.html"), "utf8"),
+            protectHostedFinance(
+              fs.readFileSync(path.join(dir, "guest/index.html"), "utf8"),
+            ),
             "text/html; charset=utf-8",
           );
         if (view === "console") {
@@ -645,16 +817,18 @@ export async function startServer({
             return send(
               res,
               200,
-              renderConsole(`/finance/${eventId}/console`, r.definition.title)
-                .replace("<script>", "<script>\nlet DEMO_CHAIN_TIME = 0;\n")
-                .replace(
-                  "async function refresh() {",
-                  'async function refresh() {\n  DEMO_CHAIN_TIME = Number((await rp.getBlock("latest")).timestamp);\n',
-                )
-                .replace(
-                  /const (now|nowS) = Math.floor\(Date.now\(\) \/ 1000\);/g,
-                  "const $1 = DEMO_CHAIN_TIME;",
-                ),
+              protectHostedFinance(
+                renderConsole(`/finance/${eventId}/console`, r.definition.title)
+                  .replace("<script>", "<script>\nlet DEMO_CHAIN_TIME = 0;\n")
+                  .replace(
+                    "async function refresh() {",
+                    'async function refresh() {\n  DEMO_CHAIN_TIME = Number((await rp.getBlock("latest")).timestamp);\n',
+                  )
+                  .replace(
+                    /const (now|nowS) = Math.floor\(Date.now\(\) \/ 1000\);/g,
+                    "const $1 = DEMO_CHAIN_TIME;",
+                  ),
+              ),
               "text/html; charset=utf-8",
             );
           if (file === "config.json") return send(res, 200, cfg);
@@ -684,6 +858,7 @@ export async function startServer({
           "/styles.css",
           "/ethers.js",
           "/transaction-context.js",
+          "/hosted-wallet.js",
           "/reconciliation.js",
           "/assets/kleros-logo.svg",
           "/assets/kleros-symbol.svg",
@@ -718,7 +893,7 @@ export async function startServer({
   try {
     await new Promise((resolve, reject) => {
       server.once("error", reject);
-      server.listen(port, "127.0.0.1", () => {
+      server.listen(port, hosted ? "0.0.0.0" : "127.0.0.1", () => {
         const address = server.address();
         if (address && typeof address !== "string")
           listeningPort = address.port;
@@ -746,7 +921,7 @@ if (
 ) {
   const app = await startServer();
   console.log(
-    `Kleros local demo: ${app.url}\nLocal ETH only. State resets on restart. No production services connected.`,
+    `Kleros isolated demo: ${app.url}\nSynthetic ETH only. State resets on restart. No production financial services connected.`,
   );
   let closing = false;
   for (const signal of ["SIGINT", "SIGTERM"])

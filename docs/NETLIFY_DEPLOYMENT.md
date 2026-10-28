@@ -34,8 +34,10 @@ free and admission-pending examples. The build closes its chain before exiting.
 
 Only `dist/netlify-preview/` is published: public UI/assets/licenses, captured synthetic JSON, the
 read-only adapter and security headers. Backend source, reference configs, credentials, runtime
-files, user handoff attachments and local dependencies are not uploaded. `netlify.toml` records
-the command and publish directory. No Git provider connection or upstream push is needed.
+files, user handoff attachments and local dependencies are not uploaded. `netlify.preview.toml` records
+the read-only command and publish directory. The primary `netlify.toml` now prepares the requested
+interactive gateway target; see [HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md). No Git provider connection
+or upstream push is needed.
 
 The deployment helper uses an existing official Netlify CLI login or `NETLIFY_AUTH_TOKEN` in memory:
 
@@ -56,5 +58,21 @@ write refusals, zero wallet requests, zero API/RPC/external network calls, separ
 mobile layout, compact mobile navigation and loaded assets. Visual inspection caught and corrected
 the preview banner's initial mobile header height; the regression is now covered. Root typecheck also
 passed. The existing core source was unchanged.
-The online URL and deployment verification are recorded below after publication. This record supplements
-the completed core results in [TEST_REPORT](TEST_REPORT.md); it does not replace them.
+This record supplements the completed core results in [TEST_REPORT](TEST_REPORT.md); it does not replace them.
+
+## Published deployment
+
+- URL: [kleros-event-workbench-preview.netlify.app](https://kleros-event-workbench-preview.netlify.app).
+- Source: `8e1c59e1058e844e18fe15d66c29e62131a492b5`, branch `codex/core-application`.
+- Site ID: `f6b82f41-9e30-49b0-a836-40fedbab93a4`.
+- Deploy ID: `6ae2003e06e5123259e8297c`; observed state `ready`.
+- Published: 28 October 2026,14:01:35UTC. Snapshot capture:14:00:57UTC.
+- Artifact:152601-byte ZIP;20 static files, including100799-byte captured JSON.
+- The HTTPS page returned200, served the preview entry point, CSP and `nosniff`. Hosted captured JSON
+  matched the local file byte-for-byte.
+- `NETLIFY_PREVIEW_URL=https://kleros-event-workbench-preview.netlify.app npm run test:netlify`
+  passed **34 assertions** plus Playwright expectations, including all read-only/network/wallet guards.
+
+Public metadata is in [`artifacts/netlify-deployment.json`](../artifacts/netlify-deployment.json).
+Build, local browser and live browser outputs are preserved beside it. Only this new dedicated preview
+site was created; no existing site, DNS, billing, upstream Git repository or financial deployment changed.

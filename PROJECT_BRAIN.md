@@ -8,7 +8,8 @@ recommendations and unexecuted-test statements.
 
 - Workspace: `/Users/hashmanansala/Documents/ChatGPT/Kleros projects`; root Git began as unborn `main`.
   Integrated code checkpoint `52b66cc5687936cbdbb2eed3578105bb5b215d2d` is on `codex/core-application`;
-  no upstream push, deployment change or live data write was made.
+  no upstream push or live financial/data write was made. A separate read-only Netlify viewing target
+  is now published as recorded below; the financial backend remains local.
 - All three fetched `main` heads exactly match the original review. Source bases and packaging are
   recorded in [references/SOURCES.json](references/SOURCES.json). Reference trees are vendored,
   not gitlinks; original cloned metadata is preserved locally under ignored `.runtime/source-history/`.
@@ -88,6 +89,39 @@ and recovery gaps, and completed the combined verification. See [CORE_HANDOFF](d
 for routes/interfaces and [UI_INTEGRATION](docs/UI_INTEGRATION.md) for source anchors and adaptations.
 No additional visual polish or upstream push was performed. The local exercise is complete; the next
 phase is the explicitly documented production preparation above.
+
+## Online viewing preview
+
+At the user's request for Netlify viewing, a separate static target was added at source commit
+`8e1c59e1058e844e18fe15d66c29e62131a492b5` and published at
+[kleros-event-workbench-preview.netlify.app](https://kleros-event-workbench-preview.netlify.app).
+This is clearly labeled **read-only**: saved synthetic local v7 projections, browser-only identity
+selection, no wallet signing/data entry/API backend or hosted chain. A has paid ordinary attendees
+with one held disputed share; B remains independent. The full local application is unchanged.
+
+`npm run build:netlify` verifies actual local receipts and artifact equality, then closes its chain.
+The static preview passed34 browser assertions locally and the same34 against the live HTTPS site,
+plus Playwright expectations. Hosted snapshot bytes matched the tested artifact and security headers
+were verified. Deployment IDs, commands and limitations are in
+[NETLIFY_DEPLOYMENT](docs/NETLIFY_DEPLOYMENT.md) and `artifacts/netlify-deployment.json`.
+Only generated public assets and synthetic snapshots were uploaded; no upstream repository, backend,
+credentials, user attachment or existing financial deployment was published or modified.
+
+Netlify Functions cannot preserve this application's current in-memory Node/Ganache state across
+ephemeral invocations. A full interactive online version still needs a persistent backend and explicit
+HTTPS/Host/wallet-RPC adapters. The preview is not a completed production authentication or hosting migration.
+
+The user subsequently selected the **full interactive demo**. The hosted backend, Netlify gateway,
+secure sessions/public nonce domain, bounded signed RPC and unique demo-instance signing checks are
+now implemented locally. The shared online notice explains intentional demo impersonation, valueless
+ETH/mock Court and state resets. Financial contracts/domain rules are unchanged. Focused validation
+passed7 hosted server tests,19 gateway tests,4 wallet-instance tests and35 real local HTTPS integration
+browser assertions. The full verification then passed build/typecheck,121 Node tests and143 browser
+assertions plus expectations. A closed production-dependency package also
+built and served the advanced guest/console/settings routes. The gateway bundles successfully.
+See [HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) for the concrete Railway/Netlify rollout.
+Railway sign-in is pending because the existing login expired. No interactive backend is deployed yet;
+the public Netlify link remains the verified read-only preview until full live checks pass.
 
 ## Navigation
 

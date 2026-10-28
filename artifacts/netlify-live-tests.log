@@ -1,0 +1,5 @@
+
+> kleros-event-workbench@1.0.0 test:netlify
+> node test/netlify-preview.e2e.mjs
+
+Netlify read-only preview browser checks passed: 34 assertions plus Playwright expectations.

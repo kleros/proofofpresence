@@ -1,5 +1,6 @@
 // @ts-check
 import { analyzeImport } from "./reconciliation.js";
+import { assertDemoChainInstance } from "./hosted-wallet.js";
 import {
   createTransactionJournal,
   submitWalletDraft,
@@ -127,6 +128,73 @@ const app = {
   csvReadToken: 0,
 };
 let toastTimer;
+let hostedNoticeObserver;
+const isHostedDemo = () => app.bootstrap?.mode === "hosted-demo";
+
+function updateHostedDemoNotice() {
+  const hosted = isHostedDemo();
+  const prior = $("#hosted-demo-banner");
+  document.body.classList.toggle("hosted-shared-demo", hosted);
+  if (!hosted) {
+    if (prior) {
+      hostedNoticeObserver?.disconnect();
+      prior.remove();
+      document.documentElement.style.removeProperty(
+        "--hosted-demo-notice-height",
+      );
+      $("#environment").innerHTML = "<i></i> LOCAL CHAIN";
+      const network = $(".sidebar-foot .network-pip");
+      if (network) network.innerHTML = "<i></i> Local development";
+      const description = $(".sidebar-foot p");
+      if (description)
+        description.innerHTML =
+          "Real contract logic.<br>Synthetic people. Local ETH.";
+    }
+    return;
+  }
+  if (!prior) {
+    const notice = document.createElement("aside");
+    notice.id = "hosted-demo-banner";
+    notice.className = "hosted-demo-notice";
+    notice.setAttribute("aria-label", "Shared online demo environment");
+    notice.innerHTML =
+      "<strong>SHARED ONLINE DEMO</strong><p>Synthetic accounts · valueless ETH · mock Court. Everyone shares this sandbox; state resets on server restart. Use synthetic inputs only.</p>";
+    document.body.prepend(notice);
+    const measure = () =>
+      document.documentElement.style.setProperty(
+        "--hosted-demo-notice-height",
+        `${notice.getBoundingClientRect().height}px`,
+      );
+    measure();
+    if (typeof ResizeObserver !== "undefined") {
+      hostedNoticeObserver = new ResizeObserver(measure);
+      hostedNoticeObserver.observe(notice);
+    }
+  }
+  $("#environment").innerHTML = "<i></i> SHARED DEMO";
+  const network = $(".sidebar-foot .network-pip");
+  if (network) network.innerHTML = "<i></i> Hosted sandbox";
+  const description = $(".sidebar-foot p");
+  if (description)
+    description.innerHTML =
+      "Shared synthetic accounts.<br>Valueless ETH. Mock Court.";
+}
+
+function annotateHostedForms(parent = document) {
+  if (!isHostedDemo()) return;
+  for (const form of parent.querySelectorAll("form[data-form]")) {
+    if (
+      form.querySelector(".hosted-input-hint") ||
+      !form.querySelector('input[type="email"],input[name="name"],textarea')
+    )
+      continue;
+    const hint = document.createElement("p");
+    hint.className = "hosted-input-hint";
+    hint.textContent =
+      "Use synthetic inputs only, such as alice@example.test. Other demo visitors share this sandbox; do not enter personal guest or contact data.";
+    form.prepend(hint);
+  }
+}
 
 async function api(path, options = {}) {
   const result = await fetch(path, {
@@ -232,6 +300,7 @@ function showDialog(html) {
     };
   $("#dialog-body").innerHTML = html;
   const dialog = $("#review-dialog");
+  annotateHostedForms(dialog);
   if (!dialog.open) dialog.showModal();
   const title = $("#dialog-title");
   if (title) {
@@ -242,7 +311,7 @@ function showDialog(html) {
 
 function identityOptions() {
   const session = currentIdentity();
-  return `<option value="">Select a local demo identity</option>${session?.mode === "wallet" ? `<option value="connected-wallet" selected>Connected wallet · ${escape(short(session.wallet))}</option>` : ""}${(app.bootstrap?.identities ?? []).map((identity) => `<option value="${escape(identity.id)}" ${same(identity.wallet, session?.wallet) ? "selected" : ""}>${escape(identity.label)} · ${escape(short(identity.wallet))}</option>`).join("")}`;
+  return `<option value="">${isHostedDemo() ? "Select a synthetic demo identity" : "Select a local demo identity"}</option>${session?.mode === "wallet" ? `<option value="connected-wallet" selected>Connected wallet · ${escape(short(session.wallet))}</option>` : ""}${(app.bootstrap?.identities ?? []).map((identity) => `<option value="${escape(identity.id)}" ${same(identity.wallet, session?.wallet) ? "selected" : ""}>${escape(identity.label)} · ${escape(short(identity.wallet))}</option>`).join("")}`;
 }
 function sidebar() {
   const events = app.bootstrap?.events ?? [];
@@ -270,8 +339,11 @@ function sidebar() {
 }
 function showIdentityDialog() {
   invalidateDraft();
+  const explanation = isHostedDemo()
+    ? "Demo identities intentionally impersonate funded synthetic accounts in this shared online sandbox. Every visitor can choose these roles; this is not production authentication. A connected browser wallet proves its ownership with a nonce signature."
+    : "Each demo identity controls a funded wallet on the isolated local chain. This selector simulates authentication. Or connect your browser wallet and prove ownership with a nonce signature.";
   showDialog(
-    `<div class="dialog-eyebrow">Local demonstration</div><h2 class="dialog-title" id="dialog-title">Choose a demo identity</h2><p class="dialog-body-text">Each demo identity controls a funded wallet on the isolated local chain. This selector simulates authentication. Or connect your browser wallet and prove ownership with a nonce signature.</p><label for="dialog-identity">Act as</label><select id="dialog-identity" data-identity>${identityOptions()}</select><div class="notice">Organizers A and B have separate authority. Alice, Bob and Carol can participate in both events. Staff A can check in only Event A.</div><div class="button-row"><button class="button button-secondary" data-connect-wallet>Connect browser wallet to local chain</button>${currentIdentity()?.mode === "wallet" ? '<button class="button button-secondary" data-fund-wallet>Receive 1 local ETH</button>' : ""}</div><p class="field-help">Browser wallets must use local chain 1337. Funding and all transactions use local ETH with no monetary value.</p><div class="dialog-buttons"><button class="button button-secondary" data-close>Close</button>${currentIdentity() ? '<button class="button button-quiet" data-logout>Sign out</button>' : ""}</div>`,
+    `<div class="dialog-eyebrow">${isHostedDemo() ? "Shared online demonstration" : "Local demonstration"}</div><h2 class="dialog-title" id="dialog-title">Choose a demo identity</h2><p class="dialog-body-text">${explanation}</p><label for="dialog-identity">Act as</label><select id="dialog-identity" data-identity>${identityOptions()}</select><div class="notice">Organizers A and B have separate authority. Alice, Bob and Carol can participate in both events. Staff A can check in only Event A.</div><div class="button-row"><button class="button button-secondary" data-connect-wallet>${isHostedDemo() ? "Connect browser wallet to demo" : "Connect browser wallet to local chain"}</button>${currentIdentity()?.mode === "wallet" ? '<button class="button button-secondary" data-fund-wallet>Receive 1 local ETH</button>' : ""}</div><p class="field-help">Browser wallets must use sandbox chain 1337. Funding and all transactions use ETH with no monetary value.${isHostedDemo() ? " Shared state resets on server restart; use synthetic inputs only." : ""}</p><div class="dialog-buttons"><button class="button button-secondary" data-close>Close</button>${currentIdentity() ? '<button class="button button-quiet" data-logout>Sign out</button>' : ""}</div>`,
   );
 }
 async function switchIdentity(id) {
@@ -314,7 +386,9 @@ async function connectWallet() {
         params: [
           {
             chainId: "0x539",
-            chainName: "Kleros isolated local demo",
+            chainName: isHostedDemo()
+              ? "Kleros shared demo sandbox"
+              : "Kleros isolated local demo",
             rpcUrls: [app.bootstrap.chain.rpcUrl],
             nativeCurrency: {
               name: "Local Ether",
@@ -329,6 +403,12 @@ async function connectWallet() {
   chain = await provider.request({ method: "eth_chainId" });
   if (Number(BigInt(chain)) !== 1337)
     throw new Error("Select local chain 1337 before authenticating.");
+  if (isHostedDemo())
+    await assertDemoChainInstance(
+      provider,
+      app.bootstrap.chain.instanceMarker,
+      app.bootstrap.chain.rpcUrl,
+    );
   const { nonce, message } = await post("/api/auth/challenge", {
     wallet: accounts[0],
   });
@@ -372,6 +452,7 @@ async function load({ silent = false } = {}) {
     const bootstrap = await api("/api/bootstrap");
     if (generation !== app.generation) return;
     app.bootstrap = bootstrap;
+    updateHostedDemoNotice();
     if (bootstrap.instanceId) {
       if (app.pendingInstanceId !== bootstrap.instanceId) {
         app.pending = [];
@@ -470,6 +551,7 @@ async function load({ silent = false } = {}) {
     $("#loading").hidden = true;
     $("#content").hidden = false;
     enhanceTables();
+    annotateHostedForms();
     if (app.focusTab) {
       $(`[data-view="${app.route.view}"]`)?.focus();
       app.focusTab = false;
@@ -490,7 +572,7 @@ async function load({ silent = false } = {}) {
 function renderHome() {
   const events = app.bootstrap.events;
   return `<div class="page-header"><div><div class="eyebrow">GOOD EVENTS. KEPT PROMISES.</div><h1>Events, with commitment.</h1><p class="intro">Bring people together. Make attendance verifiable.<br>Manage deposits and disputes with a clear view of every event.</p></div><div class="header-actions"><button class="button button-primary" data-create-event><span aria-hidden="true">＋</span> Create local event</button></div></div>
-    <div class="stats-strip"><div class="stat"><span class="stat-label">Independent events</span><div class="stat-value">${events.length}</div><div class="stat-note">Each with its own contract</div></div><div class="stat"><span class="stat-label">Open for participation</span><div class="stat-value">${events.filter((event) => phaseName(event.financialPhase) === "Open").length}</div><div class="stat-note">Free or committed spots</div></div><div class="stat"><span class="stat-label">Network</span><div class="stat-value">Local <small>ETH</small></div><div class="stat-note">Chain ${escape(app.bootstrap.chain.chainId)}</div></div><div class="stat"><span class="stat-label">Settlement</span><div class="stat-value">Court <small>V1</small></div><div class="stat-note">Held shares protect open cases</div></div></div>
+    <div class="stats-strip"><div class="stat"><span class="stat-label">Independent events</span><div class="stat-value">${events.length}</div><div class="stat-note">Each with its own contract</div></div><div class="stat"><span class="stat-label">Open for participation</span><div class="stat-value">${events.filter((event) => phaseName(event.financialPhase) === "Open").length}</div><div class="stat-note">Free or committed spots</div></div><div class="stat"><span class="stat-label">Network</span><div class="stat-value">${isHostedDemo() ? "Sandbox" : "Local"} <small>ETH</small></div><div class="stat-note">Chain ${escape(app.bootstrap.chain.chainId)}</div></div><div class="stat"><span class="stat-label">Settlement</span><div class="stat-value">Court <small>V1</small></div><div class="stat-note">Held shares protect open cases</div></div></div>
     <div class="section-heading"><h2>Your event directory</h2><span class="small">${events.length} events · stable, independent identities</span></div>
     <div class="event-grid">${events.map((event, index) => `<article class="event-card"><div class="event-visual theme-${index % 4}"><span class="visual-kicker">KLEROS / COMMUNITY</span><div class="visual-title">${escape(event.title)}</div><span class="event-sequence">${String(index + 1).padStart(2, "0")} / ${String(events.length).padStart(2, "0")}</span></div><div class="card-body"><div class="card-meta">${badge(phaseName(event.financialPhase), phaseStyle(event.financialPhase))}<span class="tiny-label">${escape(event.visibility ?? "public").toUpperCase()} · ${escape(event.editorialStatus ?? "published").toUpperCase()}</span></div><h3>${escape(event.title)}</h3><p>${escape(event.description ?? "")}</p><div class="event-facts"><span><i class="fact-icon" aria-hidden="true">◷</i>${escape(formatTime(event.startsAt, event.timezone))}</span><span><i class="fact-icon" aria-hidden="true">⌖</i>${escape(event.location ?? "Location to be announced")}</span><span><i class="fact-icon" aria-hidden="true">◇</i>Independent v7 contract · ${escape(short(event.contract))}</span></div><div class="card-footer"><div class="price">${eth(event.depositWei)} ETH<small>Optional commitment · free entry available</small></div><a href="#${new URLSearchParams({ event: event.id, view: "participant" })}" class="button button-secondary">View event <span class="icon-arrow" aria-hidden="true">↗</span></a></div></div></article>`).join("")}</div>
     <div class="trust-strip"><div class="trust-icon" aria-hidden="true">◇</div><div><strong>Attendance people can trust. Outcomes everyone can verify.</strong><p>Deposits stay in separate event contracts. Trusted check-in and a challenge period determine attendance. Normal payouts can continue while disputed shares remain reserved.</p></div></div>
@@ -508,12 +590,12 @@ function renderEventContext() {
       ? "Omission challenge ended"
       : "Omission challenge ends"
     : "Attendance-list deadline";
-  return `<section class="event-context" aria-label="Selected event and verified deployment"><div class="context-main"><div class="event-switch"><label for="event-switch">Selected event</label><select id="event-switch">${app.bootstrap.events.map((item) => `<option value="${escape(item.id)}" ${item.id === event.id ? "selected" : ""}>${escape(item.title)}</option>`).join("")}</select></div><div><span class="tiny-label">${escape(event.id)}</span><div>${badge(phaseName(state.phase), phaseStyle(state.phase))} ${badge(`Local chain ${event.chainId}`, "purple")}</div></div></div><dl class="context-details"><div><dt>Trusted deployment · ${escape(event.contractVersion)}</dt><dd class="mono">${escape(event.contract)}</dd></div><div><dt>${deadlineLabel}</dt><dd>${escape(formatTime(deadline, event.timezone))}</dd></div><div><dt>Last verified · block ${escape(state.blockNumber)}</dt><dd>${escape(formatTime(now, event.timezone))}</dd></div></dl><details class="disclosure"><summary>Policy and deployment terms</summary><p class="mono">${escape(event.policyURI)}</p><p>Native ETH · Kleros V1 · ${escape(event.abiVersion)}. Attendance-list deadline governs posting and no-list recovery, not every later claim.</p></details></section>`;
+  return `<section class="event-context" aria-label="Selected event and verified deployment"><div class="context-main"><div class="event-switch"><label for="event-switch">Selected event</label><select id="event-switch">${app.bootstrap.events.map((item) => `<option value="${escape(item.id)}" ${item.id === event.id ? "selected" : ""}>${escape(item.title)}</option>`).join("")}</select></div><div><span class="tiny-label">${escape(event.id)}</span><div>${badge(phaseName(state.phase), phaseStyle(state.phase))} ${badge(`${isHostedDemo() ? "Sandbox chain" : "Local chain"} ${event.chainId}`, "purple")}</div></div></div><dl class="context-details"><div><dt>Trusted deployment · ${escape(event.contractVersion)}</dt><dd class="mono">${escape(event.contract)}</dd></div><div><dt>${deadlineLabel}</dt><dd>${escape(formatTime(deadline, event.timezone))}</dd></div><div><dt>Last verified · block ${escape(state.blockNumber)}</dt><dd>${escape(formatTime(now, event.timezone))}</dd></div></dl><details class="disclosure"><summary>Policy and deployment terms</summary><p class="mono">${escape(event.policyURI)}</p><p>Native ETH · Kleros V1 · ${escape(event.abiVersion)}. Attendance-list deadline governs posting and no-list recovery, not every later claim.</p></details></section>`;
 }
 function renderEvent() {
   const { event, state } = app.detail;
   const phase = phaseName(state.phase);
-  return `<a class="back-link" href="#">← All events</a>${renderEventContext()}<div class="event-heading"><div><div class="eyebrow">KLEROS COMMUNITY / EVENTS & COMMITMENTS</div><h1>${escape(event.title)}</h1><div class="event-subtitle"><span>◷ ${escape(formatTime(event.startsAt, event.timezone))}</span><span>⌖ ${escape(event.location ?? "")}</span></div></div><div class="badges">${badge(phase, phaseStyle(phase))}${badge("LOCAL DEMO", "purple")}</div></div>
+  return `<a class="back-link" href="#">← All events</a>${renderEventContext()}<div class="event-heading"><div><div class="eyebrow">KLEROS COMMUNITY / EVENTS & COMMITMENTS</div><h1>${escape(event.title)}</h1><div class="event-subtitle"><span>◷ ${escape(formatTime(event.startsAt, event.timezone))}</span><span>⌖ ${escape(event.location ?? "")}</span></div></div><div class="badges">${badge(phase, phaseStyle(phase))}${badge(isHostedDemo() ? "SHARED DEMO" : "LOCAL DEMO", "purple")}</div></div>
     <div class="event-layout"><div class="event-main"><div class="tabs" role="tablist" aria-label="Event view">${[
       ["participant", "Your participation"],
       ["organizer", "Organizer desk"],
@@ -660,10 +742,10 @@ function renderPending() {
 function renderAside() {
   const { event, state, now } = app.detail;
   const contractVersion = event.contractVersion ?? event.version ?? "v7";
-  return `<section class="panel identity-panel"><label for="identity-select">LOCAL DEMO IDENTITY</label><select id="identity-select" data-identity>${identityOptions()}</select><div class="identity-address mono">${escape(currentIdentity()?.wallet ?? "No wallet selected")}</div><div class="identity-hint">Demo identities use funded local accounts; connected wallets prove ownership with a nonce signature. A change of identity clears every pending transaction draft.</div></section>
-    <section class="panel"><div class="aside-title">Event contract</div><dl class="details-list"><div><dt>Deposit</dt><dd><strong>${eth(state.depositWei ?? event.depositWei)} ETH</strong></dd></div><div><dt>Network</dt><dd>Local · ${escape(event.chainId)}</dd></div><div><dt>Contract</dt><dd><code>${escape(short(event.contract))}</code></dd></div><div><dt>Version</dt><dd>${escape(contractVersion)} · native ETH</dd></div><div><dt>Organizer</dt><dd><code>${escape(short(state.owner))}</code></dd></div>${state.pendingOwner && !/^0x0{40}$/i.test(state.pendingOwner) ? `<div><dt>Pending owner</dt><dd><code>${escape(short(state.pendingOwner))}</code></dd></div>` : ""}<div><dt>Registered</dt><dd>${escape(state.stakerCount)}</dd></div><div><dt>Attendees</dt><dd>${escape(state.attendeeCount)}</dd></div></dl><details class="disclosure"><summary>Inspect immutable terms</summary><p>Contract: <span class="mono">${escape(event.contract)}</span></p><p>Owner: <span class="mono">${escape(state.owner)}</span></p><p>Deployment block: ${escape(event.deploymentBlock ?? "See registry")}<br>Timezone: ${escape(event.timezone)}<br>Attendance-list deadline: ${escape(formatTime(event.claimDeadline ?? event.attendanceDeadline ?? state.claimDeadline, event.timezone))}</p><p>Policy: ${escape(event.policyURI ?? event.policyUri ?? "Local event policy; exact bytes linked by contract")}<br>ABI: ${escape(event.abiVersion ?? "kickback-v7")}</p></details></section>
+  return `<section class="panel identity-panel"><label for="identity-select">${isHostedDemo() ? "SHARED DEMO IDENTITY" : "LOCAL DEMO IDENTITY"}</label><select id="identity-select" data-identity>${identityOptions()}</select><div class="identity-address mono">${escape(currentIdentity()?.wallet ?? "No wallet selected")}</div><div class="identity-hint">${isHostedDemo() ? "Demo identities intentionally impersonate synthetic role accounts shared by all visitors. Connected wallets prove ownership with a nonce signature." : "Demo identities use funded local accounts; connected wallets prove ownership with a nonce signature."} A change of identity clears every pending transaction draft.</div></section>
+    <section class="panel"><div class="aside-title">Event contract</div><dl class="details-list"><div><dt>Deposit</dt><dd><strong>${eth(state.depositWei ?? event.depositWei)} ETH</strong></dd></div><div><dt>Network</dt><dd>${isHostedDemo() ? "Hosted sandbox" : "Local"} · ${escape(event.chainId)}</dd></div><div><dt>Contract</dt><dd><code>${escape(short(event.contract))}</code></dd></div><div><dt>Version</dt><dd>${escape(contractVersion)} · native ETH</dd></div><div><dt>Organizer</dt><dd><code>${escape(short(state.owner))}</code></dd></div>${state.pendingOwner && !/^0x0{40}$/i.test(state.pendingOwner) ? `<div><dt>Pending owner</dt><dd><code>${escape(short(state.pendingOwner))}</code></dd></div>` : ""}<div><dt>Registered</dt><dd>${escape(state.stakerCount)}</dd></div><div><dt>Attendees</dt><dd>${escape(state.attendeeCount)}</dd></div></dl><details class="disclosure"><summary>Inspect immutable terms</summary><p>Contract: <span class="mono">${escape(event.contract)}</span></p><p>Owner: <span class="mono">${escape(state.owner)}</span></p><p>Deployment block: ${escape(event.deploymentBlock ?? "See registry")}<br>Timezone: ${escape(event.timezone)}<br>Attendance-list deadline: ${escape(formatTime(event.claimDeadline ?? event.attendanceDeadline ?? state.claimDeadline, event.timezone))}</p><p>Policy: ${escape(event.policyURI ?? event.policyUri ?? "Local event policy; exact bytes linked by contract")}<br>ABI: ${escape(event.abiVersion ?? "kickback-v7")}</p></details></section>
     <section class="panel"><div class="aside-title">Keep the context</div><a class="aside-link" href="/finance/${encodeURIComponent(event.id)}/guest/" target="_blank" rel="noopener">Advanced participant tools ↗</a>${isOwner() ? `<a class="aside-link" href="/finance/${encodeURIComponent(event.id)}/console/" target="_blank" rel="noopener">Advanced organizer console ↗</a>` : ""}${safeLink(event.contentUrl) ? `<a class="aside-link" href="${escape(event.contentUrl)}" target="_blank" rel="noopener">Event content & materials ↗</a>` : ""}${safeLink(event.lumaUrl) ? `<a class="aside-link" href="${escape(event.lumaUrl)}" target="_blank" rel="noopener">Luma registration ↗</a>` : ""}<p class="small muted">Recordings, personal event history and booth merch remain separate from financial attendance.</p></section>
-    <section class="panel"><div class="aside-title">Demo chain time</div><p class="mono small">${escape(formatTime(now ?? app.bootstrap.now, event.timezone))}</p><p class="small">Time advances only on this local chain. Refresh to read authoritative balances and deadlines.</p></section>`;
+    <section class="panel"><div class="aside-title">Demo chain time</div><p class="mono small">${escape(formatTime(now ?? app.bootstrap.now, event.timezone))}</p><p class="small">${isHostedDemo() ? "Every visitor shares this demo clock." : "Time advances only on this local chain."} Refresh to read authoritative balances and deadlines.</p></section>`;
 }
 function safeLink(value) {
   if (typeof value !== "string" || !value.trim()) return false;
@@ -1176,7 +1258,10 @@ function renderTransactions() {
     .join("")}</ul>`;
 }
 function renderDemoControls() {
-  return `<details class="disclosure" style="margin-top:28px"><summary>Local demo controls & walkthrough</summary><div class="notice"><strong>Isolated development only.</strong> These controls advance the local chain and use funded synthetic accounts. No ETH, court case, guest data or message is sent to a production service.<br>Chain time: ${escape(formatTime(app.detail?.now ?? app.bootstrap.now, "UTC"))}</div><div class="button-row"><button class="button button-secondary button-small" data-advance="3600">Advance 1 hour</button><button class="button button-secondary button-small" data-advance="86401">Advance 1 day + 1 second</button><button class="button button-secondary button-small" data-advance="1296000">Advance 15 days</button><button class="button button-quiet button-small" data-demo-help>Open walkthrough</button></div></details>`;
+  const explanation = isHostedDemo()
+    ? "<strong>Shared online sandbox.</strong> These controls advance the demo chain for every visitor. Accounts are synthetic, ETH has no value and Court is a mock. State resets on server restart; use synthetic inputs only."
+    : "<strong>Isolated development only.</strong> These controls advance the local chain and use funded synthetic accounts. No ETH, court case, guest data or message is sent to a production service.";
+  return `<details class="disclosure" style="margin-top:28px"><summary>${isHostedDemo() ? "Shared sandbox" : "Local demo"} controls & walkthrough</summary><div class="notice">${explanation}<br>Chain time: ${escape(formatTime(app.detail?.now ?? app.bootstrap.now, "UTC"))}</div><div class="button-row"><button class="button button-secondary button-small" data-advance="3600">Advance 1 hour</button><button class="button button-secondary button-small" data-advance="86401">Advance 1 day + 1 second</button><button class="button button-secondary button-small" data-advance="1296000">Advance 15 days</button><button class="button button-quiet button-small" data-demo-help>Open walkthrough</button></div></details>`;
 }
 
 async function prepareTransaction(action, params = {}) {
@@ -1263,8 +1348,14 @@ async function executeTransaction() {
         );
       const rawProvider = walletProvider();
       const guardedProvider = {
-        request: (request) => {
+        request: async (request) => {
           if (request.method === "eth_sendTransaction") {
+            if (isHostedDemo())
+              await assertDemoChainInstance(
+                rawProvider,
+                app.bootstrap.chain.instanceMarker,
+                app.bootstrap.chain.rpcUrl,
+              );
             submissionStarted = true;
             rememberPending({ ...submission, status: "awaiting-wallet" });
           }

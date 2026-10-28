@@ -1,0 +1,25 @@
+{
+  "siteId": "f6b82f41-9e30-49b0-a836-40fedbab93a4",
+  "siteName": "kleros-event-workbench-preview",
+  "deployId": "6ae2003e06e5123259e8297c",
+  "url": "https://kleros-event-workbench-preview.netlify.app",
+  "deployUrl": "https://6ae2003e06e5123259e8297c--kleros-event-workbench-preview.netlify.app",
+  "state": "ready",
+  "sourceCommit": "8e1c59e1058e844e18fe15d66c29e62131a492b5",
+  "capturedAt": "2026-10-28T14:00:57.464Z",
+  "kind": "read-only-preview",
+  "archiveBytes": 152601,
+  "publishedAt": "2026-10-28T14:01:35.641Z",
+  "verification": {
+    "httpsStatus": 200,
+    "snapshotStatus": 200,
+    "snapshotBytes": 100799,
+    "snapshotSha256": "cafa8d190da4cf25d28d118e51d43e26c1b484d76ef4d5c5767db6121808a305",
+    "exactSnapshotBytesMatch": true,
+    "cspPresent": true,
+    "nosniffPresent": true,
+    "localBrowserAssertions": 34,
+    "liveBrowserAssertions": 34,
+    "kind": "read-only-preview"
+  }
+}

@@ -1,5 +1,21 @@
 # Kleros event workbench visual registry
 
+### Shared online demo environment notice
+
+Files: `public/app.js`, `public/styles.css` · Updated 28 October 2026
+
+| Property  | Pattern                                                                                                            |
+| --------- | ------------------------------------------------------------------------------------------------------------------ |
+| Condition | Visible when authoritative bootstrap mode is `hosted-demo`                                                         |
+| Container | `.hosted-demo-notice`, sticky top, `--raised` background, 1px `--amber` bottom border                              |
+| Text      | Geist 12px / 1.5; uppercase amber title 11px, descriptive text in `--ink`                                          |
+| Spacing   | 10px 24px desktop; 8px 16px mobile with a stacked title and description                                            |
+| Sidebar   | Height/top offset applies only at widths above 900px; mobile remains in normal compact flow                        |
+| Inputs    | `.hosted-input-hint`, 12px muted text with a 2px amber left rule; explanation only, API owns validation            |
+| Identity  | Shared role selection explicitly described as synthetic impersonation; browser-wallet nonce proof remains distinct |
+
+The notice stays visible through event and identity switches and states valueless ETH, mock Court, shared state, reset on server restart and synthetic inputs only. It has no dismissal control and does not move focus. Existing financial action, calldata, authority and journal behavior remains unchanged.
+
 Updated 28 October 2026 using the imprint skill after implementing selected Option B in the isolated UI worktree. This replaces the earlier light workbench patterns. The retained legacy apps keep their own visual systems. Exact selected values come from `KLEROS_REDESIGN_HANDOFF/design-tokens.json`.
 
 ### Shell and typography

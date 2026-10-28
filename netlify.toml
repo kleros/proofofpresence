@@ -1,9 +1,14 @@
 [build]
-  command = "npm run build:netlify"
-  publish = "dist/netlify-preview"
+  command = "npm run build:hosted"
+  publish = "dist/netlify-app"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "22"
 
-# This target intentionally publishes a read-only visual preview. The full local
-# Node/Ganache application is not a stateless Netlify Function.
+[functions]
+  node_bundler = "esbuild"
+
+# The gateway requires KLEROS_BACKEND_URL, KLEROS_PUBLIC_ORIGIN and
+# KLEROS_PROXY_SECRET in Netlify runtime variables. Never put the key in source.
+# The unchanged financial runtime remains in one persistent private backend.

@@ -116,3 +116,41 @@ or verified EOA nonce linkage, and mock Court adjudication. General smart-wallet
 production auth/persistence, staging content RLS/migrations, public IPFS publishing and a fresh mainnet
 fork remain external work. Dependency audit advisories remain in the development stack. No remote
 CI or production rollout has been run. Follow [RUNBOOK](RUNBOOK.md) for the next authorized phase.
+
+## Netlify read-only preview
+
+Following the user's online-viewing request, separate source commit
+`8e1c59e1058e844e18fe15d66c29e62131a492b5` added a static preview without changing the core backend.
+`npm run build:netlify` passed compilation/pinned-artifact checks and verified actual synthetic local
+receipts before snapshot capture. Root typecheck passed. `npm run test:netlify` passed **34 assertions**
+plus Playwright expectations locally, and the same command with `NETLIFY_PREVIEW_URL` passed **34**
+against the published HTTPS site. No API/RPC/external-service or wallet request was attempted.
+Visual inspection verified desktop/mobile notice placement and corrected an initial mobile-header
+height issue, with3 regression assertions added to the original31-check preview suite.
+
+Netlify reported deploy `6ae2003e06e5123259e8297c` ready. Page/snapshot requests returned200,
+the captured bytes matched the local artifact exactly, and CSP/`nosniff` headers were present.
+This is a deployed **read-only viewing preview**, not the interactive Node backend or financial
+production rollout discussed above. [NETLIFY_DEPLOYMENT](NETLIFY_DEPLOYMENT.md) records the URL,
+source/deploy IDs, commands and limitations.
+
+## Prepared full interactive hosting
+
+After the user selected full interaction, explicit hosted mode, a Netlify gateway, secure sessions,
+public-domain nonce auth, constrained signed RPC and unique-instance wallet checks were implemented.
+The complete new verification passed build/typecheck, **121/121 Node tests** (zero failures/skips),
+and browser suites with39 lifecycle,49 redesign,16 safety,4 context and35 hosted HTTPS assertions,
+for **143 assertions** plus Playwright interactions/expectations. The Node run took384.1seconds.
+`artifacts/hosted-full-verification.log` preserves the output. Financial domain/contract sources remain unchanged.
+
+Focused checks include7 hosted server,19 gateway and4 wallet-instance tests. The35-check hosted browser
+suite uses a real temporary local HTTPS frontend→real gateway→real backend, Secure cookies, actual
+A/B deposits and isolated registration, RPC/Origin guards, advanced financial pages and mobile layout.
+The gateway bundles with official Netlify CLI27.15.0. A clean closed package with only production
+dependencies passed install/build and guest/console/settings smoke checks. Local Docker's daemon was
+unavailable; actual Linux container execution remains a Railway deployment check.
+
+`test/hosted-live.e2e.mjs` is prepared with strict origin/chain/instance/fresh-state guards and has only
+passed syntax/format checks; it has **not** run against a live interactive backend. Railway sign-in is
+pending after the existing login expired. The published site remains the read-only preview, and no
+interactive hosted deployment is claimed. [HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md) records next steps.

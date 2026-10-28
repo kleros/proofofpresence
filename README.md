@@ -4,6 +4,14 @@ A unified local application for independent event deposits, reviewed admission, 
 V1 Court challenges, held-share settlement and recovery. The local demo executes the original
 v7 Solidity on Ganache. Court adjudication uses explicit V1 mocks.
 
+[View the online read-only preview](https://kleros-event-workbench-preview.netlify.app).
+It shows captured synthetic contract states; wallet and data-entry actions are disabled.
+Use the local runtime below for the complete interactive application.
+
+The requested full online demo is being prepared with a persistent backend and Netlify gateway;
+[HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) records the architecture, checks and deployment steps.
+The public link stays read-only until the replacement is verified.
+
 ## Run
 
 Requires Node **22.15 or later**, npm, and a browser. Verified here on Node 25.8.1 / npm 11.11.0 /

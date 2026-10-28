@@ -1,6 +1,9 @@
 # Local workbench API
 
-All mutations require same-origin JSON and a session cookie. This server supports **local demo only**; selecting demo identities is intentionally a local simulation of authentication. A real wallet can additionally sign a nonce to authenticate on this local chain. No live registry entry is writable.
+All application mutations require same-origin JSON and a session cookie. The default server supports
+the loopback local demo; explicit `hosted-demo` adds the protected HTTPS deployment described below.
+Selecting demo identities intentionally simulates authentication. A real EOA can sign a nonce to prove
+wallet control on the synthetic chain. No mainnet registry entry is writable.
 
 - `GET /api/bootstrap` → `{mode:'local-demo', identities:[{id,label,wallet}], session:{wallet,label,mode}|null, events:[EventSummary], chain:{chainId:1337,rpcUrl}, now}`. Seed IDs `event-a`, `event-b`; identities `organizer-a`, `organizer-b`, `staff-a`, `alice`, `bob`, `carol`. Events include id, slug, title, description, startsAt, endsAt, timezone, location, depositWei, contract, chainId, financialPhase, role, visibility, editorialStatus, registrationStatus, lumaUrl/contentUrl optional.
 - `POST /api/session` `{identity:'alice'}` → session (demo signers only).
@@ -68,3 +71,26 @@ a valid deposit can regain its verified identity link. Reverted receipts are ter
 states. Successful manual deposit linking also resolves its pending record, so a later genuine refund
 does not permanently block readmission. New UI requests fail before wallet signing when durable journal
 storage is unavailable; post-submission errors always retain the returned hash.
+
+## Explicit hosted demo transport
+
+`MODE=hosted-demo` requires exact HTTPS `PUBLIC_ORIGIN`/`BACKEND_ORIGIN` and a generated server-only
+`PROXY_SECRET`. Only minimal `GET /healthz` is public at the backend; every other route requires the
+exact backend Host and constant-time proxy-key verification. The Netlify gateway preserves actual API
+write Origins, private/no-store responses and Secure/HttpOnly/SameSite session cookies. It never sends
+the key to the browser. Nonce messages use the public HTTPS URI/domain.
+
+Bootstrap returns `mode:'hosted-demo'`, shared-demo capabilities and an absolute same-origin RPC URL.
+`chain.instanceMarker:{blockNumber,blockHash}` identifies a random zero-value self-transfer created
+for this process. Browser and advanced-page wallet requests verify it before signing, distinguishing
+this sandbox from another wallet RPC with the same1337 chain ID. Restart changes this identity.
+
+`POST /rpc` accepts bounded public chain reads plus `eth_sendRawTransaction` for signed chain1337
+transactions targeting this demo's registered event/resolver/arbitrator contracts (gas≤6million,
+data≤64KiB, type0/1/2, at most one signed transaction per batch). No unlocked `eth_sendTransaction`,
+admin operation or foreign-chain send is allowed. The gateway deliberately makes only this RPC route
+public/CORS-readable and cookie-free, normalizing its transport Origin without authorizing API writes.
+`OPTIONS /rpc` supplies its preflight. Root local-demo RPC remains read-only.
+
+These are shared synthetic demo semantics, not production auth/durability. See
+[HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md) for the concrete rollout and current deployment status.
