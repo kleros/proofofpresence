@@ -168,7 +168,7 @@ function updateHostedDemoNotice() {
       testnet ? "Public testnet environment" : "Shared online demo environment",
     );
     notice.innerHTML = testnet
-      ? `<strong>PUBLIC TESTNET</strong><p>${escape(networkName())} · Test tokens only. Use your own wallet and test data. ${escape(app.bootstrap?.arbitration?.notice ?? "Review this event's arbitration setup before depositing.")} Transactions remain on the public chain.</p>`
+      ? `<strong>PUBLIC TESTNET</strong><p>${escape(networkName())} · Test tokens only. Use your own wallet and test data. ${escape(app.bootstrap?.arbitration?.notice ?? "Review this event's arbitration setup before depositing")}. Transactions remain on the public chain.</p>`
       : "<strong>SHARED ONLINE DEMO</strong><p>Synthetic accounts · valueless ETH · mock Court. Everyone shares this sandbox; state resets on server restart. Use synthetic inputs only.</p>";
     document.body.prepend(notice);
     const measure = () =>

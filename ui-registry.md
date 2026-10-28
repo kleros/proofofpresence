@@ -3,6 +3,7 @@
 Testnet environment notices must visibly name the authoritative controlled-arbitrator setup and
 state that it has no independent jury. Use the existing persistent notice pattern and trusted
 bootstrap text; exact chain/currency, policy and transaction review remain available.
+Before bootstrap returns, network labels say “Connecting” instead of assuming a local chain.
 
 ### Shared online demo environment notice
 
