@@ -1,0 +1,185 @@
+{
+  "date": "2026-10-28",
+  "success": true,
+  "version": 8,
+  "scope": "In-process synthetic Ganache; Court adjudication mocked; no live RPC or deployment",
+  "runId": "2026-10-28T15-42-17-430Z-b75884be",
+  "campaignElapsedMs": 222965,
+  "sourceHashes": {
+    "contracts/KlerosEventV8.sol": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769",
+    "contracts/KlerosEventFactoryV8.sol": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505",
+    "src/contracts-v8.mjs": "c2a905050f8e06bdd6e4299f9200c0911bf6f843d0e7ad3b47932ea3948efe50",
+    "scripts/compile-contracts.mjs": "ae92ee53c251c8423834e9c5a6b6451c198e4730722bd11a3e86a552537d008a",
+    "references/kickback/scripts/compile.mjs": "8d085a4b3a6382d7e6954ebee49e3ffaf1fa916f755e83ed310cde35c0abd13a",
+    "references/kickback/test/MockKleros.sol": "beae9a66702d986159e2d06f0d5dfe4cd18df95906a56f7a2e1117c808884136",
+    "references/kickback/test/TestWallet.sol": "56746a564149d3b71508090cbe317c3dab70bcd22cf50334bd3967a54d1671e2",
+    "references/kickback/contracts/TruthPaysKickback.sol": "7d9a7854c43826453f7a3ac610d2350b48626cf6e18ee2c44530081af8f80a51",
+    "test/stress/Adversaries.sol": "022275184b1292df4b9f4fe89708c084ae0e6edddaa71d12b7ad4c1abe9000b0",
+    "scripts/stress-contracts.mjs": "5ea1e675383b69fedc380d21f076e8dc4e003f4e65288ab2be0d60507eac632a",
+    "test/stress/v8-ledger.stress.mjs": "cd9f7a6fcb1e4b17a48a09d243d3c55abd96beda652384e2d6932ed3719c8d18",
+    "test/stress/v8-settlement.stress.mjs": "4ad0ea613270d4add52f4ff256ad23266a055c7335cadcc2e197da32a3772dcd",
+    "test/stress/v8-capacity.stress.mjs": "227523674622439e69b892f7f02863091c63d39c7944fce94ede5a39ca94e1f9",
+    "test/stress/v8-hostile.stress.mjs": "b71037b0fbcef747d96b5830f105c5693186a44a03d0ad958bec227e924daece"
+  },
+  "artifactHashes": {
+    "build/contracts/manifest.json": "4fc122380ce4a510206efffbbfb7414f7901de11078fc4873fe45d7f265e3d09",
+    "build/contracts/standard-input.json": "6c039f39e6163f82f30d8a379f59efbd5f64eb959fdb1369b70188ebb66e1766",
+    "build/contracts/KlerosEventV8.json": "366858f68d3abe811035c43309c45702ec19240a90c0fbae744426007e3361af",
+    "build/contracts/KlerosEventFactoryV8.json": "6cacf2464fc3ea2a00cbe4ff8614bc91f07b59b94b3d081554c92744d4a37343",
+    "references/kickback/build/MockKlerosLiquid.json": "ca2a04da6c62a35fa6b3c0c858dd36053f1eb1eda8634e5c1b4e5d344f1a3c80",
+    "references/kickback/build/MockArbitrableProxy.json": "c31fbec717d88f834bb3af048251417d24defedb8d47f7bc1e6ee1e35c00ef3b",
+    "references/kickback/build/TestWallet.json": "c38403a26d8e2e3cc90b2bec7b3a994a4103f73697fff25209014c5598b5de43",
+    "references/kickback/build/GasBurners.json": "ef20d9013304b590bf824969b37791754d42b33c72cdbb3a9659968d659e430c"
+  },
+  "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+  "sourceHashesUnchanged": true,
+  "artifactHashesUnchanged": true,
+  "unchangedFromReviewedCandidate": true,
+  "fullEvidence": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/summary.json",
+  "suiteEvidence": {
+    "hostile": {
+      "passed": true,
+      "code": 0,
+      "signal": null,
+      "log": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-hostile-stress.log",
+      "metrics": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-hostile-stress.json"
+    },
+    "ledger": {
+      "passed": true,
+      "code": 0,
+      "signal": null,
+      "log": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-ledger-stress.log",
+      "metrics": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-ledger-stress.json"
+    },
+    "capacity": {
+      "passed": true,
+      "code": 0,
+      "signal": null,
+      "log": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-capacity-stress.log",
+      "metrics": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-capacity-stress.json"
+    },
+    "settlement": {
+      "passed": true,
+      "code": 0,
+      "signal": null,
+      "log": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-settlement-stress.log",
+      "metrics": "artifacts/stress/2026-10-28T15-42-17-430Z-b75884be/v8-settlement-stress.json"
+    }
+  },
+  "results": {
+    "ledger": {
+      "seeds": 32,
+      "generatedActions": 2048,
+      "totalActions": 2998,
+      "minedTransactions": 2241,
+      "minedExpectedRejections": 816,
+      "expectedStaticRejections": 1509,
+      "modelSnapshots": 3030,
+      "invariantAssertions": 55098
+    },
+    "settlement": {
+      "scenarios": 64,
+      "seeds": 32,
+      "transactions": 2216,
+      "expectedRejections": 640,
+      "invariantChecks": 1240,
+      "assertions": 71479,
+      "matchedCases": 188,
+      "unmatchedCases": 38,
+      "rulings0": 66,
+      "rulings1": 56,
+      "rulings2": 66,
+      "earlySettlements": 20,
+      "lateSettlements": 168,
+      "failedRecipientPayments": 251,
+      "alternateClaims": 106,
+      "pendingWithdrawals": 438
+    },
+    "capacity": {
+      "transactions": 2494,
+      "invariantChecks": 1227,
+      "scenarios": [
+        {
+          "name": "max cancellation after repeated readmission",
+          "lifetimeAdmissions": 150,
+          "readmissionCycles": 512,
+          "owedRecipients": 150
+        },
+        {
+          "name": "max unmatched challenges and hostile recipients",
+          "waitingCases": 149,
+          "directSucceeded": false,
+          "individualPermissionlessResolutions": 149,
+          "owedRecipients": 150,
+          "knownOperationalPreprocessing": true
+        },
+        {
+          "name": "149 simultaneously open matched cases",
+          "cases": 149,
+          "rulings": {
+            "attended": 147,
+            "absent": 1,
+            "refused": 1
+          },
+          "finalAttendees": 148,
+          "pendingRecovered": "70000000000000007",
+          "dust": "170"
+        },
+        {
+          "name": "factory deployment workload",
+          "events": 32,
+          "creators": 4,
+          "invalidRollbacks": 5,
+          "duplicateRejections": 8,
+          "maximumTemplateEncodedBytes": 12288,
+          "maximumSlots": 32,
+          "maximumNameBytes": 256,
+          "maximumPolicyBytes": 512,
+          "maximumExtraDataBytes": 128
+        }
+      ],
+      "gas": {
+        "cancel150After512Readmissions": "12624024",
+        "direct149UnmatchedFailedGas": "16777216",
+        "individualExpiredUnmatchedMax": "200104",
+        "release150After149IndividualResolutions": "10911405",
+        "release150With149OpenCases": "4580592",
+        "maximumOf149CaseSettlements": "9826902",
+        "maximumFactoryConstructorPayload": "8057990",
+        "largestOf32FactoryCreations": "8057990"
+      }
+    },
+    "hostile": {
+      "suite": "hostile",
+      "success": true,
+      "callbackPaths": 10,
+      "callbackAttempts": 187,
+      "callbackVectors": 170,
+      "blockedReentries": 187,
+      "gasProbes": 46,
+      "gasProbeSuccesses": 11,
+      "gasProbeReverts": 35,
+      "hostileRecipientScenarios": 4,
+      "largeReturnDataScenarios": 2,
+      "feeScenarios": 21,
+      "feeGuardMinedReverts": 3,
+      "invariantChecks": 486,
+      "elapsedMs": 56468
+    },
+    "countedCoreTransactions": 6951,
+    "recordedLedgerAndSettlementAssertions": 126577,
+    "regressionTests": 23,
+    "build": "passed",
+    "typecheck": "passed",
+    "preflightNegativeCheck": "Invalid selection rejected, failed manifest/latest pointer recorded"
+  },
+  "knownLimit": "Direct release with 149 expired unmatched gas-burning challengers exceeds 16777216; individual permissionless resolves (max200104 each) then release10911405 succeed.",
+  "limitations": [
+    "Bounded seeded testing is not a proof or independent professional audit",
+    "Court/resolver adjudication mocked; no current mainnet fork or live-state/real-wallet certification",
+    "Explicit gas cap on Ganache Shanghai; newer-fork transaction rules and gas repricing not emulated",
+    "Synthetic recipient code replacement and forced-balance injection disclosed in raw evidence",
+    "Organizer attendance decisions, policy and arbitration configuration remain trusted",
+    "No production deployment or live financial transaction performed"
+  ]
+}

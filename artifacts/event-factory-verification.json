@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-28",
+  "scope": "Local synthetic Ganache; mock Court/resolver adjudication; no external deployment",
+  "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+  "contracts": {
+    "KlerosEventV8": {
+      "creationBytes": 24258,
+      "runtimeBytes": 21206,
+      "creationCodeHash": "0xd134f9fe0a23e6ea15c04d43c1b3603419486729bb148e3c7a182002a2e81714"
+    },
+    "KlerosEventFactoryV8": {
+      "creationBytes": 27944,
+      "runtimeBytes": 2803,
+      "creationCodeHash": "0x2d6a01f0c2638745cfb4c9ab64c56463a944f242a6a92f5602612a55b3e9bc76"
+    }
+  },
+  "sources": {
+    "contracts/KlerosEventV8.sol": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769",
+    "contracts/KlerosEventFactoryV8.sol": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505",
+    "src/contracts-v8.mjs": "c2a905050f8e06bdd6e4299f9200c0911bf6f843d0e7ad3b47932ea3948efe50"
+  },
+  "historicalV7SourceUnchanged": true,
+  "results": {
+    "rootTests": 149,
+    "v8ChildTests": 14,
+    "factoryTests": 5,
+    "v8ArbitrationTests": 4,
+    "legacyContractTests": 54,
+    "build": "passed",
+    "typecheck": "passed",
+    "browserAssertions": 39
+  },
+  "limitations": [
+    "No current mainnet fork or live-state verification",
+    "No professional independent audit or formal verification",
+    "Current workbench registry/UI remain v7; standalone v8 contract API added",
+    "Event creators still choose policies/arbitration and control curated attendance"
+  ]
+}

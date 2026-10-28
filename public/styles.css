@@ -2296,3 +2296,226 @@ main:focus-visible {
     grid-column: 1 / -1;
   }
 }
+
+/* Simple everyday workflow; technical records stay available through disclosure. */
+.quick-start,
+.participation-steps {
+  display: grid;
+  gap: 12px;
+  margin: 0 0 28px;
+  padding: 0;
+  list-style: none;
+}
+.quick-start {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.quick-start li,
+.participation-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.quick-start strong,
+.participation-steps strong {
+  display: block;
+  color: var(--heading);
+  font-size: 14px;
+  font-weight: 550;
+}
+.quick-start p,
+.participation-steps small {
+  display: block;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.step-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 27px;
+  height: 27px;
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.participation-steps {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 24px 0 16px;
+}
+.participation-steps li {
+  padding: 14px 16px;
+  border-radius: var(--small-radius);
+}
+.participation-steps .current {
+  border-color: var(--purple);
+  background: var(--purple-soft);
+}
+.participation-steps .current .step-number {
+  color: var(--on-accent);
+  background: var(--purple);
+  border-color: var(--purple);
+}
+.participation-steps .complete .step-number {
+  color: var(--green);
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+.context-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.context-verification {
+  margin-top: 12px;
+  padding-top: 12px;
+}
+.context-verification summary {
+  font-size: 12px;
+  font-weight: 450;
+}
+.context-verification p {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+.support-tools {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.spot-details .state-grid {
+  margin-bottom: 4px;
+}
+.status-details {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.status-details summary {
+  font-size: 14px;
+}
+.credit-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  margin: 20px 0;
+  background: var(--purple-soft);
+  border: 1px solid var(--purple);
+  border-radius: var(--small-radius);
+}
+.credit-summary > div {
+  min-width: 0;
+  flex: 1 1 210px;
+}
+.credit-summary p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.event-summary .details-list {
+  margin-bottom: 0;
+}
+@media (max-width: 600px) {
+  .quick-start {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .quick-start li {
+    padding: 14px 16px;
+  }
+  .participation-steps {
+    gap: 8px;
+  }
+  .participation-steps li {
+    gap: 8px;
+    padding: 12px;
+  }
+  .participation-steps .step-number {
+    flex-basis: 23px;
+    height: 23px;
+  }
+  .participation-steps strong {
+    font-size: 12px;
+  }
+  .participation-steps small {
+    font-size: 11px;
+  }
+}
+.event-story-details summary {
+  cursor: pointer;
+  color: var(--heading);
+  font-size: 16px;
+  font-weight: 500;
+}
+.event-story-details p {
+  margin-top: 16px;
+}
+.participation-steps + .spot-details {
+  margin-top: 24px;
+}
+@media (max-width: 600px) {
+  .event-heading {
+    margin-bottom: 12px;
+  }
+  .event-heading h1 {
+    margin-bottom: 10px;
+  }
+  .event-context {
+    margin-bottom: 18px;
+  }
+  .next-action {
+    margin-top: 16px;
+  }
+}
+@media (max-width: 600px) {
+  /* Keep the next action in reach without removing identity or network context. */
+  .app-shell:has(.event-context) .breadcrumb {
+    display: none;
+  }
+  .app-shell:has(.event-context) .environment {
+    width: auto;
+    flex-shrink: 0;
+  }
+  .app-shell:has(.event-context) #top-identity {
+    max-width: 45%;
+  }
+  .event-context .context-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .event-context .event-switch {
+    min-width: 0;
+    max-width: none;
+  }
+  .event-context .context-status {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-top: 18px;
+  }
+  .event-context select {
+    padding-left: 9px;
+    padding-right: 9px;
+    font-size: 12px;
+  }
+  .next-action h2 {
+    font-size: 27px;
+  }
+  .next-action p {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+}

@@ -10,6 +10,8 @@ import {
 import { importCsv } from "./imports.mjs";
 import { createImportPreviewService } from "./import-preview.mjs";
 import { projectPayments } from "./payments.mjs";
+import { v8DepositCredits } from "./v8-deposits.mjs";
+import { testnetChain, testnetStateStore } from "./testnet-runtime.mjs";
 import {
   hash,
   id,
@@ -49,13 +51,27 @@ const ownerActions = new Set([
   "transferOwnership",
 ]);
 
-export async function createWorkbench({ rpcPort = 0 } = {}) {
-  const chain = await localChain(rpcPort);
+export async function createWorkbench({
+  rpcPort = 0,
+  contractVersion = "truth-pays-v7",
+  testnet = null,
+} = {}) {
+  requireThat(
+    ["truth-pays-v7", "kleros-event-v8"].includes(contractVersion),
+    "Unsupported contract version",
+  );
+  const external = !!testnet;
+  const chain = external
+    ? await testnetChain(testnet.manifest, testnet.rpcUrl)
+    : await localChain(rpcPort);
+  const store = external
+    ? testnetStateStore(testnet.stateFile, testnet.manifest)
+    : null;
   const events = new Map(),
     drafts = new Map(),
     locks = new Set();
   const identities = await Promise.all(
-    names.map(async (name, i) => ({
+    (external ? [] : names).map(async (name, i) => ({
       id: name,
       label: labels[i],
       wallet: await chain.signers[i].getAddress(),
@@ -149,7 +165,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
   async function createEvent(s, input, seedId) {
     authenticated(s);
     requireThat(
-      s.mode === "demo",
+      !external && s.mode === "demo",
       "New deployments are local demo only",
       "DEMO_ONLY",
       403,
@@ -228,6 +244,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       depositWei,
       start,
       end + 14 * DAY,
+      { contractVersion },
     );
     const r = {
       definition,
@@ -251,7 +268,10 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     };
   }
   const initial = (await chain.provider.getBlock("latest")).timestamp;
-  for (const [i, eventId] of ["event-a", "event-b"].entries()) {
+  for (const [i, eventId] of (external
+    ? []
+    : ["event-a", "event-b"]
+  ).entries()) {
     const start = initial + (i + 1) * 3600;
     await createEvent(
       identities[i],
@@ -285,6 +305,50 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
         admission: "pending",
         deposit: null,
       });
+  }
+  if (external) {
+    for (const initial of testnet.manifest.events) {
+      const eventId = initial.definition.id;
+      requireThat(!events.has(eventId), "Duplicate testnet event ID");
+      events.set(eventId, {
+        ...initial,
+        financialAccess: [],
+        participants: new Map(),
+        observations: [],
+        batches: [],
+        personal: new Map(),
+        publications: new Map(),
+        transactions: [],
+        nonces: new Set(),
+        revision: 0,
+      });
+    }
+    const saved = store.load();
+    if (saved) {
+      for (const item of saved.events) {
+        const r = events.get(item.eventId);
+        requireThat(
+          r && item.definition.id === item.eventId,
+          "Persisted event identity mismatch",
+        );
+        requireThat(item.definition.title === r.definition.title &&
+          item.definition.startsAt === r.definition.startsAt &&
+          item.definition.endsAt === r.definition.endsAt,
+          "Persisted event schedule or title differs from its manifest");
+        const definition = { ...r.definition };
+        for (const key of ["description", "location", "visibility", "editorialStatus", "registrationStatus", "lumaEventId", "lumaUrl", "contentEventId", "contentUrl"])
+          if (Object.hasOwn(item.definition, key)) definition[key] = item.definition[key];
+        Object.assign(r, {
+          definition, revision: item.revision, observations: item.observations,
+          batches: item.batches, transactions: item.transactions,
+          participants: new Map(item.participants),
+          personal: new Map(item.personal),
+          publications: new Map(item.publications),
+          nonces: new Set(item.nonces),
+        });
+      }
+      for (const [key, value] of saved.drafts) drafts.set(key, value);
+    }
   }
   async function summary(r, s) {
     const st = await chainState(chain, r);
@@ -332,11 +396,27 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       }
     });
     return {
-      mode: "local-demo",
+      mode: external ? "testnet" : "local-demo",
       identities: identities.map(({ signer, ...x }) => x),
       session: s ? { wallet: s.wallet, label: s.label, mode: s.mode } : null,
       events: await Promise.all(visible.map((r) => summary(r, s))),
-      chain: { chainId: 1337, rpcUrl: chain.rpcUrl },
+      chain: external
+        ? testnet.manifest.chain
+        : {
+            chainId: Number((await chain.provider.getNetwork()).chainId),
+            rpcUrl: chain.rpcUrl,
+            name: "Local demo",
+            nativeCurrency: { name: "Demo Ether", symbol: "ETH", decimals: 18 },
+          },
+      contractVersion: external ? "kleros-event-v8" : contractVersion,
+      ...(external
+        ? {
+            arbitration: {
+              mode: "controlled",
+              notice: "Controlled test arbitrator; no independent jury",
+            },
+          }
+        : {}),
       now: (await chain.provider.getBlock("latest")).timestamp,
     };
   }
@@ -378,6 +458,11 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
             registered: [1, 2].includes(status),
             attended: await contract(eventId).attended(p.wallet),
             owedWei: String(await contract(eventId).owed(p.wallet)),
+            ...(r.deployment.contractVersion === "kleros-event-v8"
+              ? {
+                  pendingCreditWei: st.pendingCredits?.[lower(p.wallet)] ?? "0",
+                }
+              : {}),
           };
         }),
     );
@@ -416,6 +501,46 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       c.queryFilter(c.filters.Rejected(), from),
       c.queryFilter(c.filters.Refunded(), from),
     ]);
+    if (r.deployment.contractVersion === "kleros-event-v8") {
+      const credits = await v8DepositCredits(c, r.deployment);
+      return Promise.all(
+        [...credits.values()].map(async (e) => {
+          const pending = await c.pendingDeposits(e.wallet);
+          const projected = e.lots.reduce((sum, lot) => sum + lot.pending, 0n);
+          requireThat(
+            pending === projected,
+            "v8 credit projection differs from contract",
+            "CREDIT_HISTORY",
+            409,
+          );
+          const received = e.lots.reduce((sum, lot) => sum + lot.amount, 0n);
+          const committed = e.lots.reduce(
+            (sum, lot) => sum + lot.committed,
+            0n,
+          );
+          const p = [...r.participants.values()].find(
+            (p) => lower(p.wallet) === lower(e.wallet),
+          );
+          return {
+            eventId,
+            wallet: e.wallet,
+            participantId: p?.id ?? null,
+            receivedWei: String(received),
+            returnedWei: String(received - pending - committed),
+            allocatedWei: String(committed),
+            unallocatedWei: String(pending),
+            pendingCreditWei: String(pending),
+            linked: !!p?.deposit,
+            transactions: e.lots.map((lot) => ({
+              txHash: lot.txHash,
+              logIndex: lot.logIndex,
+              amountWei: String(lot.amount),
+            })),
+            note: "Unused credit belongs to this payer and can be recovered directly; it is never organizer spare ETH.",
+          };
+        }),
+      );
+    }
     /** @type {Map<string,{wallet:string,received:bigint,returned:bigint,transactions:object[]}>} */
     const ledger = new Map();
     const entry = (wallet) => {
@@ -592,52 +717,77 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       "SHORT_DEPOSIT",
       409,
     );
-    // Reuse the tested legacy pairing: a spare excess/stray return does not erase held principal.
-    const [deposited, rejected, refunded, registered] = await Promise.all([
-      c.queryFilter(c.filters.Deposited(p.wallet), d.deploymentBlock),
-      c.queryFilter(c.filters.Rejected(p.wallet), d.deploymentBlock),
-      c.queryFilter(c.filters.Refunded(p.wallet), d.deploymentBlock),
-      c.queryFilter(c.filters.StakerRegistered(p.wallet), d.deploymentBlock),
-    ]);
-    const deposits = deposited
-      .filter((x) => "args" in x)
-      .map((x) => ({
-        tx: x.transactionHash,
-        from: p.wallet,
-        amount: /** @type {import('ethers').EventLog} */ (x).args.amount,
-        block: x.blockNumber,
-        logIndex: x.index,
-      }));
-    const returnEvents = [...rejected, ...refunded, ...registered]
-      .filter((x) => "args" in x)
-      .map((x) => {
-        const l = /** @type {import('ethers').EventLog} */ (x);
-        return {
-          type: l.eventName,
-          wallet: p.wallet,
-          amount: l.eventName === "StakerRegistered" ? 0n : l.args[1],
-          block: l.blockNumber,
-          logIndex: l.index,
-          tx: l.transactionHash,
-        };
+    if (d.contractVersion === "kleros-event-v8") {
+      const person = (await v8DepositCredits(c, d)).get(lower(p.wallet));
+      const lot = person?.lots.find(
+        (lot) =>
+          lower(lot.txHash) === lower(txHash) && lot.logIndex === log.log.index,
+      );
+      const committed =
+        person?.lots.reduce((sum, item) => sum + item.committed, 0n) ?? 0n;
+      requireThat(
+        lot &&
+          (lot.pending >= BigInt(d.depositWei) ||
+            (lot.committed > 0n && committed === BigInt(d.depositWei))),
+        "This deposit credit was recovered or refunded and cannot be reused",
+        "RETURNED_DEPOSIT",
+        409,
+      );
+      const pending = person.lots.reduce((sum, lot) => sum + lot.pending, 0n);
+      requireThat(
+        pending === (await c.pendingDeposits(p.wallet)),
+        "v8 credit history differs from contract",
+        "CREDIT_HISTORY",
+        409,
+      );
+    } else {
+      // Preserve historical v7 pairing: spare returns do not erase held principal.
+      const [deposited, rejected, refunded, registered] = await Promise.all([
+        c.queryFilter(c.filters.Deposited(p.wallet), d.deploymentBlock),
+        c.queryFilter(c.filters.Rejected(p.wallet), d.deploymentBlock),
+        c.queryFilter(c.filters.Refunded(p.wallet), d.deploymentBlock),
+        c.queryFilter(c.filters.StakerRegistered(p.wallet), d.deploymentBlock),
+      ]);
+      const deposits = deposited
+        .filter((x) => "args" in x)
+        .map((x) => ({
+          tx: x.transactionHash,
+          from: p.wallet,
+          amount: /** @type {import('ethers').EventLog} */ (x).args.amount,
+          block: x.blockNumber,
+          logIndex: x.index,
+        }));
+      const returnEvents = [...rejected, ...refunded, ...registered]
+        .filter((x) => "args" in x)
+        .map((x) => {
+          const l = /** @type {import('ethers').EventLog} */ (x);
+          return {
+            type: l.eventName,
+            wallet: p.wallet,
+            amount: l.eventName === "StakerRegistered" ? 0n : l.args[1],
+            block: l.blockNumber,
+            logIndex: l.index,
+            tx: l.transactionHash,
+          };
+        });
+      const status = Number(await c.status(p.wallet));
+      const paired = pairReturns(deposits, returnEvents, {
+        deposit: BigInt(d.depositWei),
+        prefer: new Set(
+          [...r.participants.values()]
+            .map((x) => lower(x.deposit?.txHash))
+            .concat(lower(txHash)),
+        ),
+        stakers: new Set([1, 2].includes(status) ? [lower(p.wallet)] : []),
       });
-    const status = Number(await c.status(p.wallet));
-    const paired = pairReturns(deposits, returnEvents, {
-      deposit: BigInt(d.depositWei),
-      prefer: new Set(
-        [...r.participants.values()]
-          .map((x) => lower(x.deposit?.txHash))
-          .concat(lower(txHash)),
-      ),
-      stakers: new Set([1, 2].includes(status) ? [lower(p.wallet)] : []),
-    });
-    const held = paired.byDeposit.get(depKey(txHash, p.wallet));
-    requireThat(
-      held && held.remaining >= BigInt(d.depositWei),
-      "Deposit principal was returned and cannot be reused",
-      "RETURNED_DEPOSIT",
-      409,
-    );
+      const held = paired.byDeposit.get(depKey(txHash, p.wallet));
+      requireThat(
+        held && held.remaining >= BigInt(d.depositWei),
+        "Deposit principal was returned and cannot be reused",
+        "RETURNED_DEPOSIT",
+        409,
+      );
+    }
     const used = [...r.participants.values()].find(
       (x) =>
         x.deposit &&
@@ -944,6 +1094,27 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
         summaryText =
           "Collect your owed failed payment at this destination. This is separate from ordinary batch payouts.";
         break;
+      case "withdrawPending": {
+        requireThat(
+          r.deployment.contractVersion === "kleros-event-v8",
+          "Independent unused-credit recovery requires v8",
+          "WRONG_VERSION",
+          409,
+        );
+        const amount = BigInt(params.amountWei ?? "0");
+        const credit = await c.pendingDeposits(s.wallet);
+        requireThat(
+          amount > 0n && amount <= credit,
+          "Choose an amount within your unused deposit credit",
+          "INSUFFICIENT_CREDIT",
+          409,
+        );
+        method = "withdrawPending";
+        args = [to(), amount];
+        summaryText =
+          "Recover your own unused deposit credit to this address. This does not withdraw an admitted commitment or anyone else's funds.";
+        break;
+      }
       case "refund":
         method = "refund";
         args = [to(), BigInt(params.amountWei)];
@@ -1046,7 +1217,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       from: s.wallet,
       data: spec.target.interface.encodeFunctionData(spec.method, spec.args),
       value: spec.value,
-      chainId: 1337,
+      chainId: r.deployment.chainId,
     };
     try {
       await chain.provider.call(tx);
@@ -1065,7 +1236,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
       params,
       wallet: s.wallet,
       sessionId: s.id,
-      chainId: 1337,
+      chainId: r.deployment.chainId,
       contract: r.deployment.contract,
       abiVersion: r.deployment.abiVersion,
       contractVersion: r.deployment.contractVersion,
@@ -1228,7 +1399,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
         lower(tx.to) === lower(d.transaction.to) &&
         tx.data === d.transaction.data &&
         String(tx.value) === d.valueWei &&
-        Number(tx.chainId) === 1337,
+        Number(tx.chainId) === d.chainId,
       "Transaction does not match reviewed draft",
       "TX_MISMATCH",
       409,
@@ -1298,7 +1469,7 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
           lower(tx.to) === lower(d.transaction.to) &&
           tx.data === d.transaction.data &&
           String(tx.value) === d.valueWei &&
-          Number(tx.chainId) === 1337,
+          Number(tx.chainId) === d.chainId,
         "Submitted transaction differs from the reviewed transaction",
         "TX_MISMATCH",
         409,
@@ -1471,6 +1642,12 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
   }
   async function advance(seconds) {
     requireThat(
+      !external,
+      "Public testnet time cannot be advanced",
+      "TESTNET_TIME",
+      403,
+    );
+    requireThat(
       Number.isInteger(seconds) && seconds > 0 && seconds <= 30 * DAY,
       "Advance 1 second to 30 days",
     );
@@ -1479,6 +1656,12 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     return { now: (await chain.provider.getBlock("latest")).timestamp };
   }
   async function mockRuling(eventId, s, wallet, ruling) {
+    requireThat(
+      !external,
+      "Testnet rulings require a reviewed wallet transaction",
+      "WALLET_REQUIRED",
+      403,
+    );
     await owner(eventId, s);
     requireThat([0, 1, 2].includes(ruling), "Invalid ruling");
     const c = await contract(eventId).challenges(wallet);
@@ -1497,6 +1680,12 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     };
   }
   async function mockAppeal(eventId, s, wallet, ruling, duration = 3600) {
+    requireThat(
+      !external,
+      "Testnet arbitration requires a reviewed wallet transaction",
+      "WALLET_REQUIRED",
+      403,
+    );
     await owner(eventId, s);
     requireThat(
       [0, 1, 2].includes(ruling) &&
@@ -1567,11 +1756,40 @@ export async function createWorkbench({ rpcPort = 0 } = {}) {
     mockRuling,
     mockAppeal,
     publish,
-    close: chain.close,
+    close: async () => {
+      store?.save(events, drafts);
+      await chain.close();
+    },
+    persist: () => store?.save(events, drafts),
   };
   w.importCsv = (eventId, s, input) => importCsv(w, eventId, s, input);
   const previews = createImportPreviewService(w);
   w.previewImport = previews.preview;
   w.commitImport = previews.commit;
+  if (store)
+    for (const name of [
+      "registerParticipant",
+      "admit",
+      "linkDeposit",
+      "checkin",
+      "personal",
+      "createDraft",
+      "executeDraft",
+      "confirmDraft",
+      "recordSubmitted",
+      "reconcileSubmission",
+      "publish",
+      "importCsv",
+      "commitImport",
+    ]) {
+      const original = w[name];
+      w[name] = async (...args) => {
+        try {
+          return await original(...args);
+        } finally {
+          store.save(events, drafts);
+        }
+      };
+    }
   return w;
 }

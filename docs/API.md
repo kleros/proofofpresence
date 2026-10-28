@@ -1,4 +1,22 @@
-# Local workbench API
+# Workbench API
+
+The explicit v8 extension supports `CONTRACT_VERSION=kleros-event-v8` for a synthetic demo, or
+`MODE=testnet|hosted-testnet` for the reviewed Chiado manifest. Historical v7 remains the default.
+See [TESTNET_REHEARSAL](TESTNET_REHEARSAL.md) for deployment and clock boundaries.
+
+For v8, event summaries declare `contractVersion` and participant details expose authoritative
+`pendingCreditWei`; snapshots additionally expose `pendingTotalWei`, `pendingCredits` by lowercase
+wallet, lifetime admission count and remaining slots. `withdrawPending` drafts accept `{to,amountWei}`
+and recover only the signer's unused credit. Credit withdrawals are separate log-backed payments.
+Returned/recovered receipt evidence cannot be reused for admission. Aggregate credit consumed into
+an admitted principal stays valid when its remaining unused excess is recovered.
+
+Testnet bootstrap has chain10200, Chiado/XDAI metadata, no synthetic identities and a controlled-
+arbitrator notice. Nonce signatures bind that actual chain and origin. Wallets sign externally;
+the server has no unlocked accounts or signing keys. Demo session/faucet/time/ruling endpoints are
+forbidden, `/rpc` is read-only, and v7 compatibility pages return `WRONG_VERSION`. Registrations,
+drafts, imports and transaction recovery records use a private manifest-bound state file. Hosted
+testnet uses Secure cookies, the existing fixed-destination gateway and one persistent volume.
 
 All application mutations require same-origin JSON and a session cookie. The default server supports
 the loopback local demo; explicit `hosted-demo` adds the protected HTTPS deployment described below.

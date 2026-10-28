@@ -19,6 +19,8 @@ const items = [
   "src",
   "public",
   "scripts/build.mjs",
+  "scripts/compile-contracts.mjs",
+  "contracts",
   "references/kickback/scripts",
   "references/kickback/contracts",
   "references/kickback/abi",
@@ -26,6 +28,15 @@ const items = [
   "references/kickback/console/index.html",
   "references/kickback/docs/metaevidence.event-v1.template.json",
 ];
+const registryFile = "registry/chiado-v8-controlled.json";
+if (
+  execFileSync(
+    "git",
+    ["ls-tree", "--name-only", sourceCommit, "--", registryFile],
+    { cwd: root, encoding: "utf8" },
+  ).trim()
+)
+  items.push(registryFile);
 const tracked = execFileSync(
   "git",
   [
@@ -47,6 +58,8 @@ const archive = execFileSync(
   { cwd: root, maxBuffer: 20_000_000 },
 );
 execFileSync("tar", ["-x", "-C", destination], { input: archive });
+// Docker COPY requires the directory even before a public testnet manifest exists.
+await fs.mkdir(path.join(destination, "registry"), { recursive: true });
 console.log(
   `Prepared whitelisted backend context from ${sourceCommit}: ${destination}`,
 );

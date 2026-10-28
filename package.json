@@ -8,7 +8,10 @@
   },
   "scripts": {
     "compile": "node references/kickback/scripts/compile.mjs",
-    "build": "npm run compile && node scripts/build.mjs",
+    "compile:v8": "node scripts/compile-contracts.mjs",
+    "stress:contracts": "npm run compile && npm run compile:v8 && node scripts/stress-contracts.mjs",
+    "test:contracts:v8": "npm run compile && npm run compile:v8 && node --test --test-concurrency=1 test/event-v8.test.mjs test/event-factory.test.mjs test/event-v8-arbitration.test.mjs",
+    "build": "npm run compile && npm run compile:v8 && node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "demo": "node src/server.mjs",
     "build:netlify": "npm run build && node scripts/build-netlify-preview.mjs",
@@ -16,13 +19,19 @@
     "test:netlify": "node test/netlify-preview.e2e.mjs",
     "test:hosted": "node test/hosted-integration.e2e.mjs",
     "test:hosted:live": "node test/hosted-live.e2e.mjs",
-    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test": "npm run compile:v8 && node --test --test-concurrency=1 test/*.test.mjs",
     "test:contracts": "npm --prefix references/kickback test",
     "test:browser": "node test/app.e2e.mjs",
-    "verify": "npm run build && npm run typecheck && npm test && npm run test:browser && npm run test:ui && npm run test:ui:safety && npm run test:ui:context && npm run test:hosted",
+    "verify": "npm run build && npm run typecheck && npm test && npm run test:browser && npm run test:ui && npm run test:ui:safety && npm run test:ui:context && npm run test:hosted && npm run test:ui:simple",
     "test:ui": "node test/ui-redesign.e2e.mjs",
     "test:ui:safety": "node test/ui-safety.e2e.mjs",
-    "test:ui:context": "node test/ui-context.e2e.mjs"
+    "test:ui:context": "node test/ui-context.e2e.mjs",
+    "demo:v8": "CONTRACT_VERSION=kleros-event-v8 node src/server.mjs",
+    "demo:testnet": "MODE=testnet node src/server.mjs",
+    "test:ui:simple": "node test/simple-ui.e2e.mjs",
+    "testnet:prepare": "node scripts/testnet-deploy.mjs --prepare",
+    "testnet:deploy": "node scripts/testnet-deploy.mjs --deploy",
+    "testnet:rehearse": "node scripts/testnet-rehearsal.mjs"
   },
   "dependencies": {
     "csv-parse": "5.6.0",
@@ -34,6 +43,7 @@
     "@playwright/test": "1.58.2",
     "@types/node": "22.15.30",
     "prettier": "3.6.2",
+    "solc-hardened": "npm:solc@0.8.38",
     "typescript": "5.9.2"
   }
 }

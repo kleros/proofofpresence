@@ -1,5 +1,140 @@
 # Verification report
 
+## Simplified v8 application and testnet integration — latest phase
+
+Build/typecheck passed. The full Node run executed164 tests (163 passed, one hosted capabilities
+shape assertion failed). The capability response was restored to its compatibility shape; the
+focused hosted/runtime/tooling rerun passed19/19, including three new real-HTTPS external-chain
+runtime tests. A later fee-oracle spike guard passed10/10 tooling tests. Logs:
+`artifacts/simple-v8-full-verification.log`, `artifacts/simple-v8-targeted-verification.log` and
+`artifacts/testnet-config-tests.log`. No financial contract source changed during these fixes.
+
+The combined browser run passed39 lifecycle,49 redesign,16 signing safety,4 session/context,35 hosted
+HTTPS,13 simplified v7 and18 simplified v8 checks: **174** plus Playwright expectations. A new v8 app
+integration test also passed actual credit recovery, returned receipt rejection, payer credits combined
+into admission, excess withdrawal preserving principal, trusted check-in, matched challenge, ordinary
+payouts with one reserved share, late winning settlement/full kickbacks and independent Event B.
+A presentation fixture is not public execution evidence. Public receipt/hosting records are maintained
+separately in the Chiado registry and release/deployment artifacts after their actual checks.
+
+
+## v8 stress campaign — 28 October 2026
+
+The final `npm run stress:contracts` run **passed all four campaigns** in 222.97 seconds after
+compilation. [Detailed report](CONTRACT_STRESS_TEST.md) and [machine summary](../artifacts/v8-stress-verification.json)
+record seeds, workload, limitations, source/artifact hashes and evidence paths. The final run is
+`2026-10-28T15-42-17-430Z-b75884be`; raw logs/metrics are retained under its ignored
+`artifacts/stress/` directory. Source and used artifact fingerprints remained unchanged before/after.
+Both production v8 contract hashes still match the earlier reviewed candidate; historical v7 is unchanged.
+
+| Fresh command/check | Actual result |
+|---|---|
+| `npm run stress:contracts` | All four campaigns passed; 6,951 counted transactions in ledger/settlement/capacity, plus hostile-campaign activity. |
+| Credit/admission model | 32 seeds, 2,048 generated/2,998 total actions, 2,241 mined transactions, 3,030 model snapshots, 55,098 assertions. |
+| Settlement model | 64 scenarios, 32 paired seeds, 2,216 transactions, 71,479 assertions; exact custody/log/recipient reconciliation. |
+| Capacity/factory | 2,494 transactions; 512 readmissions, 150 lifetime admissions, 149 simultaneous matched disputes, 32 factory events. |
+| Hostile callbacks/fee changes | 187/187 callbacks blocked over 170 vectors; 35 mined atomic low-gas reverts and 11 complete payouts; 21 fee scenarios. |
+| `npm run build` / `npm run typecheck` | Passed; pinned v7 equality and the separate v8 build retained. |
+| `npm run test:contracts:v8` | **23/23 passed**, 28.59 seconds. |
+| Deliberate invalid `V8_STRESS_SUITES` | Expected exit 1; failed preflight manifest/latest pointer recorded instead of stale success. |
+
+No new contract defect was confirmed or contract source fix made. The documented direct batch with
+149 expired unmatched gas-burning recipients exceeded 16,777,216 gas and reverted atomically.
+149 individual permissionless resolutions (maximum 200,104 gas each), then a 10,911,405-gas payout,
+completed while preserving pending/owed/reserved accounting. Worst hostile cancellation after
+readmissions used 12,624,024 gas; worst late-case settlement 9,826,902; maximum valid factory payload
+8,057,990. These successful paths retain a tested 30% allowance within the cap.
+
+Independent review strengthened the test harness to count every callback (including two payments
+in one settlement), require actual mined failure receipts, distinguish recipient/returndata cases,
+and fingerprint artifacts as well as sources. The final combined run used those corrections.
+Earlier exploratory/superseded runs are excluded from the reported final workload.
+
+All chains/accounts were synthetic and in-process. Court adjudication was mocked. Synthetic
+recipient-code replacement and balance injection are explicit fixtures. No mainnet fork, real Court
+case, live transaction, external deployment, formal proof or professional audit occurred. Browser and
+full root suites were not rerun in this test-only round; prior results below are historical evidence.
+Fresh logs are `artifacts/v8-stress-final-run.log`, `v8-stress-build.log`, `v8-stress-typecheck.log`
+and `v8-stress-regression.log`; raw per-suite logs are in the final run directory.
+
+## New v8 factory and hardened event contracts — 28 October 2026
+
+After the user confirmed the hardened option, separate [factory/event contracts](EVENT_FACTORY_V8.md)
+were implemented. These results execute v8 custody and factory deployment locally; Court/resolver
+adjudication uses explicit mocks. Existing UI/registry events continue using historical v7.
+
+| Command actually executed | Actual result |
+|---|---|
+| `npm run build` | Passed; original v7 compilation and pinned equality retained. |
+| `npm run typecheck` | Passed, including the explicit v8 helper module. |
+| `node scripts/compile-contracts.mjs` / `npm run compile:v8` | Passed with isolated solc 0.8.38, optimizer 200, Paris; child/factory size checks passed. |
+| `node --test test/event-v8.test.mjs` | **14/14 passed**, 25.1 seconds. |
+| `node --test test/event-factory.test.mjs` | **5/5 passed** on final source. |
+| `node --test test/event-v8-arbitration.test.mjs` | **4/4 passed**, 2.61 seconds. |
+| `npm test` after adding v8 | **149/149 passed**, 452.8 seconds, including the 23 new v8/factory cases and five v7 characterizations. |
+| `npm run test:browser` | **39 assertions passed**, plus UI interaction checks, after new contracts/dependencies were added. |
+
+The focused suites total 23 tests. Child tests cover per-wallet reserves, phantom admission refusal,
+pending withdrawals in every relevant phase, atomic credit consumption, refunds/readmission,
+deadlines, invalid arbitrator, callback reentrancy, finality protection, evidence snapshots, four
+seeded held-share outcomes/orders, and maximum capacity/metadata. Factory tests execute two event
+deployments with different owners/terms, a common participant and independent settlement while one
+has an open case. They also verify caller ownership, domain-separated keys, copied-key isolation,
+constructor-failure rollback, configuration hashes and exact immutable child code. Arbitration tests
+verify delivery/finality, both-funded and one-sided appeals, direct contributor rewards/refunds,
+ruling-0 odd-wei splitting with pending reserves, cancellation and failed-payment claim reentrancy.
+
+Measured gas: 150 failing-recipient payout **12,611,013**; 149 recipients plus open case
+**12,576,884**; lost-case redistribution **9,188,135**; maximum 32-slot/12,288-byte encoded template
+match **1,725,263**. Each retains a 30% allowance below 16,777,216. Recipient-failure tests explicitly
+use synthetic account-code replacement after each payer funds its own credit, with snapshot/code
+cleanup. The 150 bound is unique lifetime admissions, including refunded admissions; readmissions
+never grow history. Expired unmatched challenges can be settled individually before large batches.
+
+The v8 runtime/creation sizes are 21,206/24,258 bytes; factory runtime/creation 2,803/27,944 bytes.
+Generated artifacts, settings and hashes are in `build/contracts/`. The production workbench build
+retains its v7-only compiler path; the new compiler alias is a separate development dependency.
+Logs: `artifacts/event-factory-build.log`, `event-factory-typecheck.log`, `event-v8-tests.log`,
+`event-factory-tests.log`, `event-v8-arbitration-tests.log`, `event-factory-root-tests.log`,
+`event-factory-browser.log`. The final template-helper check additionally compares the on-chain CID
+with an independent JavaScript UnixFS calculation. [Verification summary](../artifacts/event-factory-verification.json)
+records source hashes and actual results.
+
+No new external deployment, mainnet transaction, live Court interaction, policy publication or
+upstream push occurred. No mainnet fork, formal equivalence proof or professional audit is claimed.
+Permissionless creation does not vet the event creator's attendance list, policy or arbitration provider.
+
+## Smart contract security review — 28 October 2026
+
+The bounded [security review](SMART_CONTRACT_SECURITY_REVIEW.md) preserves historical v7 and adds
+[five characterization tests](../test/contract-security.test.mjs). They deliberately reproduce
+unfixed trust/recovery/capacity limits; their passing result is not a remediation claim.
+
+| Command executed during this review | Actual result |
+|---|---|
+| `npm run build` | Passed; pinned historical ABI/creation bytecode equality retained. |
+| `npm run typecheck` | Passed. |
+| `node --test test/contract-security.test.mjs` | **5/5 passed**, 8.35 seconds; in-process synthetic Ganache. |
+| `npm run test:contracts` | **54/54 passed**, 324.5 seconds: 36 contract scenarios, 11 CLI integrations, 7 provenance checks. |
+| `npm test` before v8 was added | **126/126 passed**, 418.1 seconds, including five v7 characterization tests. |
+| `npm run test:browser` | **39 assertions passed**, plus UI wait/interaction checks. |
+
+Logs: `artifacts/contract-security-build.log`, `contract-security-typecheck.log`,
+`contract-security-probes.log`, `contract-security-baseline.log`, `contract-security-browser.log`.
+[Compatibility evidence](../artifacts/contract-security-compatibility.json) also confirms source
+equality with saved deployment input and recompilation of that input to the pinned creation bytecode.
+The capacity fixture's 240 gas-consuming attendees require 20,123,447 gas; it first verifies atomic
+failure at 16,777,216, then measures the successful oversized call on local Shanghai Ganache only.
+
+The first retained-suite attempt failed because the sandbox disallowed loopback binding; its
+`contract-security-baseline-sandbox-failed.log` is retained. The approved localhost-only retry passed.
+Ganache used native-module JavaScript fallbacks and emitted a listener warning; no test failed on
+the successful run. No current mainnet fork, live deployment/state inspection, formal proof or
+fuzz campaign was performed. These earlier results cover v7; the subsequent approved v8 implementation
+and its separate verification are recorded above.
+
+## Earlier integrated verification
+
 Verified locally on 28 October 2026 at integrated source commit
 `52b66cc5687936cbdbb2eed3578105bb5b215d2d`, branch `codex/core-application`.
 The delivered UI source was `923f517fccdd0bddefbd9acaf5454309ee6c9ecf`; its compatible changes were

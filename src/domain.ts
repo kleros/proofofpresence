@@ -1,5 +1,5 @@
 /** Stable IDs are independent of display slugs and off-chain content status. */
-export type DeploymentVersion = "truth-pays-v7";
+export type DeploymentVersion = "truth-pays-v7" | "kleros-event-v8";
 export interface Deployment {
   eventId: string;
   chainId: number;
@@ -19,6 +19,18 @@ export interface Deployment {
   templateHash: string;
   codeHash: string;
   sourceCommit: string;
+  /** v8 factory provenance; absent for the immutable historical v7 deployment. */
+  deploymentTxHash?: string;
+  eventName?: string;
+  creator?: string;
+  factory?: string;
+  factoryCodeHash?: string;
+  factoryEventId?: string;
+  eventKey?: string;
+  configurationHash?: string;
+  creationCodeHash?: string;
+  arbitratorExtraData?: string;
+  compiler?: string;
 }
 export interface EventDefinition {
   id: string;

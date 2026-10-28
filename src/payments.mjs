@@ -68,6 +68,7 @@ export async function projectPayments(
     "EmergencyWithdrawn",
     "Refunded",
     "Swept",
+    "PendingWithdrawn",
   ]);
   for (const { log, event } of ordered) {
     if (!paymentNames.has(event.name) || receipts.has(log.transactionHash))
@@ -120,6 +121,7 @@ export async function projectPayments(
     failedPaymentsWei: 0n,
     claimedWei: 0n,
     unclassifiedPayoutWei: 0n,
+    pendingCreditWithdrawnWei: 0n,
   };
   /** @type {Map<string, boolean>} */
   const registered = new Map();
@@ -212,6 +214,12 @@ export async function projectPayments(
       totals.principalRefundedWei += amount;
       totals.registeredPrincipalRefundedWei += amount;
       registered.set(lower(wallet), false);
+    } else if (event.name === "PendingWithdrawn") {
+      type = "pending-credit-withdrawal";
+      wallet = a.payer;
+      recipient = a.to;
+      amount = a.amount;
+      totals.pendingCreditWithdrawnWei += amount;
     } else if (event.name === "Refunded") {
       type = "spare-refund";
       wallet = recipient = a.to;
@@ -273,10 +281,10 @@ export async function projectPayments(
         totals.spareRefundedWei +
         totals.spareSweptWei +
         totals.claimedWei +
+        totals.pendingCreditWithdrawnWei +
         totals.unclassifiedPayoutWei,
     ),
-    scope:
-      "Successful v7 log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+    scope: `Successful ${d.contractVersion} log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.`,
     completeNativeTransferHistory: false,
     transfers,
   };

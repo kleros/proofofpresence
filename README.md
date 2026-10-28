@@ -13,6 +13,22 @@ The deployed source is `371b4c80b0c65ce7b7f571ca41d9f85c8720660b` on `codex/core
 All **370 live acceptance checks** passed. [HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) records
 source/deployment IDs, checks and operating limits.
 
+The new [v8 event factory](docs/EVENT_FACTORY_V8.md) creates isolated event contracts with payer-bound
+credits, independent recovery and bounded admission. It is a locally tested deployment candidate;
+the existing workbench and historical deployments continue to use v7. See the
+[contract security review](docs/SMART_CONTRACT_SECURITY_REVIEW.md) for findings and remaining trust boundaries.
+
+## Simpler v8 workflow and Chiado rehearsal
+
+The new release adds one clear next action, a four-step participant journey and expandable technical
+facts. Exact transaction review and financial isolation remain authoritative. Run `npm run demo:v8`
+to use actual factory-created v8 contracts locally; the historical v7 default stays available.
+
+The controlled Chiado rehearsal uses chain10200 and testXDAI, signed wallets and a separate trusted
+registry. It has no identity impersonation or time controls. Public deployments and staged commands
+are in [TESTNET_REHEARSAL](docs/TESTNET_REHEARSAL.md); the latest source/checkpoint and current cloud
+status are in [V8_APP_RELEASE](docs/V8_APP_RELEASE.md). Real public challenge windows last one day.
+
 ## Run
 
 Requires Node **22.15 or later**, npm, and a browser. Verified here on Node 25.8.1 / npm 11.11.0 /
@@ -48,6 +64,8 @@ Live acceptance checks made actual synthetic deposits and verified sessions, iso
 npx playwright install chromium
 npm run verify           # build, types, Node integration, lifecycle/UI/safety/context browser checks
 npm run test:contracts   # unchanged-v7 accounting + enhanced script/provenance checks (~5 min)
+npm run test:contracts:v8 # new factory, payer-credit, gas and arbitration regressions
+npm run stress:contracts # seeded v8/factory stress; saves isolated per-run evidence
 npm --prefix references/kickback run test:site
 npm --prefix references/kickback run test:console
 ```
@@ -73,6 +91,7 @@ results and limitations in [TEST_REPORT](docs/TEST_REPORT.md), not historical RE
 | `src/workbench.mjs`, `src/imports.mjs` | Event roles, linked wallet identities, receipts/returns, reviewed CSVs, drafts and actions |
 | `src/server.mjs`, `public/` | Local authenticated HTTP API and responsive participant/organizer interface |
 | `references/kickback/` | Retained v7 Solidity, guest/owner tools, improved scripts, pinned ABI, tests and deployment history |
+| `contracts/`, `src/contracts-v8.mjs` | New isolated v8 event/factory contracts and explicit future-deployment adapter; separate compiler/artifacts |
 | `references/events/` | Retained Next/Supabase content, recordings, private materials, Q&A and public Luma metadata sync |
 | `references/booth/` | Retained separate booth marketing/merch source; **never launched with its live config by this demo** |
 

@@ -4,6 +4,39 @@ This root document is the **single canonical project brain**. The original suppl
 below as historical source material; this section and linked current docs supersede its implementation
 recommendations and unexecuted-test statements.
 
+## Latest requested phase: simpler v8 app and controlled Chiado testnet
+
+The user requested a simpler UX, integration of the new contract and a testnet rehearsal from deposit
+through dispute and kickback. They selected controlled arbitration first, real Kleros Court afterward,
+and funded disposable Chiado wallet `0xf37E491e7117fC1C3351B1548839f727F05f853B` with0.0002testXDAI.
+Only chain10200 and synthetic data are in scope. The original v7/mainnet artifacts remain unchanged.
+
+Implemented: one next action/four-step journey, progressive technical disclosure, explicit v7/v8
+factory version dispatch, payer-owned credit/recovery with canonical receipt replay, wallet-only
+Chiado mode, external signature/chain/origin guards and private manifest-bound persistence.
+See [V8_APP_RELEASE](docs/V8_APP_RELEASE.md), [SIMPLE_UX](docs/SIMPLE_UX.md), updated [API](docs/API.md)
+and [TESTNET_REHEARSAL](docs/TESTNET_REHEARSAL.md). The root owner integrated the existing v8 candidate
+and its local stress evidence; the deployment context excludes signing files and legacy live configs.
+
+Actual local checks: build/typecheck;164-test Node run found one capability-shape regression, fixed
+and verified with19 hosted/runtime/tooling tests; bounded fee helper then passed10 focused checks.
+Browser suites passed174 checks plus expectations across v7/v8, HTTPS, signing and context. The v8
+application test executes deposit, credit recovery/readmission evidence, combined-credit registration,
+attendance, matched dispute, ordinary payouts with one held share and final kickbacks with B unchanged.
+
+Public factory/mocks/two children are deployed and verified in `registry/chiado-v8-controlled.json`.
+The policy was published exactly from source `de749dda8836d44e4c788db6a0170a022e30458a`.
+The isolated durable Railway backend and simplified Netlify frontend are being integrated at this
+checkpoint; final cloud health/live acceptance will be recorded after verification. Deposits must be
+made before28October2026 23:21:25Asia/Bangkok. Public challenge/payout timing remains unchanged: one
+full day after attendance before ordinary kickbacks, with separate held-share settlement.
+
+Remaining: finish hosted testnet activation/live acceptance, advance only currently eligible rehearsal
+stages, then resume payouts/settlement when the real chain deadline passes. No automatic rebroadcast,
+state reset, deadline change, mainnet transaction, real guest write or upstream push is authorized.
+Real Court requires a separate precise deployed resolver ABI/provider review before a new event.
+The prior online-demo sections below are historical v7 deployment records.
+
 ## Active workspace and decision
 
 - Workspace: `/Users/hashmanansala/Documents/ChatGPT/Kleros projects`; root Git began as unborn `main`.
@@ -125,6 +158,71 @@ systems, mainnet contracts, upstream Git or billing upgrades were changed.
 `artifacts/hosted-live-verification.json` and `artifacts/hosted-readiness.json` record the final evidence.
 The earlier read-only deployment `6ae2003e06e5123259e8297c` remains an immutable rollback artifact;
 its historical record is [NETLIFY_DEPLOYMENT](docs/NETLIFY_DEPLOYMENT.md).
+
+## Smart contract review and requested factory
+
+On 28 October 2026, the user requested a smart-contract security review and then a factory for
+multiple events. The v7 source is accessible and remains unchanged; a separate v8 candidate is now
+implemented locally. No new contract was deployed externally. See
+[SMART_CONTRACT_SECURITY_REVIEW](docs/SMART_CONTRACT_SECURITY_REVIEW.md) for reproduced findings:
+240 admitted gas-consuming recipients require 20,123,447 gas and cannot release payouts at the
+16,777,216 transaction cap; unregistered deposits lack autonomous recovery (including deposits
+accepted after the no-list deadline); owner-controlled aggregate admission/refunds remain a
+high-impact trust assumption; ownership transfer leaves the original evidence identity immutable.
+The historical compiler also needs the advisory/equivalence follow-up described in that review.
+
+Five new local characterization tests reproduce those limitations; passing them does **not** mean
+they were fixed. Build/typecheck, 54 retained contract/CLI/provenance tests, 126 initial root tests
+and 39 browser assertions passed in this review. Exact commands and new final-suite evidence are in TEST_REPORT.
+Historical Solidity/policy/template/ABI/deployment inputs still match. No live state was queried.
+
+The user explicitly confirmed the new hardened-child option in the [factory plan](docs/EVENT_FACTORY_PLAN.md).
+[KlerosEventFactoryV8 and KlerosEventV8](docs/EVENT_FACTORY_V8.md) now implement separate per-event
+owners/pools/policies/disputes with IDs scoped to chain, factory, creator and stable event key. The
+factory holds no participant deposits and has no administrator, upgrades or withdrawal authority.
+v8 reserves per-payer pending credits with independent recovery, consumes only a wallet's own credit
+on admission, closes deposits at eventStart, bounds unique lifetime admissions to 150 with no
+duplicate history, bounds metadata, preserves final rulings against correction and snapshots each
+case's organizer when the challenge opens. Held-share payouts and ruling-0 economics are preserved.
+The new compiler is an isolated exact 0.8.38 alias; historical 0.8.28/artifacts remain unchanged.
+
+Focused verification passed 14 child, 5 factory and 4 arbitration tests, including maximum-recipient
+and metadata gas margins. Final build/typecheck, 149 root tests and 39 browser assertions passed;
+[verification evidence](artifacts/event-factory-verification.json) records hashes and actual results.
+The workbench UI/registry still explicitly use v7; the new standalone v8
+adapter is for future deployments, with a new unpublished policy template. Curated attendance and
+creator-selected arbitration/policy remain trust assumptions. No mainnet fork or professional audit
+is claimed. Historical v7 findings are not patched by deploying a factory. No production or upstream
+action for these new contracts is authorized.
+
+## v8 stress campaign
+
+At the user's request, the new v8 event/factory contracts were stress-tested on synthetic in-process
+chains. [CONTRACT_STRESS_TEST](docs/CONTRACT_STRESS_TEST.md) and
+[verification evidence](artifacts/v8-stress-verification.json) record the final default run
+`2026-10-28T15-42-17-430Z-b75884be`: all four campaigns passed in 222.97 seconds after compilation,
+with source and artifact hashes unchanged. Both v8 contract hashes still equal the reviewed candidate;
+historical v7 remains unchanged. No new contract defect or financial source change resulted.
+
+Workload: 32 ledger seeds/2,998 total actions, 64 settlement scenarios/32 paired seeds, 512 readmissions,
+149 simultaneous matched cases, 32 factory events, 187 blocked callbacks across 170 vectors and
+21 fee-variation cases. Ledger/settlement/capacity recorded 6,951 mined transactions; hostile activity
+is additional. The models counted 126,577 ledger/settlement assertions. Fresh build/typecheck and
+23/23 v8 contract regressions also passed. The full root/browser suites were not rerun in this
+test-only round; their earlier results remain in TEST_REPORT.
+
+Known operating limit reproduced: a direct max-size payout combining 149 expired unmatched
+challenge refunds with hostile recipients exceeds the gas cap and reverts atomically. Anyone can
+resolve each expired challenge individually (measured max 200,104 gas), then release payouts
+(10,911,405 gas). This recovery was executed, with exact pending/owed/held accounting. Cancellation
+after 512 readmissions used 12,624,024 gas; worst case settlement 9,826,902; max factory payload
+8,057,990. Successful large paths retain the tested 30% gas allowance after preprocessing.
+
+`npm run stress:contracts` reproduces all campaigns and saves isolated raw evidence under ignored
+`artifacts/stress/<run-id>/`. The runner fingerprints sources/artifacts before/after and fails closed
+on stale builds or failed suites. No real Court/mainnet interaction, production deployment, formal
+proof or professional independent audit occurred. Human attendance, policy and arbitration trust
+assumptions remain. Real-fund use still requires independent review and final deployment-input checks.
 
 ## Navigation
 

@@ -2,7 +2,11 @@
 
 ## Local start and identity
 
-Use the root README commands. The only supported server mode is `local-demo`, binding `127.0.0.1`.
+Use the root README commands. Default `local-demo` binds `127.0.0.1`; explicit `hosted-demo` supports
+the shared synthetic sandbox. v8 is selected by `CONTRACT_VERSION=kleros-event-v8`. The separate
+wallet-only `testnet`/`hosted-testnet` modes load a verified Chiado manifest and private persistent
+state; [TESTNET_REHEARSAL](TESTNET_REHEARSAL.md) describes their staged operation. Testnet has no
+identity impersonation, unlocked signing, faucet, clock advancement or backend mock-ruling controls.
 `PORT` defaults to 3000, `RPC_PORT` to 18545; tests allocate independent ports and runtime namespaces.
 Choose an organizer or door identity explicitly. A content editor, attendee or Event A staff member
 does not acquire Event B ownership. Current contract owner and pending owner are read from chain;

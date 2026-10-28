@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "environment": "testnet",
+  "planId": "9fe71683-1e9b-48a0-94bd-274da4cf3029",
+  "planFingerprint": "6c711f445bcc04ece6cd1d3508551f73395c59e2a99e3fd684bbe49f456f6c5d",
+  "chain": {
+    "chainId": 10200,
+    "name": "Chiado",
+    "rpcUrl": "https://rpc.chiadochain.net",
+    "explorer": "https://gnosis-chiado.blockscout.com",
+    "nativeCurrency": {
+      "name": "Chiado xDAI",
+      "symbol": "XDAI",
+      "decimals": 18
+    },
+    "faucet": "https://faucet.gnosischain.com/?chain=chiado"
+  },
+  "publicOrigin": "https://kleros-event-workbench-preview.netlify.app",
+  "createdAt": "2026-10-28T16:16:07.621Z",
+  "arbitration": {
+    "mode": "controlled",
+    "resolver": "0x45DE965E607F16FC9b8f8a912dfAc6a98411B9eb",
+    "arbitrator": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+    "notice": "Public testnet transactions with a deliberately controllable test arbitrator. Anyone may use mock ruling/fee hooks. This is not Kleros jury arbitration."
+  },
+  "factory": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+  "factoryCodeHash": "0x6f0477c136eea26f0c0de3a1ee81b7fafc089fb904a39808834eb46224e11554",
+  "policy": {
+    "uri": "https://kleros-event-workbench-preview.netlify.app/policies/v8-testnet.md",
+    "sha256": "e9e36be8e8bb1741bda4413820d0c4691cc31df0767d41ca269200424b5ea542"
+  },
+  "provenance": {
+    "v8Compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+    "v7MockCompiler": "0.8.28+commit.7893614a.Emscripten.clang",
+    "sources": {
+      "contracts/KlerosEventV8.sol": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769",
+      "contracts/KlerosEventFactoryV8.sol": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505",
+      "references/kickback/test/MockKleros.sol": "beae9a66702d986159e2d06f0d5dfe4cd18df95906a56f7a2e1117c808884136"
+    },
+    "creationCodeHashes": {
+      "KlerosEventV8": "0xd134f9fe0a23e6ea15c04d43c1b3603419486729bb148e3c7a182002a2e81714",
+      "KlerosEventFactoryV8": "0x2d6a01f0c2638745cfb4c9ab64c56463a944f242a6a92f5602612a55b3e9bc76",
+      "MockKlerosLiquid": "0xcd44ded079384e526257177ded33e2dd78ead605dd118b56a6f449e5d883adf7",
+      "MockArbitrableProxy": "0xeebf0efd791c1c659aca493517d0cace0e3c8eae6051dbf388ce60a6afdd54c0"
+    }
+  },
+  "rehearsalAddresses": {
+    "ownerA": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+    "ownerB": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+    "alice": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+    "bob": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+    "carol": "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+  },
+  "events": [
+    {
+      "definition": {
+        "id": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+        "slug": "chiado-rehearsal-9fe71683-a",
+        "title": "Chiado rehearsal A",
+        "description": "Synthetic public testnet rehearsal with a deliberately controlled arbitrator.",
+        "startsAt": "2026-10-28T16:21:25.000Z",
+        "endsAt": "2026-10-28T17:21:25.000Z",
+        "timezone": "UTC",
+        "location": "Synthetic testnet venue",
+        "visibility": "public",
+        "editorialStatus": "published",
+        "registrationStatus": "open",
+        "organizers": [
+          "0xf37E491e7117fC1C3351B1548839f727F05f853B"
+        ],
+        "staff": []
+      },
+      "deployment": {
+        "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+        "chainId": 10200,
+        "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+        "deploymentBlock": 23733165,
+        "deploymentTxHash": "0x8da2d93e298a11242d1128dbebd5aa64a234d5d71f08603b4a00ecf95e8a857e",
+        "contractVersion": "kleros-event-v8",
+        "abiVersion": "kleros-event-v8",
+        "depositWei": "1000000000000",
+        "eventName": "Chiado rehearsal A",
+        "eventStart": 1793204485,
+        "claimDeadline": 1793809285,
+        "depositOpensAt": 1793203910,
+        "depositDeadline": 1793204485,
+        "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+        "creator": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+        "resolver": "0x45DE965E607F16FC9b8f8a912dfAc6a98411B9eb",
+        "arbitrator": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+        "arbitratorExtraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+        "policyURI": "https://kleros-event-workbench-preview.netlify.app/policies/v8-testnet.md",
+        "templateHash": "b65a20748c1ccb17d0ef7e7be3e8715406f4fb2ffbc79a6cf9bc148db6f60ab7",
+        "codeHash": "0xe1691302dab174118e9cc021eca7f7cbdca63ce46ccd3492419a5a2232811b2a",
+        "factory": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+        "factoryCodeHash": "0x6f0477c136eea26f0c0de3a1ee81b7fafc089fb904a39808834eb46224e11554",
+        "factoryEventId": "0x7622c21fd32b678a234551ff41dd92c8a8bc35189255364d17a8a6bc702f3850",
+        "eventKey": "0xf08ef19c9904120361f6d55540e7ffbbbf9af029956ee0c95a7c4b2b168c17cd",
+        "configurationHash": "0xb00ec3cacab1a0ceb9f5576e5606e8e166d5551a59bbfa2ab30c689ac462d110",
+        "creationCodeHash": "0xd134f9fe0a23e6ea15c04d43c1b3603419486729bb148e3c7a182002a2e81714",
+        "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+        "sourceCommit": "v8-source-sha256:59f875a2032622a20690349ce9e3233caca87d0377654b233311b5214b798b7e"
+      },
+      "policy": "# Synthetic v8 attendance rehearsal policy\n\nThis policy is only for events explicitly deployed as a Chiado testnet rehearsal.\nAll participants and evidence must be synthetic. Native test xDAI has no monetary\nvalue. The first rehearsal uses a controlled test arbitrator, whose operator can\nchoose a ruling. It does not exercise an independent Kleros jury. Each event's\nimmutable addresses, times, deposit and metadata remain authoritative.\n\nA deposit creates unused credit owned by its actual payer. Before admission, the\npayer can recover that credit directly to a chosen recipient. Admission consumes\nexactly the event deposit from that payer and commits it to the attendance pool.\nAdditional unused credit stays reserved and withdrawable in every phase. Admission\nis curated by the event owner and is limited to 150 unique lifetime wallets.\nDeposits close strictly at the event start. A receipt alone is not admission.\n\nThe organizer records trusted attendance and posts the attendance list after the\nevent starts. An admitted depositor omitted from the list can challenge during\nthe contract's one-day challenge window. A match must meet the contract's current\ndeposit and fee requirements during its one-day matching period. Unmatched and\nmatched disputes follow the contract's distinct resolution paths. The organizer\nfor a case is fixed when the challenge opens; ownership changes cannot rewrite it.\n\nRuling 1 means the synthetic participant attended under the event's stated terms.\nRuling 2 means they did not attend or attendance was not proven. Ruling 0 means\nrefusal to arbitrate: the participant is excluded from attendance and the remaining\nchallenge collateral is split between the parties as the contract specifies.\n\nEstablished attendees can receive kickbacks while each unresolved matched case\nretains a full provisional share. Later outcomes settle held shares and redistribute\nany late top-ups using the contract's equal-share and integer-rounding rules. A\nchallenge, ruling, settlement and actual payment are separate facts. Failed transfers\nbecome owed credit recoverable with claim; they are never reported as delivered.\n\nOpen-phase rejection, cancellation and no-list emergency recovery follow the\ncontract. Independent unused-credit recovery is distinct from withdrawal of an\nalready admitted commitment. Organizers cannot sweep pending credits, committed\npools, held shares, challenge collateral or owed balances as spare money.\n\nPublic testnet time cannot be advanced by this application. The contract's one-day\nchallenge/matching windows and minimum seven-day posting deadline remain unchanged.\nUse real chain timestamps and resume a rehearsal at its recorded stage.\n",
+      "pieces": [
+        "{\"category\":\"Event attendance\",\"title\":\"Did wallet ",
+        " attend Chiado rehearsal A?\",\"description\":\"This case concerns the registered depositor ",
+        " at Chiado rehearsal A. The event contract is ",
+        ", the native XDAI deposit is 0.000001 XDAI. The authoritative organizer for THIS case is ",
+        ", recorded by caseOrganizer(wallet) when the challenge opened. Ownership rotation affects future challenges; it cannot change this case's organizer identity or description. Evidence from the named organizer is their statement. Apply the immutable attached policy.\",\"question\":\"Did the person registered with ",
+        " attend Chiado rehearsal A?\",\"rulingOptions\":{\"type\":\"single-select\",\"titles\":[\"Attended\",\"Did not attend\"],\"descriptions\":[\"Attended under the attached policy.\",\"Absent or attendance not proven under the attached policy.\"]},\"fileURI\":\"https://kleros-event-workbench-preview.netlify.app/policies/v8-testnet.md\",\"aliases\":{\"",
+        "\":\"Challenger\",\"",
+        "\":\"Challenger\",\"",
+        "\":\"Organizer for this case\",\"",
+        "\":\"Organizer for this case\"}}"
+      ],
+      "slots": "0x010102040101030405"
+    },
+    {
+      "definition": {
+        "id": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+        "slug": "chiado-rehearsal-9fe71683-b",
+        "title": "Chiado rehearsal B",
+        "description": "Synthetic public testnet rehearsal with a deliberately controlled arbitrator.",
+        "startsAt": "2026-10-28T16:21:25.000Z",
+        "endsAt": "2026-10-28T17:21:25.000Z",
+        "timezone": "UTC",
+        "location": "Synthetic testnet venue",
+        "visibility": "public",
+        "editorialStatus": "published",
+        "registrationStatus": "open",
+        "organizers": [
+          "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A"
+        ],
+        "staff": []
+      },
+      "deployment": {
+        "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+        "chainId": 10200,
+        "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+        "deploymentBlock": 23733208,
+        "deploymentTxHash": "0x7b82492ac1ff218ccea7bbbc3bf807070fcc7cd34f87d380587164da0a2d3360",
+        "contractVersion": "kleros-event-v8",
+        "abiVersion": "kleros-event-v8",
+        "depositWei": "2000000000000",
+        "eventName": "Chiado rehearsal B",
+        "eventStart": 1793204485,
+        "claimDeadline": 1793809285,
+        "depositOpensAt": 1793204155,
+        "depositDeadline": 1793204485,
+        "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+        "creator": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+        "resolver": "0x45DE965E607F16FC9b8f8a912dfAc6a98411B9eb",
+        "arbitrator": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+        "arbitratorExtraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+        "policyURI": "https://kleros-event-workbench-preview.netlify.app/policies/v8-testnet.md",
+        "templateHash": "bc719de429ad919cbbf9658c41e455512b92b622b105ae2eacc765046eff8abb",
+        "codeHash": "0xa8941f75652df910950f7eb3186b7a81bbbeb23c68f82fb40d79e28a60011395",
+        "factory": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+        "factoryCodeHash": "0x6f0477c136eea26f0c0de3a1ee81b7fafc089fb904a39808834eb46224e11554",
+        "factoryEventId": "0xcc444328ba444ad767e288bba1f2beb7eeb9529272aa34c9fbacd876db554134",
+        "eventKey": "0x27a9b5689424d1dd750f168dd35dfa7c24fa15b91b7c281d49a27cd84df10343",
+        "configurationHash": "0xd2077f7cfa879dfac7a56fe7a768f5ee44314dbf766723fc4682f391299bd660",
+        "creationCodeHash": "0xd134f9fe0a23e6ea15c04d43c1b3603419486729bb148e3c7a182002a2e81714",
+        "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+        "sourceCommit": "v8-source-sha256:59f875a2032622a20690349ce9e3233caca87d0377654b233311b5214b798b7e"
+      },
+      "policy": "# Synthetic v8 attendance rehearsal policy\n\nThis policy is only for events explicitly deployed as a Chiado testnet rehearsal.\nAll participants and evidence must be synthetic. Native test xDAI has no monetary\nvalue. The first rehearsal uses a controlled test arbitrator, whose operator can\nchoose a ruling. It does not exercise an independent Kleros jury. Each event's\nimmutable addresses, times, deposit and metadata remain authoritative.\n\nA deposit creates unused credit owned by its actual payer. Before admission, the\npayer can recover that credit directly to a chosen recipient. Admission consumes\nexactly the event deposit from that payer and commits it to the attendance pool.\nAdditional unused credit stays reserved and withdrawable in every phase. Admission\nis curated by the event owner and is limited to 150 unique lifetime wallets.\nDeposits close strictly at the event start. A receipt alone is not admission.\n\nThe organizer records trusted attendance and posts the attendance list after the\nevent starts. An admitted depositor omitted from the list can challenge during\nthe contract's one-day challenge window. A match must meet the contract's current\ndeposit and fee requirements during its one-day matching period. Unmatched and\nmatched disputes follow the contract's distinct resolution paths. The organizer\nfor a case is fixed when the challenge opens; ownership changes cannot rewrite it.\n\nRuling 1 means the synthetic participant attended under the event's stated terms.\nRuling 2 means they did not attend or attendance was not proven. Ruling 0 means\nrefusal to arbitrate: the participant is excluded from attendance and the remaining\nchallenge collateral is split between the parties as the contract specifies.\n\nEstablished attendees can receive kickbacks while each unresolved matched case\nretains a full provisional share. Later outcomes settle held shares and redistribute\nany late top-ups using the contract's equal-share and integer-rounding rules. A\nchallenge, ruling, settlement and actual payment are separate facts. Failed transfers\nbecome owed credit recoverable with claim; they are never reported as delivered.\n\nOpen-phase rejection, cancellation and no-list emergency recovery follow the\ncontract. Independent unused-credit recovery is distinct from withdrawal of an\nalready admitted commitment. Organizers cannot sweep pending credits, committed\npools, held shares, challenge collateral or owed balances as spare money.\n\nPublic testnet time cannot be advanced by this application. The contract's one-day\nchallenge/matching windows and minimum seven-day posting deadline remain unchanged.\nUse real chain timestamps and resume a rehearsal at its recorded stage.\n",
+      "pieces": [
+        "{\"category\":\"Event attendance\",\"title\":\"Did wallet ",
+        " attend Chiado rehearsal B?\",\"description\":\"This case concerns the registered depositor ",
+        " at Chiado rehearsal B. The event contract is ",
+        ", the native XDAI deposit is 0.000002 XDAI. The authoritative organizer for THIS case is ",
+        ", recorded by caseOrganizer(wallet) when the challenge opened. Ownership rotation affects future challenges; it cannot change this case's organizer identity or description. Evidence from the named organizer is their statement. Apply the immutable attached policy.\",\"question\":\"Did the person registered with ",
+        " attend Chiado rehearsal B?\",\"rulingOptions\":{\"type\":\"single-select\",\"titles\":[\"Attended\",\"Did not attend\"],\"descriptions\":[\"Attended under the attached policy.\",\"Absent or attendance not proven under the attached policy.\"]},\"fileURI\":\"https://kleros-event-workbench-preview.netlify.app/policies/v8-testnet.md\",\"aliases\":{\"",
+        "\":\"Challenger\",\"",
+        "\":\"Challenger\",\"",
+        "\":\"Organizer for this case\",\"",
+        "\":\"Organizer for this case\"}}"
+      ],
+      "slots": "0x010102040101030405"
+    }
+  ]
+}

@@ -8,6 +8,11 @@
 !public/**
 !scripts/
 !scripts/build.mjs
+!scripts/compile-contracts.mjs
+!contracts/
+!contracts/**
+!registry/
+!registry/chiado-v8-controlled.json
 !references/
 !references/kickback/
 !references/kickback/scripts/

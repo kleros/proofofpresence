@@ -54,19 +54,22 @@ const mime = {
 };
 
 /**
- * @param {{port?:number,rpcPort?:number,deployment?:{mode?:string,publicOrigin?:string,backendOrigin?:string,proxySecret?:string,runtimeRoot?:string}}} [options]
+ * @param {{port?:number,rpcPort?:number,contractVersion?:string,testnet?:any,deployment?:{mode?:string,publicOrigin?:string,backendOrigin?:string,proxySecret?:string,runtimeRoot?:string}}} [options]
  */
 export async function startServer({
   port = Number(process.env.PORT ?? 3000),
   rpcPort = Number(process.env.RPC_PORT ?? 18545),
+  contractVersion = process.env.CONTRACT_VERSION ?? "truth-pays-v7",
+  testnet = null,
   deployment = {},
 } = {}) {
   const mode = deployment.mode ?? process.env.MODE ?? "local-demo";
   requireThat(
-    ["local-demo", "hosted-demo"].includes(mode),
-    "Only isolated local-demo or explicitly configured hosted-demo is supported",
+    ["local-demo", "hosted-demo", "testnet", "hosted-testnet"].includes(mode),
+    "Choose explicit demo or Chiado testnet mode",
   );
-  const hosted = mode === "hosted-demo";
+  const hosted = mode === "hosted-demo" || mode === "hosted-testnet";
+  const external = mode === "testnet" || mode === "hosted-testnet";
   const configuredOrigin = (value, label) => {
     let parsed;
     try {
@@ -107,14 +110,31 @@ export async function startServer({
       process.env.RUNTIME_ROOT ??
       path.join(root, ".runtime"),
   );
-  const w = await createWorkbench({ rpcPort }),
+  if (external && !testnet) {
+    requireThat(
+      process.env.TESTNET_MANIFEST && process.env.TESTNET_STATE_FILE,
+      "Testnet requires explicit TESTNET_MANIFEST and durable TESTNET_STATE_FILE paths",
+    );
+    testnet = {
+      manifest: JSON.parse(
+        fs.readFileSync(process.env.TESTNET_MANIFEST, "utf8"),
+      ),
+      stateFile: process.env.TESTNET_STATE_FILE,
+      rpcUrl: process.env.TESTNET_RPC_URL,
+    };
+  }
+  const w = await createWorkbench({
+      rpcPort,
+      contractVersion,
+      testnet: external ? testnet : null,
+    }),
     sessions = new Map(),
     nonces = new Map(),
     localFiles = new Map(),
     configCache = new Map();
   const instanceId = id();
   let instanceMarker = null;
-  if (hosted) {
+  if (hosted && !external) {
     // Chain1337 can already exist in a visitor's wallet. A unique zero-value
     // self-transfer distinguishes this process from another deterministic demo.
     const marker = await w.chain.signers[0].sendTransaction({
@@ -221,6 +241,12 @@ export async function startServer({
   async function localConfig(eventId, s) {
     const r = w.record(eventId, s),
       d = r.deployment;
+    requireThat(
+      d.contractVersion === "truth-pays-v7" && !external,
+      "These compatibility tools support the historical v7 local demo; use the main v8 workflow",
+      "WRONG_VERSION",
+      409,
+    );
     const observed = await w.state(eventId);
     const key = `${eventId}:${d.contract}:${r.revision}:${observed.owner}`;
     if (configCache.has(key)) return configCache.get(key);
@@ -346,15 +372,33 @@ export async function startServer({
           instanceId,
           chain: {
             ...bootstrap.chain,
-            rpcUrl: hosted ? `${publicUrl.origin}/rpc` : bootstrap.chain.rpcUrl,
-            ...(hosted ? { instanceMarker } : {}),
+            rpcUrl:
+              hosted && !external
+                ? `${publicUrl.origin}/rpc`
+                : bootstrap.chain.rpcUrl,
+            ...(hosted && !external ? { instanceMarker } : {}),
           },
-          ...(hosted
-            ? { capabilities: { sharedDemo: true, browserWallet: true } }
-            : {}),
+          ...(external
+            ? {
+                capabilities: {
+                  sharedDemo: false,
+                  browserWallet: true,
+                  createEvents: false,
+                  timeControls: false,
+                },
+              }
+            : hosted
+              ? { capabilities: { sharedDemo: true, browserWallet: true } }
+              : {}),
         });
       }
       if (p === "/api/session" && req.method === "POST") {
+        requireThat(
+          !external,
+          "Testnet requires a signed wallet login",
+          "WALLET_REQUIRED",
+          403,
+        );
         const b = await body(req),
           selected = w.session(b.identity);
         setSession(req, res, {
@@ -382,7 +426,7 @@ export async function startServer({
         requireThat(ethers.isAddress(b.wallet), "Invalid wallet");
         const nonce = randomBytes(20).toString("hex"),
           expiresAt = Date.now() + 300_000;
-        const message = `Kleros ${hosted ? "hosted demo" : "local event"} workbench\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: 1337\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this isolated demo wallet. No financial transaction.`;
+        const message = `Kleros ${external ? "Chiado testnet" : hosted ? "hosted demo" : "local event"} workbench\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: ${w.chain.chainId}\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this ${external ? "testnet" : "isolated demo"} wallet. No financial transaction.`;
         nonces.set(nonce, {
           wallet: ethers.getAddress(b.wallet),
           message,
@@ -427,6 +471,12 @@ export async function startServer({
         return send(res, 200, await w.advance((await body(req)).seconds));
       }
       if (p === "/api/demo/fund" && req.method === "POST") {
+        requireThat(
+          !external,
+          "Use the Chiado faucet for test xDAI",
+          "TESTNET_FAUCET",
+          403,
+        );
         requireThat(
           s?.mode === "wallet",
           "Authenticate a browser wallet first",
@@ -532,6 +582,7 @@ export async function startServer({
               r.definition[k] = text(v, k === "description" ? 2000 : 200, 1);
           Object.assign(r.definition, linked);
           r.revision++;
+          w.persist();
           return send(res, 200, r.definition);
         }
         if (tail === "participants" && req.method === "POST")
@@ -560,7 +611,7 @@ export async function startServer({
         if (tail === "checkins" && req.method === "POST")
           return send(res, 201, await w.checkin(eventId, s, await body(req)));
         if (tail === "personal" && req.method === "POST")
-          return send(res, 200, w.personal(eventId, s, await body(req)));
+          return send(res, 200, await w.personal(eventId, s, await body(req)));
         if (tail === "imports" && req.method === "POST")
           return send(res, 201, await w.importCsv(eventId, s, await body(req)));
         if (tail === "imports/preview" && req.method === "POST")
@@ -657,7 +708,7 @@ export async function startServer({
                   .map((x) =>
                     [
                       eventId,
-                      1337,
+                      r.deployment.chainId,
                       r.deployment.contract,
                       x.id,
                       x.email,
@@ -675,7 +726,7 @@ export async function startServer({
                   .map((x) =>
                     [
                       eventId,
-                      1337,
+                      r.deployment.chainId,
                       r.deployment.contract,
                       x.id,
                       x.email,
@@ -702,7 +753,7 @@ export async function startServer({
             batch.every(
               (x) =>
                 readMethods.has(x?.method) ||
-                (hosted && x?.method === "eth_sendRawTransaction"),
+                (hosted && !external && x?.method === "eth_sendRawTransaction"),
             ) &&
             batch.filter((x) => x?.method === "eth_sendRawTransaction")
               .length <= 1,
@@ -860,6 +911,7 @@ export async function startServer({
           "/transaction-context.js",
           "/hosted-wallet.js",
           "/reconciliation.js",
+          "/policies/v8-testnet.md",
           "/assets/kleros-logo.svg",
           "/assets/kleros-symbol.svg",
           "/assets/geist-latin.woff2",

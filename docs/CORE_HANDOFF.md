@@ -1,5 +1,10 @@
 # Core application integration checkpoint
 
+The latest requested phase adds simpler screens, explicit v8 dispatch and the controlled Chiado
+rehearsal. See [V8_APP_RELEASE](V8_APP_RELEASE.md) for interfaces/checks and
+[TESTNET_REHEARSAL](TESTNET_REHEARSAL.md) for public deployment stages. The v7 checkpoints below
+remain historical compatibility evidence; public testnet payouts must wait for real chain deadlines.
+
 28 October 2026. Main implementation owner: this chat (`Unify Kleros event deposits`).
 Core branch: `codex/core-application`. Integrated stable code checkpoint:
 `52b66cc5687936cbdbb2eed3578105bb5b215d2d`. Initial core:

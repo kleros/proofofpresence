@@ -9,6 +9,7 @@ dist/
 !.env.example
 .runtime/
 artifacts/screenshots/
+artifacts/stress/
 # Preserve the final combined evidence; keep intermediate diagnostics local.
 artifacts/*.log
 !artifacts/final-verification.log
