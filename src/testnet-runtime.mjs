@@ -53,6 +53,16 @@ export async function testnetChain(manifest, rpcUrl) {
   const provider = new ethers.JsonRpcProvider(url.href, undefined, {
     cacheTimeout: -1,
   });
+  const context = {
+    provider,
+    chainId: 10200,
+    // Cache identities include the complete reviewed registry entry, not only
+    // its address. Changed deployment metadata has no matching proof key.
+    immutableDeploymentEntries: new Map(
+      manifest.events.map((record) => [hash(record.deployment), hash(record)]),
+    ),
+    immutableProvenanceCache: new Map(),
+  };
   try {
     requireThat(
       BigInt(await provider.send("eth_chainId", [])) === 10200n,
@@ -76,10 +86,10 @@ export async function testnetChain(manifest, rpcUrl) {
             lower(manifest.arbitration.arbitrator),
         "Manifest event is not bound to its reviewed arbitration/version",
       );
-      await verifyDeployment({ provider }, record.deployment);
+      await verifyDeployment(context, record.deployment);
     }
     return {
-      provider,
+      ...context,
       rpcUrl: manifest.chain.rpcUrl,
       chainId: 10200,
       signers: [],

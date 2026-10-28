@@ -333,6 +333,49 @@ export function contractFor(chain, deployment, runner = chain.provider) {
 }
 
 export async function verifyDeployment(chain, d) {
+  // Only an explicitly initialized external testnet context may reuse positive
+  // immutable proofs. Local demos and unknown/changed registry entries always
+  // execute the complete verification below.
+  const registryKey = hash(d);
+  const proofKey =
+    d.contractVersion === EVENT_V8_VERSION
+      ? chain.immutableDeploymentEntries?.get(registryKey)
+      : null;
+  const cache = proofKey ? chain.immutableProvenanceCache : null;
+  const cached = cache?.get(proofKey);
+  if (cached) {
+    const [actualChain, code, factoryCode, creationBlock] = await Promise.all([
+      chain.provider.send("eth_chainId", []),
+      chain.provider.getCode(d.contract),
+      chain.provider.getCode(d.factory),
+      chain.provider.getBlock(d.deploymentBlock),
+    ]);
+    requireThat(
+      BigInt(actualChain) === BigInt(d.chainId),
+      "Wrong chain",
+      "WRONG_CHAIN",
+      409,
+    );
+    requireThat(
+      ethers.keccak256(code) === d.codeHash,
+      "Contract code does not match trusted deployment",
+      "WRONG_CONTRACT",
+      409,
+    );
+    requireThat(
+      ethers.keccak256(factoryCode) === d.factoryCodeHash,
+      "Factory code does not match trusted deployment",
+      "WRONG_FACTORY",
+      409,
+    );
+    requireThat(
+      creationBlock?.hash === cached.creationBlockHash,
+      "Deployment creation block is no longer canonical",
+      "DEPLOYMENT_REORG",
+      409,
+    );
+    return contractFor(chain, d);
+  }
   requireThat(
     Number((await chain.provider.getNetwork()).chainId) === d.chainId,
     "Wrong chain",
@@ -368,8 +411,10 @@ export async function verifyDeployment(chain, d) {
     "DEPLOYMENT_MISMATCH",
     409,
   );
-  if (d.contractVersion === EVENT_V8_VERSION)
-    await verifyV8Provenance(chain, d, c, template);
+  if (d.contractVersion === EVENT_V8_VERSION) {
+    const proof = await verifyV8Provenance(chain, d, c, template);
+    if (cache) cache.set(proofKey, proof);
+  }
   return c;
 }
 
@@ -480,6 +525,16 @@ async function verifyV8Provenance(chain, d, c, template) {
     "DEPLOYMENT_MISMATCH",
     409,
   );
+  const canonicalCreationBlock = await chain.provider.getBlock(
+    d.deploymentBlock,
+  );
+  requireThat(
+    canonicalCreationBlock?.hash === creationReceipt.blockHash,
+    "Deployment creation receipt is no longer canonical",
+    "DEPLOYMENT_REORG",
+    409,
+  );
+  return { creationBlockHash: canonicalCreationBlock.hash };
 }
 
 export async function chainState(chain, record) {

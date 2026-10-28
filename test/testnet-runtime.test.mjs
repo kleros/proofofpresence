@@ -7,7 +7,14 @@ import http from "node:http";
 import https from "node:https";
 import { execFileSync } from "node:child_process";
 import { ethers } from "ethers";
-import { localChain, deployEvent, DAY } from "../src/chain.mjs";
+import {
+  localChain,
+  deployEvent,
+  verifyDeployment,
+  chainState,
+  contractFor,
+  DAY,
+} from "../src/chain.mjs";
 import { testnetChain, testnetStateStore } from "../src/testnet-runtime.mjs";
 import { startServer } from "../src/server.mjs";
 
@@ -263,6 +270,152 @@ test("external registry rejects wrong network, currency, duplicate custody and c
     ),
     "Registry loading must neither query unlocked wallets nor deploy, sign or mutate",
   );
+});
+
+test("external immutable proofs reduce calls but recheck chain/code/canonical anchors and never cache money, fees or owners", async () => {
+  const startupOffset = bridgeMethods.length;
+  const external = await testnetChain(manifest);
+  try {
+    const startupCalls = bridgeMethods
+      .slice(startupOffset)
+      .filter((method) => method === "eth_call").length;
+    assert.ok(
+      startupCalls >= 10,
+      "Startup performs complete constructor and factory membership checks",
+    );
+    assert.equal(external.immutableProvenanceCache.size, 2);
+    const deployment = manifest.events[0].deployment;
+    const offset = bridgeMethods.length;
+    await verifyDeployment(external, deployment);
+    const subsequent = bridgeMethods.slice(offset);
+    assert.equal(
+      subsequent.filter((method) => method === "eth_call").length,
+      0,
+      "Positive immutable proofs eliminate repeated constructor/factory calls",
+    );
+    assert.ok(subsequent.includes("eth_chainId"));
+    assert.equal(
+      subsequent.filter((method) => method === "eth_getCode").length,
+      2,
+    );
+    assert.ok(subsequent.includes("eth_getBlockByNumber"));
+    const alteredOffset = bridgeMethods.length;
+    await assert.rejects(
+      verifyDeployment(external, {
+        ...deployment,
+        templateHash: "altered-registry-value",
+      }),
+      isCode("DEPLOYMENT_MISMATCH"),
+    );
+    assert.ok(
+      bridgeMethods.slice(alteredOffset).includes("eth_call"),
+      "A changed full registry hash cannot reuse an old proof",
+    );
+    assert.equal(external.immutableProvenanceCache.size, 2);
+    const originalCode = await chain.provider.getCode(deployment.contract);
+    const factoryCode = await chain.provider.getCode(deployment.factory);
+    await chain.provider.send("evm_setAccountCode", [
+      deployment.contract,
+      "0x00",
+    ]);
+    await assert.rejects(
+      verifyDeployment(external, deployment),
+      isCode("WRONG_CONTRACT"),
+    );
+    await chain.provider.send("evm_setAccountCode", [
+      deployment.contract,
+      originalCode,
+    ]);
+    await chain.provider.send("evm_setAccountCode", [
+      deployment.factory,
+      "0x00",
+    ]);
+    await assert.rejects(
+      verifyDeployment(external, deployment),
+      isCode("WRONG_FACTORY"),
+    );
+    await chain.provider.send("evm_setAccountCode", [
+      deployment.factory,
+      factoryCode,
+    ]);
+    const withProviderFault = (overrides) => ({
+      ...external,
+      provider: new Proxy(external.provider, {
+        get(target, property) {
+          if (Object.hasOwn(overrides, property)) return overrides[property];
+          const value = Reflect.get(target, property, target);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      }),
+    });
+    await assert.rejects(
+      verifyDeployment(
+        withProviderFault({
+          send: async (method, args) =>
+            method === "eth_chainId"
+              ? "0x1"
+              : external.provider.send(method, args),
+        }),
+        deployment,
+      ),
+      isCode("WRONG_CHAIN"),
+    );
+    await assert.rejects(
+      verifyDeployment(
+        withProviderFault({
+          getBlock: async (block) => ({
+            ...(await external.provider.getBlock(block)),
+            hash: ethers.ZeroHash,
+          }),
+        }),
+        deployment,
+      ),
+      isCode("DEPLOYMENT_REORG"),
+    );
+    const snapshot = await chain.provider.send("evm_snapshot", []);
+    try {
+      const person = await chain.signers[3].getAddress();
+      const record = {
+        ...manifest.events[0],
+        participants: new Map([["person", { wallet: person }]]),
+        publications: new Map(),
+      };
+      const before = await chainState(external, record);
+      await (
+        await contractFor(chain, deployment, chain.signers[3]).deposit({
+          value: ethers.parseEther("0.01"),
+        })
+      ).wait();
+      const nextOwner = await chain.signers[1].getAddress();
+      await (
+        await contractFor(
+          chain,
+          deployment,
+          chain.signers[0],
+        ).transferOwnership(nextOwner)
+      ).wait();
+      await (
+        await contractFor(chain, deployment, chain.signers[1]).acceptOwnership()
+      ).wait();
+      await (
+        await chain.liquid.setFeeForJuror(ethers.parseEther("0.006"))
+      ).wait();
+      const after = await chainState(external, record);
+      assert.equal(after.owner, nextOwner);
+      assert.notEqual(after.balanceWei, before.balanceWei);
+      assert.notEqual(after.pendingTotalWei, before.pendingTotalWei);
+      assert.notEqual(after.challengeDepositWei, before.challengeDepositWei);
+      assert.equal(
+        after.pendingCredits[person.toLowerCase()],
+        ethers.parseEther("0.01").toString(),
+      );
+      assert.notEqual(after.fingerprint, before.fingerprint);
+    } finally {
+      await chain.provider.send("evm_revert", [snapshot]);
+    }
+  } finally {
+    await external.close();
+  }
 });
 
 async function request(

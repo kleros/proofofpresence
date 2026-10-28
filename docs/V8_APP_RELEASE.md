@@ -34,3 +34,17 @@ Public chain time is real: after attendance, challenge/matching windows last one
 held-share settlement remain pending until their exact chain prerequisites. Do not automatically
 rebroadcast, reset or modify public contract deadlines. See `docs/TESTNET_REHEARSAL.md` for stage
 commands and recovery; transaction hashes are journaled before a single submission.
+
+## Live loading correction
+
+The first public run exposed7.57second bootstrap and18.92second anonymous event-detail reads from
+repeated public-RPC proof work. External Chiado contexts now reuse only positive immutable proofs,
+keyed by the complete trusted deployment/manifest identity. Every reuse still reads actual chainID,
+event code, factory code and the canonical creation-block hash. A changed anchor/registry fails closed
+or runs full verification. Mutable owner, balances, pending credit, fees, deadlines and financial
+snapshots are never cached. Detail and summary reuse one request's verified snapshot.
+
+Nine focused adapter/runtime tests passed after this correction, including actual code changes,
+chain/reorg fault injection, registry tampering, reduced immutable RPC calls and fresh mutable-state
+updates. The real HTTPS signature/deposit/restart test dropped from10.18seconds to3.98seconds locally;
+public latency is measured again after deployment. This preserves real-time transaction validation.

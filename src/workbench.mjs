@@ -331,16 +331,32 @@ export async function createWorkbench({
           r && item.definition.id === item.eventId,
           "Persisted event identity mismatch",
         );
-        requireThat(item.definition.title === r.definition.title &&
-          item.definition.startsAt === r.definition.startsAt &&
-          item.definition.endsAt === r.definition.endsAt,
-          "Persisted event schedule or title differs from its manifest");
+        requireThat(
+          item.definition.title === r.definition.title &&
+            item.definition.startsAt === r.definition.startsAt &&
+            item.definition.endsAt === r.definition.endsAt,
+          "Persisted event schedule or title differs from its manifest",
+        );
         const definition = { ...r.definition };
-        for (const key of ["description", "location", "visibility", "editorialStatus", "registrationStatus", "lumaEventId", "lumaUrl", "contentEventId", "contentUrl"])
-          if (Object.hasOwn(item.definition, key)) definition[key] = item.definition[key];
+        for (const key of [
+          "description",
+          "location",
+          "visibility",
+          "editorialStatus",
+          "registrationStatus",
+          "lumaEventId",
+          "lumaUrl",
+          "contentEventId",
+          "contentUrl",
+        ])
+          if (Object.hasOwn(item.definition, key))
+            definition[key] = item.definition[key];
         Object.assign(r, {
-          definition, revision: item.revision, observations: item.observations,
-          batches: item.batches, transactions: item.transactions,
+          definition,
+          revision: item.revision,
+          observations: item.observations,
+          batches: item.batches,
+          transactions: item.transactions,
           participants: new Map(item.participants),
           personal: new Map(item.personal),
           publications: new Map(item.publications),
@@ -350,8 +366,8 @@ export async function createWorkbench({
       for (const [key, value] of saved.drafts) drafts.set(key, value);
     }
   }
-  async function summary(r, s) {
-    const st = await chainState(chain, r);
+  async function summary(r, s, knownState = null) {
+    const st = knownState ?? (await chainState(chain, r));
     const role =
       s && lower(s.wallet) === lower(st.owner)
         ? "organizer"
@@ -423,7 +439,7 @@ export async function createWorkbench({
   async function detail(eventId, s) {
     const st = await state(eventId),
       r = record(eventId, s),
-      event = await summary(r, s);
+      event = await summary(r, s, st);
     const privileged = event.role !== "participant";
     const participants = await Promise.all(
       [...r.participants.values()]
