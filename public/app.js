@@ -81,6 +81,13 @@ const formatTime = (value, timezone) =>
     minute: "2-digit",
     timeZoneName: "short",
   });
+const formatDeadline = (value, timezone) =>
+  formatDate(value, timezone, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
 const badge = (text, style = "") =>
   `<span class="badge ${style}">${escape(text)}</span>`;
 const phaseName = (value) =>
@@ -133,6 +140,10 @@ let hostedNoticeObserver;
 const isHostedDemo = () => app.bootstrap?.mode === "hosted-demo";
 const isTestnet = () =>
   ["testnet", "hosted-testnet"].includes(app.bootstrap?.mode);
+const isControlledArbitration = () =>
+  isTestnet() && app.bootstrap?.arbitration?.mode === "controlled";
+const rulingNumber = (value) =>
+  [0, 1, 2, "0", "1", "2"].includes(value) ? Number(value) : null;
 const currencySymbol = () =>
   app.bootstrap?.chain?.nativeCurrency?.symbol ?? "ETH";
 const isV8 = (event = app.detail?.event) =>
@@ -232,7 +243,7 @@ async function api(path, options = {}) {
   try {
     data = await result.json();
   } catch {
-    throw new Error(`The local server returned ${result.status}.`);
+    throw new Error(`The application returned HTTP ${result.status}.`);
   }
   if (!result.ok)
     throw Object.assign(
@@ -294,6 +305,10 @@ function ownParticipant() {
   return app.detail?.participants?.find((person) =>
     same(person.wallet, currentIdentity()?.wallet),
   );
+}
+function ownWalletFacts() {
+  const facts = app.detail?.ownWallet;
+  return facts && same(facts.wallet, currentIdentity()?.wallet) ? facts : null;
 }
 function isIn(list, wallet) {
   return (list ?? []).some((item) =>
@@ -394,7 +409,9 @@ function walletProvider() {
   const provider = /** @type {any} */ (window).ethereum;
   if (!provider?.request)
     throw new Error(
-      "No browser wallet was found. Use a demo identity or open this local app in a browser with a wallet extension.",
+      isTestnet()
+        ? "No browser wallet was found. Open this app in a browser with a wallet extension for the configured testnet."
+        : "No browser wallet was found. Use a demo identity or open this app in a browser with a wallet extension.",
     );
   return provider;
 }
@@ -618,7 +635,7 @@ async function load({ silent = false } = {}) {
 
 function renderHome() {
   const events = app.bootstrap.events;
-  return `<div class="page-header"><div><div class="eyebrow">GOOD EVENTS. KEPT PROMISES.</div><h1>Events, with commitment.</h1><p class="intro">Find your event. Reserve a place. Show up.<br>Get your kickback when attendance is confirmed.</p></div>${!isTestnet() ? '<div class="header-actions"><button class="button button-primary" data-create-event><span aria-hidden="true">＋</span> Create local event</button></div>' : ""}</div>
+  return `<div class="page-header"><div><div class="eyebrow">GOOD EVENTS. KEPT PROMISES.</div><h1>Events, with commitment.</h1><p class="intro">Find your event. Reserve a place. Show up.<br>Follow your kickback from attendance to payout.</p></div>${!isTestnet() ? '<div class="header-actions"><button class="button button-primary" data-create-event><span aria-hidden="true">＋</span> Create local event</button></div>' : ""}</div>
     <ol class="quick-start" aria-label="How event commitments work"><li><span class="step-number">1</span><div><strong>Choose an event</strong><p>Each event keeps its own guest list and money.</p></div></li><li><span class="step-number">2</span><div><strong>Reserve your place</strong><p>Choose free entry or review a deposit. The host approves admission.</p></div></li><li><span class="step-number">3</span><div><strong>Attend & get a kickback</strong><p>Check in, review the attendance list and challenge a mistake if needed.</p></div></li></ol>
     <div class="section-heading"><h2>Choose your event</h2><span class="small">${events.length} independent events</span></div>
     <div class="event-grid">${events.map((event, index) => `<article class="event-card"><div class="event-visual theme-${index % 4}"><span class="visual-kicker">KLEROS / COMMUNITY</span><div class="visual-title">${escape(event.title)}</div><span class="event-sequence">${String(index + 1).padStart(2, "0")} / ${String(events.length).padStart(2, "0")}</span></div><div class="card-body"><div class="card-meta">${badge(phaseName(event.financialPhase), phaseStyle(event.financialPhase))}<span class="tiny-label">${escape(event.visibility ?? "public").toUpperCase()} · ${escape(event.editorialStatus ?? "published").toUpperCase()}</span></div><h3>${escape(event.title)}</h3><p>${escape(event.description ?? "")}</p><div class="event-facts"><span><i class="fact-icon" aria-hidden="true">◷</i>${escape(formatTime(event.startsAt, event.timezone))}</span><span><i class="fact-icon" aria-hidden="true">⌖</i>${escape(event.location ?? "Location to be announced")}</span><span><i class="fact-icon" aria-hidden="true">◇</i>Independent ${versionLabel(event)} contract · ${escape(short(event.contract))}</span></div><div class="card-footer"><div class="price">${eth(event.depositWei)} ${escape(currencySymbol())}<small>Optional commitment · free entry available</small></div><a href="#${new URLSearchParams({ event: event.id, view: "participant" })}" class="button button-secondary">Open event <span class="icon-arrow" aria-hidden="true">↗</span></a></div></div></article>`).join("")}</div>
@@ -841,11 +858,11 @@ function renderParticipant() {
   const ownCase = state.cases?.find((item) =>
     same(item.wallet, identity?.wallet),
   );
-  const owed = person?.owedWei ?? "0";
+  const walletFacts = ownWalletFacts();
+  const owed = walletFacts?.owedWei ?? person?.owedWei ?? "0";
+  const creditValue = walletFacts?.pendingCreditWei ?? person?.pendingCreditWei;
   const credit =
-    isV8(event) && person?.pendingCreditWei != null
-      ? String(person.pendingCreditWei)
-      : null;
+    isV8(event) && creditValue != null ? String(creditValue) : null;
   const observed =
     !!person &&
     attendance.some(
@@ -883,8 +900,12 @@ function renderParticipant() {
       ? "Waiting for a match"
       : caseState === "Disputed"
         ? ownCase.finalRuling == null
-          ? "Matched Court case open"
-          : "Final result · settlement pending"
+          ? isControlledArbitration()
+            ? "Matched controlled test dispute · awaiting final result"
+            : "Matched Court case open"
+          : rulingNumber(ownCase.finalRuling) === null
+            ? "Final ruling unavailable · refresh status"
+            : "Final result · settlement pending"
         : "Challenge settled";
   const facts = [
     [
@@ -963,7 +984,7 @@ function renderParticipant() {
   let next = {
     title: "Await the next event update",
     reason:
-      "The current snapshot has no eligible participant action. Refresh for verified changes.",
+      "No participant action is eligible in this snapshot. Refresh for payment updates. A recorded payment does not mean all cases or possible later top-ups are complete.",
     control:
       '<button class="button button-secondary" data-reload>Refresh status</button>',
   };
@@ -983,11 +1004,11 @@ function renderParticipant() {
         : "Registered-staker refunds and any failed-transfer credits follow the contract. Unregistered payer returns need a separate organizer review.",
       control: `<a class="button button-primary" href="#${new URLSearchParams({ event: event.id, view: "cases" })}">View refunds & obligations →</a>`,
     };
-  else if (!person)
+  else if (!person && BigInt(owed) === 0n)
     next = {
       title: "Link your registration for this event",
       reason:
-        "Create a local registration tied to your authenticated wallet. Host admission is a separate decision.",
+        "Create an event registration tied to your authenticated wallet. Host admission is a separate decision.",
       control:
         '<button class="button button-primary" data-start-registration>Enter registration details</button>',
     };
@@ -1011,7 +1032,7 @@ function renderParticipant() {
     next = {
       title: disputeText,
       reason:
-        "Review the case deadline, evidence, finality and any remaining settlement action.",
+        "Follow the case deadline, evidence and settlement steps. Ordinary kickbacks can be paid while matched-case shares stay protected; later rulings may add payments.",
       control: `<a class="button button-primary" href="#${new URLSearchParams({ event: event.id, view: "cases" })}">View your attendance case →</a>`,
     };
   else if (challengeOpen)
@@ -1078,7 +1099,10 @@ function renderParticipant() {
   if (
     credit !== null &&
     BigInt(credit) > 0n &&
-    (phase === "Cancelled" || person?.admission === "declined" || registered)
+    (!person ||
+      phase === "Cancelled" ||
+      person?.admission === "declined" ||
+      registered)
   )
     next = {
       title: "Your unused deposit credit is available",
@@ -1125,10 +1149,10 @@ function renderParticipant() {
           : "Check in with event staff",
     },
     {
-      title: "Get your kickback",
+      title: "Track your kickback",
       done: paid,
       status: paid
-        ? "Attendance payment recorded"
+        ? "Payment recorded · top-ups may follow"
         : (delivery?.claims ?? 0n) > 0n
           ? "Claim paid · see status details"
           : BigInt(owed) > 0n
@@ -1142,11 +1166,11 @@ function renderParticipant() {
   return `${renderPending()}<section class="panel next-action" aria-labelledby="next-action-title"><div class="eyebrow">Your next action</div><h2 id="next-action-title">${escape(next.title)}</h2><p>${escape(next.reason)}</p>${next.control}</section>
     <ol class="participation-steps" aria-label="Your event journey">${journey.map((step, index) => `<li class="${step.done ? "complete" : index === currentStep ? "current" : ""}" ${index === currentStep ? 'aria-current="step"' : ""}><span class="step-number" aria-hidden="true">${step.done ? "✓" : index + 1}</span><div><strong>${escape(step.title)}</strong><small>${escape(step.status)}</small></div></li>`).join("")}</ol>
     <section class="panel spot-details"><div class="panel-header"><div><h2>Your place at this event</h2><p>Your payment, host approval and attendance are tracked separately.</p></div>${person ? badge(person.admission ?? "pending", person.admission === "approved" ? "green" : "amber") : badge("Not registered")}</div><details class="disclosure status-details"><summary>All status details · 7 independent checks</summary><dl class="state-grid">${facts.map(([label, value, note]) => `<div class="state-fact"><dt>${escape(label)}</dt><dd><strong>${escape(value)}</strong><p>${escape(note)}</p></dd></div>`).join("")}</dl></details>${credit !== null ? `<div class="credit-summary"><div><strong>${eth(credit)} ${escape(currencySymbol())} unused credit</strong><p>Held for your wallet outside the admitted pool. Withdraw it independently at any phase.</p></div>${identity && BigInt(credit) > 0n ? '<button class="button button-secondary button-small" data-recovery="withdrawPending">Withdraw credit</button>' : ""}</div>` : ""}
-    ${identity && !person ? `<form data-form="registration"><h3>Link a local registration</h3><div class="form-grid"><div><label for="reg-name">Name</label><input id="reg-name" name="name" required maxlength="120" autocomplete="name" placeholder="Your name"></div><div><label for="reg-email">Email</label><input id="reg-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.invalid"></div></div><p class="field-help">This local record links your authenticated wallet. Host admission remains pending.</p><button class="button button-primary" type="submit">Register interest</button></form>` : ""}
+    ${identity && !person ? `<form data-form="registration"><h3>Link your event registration</h3><div class="form-grid"><div><label for="reg-name">Name</label><input id="reg-name" name="name" required maxlength="120" autocomplete="name" placeholder="Your name"></div><div><label for="reg-email">Email</label><input id="reg-email" name="email" type="email" required maxlength="254" autocomplete="email" placeholder="you@example.invalid"></div></div><p class="field-help">This event record links your authenticated wallet. Host admission remains pending.</p><button class="button button-primary" type="submit">Register interest</button></form>` : ""}
     <div class="amount-block"><div><small>OPTIONAL COMMITTED SPOT</small><strong>${eth(state.depositWei)} <span>${escape(currencySymbol())}</span></strong></div><span class="small">${deposit?.verified ? "Deposit verified" : depositOpen ? "Admission reviewed separately" : "Deposit window closed"}</span></div>
-    ${identity && person ? `<details class="disclosure"><summary>Verify an existing local deposit receipt</summary><form data-form="receipt"><label for="receipt-hash">Transaction hash</label><input id="receipt-hash" name="txHash" required pattern="0x[a-fA-F0-9]{64}" placeholder="0x…"><div class="button-row"><button class="button button-secondary button-small">Verify receipt</button></div></form></details>` : ""}
+    ${identity && person ? `<details class="disclosure"><summary>Verify an existing deposit receipt</summary><form data-form="receipt"><label for="receipt-hash">Transaction hash</label><input id="receipt-hash" name="txHash" required pattern="0x[a-fA-F0-9]{64}" placeholder="0x…"><div class="button-row"><button class="button button-secondary button-small">Verify receipt</button></div></form></details>` : ""}
     ${same(state.pendingOwner, identity?.wallet) ? '<button class="button button-secondary" data-tx="acceptOwnership">Accept pending ownership</button>' : ""}</section>
-    <section class="panel"><h2>Attend without a deposit</h2><p>Free guests need host approval and stay outside the deposited reward pool. Browsing this route does not require a wallet.</p>${safeLink(event.lumaUrl) ? `<a class="button button-secondary" href="${escape(event.lumaUrl)}" target="_blank" rel="noopener">Request a free place on Luma ↗</a>` : '<div class="notice">Free requests are handled by the organizer. No wallet-free registration service is connected to this local workbench.</div>'}</section>
+    <section class="panel"><h2>Attend without a deposit</h2><p>Free guests need host approval and stay outside the deposited reward pool. Browsing this route does not require a wallet.</p>${safeLink(event.lumaUrl) ? `<a class="button button-secondary" href="${escape(event.lumaUrl)}" target="_blank" rel="noopener">Request a free place on Luma ↗</a>` : '<div class="notice">Free requests are handled by the organizer. No wallet-free signup service is connected here.</div>'}</section>
     <details class="panel event-story event-story-details"><summary>About the event & materials</summary><p>${escape(event.description ?? "")}</p>${safeLink(event.contentUrl) ? `<a class="button button-secondary" href="${escape(event.contentUrl)}" target="_blank" rel="noopener">Talks, recordings, materials & Q&A ↗</a>` : '<p class="small muted">No content or recordings link is configured for this event.</p>'}</details>
     <section class="panel"><div class="panel-header"><div><h2>Your personal event history</h2><p>A private reminder, independent of deposits and trusted attendance.</p></div></div><button class="button button-secondary button-small" data-personal ${!identity ? "disabled" : ""}>${personal?.attended ? "✓ Marked as personally attended" : "I was there"}</button><p class="field-help">This self-reported record, newsletter consent and merch state have no financial effect.</p></section>`;
 }
@@ -1218,7 +1242,7 @@ function reviewImportConsequences() {
     throw new Error("Resolve exceptions and provenance before continuing.");
   assertImportSource(review);
   showDialog(
-    `<div class="dialog-eyebrow">Organizer import review</div><h2 id="dialog-title" class="dialog-title">Apply this reviewed import?</h2><p class="dialog-body-text">This records off-chain ${escape(review.input.kind)} for ${escape(app.detail.event.title)}. It does not register stakers or post financial attendance.</p><dl class="details-list"><div><dt>Stable event</dt><dd>${escape(review.eventId)}</dd></div><div><dt>Network / contract</dt><dd>Local chain ${escape(app.detail.event.chainId)}<br><code>${escape(app.detail.event.contract)}</code></dd></div><div><dt>Source SHA-256</dt><dd class="mono">${escape(review.sourceHash)}</dd></div><div><dt>Rows / outside pool</dt><dd>${review.analysis.rowCount} / ${review.analysis.excludedCount}</dd></div><div><dt>Provenance note</dt><dd>${escape(review.input.review.note)}</dd></div></dl><div class="notice warning">The server validates all rows, receipts, current owner and duplicate evidence atomically. Any exception rejects the entire import. The server-owned preview binds these exact source bytes and current state. It still cannot authenticate Luma origin.</div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" data-import-commit>Apply reviewed import</button></div>`,
+    `<div class="dialog-eyebrow">Organizer import review</div><h2 id="dialog-title" class="dialog-title">Apply this reviewed import?</h2><p class="dialog-body-text">This records off-chain ${escape(review.input.kind)} for ${escape(app.detail.event.title)}. It does not register stakers or post financial attendance.</p><dl class="details-list"><div><dt>Stable event</dt><dd>${escape(review.eventId)}</dd></div><div><dt>Network / contract</dt><dd>${escape(networkName())} ${escape(app.detail.event.chainId)}<br><code>${escape(app.detail.event.contract)}</code></dd></div><div><dt>Source SHA-256</dt><dd class="mono">${escape(review.sourceHash)}</dd></div><div><dt>Rows / outside pool</dt><dd>${review.analysis.rowCount} / ${review.analysis.excludedCount}</dd></div><div><dt>Provenance note</dt><dd>${escape(review.input.review.note)}</dd></div></dl><div class="notice warning">The server validates all rows, receipts, current owner and duplicate evidence atomically. Any exception rejects the entire import. The server-owned preview binds these exact source bytes and current state. It still cannot authenticate Luma origin.</div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" data-import-commit>Apply reviewed import</button></div>`,
   );
 }
 async function commitReviewedImport(button) {
@@ -1312,9 +1336,34 @@ function renderCases() {
     now > Number(state.challengeEndsAt) &&
     !waiting;
   const own = ownParticipant();
-  return `${renderPending()}<section class="panel"><div class="panel-header"><div><div class="eyebrow">Money & obligations</div><h2>Kickbacks & payments</h2><p>See what was paid, what is protected and what still needs action.</p></div>${badge(phase === "Finalized" ? "Ordinary batch processed" : phase, phaseStyle(state.phase))}</div>${renderMoneySummary()}<dl class="details-list"><div><dt>Contract balance</dt><dd>${eth(state.balanceWei)} ${escape(currencySymbol())}</dd></div><div><dt>Total protected reserves</dt><dd>${eth(state.reservedWei)} ${escape(currencySymbol())}</dd></div><div><dt>Established attendees</dt><dd>${escape(state.attendeeCount)} wallets</dd></div><div><dt>Omission challenge ends</dt><dd>${state.challengeEndsAt ? escape(formatTime(state.challengeEndsAt, event.timezone)) : "Not opened · attendance list not posted"}</dd></div></dl><p class="small muted">Protected reserves include pool / held-share, owed-credit and challenge obligations${isV8() ? ", plus each payer’s unused deposit credit" : ""}. These figures describe different obligations; do not add overlapping reserves together. A Finalized phase does not establish that every case or payment is complete.</p><div class="button-row"><button class="button button-primary" data-tx="release" ${!mayRelease ? "disabled" : ""}>Review normal payouts</button><button class="button button-secondary" data-recovery="claim" ${!currentIdentity() || BigInt(own?.owedWei ?? "0") === 0n ? "disabled" : ""}>Claim failed transfer</button></div>${!mayRelease ? '<p class="field-help">Ordinary payout review requires an authenticated wallet, a posted attendance list, and closed omission and pending matching windows. Every request is simulated and checked by the contract.</p>' : ""}<div class="notice">Ordinary attendees can be paid while each unresolved matched case retains a full provisional share. Later losses redistribute top-ups; later winners receive the accumulated held share. Ruling 0 excludes attendance and splits the remaining challenge funds under ${versionLabel(event)}; that split is separate from attendance payout.</div></section>
+  const ownOwed = ownWalletFacts()?.owedWei ?? own?.owedWei ?? "0";
+  const expiredUnmatched = cases.filter(
+    (item) => item.state === "Waiting" && now > Number(item.matchEndsAt),
+  ).length;
+  const pendingMatchingEnds = cases
+    .filter(
+      (item) => item.state === "Waiting" && now <= Number(item.matchEndsAt),
+    )
+    .map((item) => Number(item.matchEndsAt));
+  const omissionEnds = Number(state.challengeEndsAt);
+  const blockingDates = [
+    phase === "Listed" && now <= omissionEnds ? omissionEnds : 0,
+    ...pendingMatchingEnds,
+  ].filter(Boolean);
+  const blockingUntil = blockingDates.length
+    ? Math.max(...blockingDates)
+    : null;
+  const payoutWait =
+    phase === "Listed"
+      ? `${blockingUntil ? `Ordinary payout review opens after ${formatDeadline(blockingUntil, event.timezone)}. ` : "The time windows are clear in this snapshot. "}${now <= omissionEnds ? `The omission window ends ${formatDeadline(omissionEnds, event.timezone)}. ` : ""}${pendingMatchingEnds.length ? `${pendingMatchingEnds.length} unmatched ${pendingMatchingEnds.length === 1 ? "challenge waits" : "challenges wait"} until ${formatDeadline(Math.max(...pendingMatchingEnds), event.timezone)}. ` : ""}${!currentIdentity() ? "Connect your wallet to review payouts. " : ""}A matched unresolved case can retain a protected share while ordinary attendees are paid. Fresh simulation is still required.`
+      : phase === "Finalized"
+        ? "The ordinary batch has been processed. Follow remaining cases, owed credits and any later top-up receipts."
+        : phase === "Cancelled"
+          ? "This event was cancelled. Review refunds, unused credit and owed payments instead of ordinary kickbacks."
+          : "The attendance list has not been posted. Ordinary payouts require that confirmed list and the contract’s challenge windows.";
+  return `${renderPending()}<section class="panel"><div class="panel-header"><div><div class="eyebrow">Money & obligations</div><h2>Kickbacks & payments</h2><p>See what was paid, what is protected and what still needs action.</p></div>${badge(phase === "Finalized" ? "Ordinary batch processed" : phase, phaseStyle(state.phase))}</div>${renderMoneySummary()}<dl class="details-list"><div><dt>Contract balance</dt><dd>${eth(state.balanceWei)} ${escape(currencySymbol())}</dd></div><div><dt>Total protected reserves</dt><dd>${eth(state.reservedWei)} ${escape(currencySymbol())}</dd></div><div><dt>Established attendees</dt><dd>${escape(state.attendeeCount)} wallets</dd></div><div><dt>Omission challenge ends</dt><dd>${state.challengeEndsAt ? escape(formatTime(state.challengeEndsAt, event.timezone)) : "Not opened · attendance list not posted"}</dd></div></dl><p class="small muted">Protected reserves include pool / held-share, owed-credit and challenge obligations${isV8() ? ", plus each payer’s unused deposit credit" : ""}. These figures describe different obligations; do not add overlapping reserves together. A Finalized phase does not establish that every case or payment is complete.</p><div class="button-row"><button class="button button-primary" data-tx="release" ${!mayRelease ? "disabled" : ""}>Review normal payouts</button><button class="button button-secondary" data-recovery="claim" ${!currentIdentity() || BigInt(ownOwed) === 0n ? "disabled" : ""}>Claim failed transfer</button></div>${!mayRelease ? `<p class="field-help payout-wait-reason">${escape(payoutWait)}</p>` : ""}${expiredUnmatched ? `<div class="notice expired-case-hint">${expiredUnmatched} expired unmatched ${expiredUnmatched === 1 ? "challenge is" : "challenges are"} eligible for settlement. If a normal payout preview exceeds the gas limit, use each case’s “Settle final / unmatched case” action below, then refresh and review payouts again. A failed simulation sends no transaction and leaves reserves protected.</div>` : ""}<div class="notice">Ordinary attendees can be paid while each unresolved matched case retains a full provisional share. Later losses redistribute top-ups; later winners receive the accumulated held share. Ruling 0 excludes attendance and splits the remaining challenge funds under ${versionLabel(event)}; that split is separate from attendance payout.</div></section>
     <section class="panel"><div class="panel-header"><div><h2>Attendance cases</h2><p>Waiting for a match, Court finality, settlement and delivery are distinct.</p></div><span class="pill-note">${cases.length} ${cases.length === 1 ? "case" : "cases"}</span></div>${cases.length ? cases.map(renderCase).join("") : '<div class="empty"><span class="empty-icon">◇</span><h3>No attendance cases</h3><p>Omitted registered participants can challenge after the attendance list is posted.</p></div>'}</section>
-    ${owner ? renderRecovery() : ""}<section class="panel"><div class="panel-header"><div><h2>Transaction activity</h2><p>Only confirmed receipts appear here. A confirmed settlement action does not prove every transfer succeeded.</p></div></div>${renderTransactions()}</section>`;
+    ${owner ? renderRecovery() : ""}<section class="panel"><div class="panel-header"><div><h2>Transaction activity</h2><p>Confirmations recorded by this app for the selected event and wallet or role. Other on-chain activity may exist, and a confirmed action does not prove every transfer succeeded.</p></div></div>${renderTransactions()}</section>`;
 }
 function renderCase(item) {
   const owner = isOwner();
@@ -1328,33 +1377,45 @@ function renderCase(item) {
   const hasCourtCase = item.matched === true;
   const resolved = item.state === "Resolved" || item.state === 3;
   const matchExpired = Number(app.detail.now) > Number(item.matchEndsAt);
-  const final = item.finalRuling !== null && item.finalRuling !== undefined;
-  const title = waiting
-    ? matchExpired
-      ? "Unmatched window expired · settlement available"
-      : "Challenge waiting for a match"
-    : matched
-      ? final
-        ? "Final result available · settlement pending"
-        : "Matched Court case open"
-      : resolved
-        ? "Challenge settled"
-        : state;
-  const statusNote = waiting
-    ? "No Court case has been created. Its separate matching window determines whether an unmatched challenge can be accepted at settlement."
-    : matched
-      ? final
-        ? "Resolver finality is verified. The event contract still needs a confirmed settlement transaction."
-        : "A current jury vote or open appeal is not a final resolver ruling. Ordinary payouts can proceed after the relevant windows while a share is reserved."
-      : final
-        ? "The challenge is settled on the event contract. Check owed credits and confirmed transfer records for delivery."
-        : "This challenge was settled without a final matched resolver ruling. Expired unmatched challenges follow the acceptance path.";
+  const hasRuling = item.finalRuling !== null && item.finalRuling !== undefined;
+  const final = rulingNumber(item.finalRuling) !== null;
+  const invalidRuling = hasRuling && !final;
+  const title = invalidRuling
+    ? "Final ruling unavailable · refresh status"
+    : waiting
+      ? matchExpired
+        ? "Unmatched window expired · settlement available"
+        : "Challenge waiting for a match"
+      : matched
+        ? final
+          ? "Final result available · settlement pending"
+          : isControlledArbitration()
+            ? "Matched controlled test dispute · awaiting final result"
+            : "Matched Court case open"
+        : resolved
+          ? "Challenge settled"
+          : state;
+  const statusNote = invalidRuling
+    ? "The reported result is outside supported rulings 0, 1 and 2. Refresh the authoritative result before preparing settlement."
+    : waiting
+      ? isControlledArbitration()
+        ? "No matched test dispute has been created. The separate matching window determines whether an unmatched challenge can be accepted at settlement."
+        : "No Court case has been created. Its separate matching window determines whether an unmatched challenge can be accepted at settlement."
+      : matched
+        ? final
+          ? "Resolver finality is verified. The event contract still needs a confirmed settlement transaction."
+          : isControlledArbitration()
+            ? "A controlled test-arbitrator vote or open appeal is not a final resolver ruling; no independent Kleros jury is used. The admitted pool stays protected, and a held share is allocated when ordinary payouts run."
+            : "A current jury vote or open appeal is not a final resolver ruling. Ordinary payouts can proceed after the relevant windows while a share is reserved."
+        : final
+          ? "The challenge is settled on the event contract. Check owed credits and confirmed transfer records for delivery."
+          : "This challenge was settled without a final matched resolver ruling. Expired unmatched challenges follow the acceptance path.";
   const caseWallet = escape(item.wallet);
   const publication =
     typeof item.publication === "object"
       ? item.publication.status
       : item.publication;
-  return `<article class="case-card case-summary"><h3>${escape(title)}</h3><p>${escape(statusNote)}</p><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(title ?? "Challenge", resolved ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(formatTime(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ${escape(currencySymbol())}</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ${escape(currencySymbol())}</dd></div><div><dt>Resolver local ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.localDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.arbitratorDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Final ruling</dt><dd>${item.finalRuling === null || item.finalRuling === undefined ? "Not final" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][Number(item.finalRuling)] ?? item.finalRuling)}</dd></div></dl><div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() || !waiting || matchExpired ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() || resolved || !((waiting && matchExpired) || (matched && final)) ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() || !matched || final ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() || !matched || final ? "disabled" : ""}>Deliver final ruling</button></div><details class="disclosure" ${!hasCourtCase ? "hidden" : ""}><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p><div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify local publication" : "Publish exact bytes locally"}</button></div><form data-form="evidence" data-wallet="${caseWallet}"><label for="evidence-file-${caseWallet}">Store an evidence file locally (optional)</label><input id="evidence-file-${caseWallet}" type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored only in this local server; no IPFS upload occurs.</p><label for="evidence-uri-${caseWallet}" style="margin-top:12px">Evidence URI</label><input id="evidence-uri-${caseWallet}" name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form>${renderAppealStatus(item)}<form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label for="appeal-side-${caseWallet}">Ruling side</label><select id="appeal-side-${caseWallet}" name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label for="appeal-amount-${caseWallet}">Contribution (${escape(currencySymbol())})</label><input id="appeal-amount-${caseWallet}" name="amount" inputmode="decimal" required placeholder="Enter contribution"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. A contribution is separate from the attendance share reserved by the event contract.</p></form></details>${owner && !isTestnet() ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real ${versionLabel()} event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
+  return `<article class="case-card case-summary"><h3>${escape(title)}</h3><p>${escape(statusNote)}</p><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(title ?? "Challenge", resolved ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(formatTime(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ${escape(currencySymbol())}</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ${escape(currencySymbol())}</dd></div><div><dt>Resolver local ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.localDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.arbitratorDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Final ruling</dt><dd>${!hasRuling ? "Not final" : invalidRuling ? "Unavailable · unsupported result" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][rulingNumber(item.finalRuling)])}</dd></div></dl>${invalidRuling ? '<div class="button-row"><button class="button button-secondary button-small" data-reload>Refresh ruling status</button></div>' : ""}${isV8() || invalidRuling ? `<details class="disclosure case-source-details"><summary>Case organizer & source details</summary>${isV8() ? `<dl class="details-list"><div><dt>Organizer for this case</dt><dd class="mono">${escape(item.caseOrganizer ?? "Unavailable")}</dd></div></dl><p>The contract captured this organizer when the challenge opened. A later owner change does not rewrite this case identity.</p>` : ""}${invalidRuling ? `<p>Reported ruling, not accepted for settlement: <code>${escape(item.finalRuling)}</code></p>` : ""}</details>` : ""}<div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !waiting || matchExpired ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || resolved || !((waiting && matchExpired) || (matched && final)) ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Deliver final ruling</button></div><details class="disclosure" ${!hasCourtCase ? "hidden" : ""}><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p><div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify server copy" : "Store exact bytes on this server"}</button></div><form data-form="evidence" data-wallet="${caseWallet}"><label for="evidence-file-${caseWallet}">Store an evidence file on this server (optional)</label><input id="evidence-file-${caseWallet}" type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored by this app; it is not published to IPFS.</p><label for="evidence-uri-${caseWallet}" style="margin-top:12px">Evidence URI</label><input id="evidence-uri-${caseWallet}" name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form>${renderAppealStatus(item)}<form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label for="appeal-side-${caseWallet}">Ruling side</label><select id="appeal-side-${caseWallet}" name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label for="appeal-amount-${caseWallet}">Contribution (${escape(currencySymbol())})</label><input id="appeal-amount-${caseWallet}" name="amount" inputmode="decimal" required placeholder="Enter contribution"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. A contribution is separate from the attendance share reserved by the event contract.</p></form></details>${owner && !isTestnet() ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real ${versionLabel()} event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
 }
 
 function renderAppealStatus(item) {
@@ -1369,7 +1430,7 @@ function renderRecovery() {
 function renderTransactions() {
   const transactions = app.detail.transactions ?? [];
   if (!transactions.length)
-    return '<div class="empty">No confirmed local actions for this event yet.</div>';
+    return '<div class="empty">No confirmed app-recorded actions are visible for this event and your current wallet or role. Other on-chain transactions may exist.</div>';
   return `<ul class="transaction-log">${transactions
     .slice()
     .reverse()
@@ -1415,7 +1476,7 @@ async function prepareTransaction(action, params = {}) {
   app.draft = draft;
   const event = app.detail.event;
   showDialog(
-    `<div class="dialog-eyebrow">Review before signing</div><h2 class="dialog-title" id="dialog-title">${escape(actionNames[action] ?? action)}</h2><p class="dialog-body-text">${escape(typeof draft.summary === "string" ? draft.summary : JSON.stringify(draft.summary))}</p><div class="review-list"><dl class="details-list"><div><dt>Event</dt><dd><strong>${escape(event.title)}</strong><br>${escape(draft.eventId)}</dd></div>${action === "postAttendance" ? `<div><dt>Proposed attendees</dt><dd><strong>${draft.args[0].length} registered wallets</strong></dd></div><div><dt>Initial share</dt><dd><strong>${eth(draft.args[1])} ${escape(currencySymbol())}</strong></dd></div><div><dt>Registered pool</dt><dd>${eth(app.detail.state.poolWei)} ${escape(currencySymbol())}</dd></div>` : ""}${action === "register" || action === "reject" ? `<div><dt>Reviewed wallets</dt><dd><strong>${draft.args[0].length} verified participants</strong></dd></div>` : ""}<div><dt>Network</dt><dd>${escape(networkName())} · ${escape(draft.chainId)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(draft.contract)}</dd></div>${!same(draft.contract, draft.transaction.to) ? `<div><dt>Transaction recipient</dt><dd class="mono">${escape(draft.transaction.to)}</dd></div>` : ""}<div><dt>Signing wallet</dt><dd class="mono">${escape(draft.wallet)}</dd></div><div><dt>Value</dt><dd><strong>${eth(draft.valueWei)} ${escape(currencySymbol())}</strong><br><span class="small mono">${escape(draft.valueWei)} wei</span></dd></div><div><dt>Method</dt><dd><code>${escape(draft.method)}</code></dd></div><div><dt>Policy</dt><dd>${escape(event.policyURI ?? event.policyUri ?? "Immutable local event policy")}</dd></div><div><dt>Review expires</dt><dd>${escape(formatTime(draft.expiresAt, "UTC"))}</dd></div></dl></div><details class="disclosure"><summary>Inspect calldata and arguments</summary><pre class="review-code">${escape(JSON.stringify({ args: draft.args, transaction: draft.transaction, snapshot: draft.snapshot }, null, 2))}</pre></details>${action === "release" ? releaseBreakdown() : ""}<div class="notice warning">Confirming sends a transaction from the selected wallet on ${escape(networkName())} (${escape(draft.chainId)}). The server checks this state snapshot again and rejects an expired or stale draft. Changing event or wallet clears the review.</div><div id="transaction-status" role="status"></div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" id="execute-transaction" data-execute>${Number(draft.chainId) === 1337 ? "Confirm local transaction" : "Confirm testnet transaction"}</button></div>`,
+    `<div class="dialog-eyebrow">Review before signing</div><h2 class="dialog-title" id="dialog-title">${escape(actionNames[action] ?? action)}</h2><p class="dialog-body-text">${escape(typeof draft.summary === "string" ? draft.summary : JSON.stringify(draft.summary))}</p><div class="review-list"><dl class="details-list"><div><dt>Event</dt><dd><strong>${escape(event.title)}</strong><br>${escape(draft.eventId)}</dd></div>${action === "postAttendance" ? `<div><dt>Proposed attendees</dt><dd><strong>${draft.args[0].length} registered wallets</strong></dd></div><div><dt>Initial share</dt><dd><strong>${eth(draft.args[1])} ${escape(currencySymbol())}</strong></dd></div><div><dt>Registered pool</dt><dd>${eth(app.detail.state.poolWei)} ${escape(currencySymbol())}</dd></div>` : ""}${action === "register" || action === "reject" ? `<div><dt>Reviewed wallets</dt><dd><strong>${draft.args[0].length} verified participants</strong></dd></div>` : ""}<div><dt>Network</dt><dd>${escape(networkName())} · ${escape(draft.chainId)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(draft.contract)}</dd></div>${!same(draft.contract, draft.transaction.to) ? `<div><dt>Transaction recipient</dt><dd class="mono">${escape(draft.transaction.to)}</dd></div>` : ""}<div><dt>Signing wallet</dt><dd class="mono">${escape(draft.wallet)}</dd></div><div><dt>Value</dt><dd><strong>${eth(draft.valueWei)} ${escape(currencySymbol())}</strong><br><span class="small mono">${escape(draft.valueWei)} wei</span></dd></div><div><dt>Method</dt><dd><code>${escape(draft.method)}</code></dd></div><div><dt>Policy</dt><dd>${escape(event.policyURI ?? event.policyUri ?? "Immutable event policy")}</dd></div><div><dt>Review expires</dt><dd>${escape(formatTime(draft.expiresAt, "UTC"))}</dd></div></dl></div><details class="disclosure"><summary>Inspect calldata and arguments</summary><pre class="review-code">${escape(JSON.stringify({ args: draft.args, transaction: draft.transaction, snapshot: draft.snapshot }, null, 2))}</pre></details>${action === "release" ? releaseBreakdown() : ""}<div class="notice warning">Confirming sends a transaction from the selected wallet on ${escape(networkName())} (${escape(draft.chainId)}). The server checks this state snapshot again and rejects an expired or stale draft. Changing event or wallet clears the review.</div><div id="transaction-status" role="status"></div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" id="execute-transaction" data-execute>${Number(draft.chainId) === 1337 ? "Confirm local transaction" : "Confirm testnet transaction"}</button></div>`,
   );
 }
 function releaseBreakdown() {
@@ -1432,7 +1493,7 @@ function releaseBreakdown() {
   const count = attendees + open;
   if (!count) return "";
   const share = BigInt(state.poolWei) / BigInt(count);
-  return `<div class="notice"><strong>Reviewed ${versionLabel()} payout calculation</strong><br>${escape(state.attendeeCount)} established attendees${accepted ? ` + ${accepted} expired unmatched challenges accepted automatically` : ""} · ${open} unresolved matched cases.<br>Provisional share: ${eth(share)} ${escape(currencySymbol())} each.<br>Normal attendee payments: ${eth(share * BigInt(attendees))} ${escape(currencySymbol())}.<br>Held-share reserve: ${eth(share * BigInt(open))} ${escape(currencySymbol())}.<br>Integer division remainder remains protected by the contract’s reserve rules.</div>`;
+  return `<div class="notice"><strong>Reviewed ${versionLabel()} payout calculation</strong><br>${escape(state.attendeeCount)} established attendees${accepted ? ` + ${accepted} expired unmatched challenges eligible for automatic acceptance if the batch simulation fits` : ""} · ${open} unresolved matched cases.<br>Provisional share: ${eth(share)} ${escape(currencySymbol())} each.<br>Normal attendee payments: ${eth(share * BigInt(attendees))} ${escape(currencySymbol())}.<br>Held-share reserve: ${eth(share * BigInt(open))} ${escape(currencySymbol())}.<br>Integer division remainder remains protected by the contract’s reserve rules.</div>`;
 }
 async function executeTransaction() {
   const draft = app.draft;
@@ -1458,7 +1519,7 @@ async function executeTransaction() {
   button.disabled = true;
   button.textContent = "Submitting…";
   $("#transaction-status").innerHTML =
-    '<div class="notice"><span class="spinner" style="width:12px;height:12px;vertical-align:middle;margin-right:7px"></span>Submitting to the local chain. Waiting for a confirmed receipt…</div>';
+    `<div class="notice"><span class="spinner" style="width:12px;height:12px;vertical-align:middle;margin-right:7px"></span>Submitting on ${escape(networkName())}. Waiting for a confirmed receipt…</div>`;
   try {
     let result;
     if (currentIdentity()?.mode === "wallet") {
@@ -1627,7 +1688,7 @@ function showCreateEvent() {
 }
 function showRecovery(action) {
   showDialog(
-    `<div class="dialog-eyebrow">${escape(actionNames[action])}</div><h2 class="dialog-title" id="dialog-title">Choose the destination</h2><p class="dialog-body-text">The contract applies its exact eligibility and reserve rules. Review the selected event, destination and consequences before signing.</p><form data-form="recovery" data-action="${escape(action)}"><label for="recovery-to">Destination wallet</label><input id="recovery-to" name="to" required pattern="0x[a-fA-F0-9]{40}" value="${escape(currentIdentity()?.wallet ?? "")}" placeholder="0x…">${["refund", "withdrawPending"].includes(action) ? `<label for="recovery-amount" style="margin-top:15px">Amount (${escape(currencySymbol())})</label><input id="recovery-amount" name="amount" required inputmode="decimal" ${action === "withdrawPending" ? `value="${escape(eth(ownParticipant()?.pendingCreditWei ?? "0"))}"` : 'placeholder="0.01"'}>` : ""}<div class="dialog-buttons"><button class="button button-secondary" type="button" data-close>Cancel</button><button class="button button-primary">Prepare review</button></div></form>`,
+    `<div class="dialog-eyebrow">${escape(actionNames[action])}</div><h2 class="dialog-title" id="dialog-title">Choose the destination</h2><p class="dialog-body-text">The contract applies its exact eligibility and reserve rules. Review the selected event, destination and consequences before signing.</p><form data-form="recovery" data-action="${escape(action)}"><label for="recovery-to">Destination wallet</label><input id="recovery-to" name="to" required pattern="0x[a-fA-F0-9]{40}" value="${escape(currentIdentity()?.wallet ?? "")}" placeholder="0x…">${["refund", "withdrawPending"].includes(action) ? `<label for="recovery-amount" style="margin-top:15px">Amount (${escape(currencySymbol())})</label><input id="recovery-amount" name="amount" required inputmode="decimal" ${action === "withdrawPending" ? `value="${escape(eth(ownWalletFacts()?.pendingCreditWei ?? ownParticipant()?.pendingCreditWei ?? "0"))}"` : 'placeholder="0.01"'}>` : ""}<div class="dialog-buttons"><button class="button button-secondary" type="button" data-close>Cancel</button><button class="button button-primary">Prepare review</button></div></form>`,
   );
 }
 function showCorrection() {
@@ -1747,7 +1808,7 @@ document.addEventListener("change", async (event) => {
       const form = target.closest("form");
       if (form) $('[name="uri"]', form).value = result.path;
       toast(
-        "Evidence file stored locally. Review the resolver transaction to submit its URI.",
+        "Evidence file stored on this server. Review the resolver transaction to submit its URI; this does not publish it to IPFS.",
       );
     }
   } catch (error) {
@@ -1878,7 +1939,7 @@ document.addEventListener("click", async (event) => {
       );
       await load({ silent: true });
       toast(
-        `Exact case bytes verified and stored locally (${result.status}). IPFS network publication is not enabled.`,
+        `Exact case bytes verified and stored on this server (${result.status}). IPFS network publication is not enabled.`,
       );
       return;
     }
@@ -1937,7 +1998,7 @@ document.addEventListener("submit", async (event) => {
         await post(eventPath("/participants"), values);
         await load({ silent: true });
         toast(
-          "Registration linked to your authenticated local wallet. Organizer admission is pending.",
+          "Registration linked to your authenticated wallet for this event. Organizer admission is pending.",
         );
         break;
       case "receipt":

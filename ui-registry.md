@@ -4,6 +4,11 @@ Testnet environment notices must visibly name the authoritative controlled-arbit
 state that it has no independent jury. Use the existing persistent notice pattern and trusted
 bootstrap text; exact chain/currency, policy and transaction review remain available.
 Before bootstrap returns, network labels say “Connecting” instead of assuming a local chain.
+Wallet-owned unused credit and owed recovery must stay visible without a name/email registration.
+Use authenticated `ownWallet` facts from the same verified block. An initial recorded payment can
+still have later top-ups; show ordinary batch, final ruling and completed settlement separately.
+Case details disclose the challenge-time organizer, and only final values0/1/2 enable settlement.
+Wallet/app activity labels describe their visibility scope rather than implying complete chain history.
 
 ### Shared online demo environment notice
 

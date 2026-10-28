@@ -61,6 +61,9 @@ export async function createWorkbench({
     "Unsupported contract version",
   );
   const external = !!testnet;
+  const nativeSymbol = external
+    ? (testnet.manifest?.chain?.nativeCurrency?.symbol ?? "native token")
+    : "ETH";
   const chain = external
     ? await testnetChain(testnet.manifest, testnet.rpcUrl)
     : await localChain(rpcPort);
@@ -440,6 +443,27 @@ export async function createWorkbench({
     const st = await state(eventId),
       r = record(eventId, s),
       event = await summary(r, s, st);
+    // Wallet-owned recovery is independent of names, contact records or admission.
+    // Its values use the same canonical block as the surrounding financial state.
+    const ownWallet = s?.wallet
+      ? {
+          wallet: s.wallet,
+          owedWei: String(
+            await contract(eventId).owed(s.wallet, {
+              blockTag: st.blockNumber,
+            }),
+          ),
+          ...(r.deployment.contractVersion === "kleros-event-v8"
+            ? {
+                pendingCreditWei: String(
+                  await contract(eventId).pendingDeposits(s.wallet, {
+                    blockTag: st.blockNumber,
+                  }),
+                ),
+              }
+            : {}),
+        }
+      : null;
     const privileged = event.role !== "participant";
     const participants = await Promise.all(
       [...r.participants.values()]
@@ -487,6 +511,7 @@ export async function createWorkbench({
       event,
       state: st,
       payments: await projectPayments(chain, r, { blockTag: st.blockNumber }),
+      ownWallet,
       participants,
       deposits,
       unmatched: deposits.filter((x) => BigInt(x.unallocatedWei) > 0n),
@@ -552,7 +577,7 @@ export async function createWorkbench({
               logIndex: lot.logIndex,
               amountWei: String(lot.amount),
             })),
-            note: "Unused credit belongs to this payer and can be recovered directly; it is never organizer spare ETH.",
+            note: `Unused credit belongs to this payer and can be recovered directly; it is never organizer spare ${nativeSymbol}.`,
           };
         }),
       );
@@ -994,8 +1019,7 @@ export async function createWorkbench({
         );
         method = "deposit";
         value = BigInt(r.deployment.depositWei);
-        summaryText =
-          "Send exactly this event’s refundable ETH deposit. Admission remains an organizer decision.";
+        summaryText = `Deposit exactly this event’s ${nativeSymbol} commitment. Payment is separate from organizer approval and contract registration.`;
         break;
       }
       case "register":
@@ -1057,8 +1081,9 @@ export async function createWorkbench({
         method = "matchChallenge";
         args = [wallet()];
         value = ch.deposit;
-        summaryText =
-          "Match this challenge to open a local mock V1 Court case. One provisional share may be reserved during payouts.";
+        summaryText = external
+          ? "Match this challenge to open a controlled Chiado mock-arbitration case. There is no independent Kleros jury. One provisional share may remain reserved during payouts."
+          : "Match this challenge to open a local mock V1 Court case. One provisional share may be reserved during payouts.";
         break;
       }
       case "addAttendees": {
@@ -1134,8 +1159,7 @@ export async function createWorkbench({
       case "refund":
         method = "refund";
         args = [to(), BigInt(params.amountWei)];
-        summaryText =
-          "Return spare ETH only. Registered pool, held shares, owed payments and challenge escrow remain reserved.";
+        summaryText = `Return spare ${nativeSymbol} only. ${r.deployment.contractVersion === "kleros-event-v8" ? "Unused payer credit, the registered pool" : "The registered pool"}, held shares, owed payments and challenge escrow remain reserved.`;
         break;
       case "sweep":
         method = "sweep";

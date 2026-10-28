@@ -5,7 +5,11 @@ The explicit v8 extension supports `CONTRACT_VERSION=kleros-event-v8` for a synt
 See [TESTNET_REHEARSAL](TESTNET_REHEARSAL.md) for deployment and clock boundaries.
 
 For v8, event summaries declare `contractVersion` and participant details expose authoritative
-`pendingCreditWei`; snapshots additionally expose `pendingTotalWei`, `pendingCredits` by lowercase
+`pendingCreditWei`; authenticated detail also returns `ownWallet:{wallet,owedWei,pendingCreditWei}`
+independently of contact/participant registration, read at `state.blockNumber`. Anonymous detail returns
+`ownWallet:null`; v7 omits its inapplicable pending-credit field. The signed wallet is included in
+v8 credit reads even after a plain transfer without an app record. Snapshots additionally expose
+`pendingTotalWei`, `pendingCredits` by lowercase
 wallet, lifetime admission count and remaining slots. `withdrawPending` drafts accept `{to,amountWei}`
 and recover only the signer's unused credit. Credit withdrawals are separate log-backed payments.
 Returned/recovered receipt evidence cannot be reused for admission. Aggregate credit consumed into
@@ -27,7 +31,7 @@ wallet control on the synthetic chain. No mainnet registry entry is writable.
 - `POST /api/session` `{identity:'alice'}` → session (demo signers only).
 - `DELETE /api/session` → logged out.
 - `POST /api/auth/challenge` `{wallet}` → a single-use nonce plus a message bound to domain, URI, chain1337, wallet and expiry. `POST /api/auth/verify` `{nonce,signature}` verifies an EOA signature server-side and sets a wallet session. Entered email remains a declared contact. `POST /api/demo/fund` `{}` explicitly supplies 1 valueless local ETH to that verified wallet if its balance is below1ETH.
-- `GET /api/events/:id` → `{event, state, participants, imports, attendance, personal, transactions, permissions, now}`. state: `{phase,owner,pendingOwner,depositWei,poolWei,balanceWei,reservedWei,heldBackWei,owedTotalWei,challengeEscrowWei,stakerCount,attendeeCount,challengeEndsAt,challengeDepositWei,stakers,attendees,cases:[{wallet,state,matcher,matchEndsAt,depositWei,localDisputeID,arbitratorDisputeID,heldShareWei,finalRuling,caseURI,publication,appeal}],fingerprint}`. participants for authorized owner/staff: `{id,name,email,wallet,admission:'pending'|'approved'|'declined'|'free',deposit:{txHash,logIndex,amountWei,verified}|null,registered,attended,owedWei}`; own participant visible to attendee. Every participant has eventId.
+- `GET /api/events/:id` → `{event, state, ownWallet, payments, participants, imports, attendance, personal, transactions, permissions, now}`. state: `{phase,owner,pendingOwner,depositWei,poolWei,balanceWei,reservedWei,heldBackWei,owedTotalWei,challengeEscrowWei,stakerCount,attendeeCount,challengeEndsAt,challengeDepositWei,stakers,attendees,cases:[{wallet,state,matcher,matchEndsAt,depositWei,localDisputeID,arbitratorDisputeID,heldShareWei,finalRuling,caseURI,publication,appeal}],fingerprint}`. participants for authorized owner/staff: `{id,name,email,wallet,admission:'pending'|'approved'|'declined'|'free',deposit:{txHash,logIndex,amountWei,verified}|null,registered,attended,owedWei}`; own participant visible to attendee. Every participant has eventId.
 - `POST /api/events` demo session `{title,slug,description,timezone,location,startsAt,endsAt,depositEth:'0.01'}` → newly deployed **local** v7 event. The creator becomes organizer/contract owner. Free participation available at every event. Optional validated `lumaEventId/lumaUrl/contentEventId/contentUrl` map linked modules. Caller-supplied stable IDs are rejected. `PATCH /api/events/:id` owner-only edits description/location/editorialStatus/visibility/registrationStatus and those associations; financial terms stay immutable. Draft editorial content is hidden from outsiders while linked participants retain financial access.
 - `POST /api/events/:id/participants` `{name,email}` → self-registration linked to authenticated wallet (or `{name,email,participantId?,admission}` owner edits existing admission). Identity is never inferred from arbitrary pasted wallet. Seed Alice/Bob/Carol are already linked in both events.
 - `PATCH /api/events/:id/participants/:participantId` `{admission:'approved'|'declined'|'free'|'pending'}` owner only.
