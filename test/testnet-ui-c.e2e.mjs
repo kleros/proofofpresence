@@ -86,6 +86,62 @@ const contact = (role) => ({
   email: `ui-c-${role}@example.test`,
 });
 
+// Netlify's static, non-executable hosting disclosure for this exact C site.
+// The badge script is disabled at the site. No script/DOM changes are allowed.
+export const C_NETLIFY_COMMENT = `<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=db303622-4c6c-4034-b289-ccea38f029fc
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+`;
+export function assertPublishedAsset(body, pathname, expectedHash) {
+  const bytes = Buffer.from(body),
+    publishedHash = sha256(bytes);
+  const audit = {
+    pathname,
+    publishedSha256: publishedHash,
+    expectedSha256: expectedHash,
+    verifiedSha256: publishedHash,
+    transform: "none",
+    removedBytes: 0,
+  };
+  if (publishedHash === expectedHash) return audit;
+  const fail = () => {
+    throw Object.assign(
+      new UiCFailure(
+        "Published browser asset differs from reviewed source; writes disabled.",
+      ),
+      { code: "STATIC_SOURCE_MISMATCH" },
+    );
+  };
+  if (!["/", "/index.html"].includes(pathname)) fail();
+  let html;
+  try {
+    html = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    fail();
+  }
+  const anchor = '<meta charset="utf-8" />\n';
+  const at = html.indexOf(anchor);
+  if (
+    at < 0 ||
+    html.indexOf(C_NETLIFY_COMMENT) !== at + anchor.length ||
+    html.split(C_NETLIFY_COMMENT).length !== 2
+  )
+    fail();
+  const verifiedHash = sha256(html.replace(C_NETLIFY_COMMENT, ""));
+  if (verifiedHash !== expectedHash) fail();
+  return {
+    ...audit,
+    verifiedSha256: verifiedHash,
+    transform: "strip-exact-c-netlify-hosting-comment-for-hash-only",
+    exception: "C-Netlify-static-comment-v1",
+    locationByteOffset: Buffer.byteLength(html.slice(0, at + anchor.length)),
+    removedBytes: Buffer.byteLength(C_NETLIFY_COMMENT),
+    removedSha256: sha256(C_NETLIFY_COMMENT),
+    delivered:
+      "unchanged published response; only an HTML comment excluded from byte comparison",
+  };
+}
+
 export function singleAttemptConnection(url, fetchTransport = fetch) {
   const connection = new ethers.FetchRequest(url);
   connection.timeout = 30_000;
@@ -1028,6 +1084,48 @@ export async function selfTest() {
     );
     accepted++;
   }
+  const html =
+    '<!doctype html>\n<html><head><meta charset="utf-8" />\n<title>Synthetic C</title></head><body>Fixture</body></html>\n';
+  const anchor = '<meta charset="utf-8" />\n',
+    expectedHtmlHash = sha256(html);
+  const hostedHtml = html.replace(anchor, anchor + C_NETLIFY_COMMENT);
+  assert.equal(
+    assertPublishedAsset(Buffer.from(html), "/", expectedHtmlHash).transform,
+    "none",
+  );
+  accepted++;
+  assert.equal(
+    assertPublishedAsset(
+      Buffer.from(hostedHtml),
+      "/index.html",
+      expectedHtmlHash,
+    ).removedBytes,
+    326,
+  );
+  accepted++;
+  for (const body of [
+    html.replace(anchor, anchor + "<!-- arbitrary comment -->\n"),
+    hostedHtml.replace("<body>", "<body><div>extra HTML</div>"),
+    hostedHtml + '<script src="/unexpected.js"></script>',
+    hostedHtml.replace("Fixture", "changed source bytes"),
+    html + C_NETLIFY_COMMENT,
+    hostedHtml.replace(
+      C_NETLIFY_COMMENT,
+      C_NETLIFY_COMMENT + C_NETLIFY_COMMENT,
+    ),
+    hostedHtml +
+      '<script async src="/.netlify/scripts/hud?variant=public"></script>',
+  ])
+    refuse(() =>
+      assertPublishedAsset(Buffer.from(body), "/", expectedHtmlHash),
+    );
+  refuse(() =>
+    assertPublishedAsset(
+      Buffer.from(hostedHtml),
+      "/styles.css",
+      expectedHtmlHash,
+    ),
+  );
   console.log(
     publicJson({
       status: "passed",
@@ -1102,6 +1200,7 @@ export async function main(argv = process.argv.slice(2)) {
     operations: [],
     blockedRequests: [],
     screenshots: [],
+    staticAssetAudit: [],
     counts: {
       nodeHttp: 0,
       browserHttp: 0,
@@ -1292,6 +1391,13 @@ export async function main(argv = process.argv.slice(2)) {
         ) &&
         /sameorigin/i.test(rootResponse.headers.get("x-frame-options") ?? ""),
       "Separate C site serves strict same-origin security headers.",
+    );
+    proof.staticAssetAudit.push(
+      assertPublishedAsset(
+        new Uint8Array(await rootResponse.arrayBuffer()),
+        "/",
+        publicSources.get("/index.html"),
+      ),
     );
     await readiness();
     for (const asset of [
@@ -1699,10 +1805,15 @@ export async function main(argv = process.argv.slice(2)) {
                 headers: { "cache-control": "no-cache" },
               });
               check(
-                response.status() === 200 &&
-                  sha256(await response.body()) ===
-                    publicSources.get(sourcePath),
-                "Published browser asset differs from reviewed source; writes disabled.",
+                response.status() === 200,
+                "Published browser asset HTTP status differs from 200; writes disabled.",
+              );
+              proof.staticAssetAudit.push(
+                assertPublishedAsset(
+                  await response.body(),
+                  url.pathname,
+                  publicSources.get(sourcePath),
+                ),
               );
               return route.fulfill({ response });
             }
@@ -1864,8 +1975,13 @@ export async function main(argv = process.argv.slice(2)) {
           throw new UiCFailure(
             "Unexpected browser mutation blocked; no funding, execution API, import, time control, publication or ruling endpoint is allowed.",
           );
-        } catch {
-          stopWrites(`${method} ${url.pathname} blocked`);
+        } catch (error) {
+          const reason =
+            error instanceof UiCFailure &&
+            error.code === "STATIC_SOURCE_MISMATCH"
+              ? "STATIC_SOURCE_MISMATCH"
+              : "REQUEST_GUARD_OR_TRANSPORT_FAILURE";
+          stopWrites(`${method} ${url.pathname} blocked (${reason})`);
           return route.abort("blockedbyclient");
         }
       });
@@ -2244,6 +2360,7 @@ export async function main(argv = process.argv.slice(2)) {
         ]),
       ),
       publicFiles: Object.fromEntries(publicSources),
+      staticAssetAudit: proof.staticAssetAudit,
       provenance,
       contract: {
         address: d.contract,
