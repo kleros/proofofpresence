@@ -559,21 +559,44 @@ export async function chainState(chain, record) {
     "spare",
     "challengeDeposit",
   ];
-  const values = await Promise.all(keys.map((k) => c[k](at)));
-  const raw = Object.fromEntries(keys.map((k, i) => [k, values[i]]));
-  const stakerHistory = [...(await c.stakers(at))];
+  // These reads are independent and all target the same freshly selected block.
+  // Batching reduces remote-RPC latency without reusing any mutable snapshot.
+  const [values, history, attendeeList, challengerList, balance, pendingTotal] =
+    await Promise.all([
+      Promise.all(keys.map((key) => c[key](at))),
+      c.stakers(at),
+      c.attendees(at),
+      c.challengers(at),
+      chain.provider.getBalance(d.contract, block.number),
+      v8 ? c.pendingTotal(at) : Promise.resolve(0n),
+    ]);
+  const raw = Object.fromEntries(keys.map((key, i) => [key, values[i]]));
+  const stakerHistory = [...history];
   const uniqueStakers = [...new Set(stakerHistory.map(lower))];
-  const activeStatuses = await Promise.all(
-    uniqueStakers.map((wallet) => c.status(wallet, at)),
-  );
+  const creditWallets = v8
+    ? [
+        ...new Set(
+          [
+            ...uniqueStakers,
+            ...[...(record.participants?.values() ?? [])].map((person) =>
+              lower(person.wallet),
+            ),
+          ].filter((wallet) => ethers.isAddress(wallet)),
+        ),
+      ]
+    : [];
+  const [activeStatuses, pendingCreditValues] = await Promise.all([
+    Promise.all(uniqueStakers.map((wallet) => c.status(wallet, at))),
+    Promise.all(creditWallets.map((wallet) => c.pendingDeposits(wallet, at))),
+  ]);
   const activeStakers = uniqueStakers
     .filter((_, i) => Number(activeStatuses[i]) === 1)
     .map(ethers.getAddress);
   const stakers = uniqueStakers
     .filter((_, i) => [1, 2].includes(Number(activeStatuses[i])))
     .map(ethers.getAddress);
-  const attendees = [...(await c.attendees(at))];
-  const challengers = [...(await c.challengers(at))];
+  const attendees = [...attendeeList];
+  const challengers = [...challengerList];
   const cases = await Promise.all(
     challengers.map(async (wallet) => {
       const challenge = await c.challenges(wallet, at);
@@ -636,26 +659,7 @@ export async function chainState(chain, record) {
       };
     }),
   );
-  const balanceWei = String(
-    await chain.provider.getBalance(d.contract, block.number),
-  );
-  const creditWallets = v8
-    ? [
-        ...new Set(
-          [
-            ...uniqueStakers,
-            ...[...(record.participants?.values() ?? [])].map((p) =>
-              lower(p.wallet),
-            ),
-          ].filter((wallet) => ethers.isAddress(wallet)),
-        ),
-      ]
-    : [];
-  const pendingCreditValues = v8
-    ? await Promise.all(
-        creditWallets.map((wallet) => c.pendingDeposits(wallet, at)),
-      )
-    : [];
+  const balanceWei = String(balance);
   const state = {
     phase: PHASES[Number(raw.phase)],
     owner: raw.owner,
@@ -681,7 +685,7 @@ export async function chainState(chain, record) {
     challengeDepositWei: String(raw.challengeDeposit),
     ...(v8
       ? {
-          pendingTotalWei: String(await c.pendingTotal(at)),
+          pendingTotalWei: String(pendingTotal),
           pendingCredits: Object.fromEntries(
             creditWallets.map((wallet, i) => [
               wallet,

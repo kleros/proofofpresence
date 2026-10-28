@@ -48,3 +48,9 @@ Nine focused adapter/runtime tests passed after this correction, including actua
 chain/reorg fault injection, registry tampering, reduced immutable RPC calls and fresh mutable-state
 updates. The real HTTPS signature/deposit/restart test dropped from10.18seconds to3.98seconds locally;
 public latency is measured again after deployment. This preserves real-time transaction validation.
+
+A second correction groups independent mutable reads at one newly selected block instead of waiting
+for each list/balance/credit round trip. This adds no state cache. The same nine focused tests passed,
+including fresh owner/fee/credit changes. An official alternate Chiado archive RPC was read-only
+benchmarked with exact deployment/code checks; its complete anonymous detail read took5.83seconds
+locally. The final public latency remains an observed deployment check, not a promised bound.
