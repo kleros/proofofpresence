@@ -89,6 +89,8 @@ until live transaction/session checks pass.
 
 ## Current status
 
+Implemented checkpoint: `25c4797ea3475bb8e0a58c529ead0b62b8a6802d`, branch `codex/core-application`.
+
 The gateway bundles locally. Focused checks passed19 gateway tests,7 hosted server tests,4 wrong-instance
 wallet tests and35 HTTPS integration browser assertions plus Playwright expectations. Root typecheck
 passed. A clean production-dependency context also compiled with pinned artifact equality and served

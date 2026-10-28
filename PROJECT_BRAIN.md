@@ -7,7 +7,8 @@ recommendations and unexecuted-test statements.
 ## Active workspace and decision
 
 - Workspace: `/Users/hashmanansala/Documents/ChatGPT/Kleros projects`; root Git began as unborn `main`.
-  Integrated code checkpoint `52b66cc5687936cbdbb2eed3578105bb5b215d2d` is on `codex/core-application`;
+  Latest hosted implementation checkpoint `25c4797ea3475bb8e0a58c529ead0b62b8a6802d` is on
+  `codex/core-application`; the integrated UI baseline is `52b66cc5687936cbdbb2eed3578105bb5b215d2d`.
   no upstream push or live financial/data write was made. A separate read-only Netlify viewing target
   is now published as recorded below; the financial backend remains local.
 - All three fetched `main` heads exactly match the original review. Source bases and packaging are
@@ -111,7 +112,8 @@ Netlify Functions cannot preserve this application's current in-memory Node/Gana
 ephemeral invocations. A full interactive online version still needs a persistent backend and explicit
 HTTPS/Host/wallet-RPC adapters. The preview is not a completed production authentication or hosting migration.
 
-The user subsequently selected the **full interactive demo**. The hosted backend, Netlify gateway,
+The user subsequently selected the **full interactive demo**. At implemented checkpoint `25c4797`,
+the hosted backend, Netlify gateway,
 secure sessions/public nonce domain, bounded signed RPC and unique demo-instance signing checks are
 now implemented locally. The shared online notice explains intentional demo impersonation, valueless
 ETH/mock Court and state resets. Financial contracts/domain rules are unchanged. Focused validation

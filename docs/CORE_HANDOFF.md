@@ -6,6 +6,11 @@ Core branch: `codex/core-application`. Integrated stable code checkpoint:
 `28f2c3f50563a699a62bf9e4085f0aa6a7464828`; authoritative preview/payment/journal checkpoint:
 `b81607ac2bbb86973f3b48b9dd93c2beb756de32`. No upstream push or production deployment occurred.
 
+Latest hosted implementation checkpoint: `25c4797ea3475bb8e0a58c529ead0b62b8a6802d` on the same branch.
+It passed build/typecheck,121 Node tests and143 browser assertions plus expectations. A read-only
+Netlify preview is published; the requested interactive replacement is prepared and awaiting Railway
+authentication. See [HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md); no interactive cloud deployment is claimed.
+
 ## Architecture and authoritative interfaces
 
 The root Node ESM app is a local-only workbench using unchanged v7 per-event contracts and V1 Court
@@ -76,3 +81,16 @@ factual re-login recovery and event-switch response guards all use the authorita
 External work remains persistent production auth/storage, staging RLS and
 private-content mapping rehearsal, a fresh mainnet fork, dependency remediation and an explicitly
 authorized rollout. Backend/financial behavior remains owned by the core implementation session.
+
+## Hosted-demo interface additions
+
+The user requested full interactive Netlify hosting. The frontend/gateway target is separate from
+the one persistent Node/Ganache backend. `hosted-demo` requires exact HTTPS public/backend origins
+and a server-only proxy key; local defaults remain loopback. Sessions become Secure cookies and
+nonce signatures bind the public URI. The same-origin RPC has a cookie-free public transport for
+bounded reads and signed1337 transactions; API writes retain exact actual-Origin checks.
+Unique instance-marker block hashes guard browser and legacy-page signing against another1337 RPC.
+No contract/economic/domain rules changed. Shared synthetic identities and restart resets are explicit.
+The gateway bundles and the closed production-dependency package builds/serves advanced routes.
+The full verification and local HTTPS integration passed; actual Railway/Linux execution and live
+interactive acceptance remain after sign-in. The verified read-only site stays available meanwhile.
