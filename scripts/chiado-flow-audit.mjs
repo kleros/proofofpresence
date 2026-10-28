@@ -8,7 +8,69 @@ import { createHash } from "node:crypto";
 import { ethers } from "ethers";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
-const ORIGIN = "https://kleros-event-workbench-preview.netlify.app";
+const SCENARIOS = {
+  ab: {
+    origin: "https://kleros-event-workbench-preview.netlify.app",
+    manifest: "registry/chiado-v8-controlled.json",
+    directory: "artifacts/chiado-flow-audit",
+    latest: "artifacts/chiado-flow-status.json",
+    count: 2,
+    control: true,
+  },
+  c: {
+    origin: "https://kleros-ui-c-20261029-9fe71683.netlify.app",
+    manifest: "registry/chiado-v8-ui-c.json",
+    directory: "artifacts/chiado-ui-c-flow-audit",
+    latest: "artifacts/chiado-ui-c-flow-status.json",
+    count: 1,
+    control: false,
+    planId: "cb5736f0-f41d-470c-b491-c0c384695281",
+    planFingerprint:
+      "3637ba50a2b8f1d46cedbe6d678b747c25d19c15e976ae6ea87e63c8be0126fb",
+    eventId: "chiado-ui-cb5736f0-f41d-470c-b491-c0c384695281-c",
+    contract: "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
+  },
+};
+export function observerScope(scenario = "ab") {
+  assert.ok(
+    Object.hasOwn(SCENARIOS, scenario),
+    "Only the existing reviewed A/B or C scenario is supported",
+  );
+  return { ...SCENARIOS[scenario] };
+}
+export function assertObserverManifest(manifest, scenario = "ab") {
+  const scope = observerScope(scenario);
+  assert.equal(manifest.publicOrigin, scope.origin);
+  assert.equal(manifest.events.length, scope.count);
+  if (scope.planId) {
+    assert.equal(
+      manifest.planId,
+      scope.planId,
+      "Exact reviewed C plan identity",
+    );
+    assert.equal(
+      manifest.planFingerprint,
+      scope.planFingerprint,
+      "Exact reviewed C immutable plan",
+    );
+    assert.equal(
+      manifest.events[0].definition.id,
+      scope.eventId,
+      "Exact reviewed C event identity",
+    );
+    assert.equal(
+      manifest.events[0].deployment.eventId,
+      scope.eventId,
+      "Exact reviewed C deployment identity",
+    );
+    assert.equal(
+      manifest.events[0].deployment.contract.toLowerCase(),
+      scope.contract.toLowerCase(),
+      "Exact reviewed C deployed child",
+    );
+  }
+  return scope;
+}
 const PHASES = ["Open", "Listed", "Finalized", "Cancelled"];
 const CASES = ["None", "Waiting", "Disputed", "Resolved"];
 const same = (a, b) => String(a).toLowerCase() === String(b).toLowerCase();
@@ -114,6 +176,46 @@ export function expectedUi(state) {
 }
 
 function selfTest() {
+  assert.notEqual(observerScope("ab").origin, observerScope("c").origin);
+  assert.notEqual(observerScope("ab").latest, observerScope("c").latest);
+  assert.equal(observerScope().control, true);
+  assert.equal(observerScope("c").control, false);
+  assert.throws(() => observerScope("other"));
+  const cScope = observerScope("c");
+  const cManifest = {
+    publicOrigin: cScope.origin,
+    planId: cScope.planId,
+    planFingerprint: cScope.planFingerprint,
+    events: [
+      {
+        definition: { id: cScope.eventId },
+        deployment: { eventId: cScope.eventId, contract: cScope.contract },
+      },
+    ],
+  };
+  assertObserverManifest(cManifest, "c");
+  for (const mutate of [
+    (m) => {
+      m.planId = "other-plan";
+    },
+    (m) => {
+      m.planFingerprint = "0".repeat(64);
+    },
+    (m) => {
+      m.events[0].definition.id = "other-event";
+    },
+    (m) => {
+      m.events[0].deployment.eventId = "other-event";
+    },
+    (m) => {
+      m.events[0].deployment.contract =
+        "0x0000000000000000000000000000000000000001";
+    },
+  ]) {
+    const wrong = structuredClone(cManifest);
+    mutate(wrong);
+    assert.throws(() => assertObserverManifest(wrong, "c"));
+  }
   const base = {
     phase: "Listed",
     now: 100,
@@ -223,13 +325,14 @@ function selfTest() {
   );
 }
 
-export async function audit() {
-  const manifestPath = path.join(ROOT, "registry/chiado-v8-controlled.json");
+export async function audit({ scenario = "ab" } = {}) {
+  const scope = observerScope(scenario);
+  const manifestPath = path.join(ROOT, scope.manifest);
   const bytes = fs.readFileSync(manifestPath);
   const manifest = JSON.parse(bytes);
   assert.equal(manifest.chain.chainId, 10200);
   assert.equal(manifest.arbitration.mode, "controlled");
-  assert.equal(manifest.publicOrigin, ORIGIN);
+  assertObserverManifest(manifest, scenario);
   assert.equal(new URL(manifest.chain.rpcUrl).protocol, "https:");
   const artifact = JSON.parse(
     fs.readFileSync(path.join(ROOT, "build/contracts/KlerosEventV8.json")),
@@ -249,15 +352,15 @@ export async function audit() {
     checks++;
   };
   const readApp = async (relative) => {
-    const url = new URL(relative, ORIGIN);
-    eq(url.origin, ORIGIN, "Fixed authorized app origin");
+    const url = new URL(relative, scope.origin);
+    eq(url.origin, scope.origin, "Fixed authorized app origin");
     const response = await fetch(url, {
       method: "GET",
       redirect: "error",
       cache: "no-store",
       signal: AbortSignal.timeout(90_000),
     });
-    eq(response.status, 200, "Public app responds");
+    eq(response.status, 200, `Public app responds at ${relative}`);
     return response.json();
   };
   try {
@@ -277,6 +380,20 @@ export async function audit() {
       "Controlled arbitration is explicit",
     );
     eq(boot.identities, [], "No demo impersonation identities");
+    const identities = (records) =>
+      records
+        .map((r) => ({ id: r.id, contract: r.contract.toLowerCase() }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+    eq(
+      identities(boot.events),
+      identities(
+        manifest.events.map((r) => ({
+          id: r.definition.id,
+          contract: r.deployment.contract,
+        })),
+      ),
+      "Bootstrap contains only this exact scenario's events",
+    );
     const events = [];
     for (const record of manifest.events) {
       const d = await readApp(
@@ -855,97 +972,103 @@ export async function audit() {
         operations,
       });
     }
-    const controlFile = path.join(
-      ROOT,
-      "artifacts/chiado-flow-audit",
-      `${manifest.planId}-control-baseline.json`,
-    );
-    const b = events[1];
-    const control = Object.fromEntries(
-      [
-        "phase",
-        "owner",
-        "pendingOwner",
-        "stakerCount",
-        "attendeeCount",
-        "challengeEndsAt",
-        "pendingChallenges",
-        "heldBackWei",
-        "pendingTotalWei",
-        "owedTotalWei",
-        "reservedWei",
-        "spareWei",
-        "payoutShareWei",
-        "depositWei",
-        "balanceWei",
-        "poolWei",
-        "challengeEscrowWei",
-        "stakerHistory",
-        "attendees",
-        "cases",
-      ].map((key) => [key, b.state[key]]),
-    );
     const manifestSha256 = createHash("sha256").update(bytes).digest("hex");
-    if (!fs.existsSync(controlFile)) {
-      assert.ok(
-        events[0].state.phase === "Listed" &&
-          events[0].state.cases.some(
-            (item) =>
-              item.state === "Disputed" &&
-              item.matched &&
-              item.finalRuling === null,
-          ) &&
-          b.state.phase === "Listed",
-        "Capture the unchanged B baseline before ordinary payout, not retrospectively",
+    let controlBaseline = null;
+    if (scope.control) {
+      const controlFile = path.join(
+        ROOT,
+        "artifacts/chiado-flow-audit",
+        `${manifest.planId}-control-baseline.json`,
       );
-      fs.mkdirSync(path.dirname(controlFile), { recursive: true });
-      fs.writeFileSync(
-        controlFile,
-        textJson({
-          planId: manifest.planId,
-          manifestSha256,
-          eventId: b.eventId,
-          contract: b.contract,
-          blockNumber: b.blockNumber,
-          blockHash: b.blockHash,
-          state: control,
-        }),
-        { flag: "wx" },
+      const b = events[1];
+      const control = Object.fromEntries(
+        [
+          "phase",
+          "owner",
+          "pendingOwner",
+          "stakerCount",
+          "attendeeCount",
+          "challengeEndsAt",
+          "pendingChallenges",
+          "heldBackWei",
+          "pendingTotalWei",
+          "owedTotalWei",
+          "reservedWei",
+          "spareWei",
+          "payoutShareWei",
+          "depositWei",
+          "balanceWei",
+          "poolWei",
+          "challengeEscrowWei",
+          "stakerHistory",
+          "attendees",
+          "cases",
+        ].map((key) => [key, b.state[key]]),
       );
-    }
-    const baseline = JSON.parse(fs.readFileSync(controlFile));
-    eq(
-      baseline.manifestSha256,
-      manifestSha256,
-      "Control baseline manifest binding",
-    );
-    eq(baseline.eventId, b.eventId, "Control baseline event binding");
-    eq(baseline.contract, b.contract, "Control baseline contract binding");
-    eq(
-      (await provider.getBlock(baseline.blockNumber)).hash,
-      baseline.blockHash,
-      "Control baseline remains canonical",
-    );
-    eq(
-      control,
-      baseline.state,
-      "Event B remains financially unchanged through A stages",
-    );
-    return {
-      status: "passed-current-checkpoint",
-      checkedAt: new Date().toISOString(),
-      origin: ORIGIN,
-      chainId: 10200,
-      arbitration: "controlled",
-      instanceId: boot.instanceId,
-      manifestSha256,
-      controlBaseline: {
+      if (!fs.existsSync(controlFile)) {
+        assert.ok(
+          events[0].state.phase === "Listed" &&
+            events[0].state.cases.some(
+              (item) =>
+                item.state === "Disputed" &&
+                item.matched &&
+                item.finalRuling === null,
+            ) &&
+            b.state.phase === "Listed",
+          "Capture the unchanged B baseline before ordinary payout, not retrospectively",
+        );
+        fs.mkdirSync(path.dirname(controlFile), { recursive: true });
+        fs.writeFileSync(
+          controlFile,
+          textJson({
+            planId: manifest.planId,
+            manifestSha256,
+            eventId: b.eventId,
+            contract: b.contract,
+            blockNumber: b.blockNumber,
+            blockHash: b.blockHash,
+            state: control,
+          }),
+          { flag: "wx" },
+        );
+      }
+      const baseline = JSON.parse(fs.readFileSync(controlFile));
+      eq(
+        baseline.manifestSha256,
+        manifestSha256,
+        "Control baseline manifest binding",
+      );
+      eq(baseline.eventId, b.eventId, "Control baseline event binding");
+      eq(baseline.contract, b.contract, "Control baseline contract binding");
+      eq(
+        (await provider.getBlock(baseline.blockNumber)).hash,
+        baseline.blockHash,
+        "Control baseline remains canonical",
+      );
+      eq(
+        control,
+        baseline.state,
+        "Event B remains financially unchanged through A stages",
+      );
+      controlBaseline = {
         file: path.relative(ROOT, controlFile),
         blockNumber: baseline.blockNumber,
         sha256: createHash("sha256")
           .update(fs.readFileSync(controlFile))
           .digest("hex"),
-      },
+      };
+    }
+    return {
+      status: "passed-current-checkpoint",
+      checkedAt: new Date().toISOString(),
+      origin: scope.origin,
+      scenario,
+      manifestFile: scope.manifest,
+      chainId: 10200,
+      arbitration: "controlled",
+      instanceId: boot.instanceId,
+      manifestSha256,
+      controlBaseline,
       checks,
       readOnly: true,
       signatures: 0,
@@ -966,17 +1089,24 @@ if (
 ) {
   if (process.argv.includes("--self-test")) selfTest();
   else {
-    const out = path.join(ROOT, "artifacts/chiado-flow-audit");
+    const args = process.argv.slice(2);
+    assert.ok(
+      args.length === 0 || (args.length === 2 && args[0] === "--scenario"),
+      "Use no args for A/B or --scenario c for the isolated C observer",
+    );
+    const scenario = args[1] ?? "ab";
+    const scope = observerScope(scenario);
+    const out = path.join(ROOT, scope.directory);
     fs.mkdirSync(out, { recursive: true });
     const file = path.join(
       out,
       new Date().toISOString().replace(/[:.]/g, "-") + ".json",
     );
     try {
-      const result = await audit();
+      const result = await audit({ scenario });
       fs.writeFileSync(file, textJson(result));
       fs.writeFileSync(
-        path.join(ROOT, "artifacts/chiado-flow-status.json"),
+        path.join(ROOT, scope.latest),
         textJson({ ...result, evidenceFile: path.relative(ROOT, file) }),
       );
       console.log(
@@ -999,14 +1129,12 @@ if (
         signatures: 0,
         broadcasts: 0,
         observerSha256: OBSERVER_SHA256,
+        scenario,
         error: error.message,
         evidenceFile: path.relative(ROOT, file),
       };
       fs.writeFileSync(file, textJson(failure));
-      fs.writeFileSync(
-        path.join(ROOT, "artifacts/chiado-flow-status.json"),
-        textJson(failure),
-      );
+      fs.writeFileSync(path.join(ROOT, scope.latest), textJson(failure));
       console.error(
         `Read-only Chiado audit failed: ${error.message}. Evidence: ${file}`,
       );
