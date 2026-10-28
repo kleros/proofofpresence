@@ -54,6 +54,8 @@ and original live configs. The exact HTML/template assets needed by advanced too
 
 1. Sign in to the existing Railway account. Create one dedicated project/service for this demo, with
    no Git-provider connection. Existing unrelated projects and Netlify sites are not changed.
+   Use the current pinned CLI (`npx --yes @railway/cli@5.71.0`). Website sign-in must finish the
+   device-activation authorization; verify `whoami --json` succeeds before creating resources.
 2. Generate the service's Railway domain with target port3000. Configure health `/healthz`, one replica,
    no sleeping and an ordinary failure restart policy. Keep existing billing; do not purchase upgrades.
 3. Run the following with the exact returned project/service IDs and backend HTTPS origin:

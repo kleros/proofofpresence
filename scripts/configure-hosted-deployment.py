@@ -33,6 +33,7 @@ else:
         stream.write(json.dumps({'publicOrigin': args.public_origin, 'proxySecret': key}) + '\n')
 
 variables = {'MODE': 'hosted-demo', 'PUBLIC_ORIGIN': args.public_origin, 'BACKEND_ORIGIN': args.backend_origin, 'PROXY_SECRET': key, 'PORT': '3000', 'RPC_PORT': '0', 'RUNTIME_ROOT': '/app/.runtime'}
+railway_cli = ['npx', '--yes', '@railway/cli@5.71.0']
 config = json.loads((Path.home()/'Library/Preferences/netlify/config.json').read_text())
 token = config['users'][config['userId']]['auth']['token']
 site_id = json.loads((root/'.netlify/state.json').read_text())['siteId']
@@ -48,7 +49,7 @@ endpoint = '/accounts/'+site['account_id']+'/env'
 query = '?site_id='+quote(site_id)
 existing = {item['key'] for item in api('GET',endpoint+query)}
 for name, value in variables.items():
-    result = subprocess.run(['railway','variable','set',name,'--stdin','--skip-deploys','--project',args.project_id,'--service',args.service_id,'--environment',args.environment], input=value, text=True, capture_output=True)
+    result = subprocess.run([*railway_cli,'variable','set',name,'--stdin','--skip-deploys','--project',args.project_id,'--service',args.service_id,'--environment',args.environment], input=value, text=True, capture_output=True)
     if result.returncode: raise SystemExit(f'Railway variable configuration failed for {name}; credentials and raw CLI output are withheld.')
 print('Configured backend variable names: ' + ', '.join(variables), flush=True)
 values = {'KLEROS_BACKEND_URL':args.backend_origin,'KLEROS_PUBLIC_ORIGIN':args.public_origin,'KLEROS_PROXY_SECRET':key}
