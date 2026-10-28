@@ -1,0 +1,40 @@
+{
+  "mode": "isolated-real-v8-http-and-crypto-wallet",
+  "checks": [
+    "All tests use loopback HTTP and an isolated synthetic chain1337",
+    "Unavailable durable recovery storage visibly locks selection and sends no preview or save",
+    "The owner receives separate approval and trusted check-in controls with no duplicate task controller",
+    "Unknown plain-transfer payers have a visible blocked reason and cannot become guest approvals",
+    "Unknown payer rows expose no invented participant ID or contact join",
+    "Select visible includes only the current verified eligible payer, excluding a returned receipt",
+    "A filter change creates a fresh empty approval selection instead of carrying hidden intent",
+    "Switching to another owner's event removes selections and private guest contacts",
+    "Reviewing curated admission creates no save or financial draft before explicit confirmation",
+    "The durable contact-free marker is saved before the one actual HTTP commit whose response is lost",
+    "The unresolved saved marker contains identity references without names or emails",
+    "The actual saved app approval still leaves Alice financially unregistered",
+    "A full reload restores uncertainty and never automatically retries the save or silently resolves it",
+    "Explicit recovery uses one authenticated GET and offers separate registration without automatically preparing a transaction",
+    "A validated committed status removes only the expected batch recovery marker",
+    "The explicit registration follow-up reviews exactly the approved selection and ignores an unrelated returned payer",
+    "Changed eligibility blocks the entire saved registration selection with a reason instead of silently filtering it",
+    "Batch selection, saving, reload and recovery preserve the independent submitted financial journal byte for byte",
+    "A wallet change disposes owner task selections and contacts before a different wallet authenticates",
+    "Wallet and event scope changes also preserve the unrelated submitted financial journal",
+    "Staff receive trusted check-in only and cannot batch approve admission",
+    "One explicit staff save records both actual door observations at chain time with reviewer and replay-safe audit",
+    "A free guest's trusted check-in does not admit money or publish financial attendance",
+    "Approval and staff check-in leave the contract Open with no registered pool",
+    "All batch UI activity leaves Event A and independent Event B financial state unchanged",
+    "The integrated staff batch controls fit a mobile viewport",
+    "Browser wallets perform nonce authentication only, with no financial signing or sends",
+    "No JavaScript errors, unexpected writes or external requests occur"
+  ],
+  "errors": [],
+  "external": [],
+  "limitations": [
+    "Only the successful commit response is deliberately dropped to exercise durable recovery; backend mutations and later GET are real.",
+    "The retained Alice journal simulates a submitted deposit awaiting app reconciliation; the setup receipt is real.",
+    "No public RPC or testnet transaction is used."
+  ]
+}

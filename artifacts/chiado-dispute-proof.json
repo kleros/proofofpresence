@@ -1,0 +1,212 @@
+{
+  "status": "matched-dispute-confirmed",
+  "chainId": 10200,
+  "arbitrationMode": "controlled",
+  "checkedAt": "2026-10-28T17:38:19.737Z",
+  "checkedBlockNumber": 23734094,
+  "checkedBlockHash": "0xcbcef18d247d92a7fb463a0c6f39bb3ae9a08a4d50155fd26cad1a1eba130bb0",
+  "uiChallenge": {
+    "hash": "0xfa6b8126046539d918b1f8a4e3f889e320234c00630664537fb4da53ff62442c",
+    "blockNumber": 23734013,
+    "blockHash": "0x97b4796f9c434ae2b5b97202f9c36f38ba6ba0a097a635f75c009e47aa1f1c0b",
+    "valueWei": "30000000000"
+  },
+  "organizerMatch": {
+    "hash": "0x751979ac5cdfde1822bf47aefd4140861a1f9fb67531098933d403b7a91cb108",
+    "blockNumber": 23734075,
+    "blockHash": "0x5334d4a24dd5560b04bf96210c7a1975fc7dd940a2124e9cad00a540fb1b865e",
+    "valueWei": "30000000000"
+  },
+  "resolverLocalDisputeId": "0",
+  "arbitratorDisputeId": "1000",
+  "resolverRuled": false,
+  "arbitratorPeriod": 0,
+  "deadlines": {
+    "aChallenge": {
+      "timestamp": 1793294280,
+      "utc": "2026-10-29T17:18:00.000Z",
+      "bangkok": "2026-10-30, 00:18:00 Asia/Bangkok"
+    },
+    "bChallenge": {
+      "timestamp": 1793294295,
+      "utc": "2026-10-29T17:18:15.000Z",
+      "bangkok": "2026-10-30, 00:18:15 Asia/Bangkok"
+    },
+    "bobMatch": {
+      "timestamp": 1793295040,
+      "utc": "2026-10-29T17:30:40.000Z",
+      "bangkok": "2026-10-30, 00:30:40 Asia/Bangkok"
+    }
+  },
+  "eventA": {
+    "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+    "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+    "state": {
+      "phase": "Listed",
+      "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+      "pendingOwner": "0x0000000000000000000000000000000000000000",
+      "stakers": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+        "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+        "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+      ],
+      "activeStakers": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+        "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+        "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+      ],
+      "stakerHistory": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+        "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+        "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+      ],
+      "attendees": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+        "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+      ],
+      "cases": [
+        {
+          "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "matched": true,
+          "outcome": null,
+          "state": "Disputed",
+          "matcher": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "matchEndsAt": 1793295040,
+          "depositWei": "30000000000",
+          "localDisputeID": "0",
+          "arbitratorDisputeID": "1000",
+          "heldShareWei": "0",
+          "caseOrganizer": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "finalRuling": null,
+          "caseURI": "/ipfs/QmevDcKkYvGCp9RCY9arsfVEsvpZJ7T21orJCxkVwRzHH4",
+          "publication": "unpublished",
+          "appeal": {
+            "ruling": 0,
+            "start": 0,
+            "end": 0,
+            "loserEnd": 0,
+            "costAttended": "0",
+            "costAbsent": "0"
+          }
+        }
+      ],
+      "depositWei": "1000000000000",
+      "poolWei": "3000000000000",
+      "balanceWei": "3030000000000",
+      "reservedWei": "3030000000000",
+      "spareWei": "0",
+      "heldBackWei": "0",
+      "owedTotalWei": "0",
+      "challengeEscrowWei": "30000000000",
+      "payoutShareWei": "0",
+      "stakerCount": 3,
+      "attendeeCount": 2,
+      "challengeEndsAt": 1793294280,
+      "pendingChallenges": 1,
+      "challengeDepositWei": "30000000000",
+      "pendingTotalWei": "0",
+      "pendingCredits": {
+        "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf": "0",
+        "0x083343a3247df539a460a4a26be8393a3f0fede2": "0",
+        "0xe5a97deece6cc390146fb0496d7b9e2193d9439f": "0"
+      },
+      "maxStakers": 150,
+      "lifetimeAdmittedCount": 3,
+      "remainingAdmissionSlots": 147,
+      "fingerprint": "2c403f9d8ec90733ad30f1c1613698d520966f0cbdb4581375a76edf739d2ea2",
+      "blockNumber": 23734094,
+      "now": 1793209080
+    }
+  },
+  "eventB": {
+    "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+    "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+    "state": {
+      "phase": "Listed",
+      "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+      "pendingOwner": "0x0000000000000000000000000000000000000000",
+      "stakers": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+      ],
+      "activeStakers": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+      ],
+      "stakerHistory": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+      ],
+      "attendees": [
+        "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+      ],
+      "cases": [],
+      "depositWei": "2000000000000",
+      "poolWei": "2000000000000",
+      "balanceWei": "2000000000000",
+      "reservedWei": "2000000000000",
+      "spareWei": "0",
+      "heldBackWei": "0",
+      "owedTotalWei": "0",
+      "challengeEscrowWei": "0",
+      "payoutShareWei": "0",
+      "stakerCount": 1,
+      "attendeeCount": 1,
+      "challengeEndsAt": 1793294295,
+      "pendingChallenges": 0,
+      "challengeDepositWei": "30000000000",
+      "pendingTotalWei": "0",
+      "pendingCredits": {
+        "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf": "0"
+      },
+      "maxStakers": 150,
+      "lifetimeAdmittedCount": 1,
+      "remainingAdmissionSlots": 149,
+      "fingerprint": "4723379bf164ba9fb7faf4fe25732ce299f949cb040dd2978b26b1eaf52b2409",
+      "blockNumber": 23734094,
+      "now": 1793209080
+    }
+  },
+  "bUnchangedRelativeAttendanceCheckpoint": true,
+  "bAttendanceCheckpointBlock": 23733887,
+  "bAtAttendance": {
+    "phase": "Listed",
+    "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "stakers": [
+      "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+    ],
+    "activeStakers": [
+      "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+    ],
+    "stakerHistory": [
+      "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+    ],
+    "attendees": [
+      "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+    ],
+    "cases": [],
+    "depositWei": "2000000000000",
+    "poolWei": "2000000000000",
+    "balanceWei": "2000000000000",
+    "reservedWei": "2000000000000",
+    "spareWei": "0",
+    "heldBackWei": "0",
+    "owedTotalWei": "0",
+    "challengeEscrowWei": "0",
+    "payoutShareWei": "0",
+    "stakerCount": 1,
+    "attendeeCount": 1,
+    "challengeEndsAt": 1793294295,
+    "pendingChallenges": 0,
+    "challengeDepositWei": "30000000000",
+    "pendingTotalWei": "0",
+    "pendingCredits": {
+      "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf": "0"
+    },
+    "maxStakers": 150,
+    "lifetimeAdmittedCount": 1,
+    "remainingAdmissionSlots": 149,
+    "fingerprint": "4723379bf164ba9fb7faf4fe25732ce299f949cb040dd2978b26b1eaf52b2409",
+    "blockNumber": 23733887,
+    "now": 1793207935
+  },
+  "notice": "Actual public Chiado custody and dispute receipts; the arbitrator is deliberately controlled. No payout, ruling or settlement has run. Payouts require a timestamp strictly after the actual challenge window."
+}

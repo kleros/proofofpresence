@@ -22,7 +22,11 @@ import {
   boundedFees,
 } from "../src/testnet-config.mjs";
 import { preparePlan, deployPlan } from "../scripts/testnet-deploy.mjs";
-import { runStage, readyAfter } from "../scripts/testnet-rehearsal.mjs";
+import {
+  runStage,
+  readyAfter,
+  proveCollateralDelivery,
+} from "../scripts/testnet-rehearsal.mjs";
 
 const fixtureWallet = () => ({
   roles: Object.fromEntries(
@@ -398,6 +402,43 @@ test(
       await assert.rejects(run("attendance"), /Attendance opens/);
       await rpc.request({ method: "evm_increaseTime", params: [901] });
       await rpc.request({ method: "evm_mine", params: [] });
+      const savedDepositHashes = Object.fromEntries(
+        Object.entries(journal.transactions)
+          .filter(([key]) => key.startsWith("deposit-"))
+          .map(([key, value]) => [key, value.hash]),
+      );
+      const balanceBeforeResume = await provider.getBalance(
+        manifest.events[0].deployment.contract,
+      );
+      await run("deposit");
+      assert.deepEqual(
+        Object.fromEntries(
+          Object.entries(journal.transactions)
+            .filter(([key]) => key.startsWith("deposit-"))
+            .map(([key, value]) => [key, value.hash]),
+        ),
+        savedDepositHashes,
+      );
+      assert.equal(
+        await provider.getBalance(manifest.events[0].deployment.contract),
+        balanceBeforeResume,
+      );
+      const missingReceipt = structuredClone(journal);
+      delete missingReceipt.transactions["deposit-alice-b"];
+      await assert.rejects(
+        runStage({
+          stage: "deposit",
+          execute: true,
+          provider,
+          plan,
+          manifest,
+          artifacts,
+          wallet,
+          journal: missingReceipt,
+          journalPath,
+        }),
+        /only receipt checks/,
+      );
       for (const stage of ["attendance", "challenge", "match"])
         await run(stage);
       await assert.rejects(run("payout"), /time must pass naturally/);
@@ -410,6 +451,50 @@ test(
       assert.equal(result.alicePayoutWei, "1500000000000");
       assert.equal(result.carolPayoutWei, "1500000000000");
       assert.equal(result.bUnchangedDuringASettlement, true);
+      assert.equal(
+        result.collateralDelivery.method,
+        "canonical-block-recipient-balance-and-gas",
+      );
+      assert.equal(
+        result.collateralDelivery.totalChallengeCollateralWei,
+        "30000000000",
+      );
+      const matcherProof = result.collateralDelivery.recipients.find(
+        (row) => row.wallet === wallet.roles.ownerA.address,
+      );
+      assert.equal(matcherProof.collateralDeliveredWei, "30000000000");
+      assert.ok(BigInt(matcherProof.gasPaidWei) > 0n);
+      const event = new ethers.Contract(
+        manifest.events[0].deployment.contract,
+        artifacts.KlerosEventV8.abi,
+        provider,
+      );
+      const settlementBlock = result.collateralDelivery.blockNumber;
+      const inconsistentBalances = new Proxy(provider, {
+        get(target, key) {
+          if (key === "getBalance")
+            return async (address, block) =>
+              (await target.getBalance(address, block)) +
+              (block === settlementBlock &&
+              address.toLowerCase() ===
+                wallet.roles.ownerA.address.toLowerCase()
+                ? 1n
+                : 0n);
+          const value = Reflect.get(target, key, target);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      });
+      await assert.rejects(
+        proveCollateralDelivery({
+          provider: inconsistentBalances,
+          event,
+          challenge: await event.challenges(wallet.roles.bob.address),
+          bob: wallet.roles.bob.address,
+          finalRuling: 2,
+          hash: journal.transactions["settle-bob-a"].hash,
+        }),
+        /do not prove/,
+      );
     } finally {
       clearInterval(ticker);
       provider.destroy();

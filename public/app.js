@@ -1,6 +1,9 @@
 // @ts-check
 import { analyzeImport } from "./reconciliation.js";
 import { assertDemoChainInstance } from "./hosted-wallet.js";
+import { mountContractInbox } from "./contract-inbox.js";
+import { mountBatchActions } from "./batch-actions.js";
+import { createBatchPendingJournal } from "./batch-pending.js";
 import {
   createTransactionJournal,
   submitWalletDraft,
@@ -134,7 +137,397 @@ const app = {
   pendingInstanceId: null,
   focusTab: false,
   csvReadToken: 0,
+  unsignedReviewVersion: 0,
+  batchRegistrationSelection: null,
 };
+let batchPendingJournal;
+try {
+  batchPendingJournal = createBatchPendingJournal(localStorage, {
+    origin: location.origin,
+  });
+} catch {
+  const unavailable = () => {
+    throw new Error(
+      "Durable batch recovery storage is unavailable. Saving is locked.",
+    );
+  };
+  batchPendingJournal = {
+    load: unavailable,
+    save: unavailable,
+    remove: unavailable,
+  };
+}
+const batchControllers = new Map();
+const batchFilterRevisions = { "approve-admission": 0, "check-in": 0 };
+function disposeBatchActions(action) {
+  if (action) {
+    batchControllers.get(action)?.dispose();
+    batchControllers.delete(action);
+  } else {
+    for (const controller of batchControllers.values()) controller.dispose();
+    batchControllers.clear();
+  }
+}
+function batchActionsEnabled(action) {
+  return (
+    app.bootstrap?.capabilities?.batchActions === true &&
+    isV8() &&
+    (action === "approve-admission" ? isOwner() : isStaff())
+  );
+}
+function batchContextCurrent(scope, includeGeneration = true) {
+  const route = readRoute();
+  return (
+    (!includeGeneration || app.generation === scope.generation) &&
+    route.eventId === scope.eventId &&
+    route.view === "organizer" &&
+    app.route.eventId === scope.eventId &&
+    app.route.view === "organizer" &&
+    app.bootstrap?.instanceId === scope.instanceId &&
+    same(currentIdentity()?.wallet, scope.wallet) &&
+    app.detail?.event.id === scope.eventId &&
+    app.detail.event.chainId === scope.chainId &&
+    same(app.detail.event.contract, scope.contract) &&
+    app.detail.event.contractVersion === scope.contractVersion
+  );
+}
+function batchScope() {
+  const event = app.detail.event;
+  return Object.freeze({
+    generation: app.generation,
+    eventId: event.id,
+    instanceId: app.bootstrap.instanceId,
+    wallet: currentIdentity().wallet,
+    chainId: event.chainId,
+    contract: event.contract,
+    contractVersion: event.contractVersion,
+  });
+}
+function renderBatchHost(action) {
+  if (!batchActionsEnabled(action)) return "";
+  return `<div class="batch-task"><h3>${action === "approve-admission" ? "Curated admission approvals" : "Trusted door check-in"}</h3><div data-batch-toolbar="${action}"></div></div>`;
+}
+async function batchRequest(path, options) {
+  try {
+    return await api(path, options);
+  } catch (error) {
+    if ([401, 403].includes(error.status)) {
+      disposeContractInbox();
+      void load();
+    }
+    throw error;
+  }
+}
+function mountOrganizerBatchActions() {
+  if (app.route.view !== "organizer") return;
+  for (const action of ["approve-admission", "check-in"]) {
+    const host = $(`[data-batch-toolbar="${action}"]`);
+    if (!host || batchControllers.has(action) || !batchActionsEnabled(action))
+      continue;
+    const contractSource = action === "approve-admission";
+    const selectionRoot = $(
+      contractSource ? "#contract-deposit-inbox" : "#people-batch-selection",
+    );
+    if (!selectionRoot) continue;
+    const scope = batchScope(),
+      filterRevision = batchFilterRevisions[action];
+    const current = () =>
+      host.isConnected &&
+      selectionRoot.isConnected &&
+      $(`[data-batch-toolbar="${action}"]`) === host &&
+      batchContextCurrent(scope) &&
+      batchActionsEnabled(action) &&
+      batchFilterRevisions[action] === filterRevision &&
+      (!contractSource || selectionRoot.dataset.contractAccess !== "denied");
+    const personFor = (row) => {
+      const wallet = contractSource
+        ? row.querySelector(
+            "[data-contract-action=review][data-contract-wallet]",
+          )?.dataset.contractWallet
+        : row.dataset.batchWallet;
+      const id = contractSource
+        ? row.dataset.contractLinkedId
+        : row.dataset.batchPerson;
+      return app.detail.participants.find(
+        (person) =>
+          id &&
+          person.id === id &&
+          person.eventId === scope.eventId &&
+          person.identityVerified === true &&
+          same(person.wallet, wallet),
+      );
+    };
+    const rowWallet = (row) =>
+      contractSource
+        ? row.querySelector(
+            "[data-contract-action=review][data-contract-wallet]",
+          )?.dataset.contractWallet
+        : row.dataset.batchWallet;
+    batchControllers.set(
+      action,
+      mountBatchActions(host, {
+        ...scope,
+        action,
+        canManage: true,
+        isCurrent: current,
+        pendingJournal: batchPendingJournal,
+        request: batchRequest,
+        selectionRoot,
+        rowSelector: contractSource
+          ? ".contract-inbox-table tbody tr"
+          : "tbody tr",
+        getRowKey: (row) => String(rowWallet(row) ?? "").toLowerCase(),
+        getCheckboxHost: (row) =>
+          row.querySelector(
+            contractSource ? ".contract-person" : ".person-cell",
+          ),
+        getCandidates: () =>
+          [
+            ...selectionRoot.querySelectorAll(
+              contractSource ? ".contract-inbox-table tbody tr" : "tbody tr",
+            ),
+          ].map((row) => {
+            const wallet = rowWallet(row),
+              person = personFor(row);
+            const hint = person?.batchEligibility?.[action];
+            const sourceCurrent =
+              !contractSource ||
+              selectionRoot.dataset.contractActionable === "true";
+            return {
+              key: String(wallet ?? "").toLowerCase(),
+              wallet,
+              participantId: person?.id ?? null,
+              label: person?.name || short(wallet),
+              eligible: !!person && sourceCurrent && hint?.eligible === true,
+              blockedReason: !person
+                ? "This wallet needs a verified guest profile for this exact event."
+                : !sourceCurrent
+                  ? "Contract observations are stale or refreshing. Refresh before approval."
+                  : (hint?.reason ??
+                    "Refresh the event to load current batch eligibility."),
+            };
+          }),
+        getRevision: () =>
+          JSON.stringify([
+            app.detail.state.fingerprint,
+            app.detail.participants.map((person) => [
+              person.id,
+              person.wallet,
+              person.batchEligibility?.[action] ?? null,
+            ]),
+            contractSource
+              ? selectionRoot.querySelector("[data-contract-meta]")?.textContent
+              : null,
+          ]),
+        beforeOpen: () => {
+          if (!current())
+            throw new Error(
+              "The event or account changed. Refresh before reviewing this batch.",
+            );
+          invalidateDraft();
+        },
+        onRefresh: async () => load({ silent: true }),
+        onCommitted: async (result, review) => {
+          if (!current()) return;
+          const items = result.participantIds.map((participantId) => {
+            const row = review.rows.find(
+              (candidate) => candidate.participantId === participantId,
+            );
+            if (!row)
+              throw new Error("Saved batch selection could not be verified.");
+            return { participantId, wallet: row.wallet };
+          });
+          await load({ silent: true });
+          if (
+            !batchContextCurrent(scope, false) ||
+            !batchActionsEnabled(action)
+          )
+            return;
+          if (action === "approve-admission") {
+            app.batchRegistrationSelection = { scope: batchScope(), items };
+            renderBatchRegistrationFollowup();
+          }
+          toast(
+            action === "approve-admission"
+              ? "Admission approvals saved. Contract registration has a separate review; Luma approval remains manual."
+              : "Trusted check-ins saved. Financial attendance has a separate review.",
+          );
+        },
+      }),
+    );
+  }
+}
+function renderBatchRegistrationFollowup() {
+  const host = $("#batch-registration-followup");
+  if (!host) return;
+  const selected = app.batchRegistrationSelection;
+  host.innerHTML =
+    selected && batchContextCurrent(selected.scope) && isOwner()
+      ? `<div class="notice"><p>${selected.items.length} app ${selected.items.length === 1 ? "approval was" : "approvals were"} saved. Financial registration is still separate.</p><button class="button button-secondary" data-batch-register>Review contract registration for approved selection</button></div>`
+      : "";
+}
+async function prepareBatchRegistration() {
+  const selected = app.batchRegistrationSelection;
+  if (!selected || !batchContextCurrent(selected.scope) || !isOwner())
+    throw new Error(
+      "The approved selection belongs to an earlier context. Refresh and review it again.",
+    );
+  invalidateDraft();
+  const unsignedReviewVersion = app.unsignedReviewVersion;
+  const fresh = await api(
+    `/api/events/${encodeURIComponent(selected.scope.eventId)}`,
+  );
+  if (
+    !batchContextCurrent(selected.scope) ||
+    unsignedReviewVersion !== app.unsignedReviewVersion
+  )
+    throw new Error("The event or review changed. Review the selection again.");
+  if (
+    !fresh.permissions?.owner ||
+    !same(fresh.state.owner, selected.scope.wallet)
+  ) {
+    await load();
+    throw new Error("Current event owner access is required.");
+  }
+  const blocked = selected.items.flatMap((item) => {
+    const person = fresh.participants.find(
+      (candidate) => candidate.id === item.participantId,
+    );
+    const reason =
+      fresh.state.phase !== "Open"
+        ? "Registration is closed in the current contract phase."
+        : !person ||
+            person.eventId !== selected.scope.eventId ||
+            person.identityVerified !== true ||
+            !same(person.wallet, item.wallet)
+          ? "The verified participant and wallet link changed."
+          : person.admission !== "approved"
+            ? "Host approval changed."
+            : !person.deposit?.verified
+              ? "The canonical deposit is no longer available."
+              : person.registered
+                ? "This wallet is already registered."
+                : null;
+    return reason ? [{ wallet: item.wallet, reason }] : [];
+  });
+  if (blocked.length) {
+    showDialog(
+      `<h2 class="dialog-title" id="dialog-title">Registration selection needs review</h2><p>Every selected wallet must still be eligible. No wallets have been dropped from the selection.</p><ul>${blocked.map((row) => `<li><span class="mono">${escape(row.wallet)}</span>: ${escape(row.reason)}</li>`).join("")}</ul><div class="dialog-buttons"><button class="button button-secondary" data-close>Close</button></div>`,
+    );
+    return;
+  }
+  await prepareTransaction("register", {
+    wallets: selected.items.map((item) => item.wallet),
+  });
+}
+let contractInboxController = null;
+function disposeContractInbox() {
+  app.batchRegistrationSelection = null;
+  disposeBatchActions();
+  contractInboxController?.dispose();
+  contractInboxController = null;
+}
+function contractInboxEnabled() {
+  return (
+    app.bootstrap?.capabilities?.contractInbox === true && isOwner() && isV8()
+  );
+}
+function mountOwnerContractInbox() {
+  const host = $("#contract-deposit-inbox");
+  if (!host || !contractInboxEnabled() || app.route.view !== "organizer")
+    return;
+  const event = app.detail.event;
+  const scope = Object.freeze({
+    generation: app.generation,
+    eventId: event.id,
+    view: app.route.view,
+    instanceId: app.bootstrap.instanceId,
+    wallet: currentIdentity().wallet,
+    chainId: event.chainId,
+    contract: event.contract,
+    contractVersion: event.contractVersion,
+  });
+  const current = () => {
+    const route = readRoute();
+    return (
+      host.isConnected &&
+      $("#contract-deposit-inbox") === host &&
+      app.generation === scope.generation &&
+      app.route.eventId === scope.eventId &&
+      app.route.view === scope.view &&
+      route.eventId === scope.eventId &&
+      route.view === scope.view &&
+      app.bootstrap?.instanceId === scope.instanceId &&
+      same(currentIdentity()?.wallet, scope.wallet) &&
+      app.detail?.event.id === scope.eventId &&
+      app.detail.event.chainId === scope.chainId &&
+      same(app.detail.event.contract, scope.contract) &&
+      app.detail.event.contractVersion === scope.contractVersion &&
+      contractInboxEnabled()
+    );
+  };
+  contractInboxController = mountContractInbox(host, {
+    ...scope,
+    currencySymbol: currencySymbol(),
+    canManage: true,
+    isCurrent: current,
+    beforeOpen: () => {
+      if (!current())
+        throw new Error(
+          "The selected event or owner changed. Reload the event.",
+        );
+      invalidateDraft(); // Clears unsigned reviews; submitted hashes and journals are preserved.
+    },
+    onOpenLinked: async (participantId) => {
+      if (!current()) return;
+      const known = app.detail.participants.find(
+        (person) => person.id === participantId,
+      );
+      if (!known) {
+        toast("Refresh the people list before opening this linked guest.");
+        return;
+      }
+      try {
+        const fresh = await api(
+          `/api/events/${encodeURIComponent(scope.eventId)}`,
+        );
+        if (!current()) return;
+        const person = fresh.participants.find(
+          (candidate) =>
+            candidate.id === participantId &&
+            same(candidate.wallet, known.wallet),
+        );
+        if (
+          fresh.permissions?.owner !== true ||
+          !same(fresh.state.owner, scope.wallet)
+        ) {
+          disposeContractInbox();
+          await load();
+          return;
+        }
+        if (!person || [...document.querySelectorAll("dialog[open]")].length)
+          return;
+        const panel = $("#people-review");
+        const admission = $$("[data-admission]", panel).find(
+          (control) => control.dataset.admission === person.id,
+        );
+        panel?.scrollIntoView({ block: "start" });
+        (admission ?? panel)?.focus();
+      } catch (error) {
+        if (!current()) return;
+        if ([401, 403].includes(error.status)) {
+          disposeContractInbox();
+          await load();
+          return;
+        }
+        toast(
+          "This linked guest is unavailable. Refresh the event to verify owner access.",
+          true,
+        );
+      }
+    },
+  });
+}
 let toastTimer;
 let hostedNoticeObserver;
 const isHostedDemo = () => app.bootstrap?.mode === "hosted-demo";
@@ -248,7 +641,7 @@ async function api(path, options = {}) {
   if (!result.ok)
     throw Object.assign(
       new Error(data.error ?? `Request failed (${result.status})`),
-      { code: data.code },
+      { code: data.code, status: result.status },
     );
   return data;
 }
@@ -269,12 +662,14 @@ function toast(message, error = false) {
   );
 }
 function invalidateDraft() {
+  app.unsignedReviewVersion++;
   app.draft = null;
   app.importReview = null;
   const dialog = $("#review-dialog");
   if (dialog.open) dialog.close();
 }
 function navigate(eventId, view = "participant") {
+  disposeContractInbox();
   location.hash = eventId
     ? new URLSearchParams({ event: eventId, view }).toString()
     : "";
@@ -394,8 +789,9 @@ function showIdentityDialog() {
 }
 async function switchIdentity(id) {
   if (id === "connected-wallet") return;
+  disposeContractInbox();
   invalidateDraft();
-  if (!id) await api("/api/session", { method: "DELETE" });
+  if (!id) await api("/api/session", { method: "DELETE", body: "{}" });
   else await post("/api/session", { identity: id });
   await load();
   toast(
@@ -415,7 +811,25 @@ function walletProvider() {
     );
   return provider;
 }
+function installWalletSessionListeners(provider) {
+  if (!provider?.on || provider.__klerosListeners) return;
+  provider.__klerosListeners = true;
+  const invalidateSession = async () => {
+    if (currentIdentity()?.mode !== "wallet") return;
+    disposeContractInbox();
+    invalidateDraft();
+    await api("/api/session", { method: "DELETE", body: "{}" });
+    await load({ silent: true });
+    toast(
+      "Wallet account or network changed. Authenticate again before signing.",
+      true,
+    );
+  };
+  provider.on("accountsChanged", invalidateSession);
+  provider.on("chainChanged", invalidateSession);
+}
 async function connectWallet() {
+  disposeContractInbox();
   invalidateDraft();
   const provider = walletProvider();
   const accounts = await provider.request({ method: "eth_requestAccounts" });
@@ -481,21 +895,7 @@ async function connectWallet() {
   });
   await post("/api/auth/verify", { nonce, signature });
   await load({ silent: true });
-  if (provider.on && !provider.__klerosListeners) {
-    provider.__klerosListeners = true;
-    const invalidateSession = async () => {
-      if (currentIdentity()?.mode !== "wallet") return;
-      invalidateDraft();
-      await api("/api/session", { method: "DELETE" });
-      await load({ silent: true });
-      toast(
-        "Wallet account or network changed. Authenticate again before signing.",
-        true,
-      );
-    };
-    provider.on("accountsChanged", invalidateSession);
-    provider.on("chainChanged", invalidateSession);
-  }
+  installWalletSessionListeners(provider);
   toast(
     isTestnet()
       ? "Wallet ownership verified. You can now review actions on the configured testnet."
@@ -504,6 +904,8 @@ async function connectWallet() {
 }
 
 async function load({ silent = false } = {}) {
+  app.batchRegistrationSelection = null;
+  disposeContractInbox();
   const focused = focusKey(document.activeElement);
   const generation = ++app.generation;
   invalidateDraft();
@@ -516,6 +918,8 @@ async function load({ silent = false } = {}) {
     const bootstrap = await api("/api/bootstrap");
     if (generation !== app.generation) return;
     app.bootstrap = bootstrap;
+    if (bootstrap.session?.mode === "wallet")
+      installWalletSessionListeners(/** @type {any} */ (window).ethereum);
     updateHostedDemoNotice();
     if (bootstrap.instanceId) {
       if (app.pendingInstanceId !== bootstrap.instanceId) {
@@ -616,6 +1020,8 @@ async function load({ silent = false } = {}) {
     $("#content").hidden = false;
     enhanceTables();
     annotateHostedForms();
+    mountOwnerContractInbox();
+    mountOrganizerBatchActions();
     if (app.focusTab) {
       $(`[data-view="${app.route.view}"]`)?.focus();
       app.focusTab = false;
@@ -1189,13 +1595,15 @@ function renderOrganizer() {
   if (!owner && !staff)
     return `<div class="panel"><h2>This identity cannot manage this event.</h2><p>Financial actions belong to the selected event’s contract owner. Trusted door check-in requires an event-specific staff role.</p><div class="notice">Current wallet: <span class="mono">${escape(currentIdentity().wallet)}</span><br>Event owner: <span class="mono">${escape(state.owner)}</span></div><button class="button button-secondary" data-choose-identity>${isTestnet() ? "Connect another wallet" : "Switch demo identity"}</button></div>`;
   return `<nav class="workflow-steps" aria-label="Organizer reconciliation">${owner ? '<a class="workflow-step" href="#source-review" data-workflow="source-review">1 · Select source</a>' : '<span class="workflow-step" aria-disabled="true">1 · Source review · owner only</span>'}<a class="workflow-step" href="#people-review" data-workflow="people-review">2 · Reconcile people</a><a class="workflow-step" href="#deposit-review" data-workflow="deposit-review">3 · Review receipts</a><a class="workflow-step" href="#attendance-review" data-workflow="attendance-review">4 · Review transaction</a></nav><div class="access-banner"><span aria-hidden="true">◇</span><span>${owner ? "You are the contract owner for this event. Every financial action uses a fresh on-chain review." : "You are authorized door staff for this event. Financial signing remains with its contract owner."}</span></div>
-    <section class="panel" id="people-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">02 / Admission & verified deposits</div><h2>People, with evidence</h2><p>Only approved, verified commitments can become registered stakers.</p></div><span class="pill-note">${participants.length} people</span></div>${participants.length ? `<div class="table-scroll"><table><thead><tr><th>Participant</th><th>Deposit</th><th>Admission</th><th>Check-in</th></tr></thead><tbody>${participants.map((person) => `<tr><td class="person-cell"><strong>${escape(person.name)}</strong><small>${escape(short(person.wallet))}</small></td><td>${person.deposit?.verified ? `<strong>${eth(person.deposit.amountWei)} ${escape(currencySymbol())}</strong><br><span class="small muted">${escape(short(person.deposit.txHash))}</span>` : '<span class="muted">Not verified</span>'}${person.registered ? '<br><span class="badge green">Staker</span>' : ""}</td><td>${owner ? `<select aria-label="Admission for ${escape(person.name)}" data-admission="${escape(person.id)}">${["pending", "approved", "declined", "free"].map((admission) => `<option value="${admission}" ${person.admission === admission ? "selected" : ""}>${admission}</option>`).join("")}</select>` : badge(person.admission)}</td><td>${attendance.some((record) => record.participantId === person.id || same(record.wallet, person.wallet)) ? badge("Observed", "green") : `<button class="button button-secondary button-small" data-checkin="${escape(person.id)}">Check in</button>`}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty"><span class="empty-icon">◉</span>No linked participants yet.</div>'}<div class="button-row"><button class="button button-primary" data-tx="register" ${!owner ? "disabled" : ""}>Review staker registration</button><button class="button button-secondary" data-tx="reject" ${!owner ? "disabled" : ""}>Review rejection / refunds</button></div><p class="field-help">Changing admission alone does not write to the contract. Registration checks the successful receipt, exact event, linked wallet and duplicate financial evidence.</p></section>
+    <section class="panel" id="people-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">02 / Admission & verified deposits</div><h2>People, with evidence</h2><p>Only approved, verified commitments can become registered stakers.</p></div><span class="pill-note">${participants.length} people</span></div>${renderBatchHost("check-in")}<div id="people-batch-selection">${participants.length ? `<div class="table-scroll"><table><thead><tr><th>Participant</th><th>Deposit</th><th>Admission</th><th>Check-in</th></tr></thead><tbody>${participants.map((person) => `<tr data-batch-person="${escape(person.id)}" data-batch-wallet="${escape(person.wallet)}"><td class="person-cell"><strong>${escape(person.name)}</strong><small>${escape(short(person.wallet))}</small></td><td>${person.deposit?.verified ? `<strong>${eth(person.deposit.amountWei)} ${escape(currencySymbol())}</strong><br><span class="small muted">${escape(short(person.deposit.txHash))}</span>` : '<span class="muted">Not verified</span>'}${person.registered ? '<br><span class="badge green">Staker</span>' : ""}</td><td>${owner ? `<select aria-label="Admission for ${escape(person.name)}" data-admission="${escape(person.id)}">${["pending", "approved", "declined", "free"].map((admission) => `<option value="${admission}" ${person.admission === admission ? "selected" : ""}>${admission}</option>`).join("")}</select>` : badge(person.admission)}</td><td>${attendance.some((record) => record.participantId === person.id || same(record.wallet, person.wallet)) ? badge("Observed", "green") : `<button class="button button-secondary button-small" data-checkin="${escape(person.id)}">Check in</button>`}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty"><span class="empty-icon">◉</span>No linked participants yet.</div>'}</div><div class="button-row"><button class="button button-primary" data-tx="register" ${!owner ? "disabled" : ""}>Review staker registration</button><button class="button button-secondary" data-tx="reject" ${!owner ? "disabled" : ""}>Review rejection / refunds</button></div><p class="field-help">Changing admission alone does not write to the contract. Registration checks the successful receipt, exact event, linked wallet and duplicate financial evidence.</p></section>
     ${owner ? `<section class="panel" id="source-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">01 / Source review</div><h2>Import guests or attendance</h2><p>Source hashes detect substitution. They do not prove which event an export came from.</p></div></div><form data-form="import"><div class="form-grid"><div><label for="import-kind">Import type</label><select id="import-kind" name="kind"><option value="attendance">Trusted attendance</option><option value="guests">Guest / deposit review</option></select></div><div><label for="import-event">Source event identity</label><input id="import-event" name="sourceEventId" value="${escape(app.route.eventId)}" placeholder="Stable source event ID"></div><div class="full"><label for="import-file">Choose a CSV (optional)</label><input id="import-file" type="file" accept=".csv,text/csv" data-csv-file><p class="field-help"><a href="${eventPath("/fixture?kind=attendance")}" download>Download this event’s synthetic attendance CSV</a> · <a href="${eventPath("/fixture?kind=guests")}" download>Guest fixture</a></p></div><div class="full"><label for="import-csv">CSV contents</label><textarea id="import-csv" name="csv" required spellcheck="false" placeholder="event_id,chain_id,contract,participant_id,email,wallet,checked_in_at,tx_hash,admission"></textarea></div></div><label class="checkbox-label"><input type="checkbox" name="reviewConfirmed"><span>I have reviewed the source event and export. If its origin cannot be verified automatically, record my provenance review. This cannot override a known event, contract or chain mismatch.</span></label><label for="review-note">Provenance review note</label><input id="review-note" name="reviewNote" minlength="8" placeholder="Where this export came from and how you verified it" maxlength="1000"><div class="button-row"><button class="button button-secondary" type="submit" data-import-preview>Validate & review import</button></div></form><div id="import-result" aria-live="polite"></div><div id="import-preview" tabindex="-1"></div>${imports.length ? `<details class="disclosure"><summary>${imports.length} recorded import ${imports.length === 1 ? "batch" : "batches"}</summary>${imports.map((batch) => `<p><strong>${escape(batch.kind ?? "import")}</strong> · ${escape(batch.status ?? batch.reviewStatus ?? "reviewed")}<br><span class="mono">${escape(batch.sourceHash ?? batch.sha256 ?? batch.id)}</span></p>`).join("")}</details>` : ""}</section>` : ""}
     <section class="panel" id="attendance-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">04 / Attendance & payout review</div><h2>Publish the attendance proposal</h2><p>Only registered wallets with trusted observations enter this list.</p></div></div><div class="result-summary"><div><span>Trusted observations</span><strong>${attendance.length}</strong></div><div><span>Registered stakers</span><strong>${escape(state.stakerCount)}</strong></div><div><span>Registered pool</span><strong>${eth(state.poolWei)} <small>${escape(currencySymbol())}</small></strong></div></div><div class="button-row"><button class="button button-primary" data-tx="postAttendance" ${!owner ? "disabled" : ""}>Review attendance & share</button><button class="button button-secondary" data-correction ${!owner ? "disabled" : ""}>Correct an omission</button></div><p class="field-help">Posting starts the one-day omission challenge window. The preview validates current contract state and expected per-attendee share. An empty list is refused.</p></section>
     ${renderDepositReview()}${owner ? renderRecovery() : ""}`;
 }
 
 function renderDepositReview() {
+  if (contractInboxEnabled())
+    return `<section class="panel" id="deposit-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">03 / Contract observations</div><h2>Deposits from this contract</h2><p>Discover payer wallets directly from this event’s confirmed deposit receipts. Guest links, admission and financial registration remain separate.</p></div></div>${renderBatchHost("approve-admission")}<div id="batch-registration-followup"></div><div id="contract-deposit-inbox"></div></section>`;
   const records = app.detail.deposits ?? [];
   return `<section class="panel" id="deposit-review" tabindex="-1"><div class="panel-header"><div><div class="step-label">03 / Receipt ledger</div><h2>Deposit reconciliation</h2><p>Successful receipts, returned amounts and current allocation, scoped to this contract.</p></div></div>${records.length ? `<div class="table-scroll"><table><thead><tr><th>Wallet</th><th>Received</th><th>Returned</th><th>Unallocated</th></tr></thead><tbody>${records.map((record) => `<tr><td class="person-cell"><strong class="mono">${escape(short(record.wallet))}</strong><small>${record.linked ? "Linked participant" : "Unmatched payer"}</small></td><td>${eth(record.receivedWei)} ${escape(currencySymbol())}</td><td>${eth(record.returnedWei)} ${escape(currencySymbol())}</td><td><strong>${eth(record.unallocatedWei)} ${escape(currencySymbol())}</strong></td></tr>`).join("")}</tbody></table></div>` : "<p>No deposit logs found for this event.</p>"}<dl class="details-list" style="margin-top:15px"><div><dt>Contract balance</dt><dd>${eth(app.detail.state.balanceWei)} ${escape(currencySymbol())}</dd></div><div><dt>Reserved</dt><dd>${eth(app.detail.state.reservedWei)} ${escape(currencySymbol())}</dd></div><div><dt>Spare, before a return</dt><dd>${eth(app.detail.state.spareWei)} ${escape(currencySymbol())}</dd></div></dl><p class="field-help">Unallocated ${escape(currencySymbol())} can include an unregistered payer or excess payment. Review original receipts and any previous returns before preparing a refund. ${isV8() ? "v8 reserves each payer’s unused credit. The payer can withdraw it independently; admitted commitments remain separate." : "A pooled v7 contract does not prove per-wallet deposit ownership."}</p>${isOwner() ? `<div class="button-row"><button class="button button-secondary button-small" data-recovery="refund">${isV8() ? "Review a spare-funds return" : "Review unmatched funds return"}</button></div>` : ""}</section>`;
 }
@@ -1461,10 +1869,15 @@ async function prepareTransaction(action, params = {}) {
   invalidateDraft();
   const eventId = app.route.eventId;
   const generation = app.generation;
+  const unsignedReviewVersion = app.unsignedReviewVersion;
   toast("Preparing transaction: checking current chain state and authority…");
   const draft = await post(eventPath("/drafts"), { action, params });
   const fresh = await api(eventPath(""));
-  if (eventId !== app.route.eventId || generation !== app.generation)
+  if (
+    eventId !== app.route.eventId ||
+    generation !== app.generation ||
+    unsignedReviewVersion !== app.unsignedReviewVersion
+  )
     throw new Error(
       "The event or identity changed. Prepare the transaction again.",
     );
@@ -1847,6 +2260,10 @@ document.addEventListener("click", async (event) => {
       invalidateDraft();
       return;
     }
+    if ("batchRegister" in data) {
+      await prepareBatchRegistration();
+      return;
+    }
     if ("reload" in data) {
       await load();
       return;
@@ -2039,6 +2456,7 @@ document.addEventListener("submit", async (event) => {
           eventId: app.route.eventId,
           generation: app.generation,
           wallet: currentIdentity()?.wallet,
+          unsignedReviewVersion: app.unsignedReviewVersion,
         };
         const projection = importProjection(app.detail);
         const bytes = await crypto.subtle.digest(
@@ -2051,6 +2469,7 @@ document.addEventListener("submit", async (event) => {
         if (
           sourceValues !== JSON.stringify([...new FormData(form)]) ||
           scope.generation !== app.generation ||
+          scope.unsignedReviewVersion !== app.unsignedReviewVersion ||
           scope.eventId !== app.route.eventId ||
           !same(scope.wallet, currentIdentity()?.wallet)
         )
@@ -2063,6 +2482,7 @@ document.addEventListener("submit", async (event) => {
           );
           if (
             scope.generation !== app.generation ||
+            scope.unsignedReviewVersion !== app.unsignedReviewVersion ||
             scope.eventId !== app.route.eventId ||
             !same(scope.wallet, currentIdentity()?.wallet) ||
             sourceValues !== JSON.stringify([...new FormData(form)])
@@ -2197,6 +2617,23 @@ document.addEventListener("keydown", (event) => {
 });
 $("#refresh").addEventListener("click", () => load());
 $("#demo-help").addEventListener("click", showDemoHelp);
+// A filter creates a new review context; durable unresolved saves stay locked.
+function resetBatchFilterContext(event) {
+  if (
+    !(event.target instanceof Element) ||
+    !event.target.matches("[data-contract-search], [data-contract-filter]")
+  )
+    return;
+  disposeBatchActions("approve-admission");
+  batchFilterRevisions["approve-admission"]++;
+  app.batchRegistrationSelection = null;
+  renderBatchRegistrationFollowup();
+  invalidateDraft();
+  queueMicrotask(() => mountOrganizerBatchActions());
+}
+document.addEventListener("input", resetBatchFilterContext, true);
+document.addEventListener("change", resetBatchFilterContext, true);
+
 window.addEventListener("hashchange", () => {
   invalidateDraft();
   load();

@@ -1,0 +1,141 @@
+{
+  "status": "pre-attendance-checks-passed",
+  "chainId": 10200,
+  "arbitrationMode": "controlled",
+  "blockNumber": 23733309,
+  "blockHash": "0x552c0975247b4e88214ca90be676dab785c8c4d20ca6bae703019c0bbe3f169f",
+  "blockTimestamp": 1793204710,
+  "events": [
+    {
+      "id": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+      "phase": 0,
+      "stakerCount": 3,
+      "pendingTotalWei": "0",
+      "balanceWei": "3000000000000",
+      "heldBackWei": "0",
+      "pendingChallenges": 0,
+      "eventStart": 1793204485,
+      "claimDeadline": 1793809285
+    },
+    {
+      "id": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+      "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+      "phase": 0,
+      "stakerCount": 1,
+      "pendingTotalWei": "0",
+      "balanceWei": "2000000000000",
+      "heldBackWei": "0",
+      "pendingChallenges": 0,
+      "eventStart": 1793204485,
+      "claimDeadline": 1793809285
+    }
+  ],
+  "confirmedTransactions": {
+    "deploy-arbitrator": {
+      "hash": "0x17683eff93f043a52204c07f6e517a8b67b1c06d25525ac3ec37f3cc6f27fec3",
+      "state": "confirmed",
+      "blockNumber": 23733112,
+      "blockHash": "0x7112a803b901b4aa22e5554f2c189c216faf4b1b1cdadefb0646c3a34ee0657f"
+    },
+    "configure-arbitrator-fee": {
+      "hash": "0x229915c1a63d0cec8a6e0603ac327fedbc767c33c19faa6879605f7fe7afda86",
+      "state": "confirmed",
+      "blockNumber": 23733121,
+      "blockHash": "0x29d0e015bacb79b40673b17cc17d6f82d926684ed77a3992d1002334e09406e9"
+    },
+    "deploy-resolver": {
+      "hash": "0xfb64edf0a46a9dcda18a800365e2eabf5ce24c0fa9fd1a753485cb6b7a7e9c81",
+      "state": "confirmed",
+      "blockNumber": 23733128,
+      "blockHash": "0xd87d8c04f8ee82a24ff838f2918eef6280a41a27faad9ed975fb8636049786db"
+    },
+    "deploy-factory": {
+      "hash": "0x6eabfe187c55774f6567bba10a9723e57e3a5bafefffe980ff131e2631a506d2",
+      "state": "confirmed",
+      "blockNumber": 23733132,
+      "blockHash": "0x4947fdd85d1dd787741de500ad9981aff696b2d840fc008e28e7f88cc3f39dfe"
+    },
+    "fund-organizer-b": {
+      "hash": "0x9f6abf65eca62c94a8878fc00edf42a25b9917e0f37cbf6b842553e0a75ea8ad",
+      "state": "confirmed",
+      "blockNumber": 23733141,
+      "blockHash": "0x75d173db2f2b861271256c490388d9c46e62cfb1759566a23536ace54d4b9bee"
+    },
+    "create-chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a": {
+      "hash": "0x8da2d93e298a11242d1128dbebd5aa64a234d5d71f08603b4a00ecf95e8a857e",
+      "state": "confirmed",
+      "blockNumber": 23733165,
+      "blockHash": "0x1388125e24a68b54f9580f6e12696e726d786295af743533521ca8f7268c7c89"
+    },
+    "create-chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b": {
+      "hash": "0x7b82492ac1ff218ccea7bbbc3bf807070fcc7cd34f87d380587164da0a2d3360",
+      "state": "confirmed",
+      "blockNumber": 23733208,
+      "blockHash": "0xfbf81e99a2137304fc79e9aea447c30b71b5fdc6576a3603f97c28c7723b8cb6"
+    },
+    "fund-alice": {
+      "hash": "0x64835ed98dc91d8eae0c182af12eeba05992df749d4cffa6ea84a9843c32c73e",
+      "state": "confirmed",
+      "blockNumber": 23733227,
+      "blockHash": "0xde384659544d5221e848c63fde3f623f142900f1ca87b4da57fc7d108843ae5a"
+    },
+    "fund-bob": {
+      "hash": "0xf46cae4bb640a5000b52f978c981d989b95666ebe710bd13983b8e759710a75d",
+      "state": "confirmed",
+      "blockNumber": 23733230,
+      "blockHash": "0xb79e8058214d51357df914daad219e0b991ee27036396629f2b2f5a6fc49576b"
+    },
+    "fund-carol": {
+      "hash": "0x3e6a56f5aa7f6ba895bf27ee47c11226a20a6b112483d1523401bd47f02a1500",
+      "state": "confirmed",
+      "blockNumber": 23733233,
+      "blockHash": "0x8c93269b6d723b4b0fa3ba5348ec0f45d4e1cd85106a397b3de3ac4a934a6113"
+    },
+    "deposit-alice-a": {
+      "hash": "0x67f2a5bc4c14caaab37bda045c6fa8f3e58ea8c743c96d423c741059bb4fb316",
+      "state": "confirmed",
+      "blockNumber": 23733241,
+      "blockHash": "0x1f6bb0b2a69a61d59e7fe10d28e10a0dd4b71c6f02232a57a8df2401ae5b8a80"
+    },
+    "deposit-bob-a": {
+      "hash": "0x704e38b5e3e76d94a511f36bb27b0f16fb5fafacee4a8eb49f1de794ad61d1e7",
+      "state": "confirmed",
+      "blockNumber": 23733244,
+      "blockHash": "0xc43e07d937e70cfa29caafb688abcf4c42cca09d756529ce6137ec4b8265572d"
+    },
+    "deposit-carol-a": {
+      "hash": "0x44127d6f14f6209c548f53690c411fc90b7f498401feef9d25a2fd6ffa528315",
+      "state": "confirmed",
+      "blockNumber": 23733247,
+      "blockHash": "0x91b3dd096280a0a78f96722ad2b26ab3f2a91c4638748d65a90ca6f47857f74d"
+    },
+    "deposit-alice-b": {
+      "hash": "0x7e6c6b45b40d40676e612d9f81d55c330aa9d6dd0ab4a5ed39f4bf3b66306b28",
+      "state": "confirmed",
+      "blockNumber": 23733250,
+      "blockHash": "0x5b56cfe243ed45ed2825a4b07c0bd4a19f65bb8602099ab35dbb5ad45581e12c"
+    },
+    "recover-alice-a": {
+      "hash": "0x3a4ef03362ac684db7cd961f01ebeb59007cd69ae74ad5f0e7d1dd7f57c19825",
+      "state": "confirmed",
+      "blockNumber": 23733273,
+      "blockHash": "0x40f772a312f5509a39d2accdc90fc39ec450643d951456f7014990b734b7c1a4"
+    },
+    "admit-a": {
+      "hash": "0x0b7e08581cb74ba47e3d114a2b2f5379322ec8a6651f53be7f66ddd5045d101d",
+      "state": "confirmed",
+      "blockNumber": 23733290,
+      "blockHash": "0x78a6930310435d43f9f3a8d6a396f366cf1f4e77541dd02ada13ecf2157914a4"
+    },
+    "admit-b": {
+      "hash": "0xdb56068162e3ca1254ffc331553be8fd5eb669c9540738bd306db33ce19094cd",
+      "state": "confirmed",
+      "blockNumber": 23733293,
+      "blockHash": "0x6a11fe198afc788a4354f4437c052820a2b3277dd2dda28482595418e6082198"
+    }
+  },
+  "nextStage": "attendance",
+  "pauseReason": "Waiting for root live-app acceptance; neither attendance nor dispute/payout stages have run.",
+  "notice": "Actual public testnet receipts; no claim of completed public dispute or kickback settlement."
+}

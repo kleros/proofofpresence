@@ -1,0 +1,9 @@
+{
+  "status": "failed",
+  "checkedAt": "2026-10-28T18:29:30.113Z",
+  "observerSha256": "223ae94884a8af8b2744e4a754eba6fc74f955fb71c579dd6dcccc0f246adefc",
+  "error": "Expected values to be strictly equal:\n\n502 !== 200\n",
+  "uiInitiationVerified": false,
+  "signatures": 0,
+  "broadcasts": 0
+}

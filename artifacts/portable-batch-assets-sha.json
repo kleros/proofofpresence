@@ -1,0 +1,18 @@
+{
+  "sourceCommit": "1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0",
+  "verifiedDeliverySHA256": {
+    "contract-inbox.js": "c65f386f223a8595609d317e892e7f4abf76346f235f3551cd27a4a891f20921",
+    "contract-inbox.css": "e181401194ed64833f0b1ffba7a94d5e3a549b0d091dc18518f7c13a2c73803c",
+    "batch-actions.js": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+    "batch-actions.css": "b8a062ce4764c5ab7d5c38eff05c3bc3d6b2849cb16a6a7e333956740db0a112",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+  },
+  "note": "Verified before integration; documented compatibility patches are applied afterward.",
+  "integratedSHA256": {
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "batch-actions.js": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+  }
+}

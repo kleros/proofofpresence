@@ -3,21 +3,37 @@
 import { lower, requireThat } from "./utils.mjs";
 import { getLogsChunked } from "../references/kickback/scripts/lib.mjs";
 
+/** @param {any} contract @param {any} deployment @param {number | "latest"} [blockTag]
+ * @param {{signal?: AbortSignal}} [options]
+ */
 export async function v8DepositCredits(
   contract,
   deployment,
   blockTag = "latest",
+  { signal } = {},
 ) {
+  signal?.throwIfAborted();
   const provider = contract.runner.provider ?? contract.runner;
   const end =
     blockTag === "latest" ? await provider.getBlockNumber() : blockTag;
+  signal?.throwIfAborted();
+  const logProvider = signal
+    ? {
+        getLogs(filter) {
+          signal.throwIfAborted();
+          return provider.getLogs(filter);
+        },
+      }
+    : provider;
   const logs = await getLogsChunked(
-    provider,
+    logProvider,
     { address: contract.target },
     deployment.deploymentBlock,
     end,
     5000,
+    signal ? { retries: 0, minStep: 5000 } : undefined,
   );
+  signal?.throwIfAborted();
   const wallets = new Map();
   const entry = (wallet) => {
     const key = lower(wallet);
@@ -51,6 +67,7 @@ export async function v8DepositCredits(
   for (const log of logs.sort(
     (a, b) => a.blockNumber - b.blockNumber || a.index - b.index,
   )) {
+    signal?.throwIfAborted();
     let event;
     try {
       event = contract.interface.parseLog(log);
@@ -63,6 +80,8 @@ export async function v8DepositCredits(
       entry(a.from).lots.push({
         txHash: log.transactionHash,
         logIndex: log.index,
+        blockNumber: log.blockNumber,
+        blockHash: log.blockHash,
         amount: a.amount,
         pending: a.amount,
         committed: 0n,

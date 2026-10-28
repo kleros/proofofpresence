@@ -1,9 +1,50 @@
 # Core application integration checkpoint
 
-The latest requested phase adds simpler screens, explicit v8 dispatch and the controlled Chiado
-rehearsal. See [V8_APP_RELEASE](V8_APP_RELEASE.md) for interfaces/checks and
-[TESTNET_REHEARSAL](TESTNET_REHEARSAL.md) for public deployment stages. The v7 checkpoints below
-remain historical compatibility evidence; public testnet payouts must wait for real chain deadlines.
+## Current authoritative phase — 29October2026, Asia/Bangkok
+
+Branch `codex/core-application`. The simpler UI and explicit v8 adapter are deployed at the
+[public app](https://kleros-event-workbench-preview.netlify.app) against controlled Chiado10200
+contracts. [V8_APP_RELEASE](V8_APP_RELEASE.md) and
+[hosting evidence](../artifacts/testnet-hosting.json) identify exact current source/deployments.
+The existing local v7 runtime remains compatible; historical v7 hosting sections below are archived.
+
+Public interfaces remain directory and event participant/organizer/cases routes; bootstrap/event reads,
+signed wallet nonce authentication, private registration and approval, canonical receipt reconciliation,
+trusted check-in and reviewed financial drafts. V8 adds payer-owned pending credit, independent
+`withdrawPending(to,amountWei)`, factory/immutable provenance and isolated external-chain runtime.
+[API](API.md) is the interface reference. Additional integrated v8 interfaces are owner-only
+`deposit-inbox`/refresh and separate batch preview→commit→GET-status recovery. The portable source
+is `1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0`; approval/check-in remain app curation and do not
+automatically register stakers or publish monetary attendance. [API](API.md) is the interface reference. Chain balances, deadlines, cases and payment logs remain
+financial authority; editorial/contact/door records do not imply monetary attendance or admission.
+
+`hosted-testnet` has signed-wallet sessions, no synthetic identity picker or clock/faucet controls,
+private manifest-bound `/data` persistence and an RPC proxy restricted to reads. Browser wallets
+broadcast their own reviewed transactions to chain10200. Application state survived source/image
+replacement with existing IDs and canonical receipt links preserved. The container initializes only
+its fixed mount and drops to uid1000 before application import. Runtime immutable proof reuse checks
+actual chain/code/factory/creation anchors every time; financial reads are fresh and pinned to one block.
+
+Verified public sequence: deposits, excess-credit withdrawal, A/B admission, attendance, one Bob UI
+challenge and organizer match. Bob is Disputed with resolver localID0 and arbitratorID1000; A remains
+Listed, no ordinary payouts or held-share settlement yet. B's independent state is unchanged.
+Public acceptance passed247 checks, then34 UI-challenge checks including exactly one broadcast.
+See [dispute proof](../artifacts/chiado-dispute-proof.json) and [TEST_REPORT](TEST_REPORT.md).
+
+The unchanged A/B challenge windows end30October00:18:00/00:18:15Bangkok. Existing user-approved
+heartbeat `finish-kleros-testnet-kickbacks` runs00:20Bangkok daily (next30October) and must re-read
+chain eligibility. It must snapshot ordinary payout with held share before ruling, final ruling
+before settlement, and settlement/top-ups afterward. Finalized is only ordinary batch processed.
+Never duplicate that operator/job, rebroadcast journaled hashes or reset deployed contracts.
+Real Court follows a separate compatibility/funding review. No mainnet, real guest import, upstream
+push or billing upgrade is authorized. Core integration remains owned here; UI changes stay isolated
+until reviewed against these interfaces.
+
+Separate fresh UI-deposit C uses its own child/manifest/site/service/volume; see
+[TESTNET_UI_C](TESTNET_UI_C.md). Never merge it into A/B persisted state. Existing A/B historical
+deposits are CLI-origin, while Bob's challenge was UI-origin.
+
+## Historical v7 implementation and hosting
 
 28 October 2026. Main implementation owner: this chat (`Unify Kleros event deposits`).
 Core branch: `codex/core-application`. Integrated stable code checkpoint:

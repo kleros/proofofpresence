@@ -1,0 +1,106 @@
+{
+  "status": "passed",
+  "phase": "matched",
+  "chainId": 10200,
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "arbitration": "controlled test arbitrator; no independent jury",
+  "checkedAt": "2026-10-28T19:02:41.210Z",
+  "checks": 202,
+  "observed": "matched",
+  "case": {
+    "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+    "matched": true,
+    "outcome": null,
+    "state": "Disputed",
+    "matcher": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+    "matchEndsAt": 1793295040,
+    "depositWei": "30000000000",
+    "localDisputeID": "0",
+    "arbitratorDisputeID": "1000",
+    "heldShareWei": "0",
+    "caseOrganizer": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+    "finalRuling": null,
+    "caseURI": "/ipfs/QmevDcKkYvGCp9RCY9arsfVEsvpZJ7T21orJCxkVwRzHH4",
+    "publication": "unpublished",
+    "appeal": {
+      "ruling": 0,
+      "start": 0,
+      "end": 0,
+      "loserEnd": 0,
+      "costAttended": "0",
+      "costAbsent": "0"
+    }
+  },
+  "expectedEachWei": "0",
+  "sentAttendanceWei": "0",
+  "owedWei": "0",
+  "eventA": {
+    "phase": "Listed",
+    "stakerCount": 3,
+    "poolWei": "3000000000000",
+    "balanceWei": "3030000000000",
+    "pendingTotalWei": "0",
+    "pendingChallenges": 1,
+    "heldBackWei": "0",
+    "owedTotalWei": "0",
+    "challengeEscrowWei": "30000000000",
+    "payoutShareWei": "0",
+    "challengeEndsAt": 1793294280
+  },
+  "eventB": {
+    "phase": "Listed",
+    "stakerCount": 1,
+    "poolWei": "2000000000000",
+    "balanceWei": "2000000000000",
+    "pendingTotalWei": "0",
+    "pendingChallenges": 0,
+    "heldBackWei": "0",
+    "owedTotalWei": "0",
+    "challengeEscrowWei": "0",
+    "payoutShareWei": "0",
+    "challengeEndsAt": 1793294295
+  },
+  "canonicalAttendanceTransfers": [],
+  "deadlines": {
+    "omissionChallengeEndsAt": 1793294280,
+    "matchingEndsAt": 1793295040
+  },
+  "contractTransactionsSigned": 0,
+  "contractTransactionsBroadcast": 0,
+  "apiWrites": "wallet authentication only",
+  "uiRoles": [
+    "bob",
+    "ownerA",
+    "alice"
+  ],
+  "screenshots": [
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-mobile.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-participant-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-bob-participant-mobile.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-ownerA-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-ownerA-mobile.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-alice-desktop.png",
+    "artifacts/screenshots/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/matched-alice-mobile.png"
+  ],
+  "limitations": [
+    "Disposable Node-held wallets supplied login signatures through a restricted EIP1193 test provider; no normal wallet extension was used",
+    "Attendance sent, reserved case shares and failed-transfer credit are verified separately; claims are not relabeled as attendance payouts"
+  ],
+  "runId": "matched-2026-10-28T18-58-28-661Z-89fe64a9",
+  "archivedProof": "artifacts/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/proof.json",
+  "sourceContext": {
+    "manifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+    "matchedCheckpointSha256": "8d08dcca3629ef895e03d15294cb044bac1d98299d2d7c06d5d1ef2f56759f06",
+    "harnessSha256": "739abe981889481143280d2bf80b543b0befa10355b235de32d59ab5929c740d",
+    "liveFrontendSha256": "192a6566ee8eb972af5904cbd3513bb68ace86986434070888aa631e3da5dda9",
+    "backendInstanceId": "dd656a04-4a59-4446-a837-b2bd41c78b24",
+    "eventA": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+    "eventB": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+    "eventASnapshotBlock": 23734973,
+    "eventASnapshotHash": "0xc45e16ed34ef93bb2469a9dc32599c3dde05553d82d9c7520325f2b2c3b5748f",
+    "eventBSnapshotBlock": 23734973,
+    "eventBSnapshotHash": "0xc45e16ed34ef93bb2469a9dc32599c3dde05553d82d9c7520325f2b2c3b5748f"
+  },
+  "httpFailures": []
+}

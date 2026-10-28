@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "mode": "hosted-testnet",
+  "chainId": 10200,
+  "nativeCurrency": "XDAI",
+  "arbitration": "controlled test arbitrator; no independent jury",
+  "instanceId": "a36a9b27-67e4-4e28-984b-b8ae8500448f",
+  "checks": 247,
+  "coverage": [
+    "alice real wallet nonce login",
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a canonical existing deposit linkage",
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b canonical existing deposit linkage",
+    "ownerA real wallet nonce login",
+    "Read-only cases: 0; phase Open"
+  ],
+  "linkedReceipts": [
+    {
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "hash": "0x67f2a5bc4c14caaab37bda045c6fa8f3e58ea8c743c96d423c741059bb4fb316"
+    },
+    {
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+      "hash": "0x7e6c6b45b40d40676e612d9f81d55c330aa9d6dd0ab4a5ed39f4bf3b66306b28"
+    }
+  ],
+  "contractTransactionsSigned": 0,
+  "contractTransactionsBroadcast": 0,
+  "limitations": [
+    "This acceptance does not execute a dispute, payout or other contract transaction; protocol rehearsal evidence is separate",
+    "Wallet login used a restricted EIP1193 test provider with Node-held disposable keys rather than a normal browser extension"
+  ],
+  "screenshots": [
+    "artifacts/screenshots/testnet-live/alice-mobile.png",
+    "artifacts/screenshots/testnet-live/alice-desktop.png"
+  ]
+}

@@ -8,6 +8,51 @@ without claiming decentralized jury arbitration. A second rehearsal must verify 
 The app's existing v7 deployments remain separate and unchanged. Never load historical operator keys,
 production provider configs or a mainnet registry into these tools.
 
+## Current public checkpoint — 29 October 2026 (Asia/Bangkok)
+
+The controlled deployment is verified on Chiado. Public manifest:
+`registry/chiado-v8-controlled.json`.
+
+- Factory: [0xe39e01873814c1959e9e678c1f088788bECa15B8](https://gnosis-chiado.blockscout.com/address/0xe39e01873814c1959e9e678c1f088788bECa15B8).
+- EventA: [0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2](https://gnosis-chiado.blockscout.com/address/0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2).
+- EventB: [0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB](https://gnosis-chiado.blockscout.com/address/0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB).
+- Controlled resolver: `0x45DE965E607F16FC9b8f8a912dfAc6a98411B9eb`;
+  controlled arbitrator: `0x7660A60D3f89987D688E0CF826881D868Fc8141c`.
+
+There are **21 distinct confirmed top-level transactions**:7in the deployment journal and14in the
+rehearsal journal. They cover deployment/funding, four deposits, excess-credit recovery, separate
+organizer registrations, two attendance lists, Bob's one browser-initiated challenge and one organizer
+match. The app's wallet-proven synthetic registrations, approvals and trusted door observations are
+off-chain operations and are excluded from that transaction count.
+
+At checked block23734094, A was **Listed**, with3registered stakers, Alice/Carol listed as attendees,
+one matched Bob dispute, a3,000,000,000,000wei pool and30,000,000,000wei challenge escrow. Its balance
+was3,030,000,000,000wei. No payout share or held-share amount has yet been assigned. B remained Listed
+with Alice as its one attendee, one staker, a2,000,000,000,000wei pool/balance and no cases. Its complete
+financial state matched the historical Listed attendance checkpoint at block23733887.
+
+The canonical organizer match is
+[0x751979ac5cdfde1822bf47aefd4140861a1f9fb67531098933d403b7a91cb108](https://gnosis-chiado.blockscout.com/tx/0x751979ac5cdfde1822bf47aefd4140861a1f9fb67531098933d403b7a91cb108),
+block23734075. The resolver-local dispute ID is **0**; its arbitrator-side ID is **1000**. The
+controlled arbitrator is in its evidence period, the resolver has no final ruling, and the event's
+challenge state is Disputed. [Public dispute proof](../artifacts/chiado-dispute-proof.json) records
+both canonical receipts, the exact mapping, full A/B states and the historical B comparison.
+
+Both deposits closed on28October2026 at23:21:25Asia/Bangkok. Their claim deadline is4November2026 at
+the same time. Actual unchanged challenge-window deadlines are **30October2026 at00:18:00Bangkok
+for A** (timestamp1793294280) and **00:18:15for B** (1793294295). Payouts require a strictly later
+chain timestamp. Bob's original match deadline was00:30:40 (1793295040); the match already confirmed.
+
+**Full public kickback completion remains pending.** No payout, controlled final ruling or event
+settlement has run. The existing user-approved heartbeat `finish-kleros-testnet-kickbacks` is active;
+its next eligible00:20Bangkok run is30October2026. It must recheck chain state/journals, preserve all
+existing hashes and stop if a transaction or required UI checkpoint fails. The scheduled stages and
+screenshots below remain future verification work. Real Kleros Court is a separate subsequent phase.
+
+The ignored `.runtime/testnet/chiado-pre-attendance.json` remains historical evidence of the earlier
+17-transaction checkpoint. App-sync and attendance proofs preserve the later transitions; journals
+retain recovery data without storing signed bytes or private keys.
+
 ## Network and funding
 
 The [official Chiado network documentation](https://docs.gnosischain.com/about/networks/chiado)
@@ -92,6 +137,42 @@ Only after both children verify does the command atomically write
 metadata and v8 receipt/configuration provenance. It contains no signing material. Backend attachment
 must re-verify every event against this manifest; the browser signs transactions itself.
 
+## Bridge existing public receipts into the app
+
+After the first live browser acceptance and while both events are still Open, synchronize the
+synthetic on-chain fixture with the app's separate registration/admission/check-in records:
+
+```sh
+node scripts/testnet-sync-app.mjs
+node scripts/testnet-sync-app.mjs --execute
+```
+
+The default command performs public reads only and prints a review. Execution is explicitly limited
+to the main Netlify origin, controlled Chiado10200 and the exact deployed registry. The disposable
+Alice/Bob/Carol wallets sign only fresh server-issued authentication messages bound to origin,
+chain and wallet. Session cookies stay in memory and are closed afterward. No key or cookie is
+written to proof/log output. There is no contract-transaction signing or broadcast API in this helper.
+
+The helper preserves existing Alice registrations from live acceptance. It self-registers only missing
+synthetic wallet records, verifies each actual journaled deposit against canonical public RPC data,
+links only missing receipts, and has the correct separately authenticated organizer approve pending
+off-chain admissions. Existing names/contacts, linked receipts and prior decisions are preserved;
+conflicting evidence or a declined/free decision stops for inspection rather than being overwritten.
+
+During the reviewed event hours, the authenticated organizers can record explicit synthetic staff-door
+observations for Alice/Carol in A and Alice in B, using stable per-fixture replay nonces. Bob receives
+no observation, preparing the intended omission/challenge scenario. Already recorded observations
+are preserved. Outside event hours the helper records a skipped action and
+`trustedObservationsReady:false`; it does not manufacture a time or financial attendance list.
+
+Before and after synchronization it compares A/B authoritative financial projections while protocol
+operations are quiet, proving the helper did not change their visible financial state. Its endpoint
+allowlist excludes financial drafts/execution, funds, time controls, mock rulings, imports and RPC sends.
+Public proof is saved in ignored `.runtime/testnet/chiado-app-sync-proof.json`. Inspect the actions and
+observation-readiness flag before reviewing the later attendance transaction. Six focused mock-API
+tests cover endpoint restrictions, same-event attendee/owner nonce handling, nonce binding, canonical
+receipt matching, existing-record preservation/idempotence and complete financial comparison.
+
 ## Deposit → dispute → kickback stages
 
 Each stage first prints its public reviewed operations. Add `--execute` to submit that stage once;
@@ -105,7 +186,8 @@ node scripts/testnet-rehearsal.mjs --stage fund --execute
 
 Run the remaining explicit stages in this order:
 
-1. `deposit`: Alice sends two A deposits, Bob/Carol one A deposit each, and Alice one independent B deposit.
+1. `deposit`: Alice sends one A transfer worth two deposits, Bob/Carol one A deposit each, and Alice
+   one independent B deposit: four transactions in total.
 2. `recover-credit`: Alice withdraws her own excess A credit before admission, exercising autonomous recovery.
 3. `admit`: organizerA registers three payer-backed participants; organizerB registers Alice independently.
 4. `attendance`: **wait until eventStart**, then post Alice/Carol in A and Alice in B. Bob is omitted in A.
@@ -128,6 +210,34 @@ on public networks. A public complete rehearsal therefore takes at least one day
 The direct contract fixture stages complement browser acceptance; they do not prove off-chain user
 registration, email ownership, browser-extension behavior, public evidence publication or a real jury
 appeal process. Those checks belong in the app integration and second Court rehearsal.
+
+## Scheduled payout and UI checkpoints — pending
+
+The existing00:20Bangkok heartbeat must follow the canonical state and existing once-only journal,
+with ordinary A payouts before its controlled final ruling and event settlement. It must capture and
+validate the live UI at each boundary; a failed/missing check stops the next financial stage.
+
+1. After the ordinary payout batch, **before any ruling**, run
+   `node test/testnet-status.e2e.mjs --phase ordinary`. Verify Alice/Carol's actual ordinary payment
+   facts and Bob's still-open reserved share. Expected fixture values are1,000,000,000,000wei paid to
+   each ordinary attendee and1,000,000,000,000wei held for Bob. The event phase is Finalized while
+   Bob's challenge remains Disputed. Capture fully loaded organizer, participant and case screens
+   with the unresolved dispute visible.
+2. After the controlled final ruling is delivered to the resolver, **before event settlement**, run
+   `node test/testnet-status.e2e.mjs --phase ruled`. Verify final resolver ruling2 separately from the
+   Bob challenge's still-unsettled Disputed state and retained share; the event remains Finalized.
+   Capture the final-decision/settlement controls without labeling that reserve as delivered kickback.
+3. After the event's canonical settlement and top-ups, run
+   `node test/testnet-status.e2e.mjs --phase settled`, followed by the GET-only chain audit when
+   available. Verify actual payout logs, any owed payments, the resolved case and zero remaining A
+   held/challenge reserves. Expected successful EOA cumulative payments are1,500,000,000,000wei each
+   for Alice and Carol. Capture fully loaded participant totals and organizer/case settlement views.
+
+Wait for the selected event, wallet, actual detail panel and expected monetary facts before each
+screenshot. Preserve desktop/mobile evidence with the matching canonical receipt/block references.
+Screenshots establish rendered behavior; canonical receipts and logs establish delivery. B must remain
+financially unchanged through the A settlement proof. These scheduled checks have not run yet, and
+this document does not claim their expected outcomes as completed public evidence.
 
 ## Real Court phase
 

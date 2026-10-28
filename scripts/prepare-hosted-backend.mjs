@@ -28,15 +28,19 @@ const items = [
   "references/kickback/console/index.html",
   "references/kickback/docs/metaevidence.event-v1.template.json",
 ];
-const registryFile = "registry/chiado-v8-controlled.json";
-if (
-  execFileSync(
-    "git",
-    ["ls-tree", "--name-only", sourceCommit, "--", registryFile],
-    { cwd: root, encoding: "utf8" },
-  ).trim()
-)
-  items.push(registryFile);
+for (const registryFile of [
+  "registry/chiado-v8-controlled.json",
+  "registry/chiado-v8-ui-c.json",
+]) {
+  if (
+    execFileSync(
+      "git",
+      ["ls-tree", "--name-only", sourceCommit, "--", registryFile],
+      { cwd: root, encoding: "utf8" },
+    ).trim()
+  )
+    items.push(registryFile);
+}
 const tracked = execFileSync(
   "git",
   [

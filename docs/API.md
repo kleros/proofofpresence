@@ -39,7 +39,7 @@ wallet control on the synthetic chain. No mainnet registry entry is writable.
 - `POST /api/events/:id/checkins` `{participantId,nonce,source:'staff-door',note}` → authenticated owner/staff observation; replay nonce rejected; participant must be linked to wallet. No merch/history fields accepted as authority.
 - `POST /api/events/:id/personal` `{attended:true}` self-reported history only.
 - `POST /api/events/:id/imports` `{kind:'attendance'|'guests',csv,sourceEventId?,review?:{confirmed:true,note}}` → `{batch,rows,errors,limitation}`. CSV columns `event_id,chain_id,contract,participant_id,email,wallet,checked_in_at,tx_hash,admission`; known mismatches rejected even when review supplied. Unstamped raw CSV requires owner provenance review. Attendance rows must map to existing linked participant; owner review recorded. Test import synthetic fixture downloadable `GET /api/events/:id/fixture?kind=attendance|guests`.
-- `POST /api/events/:id/drafts` `{action,params:{...}}` → `{id,eventId,action,wallet,chainId,contract,valueWei,method,args,summary,expiresAt,snapshot,transaction:{to,data,value,chainId}}`. Actions: `deposit`, `register`, `reject` (`wallets` optional filtered eligible), `postAttendance` (server uses trusted observations and computes share), `challenge`, `match` `{wallet}`, `addAttendees` `{wallets}`, `resolve` `{wallet}`, `release`, `cancel`, `emergencyWithdraw` `{to?}`, `claim` `{to?}`, `refund` `{to,amountWei}`, `sweep` `{to}`, `transferOwnership` `{to}`, `acceptOwnership`, `evidence` `{wallet,uri}`, `fundAppeal` `{wallet,side:0|1|2,amountWei}`, `appealRewards` `{wallet,sides:[0,1,2]}`. Every action simulates, checks identity, authority, and contract state. `register` excludes unverified/unapproved/free/duplicate financial evidence. `postAttendance` requires all unresolved admission decisions addressed and nonempty registered trusted attendance. Immutable registry terms shown in every preview.
+- `POST /api/events/:id/drafts` `{action,params:{...}}` → `{id,eventId,action,wallet,chainId,contract,valueWei,method,args,summary,expiresAt,snapshot,transaction:{to,data,value,chainId}}`. Actions: `deposit`, `register`, `reject` (`wallets` optional; every explicitly selected wallet must remain eligible), `postAttendance` (server uses trusted observations and computes share), `challenge`, `match` `{wallet}`, `addAttendees` `{wallets}`, `resolve` `{wallet}`, `release`, `cancel`, `emergencyWithdraw` `{to?}`, `claim` `{to?}`, `refund` `{to,amountWei}`, `sweep` `{to}`, `transferOwnership` `{to}`, `acceptOwnership`, `evidence` `{wallet,uri}`, `fundAppeal` `{wallet,side:0|1|2,amountWei}`, `appealRewards` `{wallet,sides:[0,1,2]}`. Every action simulates, checks identity, authority, and contract state. `register` excludes unverified/unapproved/free/duplicate financial evidence. An explicit `register`/`reject` selection validates those exact wallets without silently dropping a selected row or inspecting unrelated unselected returned receipts. `postAttendance` requires all unresolved admission decisions addressed and nonempty registered trusted attendance. Immutable registry terms shown in every preview.
 - `POST /api/events/:id/drafts/:draftId/execute` `{}` sends **local** transaction using authenticated demo identity; rejects stale/wrong event/wallet/chain/used draft; returns `{hash,status:'confirmed',blockNumber,action}`; UI show preparing → awaiting review → submitting → confirmed / error. For signed wallet sessions `POST .../validate` `{}` revalidates and returns the raw exact transaction object; client rechecks wallet/chain and sends through its wallet. Then `POST .../confirm` `{hash}` validates exact canonical receipt, wallet/chain/target/calldata/value, registry/revision/expiry, post-review block and duplicate hash.
 - `POST /api/events/:id/cases/:wallet/publish` `{}` exact on-chain case bytes verified and stored locally → `{uri,status:'local-only',sha256}`; no IPFS network write. Failed/retry status visible. Production IPFS service remains in retained legacy modules and requires rollout authorization.
 - `POST /local-upload` same-origin authenticated multipart `data` file up to one256KiBIPFS block → `{path,status:'local-only'}`; `GET /local-ipfs/ipfs/:cid` returns exact locally stored bytes. No public pin or external write is implied. Generated local guest/console pages use chain time for financial eligibility while retaining wall-clock transaction timeouts.
@@ -93,6 +93,153 @@ a valid deposit can regain its verified identity link. Reverted receipts are ter
 states. Successful manual deposit linking also resolves its pending record, so a later genuine refund
 does not permanently block readmission. New UI requests fail before wallet signing when durable journal
 storage is unavailable; post-submission errors always retain the returned hash.
+
+## Contract deposit inbox
+
+V8 bootstrap advertises `capabilities.contractInbox:true`. The owner UI uses this read-only source;
+historical v7/staff views retain their existing receipt presentation. The inbox endpoints authorize
+the **current on-chain event owner** before cache access and again before disclosure. Staff,
+participants and an owner of another event cannot read its contacts. An unavailable ownership check
+returns HTTP 503 `INBOX_OWNER_UNAVAILABLE` without cached inbox data.
+
+- `GET /api/events/:id/deposit-inbox` → HTTP200 inbox status.
+- `POST /api/events/:id/deposit-inbox/refresh` `{}` → the same status shape. Extra fields are rejected.
+  Refresh is informational and cannot approve, register, refund or submit a transaction.
+
+The status contains `source:'contract'`, `eventId`, `chainId`, `contract`, `contractVersion`,
+`indexedBlock:{number,hash,timestamp}|null`, `latestBlock`, `lastSyncedAt`, `nextRefreshAt`, `stale`,
+`error:{code,message}|null`, `syncing`, `actionable`, `counts:{payers,linked,unlinked,transactions}` and
+`rows`. `indexedBlock.timestamp` is chain Unix seconds; `lastSyncedAt` and `nextRefreshAt` are ISO
+wall-clock strings, with `lastSyncedAt:null` before a completed index. `counts.transactions` counts
+unique transaction hashes rather than individual deposit logs.
+
+Each wallet row includes `participantId`, `name`, `email`, `linked`, `receiptLinked`, `actionable`,
+`registered`, `registrationState`, `transactions` and the following decimal wei strings:
+
+| Field | Meaning at the indexed block |
+| --- | --- |
+| `receivedWei` | Historical canonical deposit lots from this payer. |
+| `pendingCreditWei` | Current v8 payer-owned unused credit; `null` for v7. |
+| `committedPrincipalWei` | Current registered principal before ordinary payout/cancellation. |
+| `registrationBasisWei` | Historical admission basis, not a recoverable balance. |
+| `returnedWei` | Delivered direct principal/spare returns and pending-credit withdrawals. |
+| `unallocatedWei` | V8 pending credit; v7 aggregate-spare allocation, not payer-owned credit. |
+| `owedWei`, `heldShareWei` | Separate current owed credit and reserved case share. |
+| `attendancePaidWei`, `creditWithdrawnWei`, `claimsPaidWei` | Separate delivered payment categories; fungible claims are not relabelled attendance or direct principal returns. |
+
+These observations overlap and must not be added as disjoint obligations. Unknown payers have
+`participantId/name/email:null` and `linked:false`. Contacts require an identity-verified participant
+with the exact stable event and wallet. `receiptLinked` reports an application deposit link separately;
+a transfer alone does not establish identity, admission or contract registration.
+
+Each transaction is `{txHash,logIndex,amountWei,blockNumber,blockHash,confirmations,status}`.
+`status:'confirmed'` means a successful canonical receipt/log observed with at least two confirmations;
+one confirmation is `confirming`. Neither promises finality or unseen mempool coverage. A contract
+wallet's canonical `Deposited.from` is the payer even when the outer sender differs.
+
+The informational cache is scoped to environment/server instance and the full deployment identity,
+with 30-second refresh and a 5-second manual minimum. Reuse verifies provenance and the canonical
+indexed anchor; concurrent reads share one bounded index attempt. Transient index failures can return
+HTTP200 with stale last-good rows, an error and `actionable:false` on the status and each row. A proven
+orphan instead clears rows and the indexed anchor; failed rebuilding reports `INBOX_REORG`,
+`indexedBlock:null`. An initial failed index is empty/stale. `actionable:true` is a UI hint, never
+financial signing authority. Financial drafts do not consume this cache. See
+[inbox accounting and bounds](CONTRACT_DEPOSIT_INBOX.md).
+
+## Separate batch admission and trusted check-in
+
+V8 bootstrap advertises `capabilities.batchActions:true`. Authorized event details include
+`participants[].batchEligibility` with `approve-admission` and `check-in` entries containing
+`{eligible,reasonCode,reason}`. These current hints are revalidated by the server for every preview
+and commit; clients must not infer eligibility from a name, historical receipt total or staker status.
+
+| Action | Current required role | Saved app effect |
+| --- | --- | --- |
+| `approve-admission` | Event contract owner | Exactly the selected eligible admissions become `approved`; current canonical unreturned deposit evidence and phase `Open` are required. |
+| `check-in` | Event owner or event-specific trusted staff | Exactly the selected linked participants receive `staff-door` observations at actual chain time, during event hours, with reviewer and replay-safe nonces. Free guests are allowed. |
+
+Neither operation registers stakers, publishes financial attendance or transfers funds. Luma approval
+is manual outside this app. Contract registration and attendance posting remain separately reviewed,
+simulated and signed `register`/`postAttendance` actions.
+
+`POST /api/events/:id/batches/preview` accepts only:
+
+```js
+{ action: 'approve-admission' | 'check-in',
+  items: [{ participantId: null | 'exact-event-participant-id', wallet: '0x…' }],
+  nonce: 'unique-request-nonce', note: 'optional staff note' }
+```
+
+Select 1–150 unique valid wallets and unique non-null participant IDs. Nonces are 8–64 characters;
+notes are at most 500 characters. Unknown/unverified/mismatched wallet links stay explicit blocked
+rows with no contact disclosure. HTTP201 returns
+`{id,eventId,action,nonce,actorWallet,chainId,contract,contractVersion,revision,snapshot,blockNumber,expiresAt,counts,canCommit,tokenStatus,rows,requiresFinancialTransaction:false,consequences}`.
+`counts` is `{selected,eligible,blocked}`; every row is
+`{participantId,wallet,name,email,eligible,reasonCode,reason}`. `tokenStatus` is `ready` or `blocked`.
+`expiresAt` is wall-clock Unix milliseconds, five minutes after creation. Preview makes no app-record
+or financial mutation and rechecks current role after asynchronous receipt validation.
+
+`POST /api/events/:id/batches/:batchId/commit` requires `{nonce,confirmed:true}`. Applying a pending
+review is bound to its original authenticated session, actor wallet, event, deployment, app revision,
+selected records, canonical financial snapshot and expiry. All selected rows must remain eligible;
+there is no silent filtering or partial apply. One complete mutation/audit/revision is saved atomically;
+synchronous save failure rolls back admissions, observations, nonce use and audit/revision changes.
+HTTP200 returns:
+
+```js
+{ id, eventId, action, status: 'committed', appliedCount, participantIds,
+  observationIds, committedAt, chainId, contract, contractVersion, actorWallet,
+  requiresFinancialTransaction: false,
+  nextAction: 'review-staker-registration' | 'review-post-attendance', replayed }
+```
+
+`committedAt` is an ISO wall-clock string. Approval has no observation IDs; check-in returns one per
+selected person. A previously committed audit result is idempotently returned for the original
+wallet/nonce after current-role authorization, including after a new login; it never reapplies.
+Typical rejection codes include `BATCH_SCOPE`, `STALE_BATCH`, `BATCH_IN_PROGRESS`,
+`ATTENDANCE_TIME_MISMATCH`, `REPLAY` and `BATCH_LIMIT`. Role failures remain HTTP401/403.
+
+`GET /api/events/:id/batches/:batchId` is authenticated recovery. The original wallet may read with a
+fresh valid session, but must still hold the action's current role. A completed batch returns the
+committed result above with `replayed:true`. Otherwise HTTP200 returns only
+`{id,eventId,action,actorWallet,chainId,contract,contractVersion,status,requiresFinancialTransaction:false}`,
+without contacts, selected rows or nonce:
+
+| Status | Recovery meaning |
+| --- | --- |
+| `ready`, `blocked` | A review is known; this does not settle an uncertain earlier save. |
+| `committing` | This exact token is actively committing, including after its TTL has elapsed. |
+| `expired` | A known stale/expired, uncommitted token has been permanently retired before this response. A delayed POST cannot revive it after clock rewind or restored state. |
+| `unknown` | No known live token/completed receipt; `action:null`. Missing state or restart is ambiguous, not proof that no save occurred. |
+
+Status rechecks completion after authorization awaits, preventing a completed batch from being
+misreported as expired. Only a fully scoped committed result or known terminal `expired` response
+resolves an uncertain save. Ready/blocked/committing/unknown, HTTP404, elapsed client time or a server
+restart cannot release that uncertainty by themselves. Never automatically retry the commit POST.
+
+The UI injects [the durable batch journal](../public/batch-pending.js). It saves/readbacks a contact-free
+intent marker **before** sending the one commit request; storage failure visibly locks saving. The
+marker retains batch ID/nonce, selected participant IDs/wallets, phase and original scope, without
+names, emails, cookies or signing keys. Origin, event, wallet, chain, contract/version and action remain
+isolated. External Chiado markers can survive a backend-instance replacement for the same deployment;
+ephemeral chain 1337 markers stay instance-specific. A full reload restores the lock and requires
+explicit authenticated status GET; missing status keeps it locked. Remove only the expected marker
+after validated committed/terminal-expired recovery, preserving independent submitted financial
+journals. Saving approval offers a separate explicit registration review for its exact approved set;
+changed eligibility blocks that whole set with reasons.
+
+### Integration provenance and local evidence
+
+The portable inbox/batch assets came from UI source
+`1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0`; [verified delivery and integrated hashes](../artifacts/portable-batch-assets-sha.json)
+record the five assets and compatibility patches. The current core controller was preserved.
+[Batch browser evidence](../artifacts/screenshots/batch-actions-app/results.json) records 28 checks from
+`node test/batch-actions-app.e2e.mjs`; [inbox browser evidence](../artifacts/screenshots/contract-inbox-app/results.json)
+records 26 from `node test/contract-inbox-app.e2e.mjs`. These used real isolated local v8 contracts,
+HTTP and nonce authentication. The batch suite deliberately dropped one successful commit response
+to verify reload/GET-only recovery; the inbox orphan-error client branch used a controlled transport
+fixture. They do not establish public-testnet batch operation or payout completion. No tests were
+rerun solely for this documentation update.
 
 ## Explicit hosted demo transport
 

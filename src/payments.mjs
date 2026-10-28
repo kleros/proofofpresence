@@ -21,29 +21,42 @@ import { getLogsChunked } from "../references/kickback/scripts/lib.mjs";
  *
  * @param {any} chain
  * @param {any} record
- * @param {{blockTag?: number | "latest"}} [options]
+ * @param {{blockTag?: number | "latest", signal?: AbortSignal}} [options]
  */
 export async function projectPayments(
   chain,
   record,
-  { blockTag = "latest" } = {},
+  { blockTag = "latest", signal } = {},
 ) {
+  signal?.throwIfAborted();
   const d = record.deployment;
   const contract = await verifyDeployment(chain, d);
+  signal?.throwIfAborted();
   const block = await chain.provider.getBlock(blockTag);
+  signal?.throwIfAborted();
   requireThat(
     block && block.number >= d.deploymentBlock,
     "Payment projection requires a canonical block after deployment",
     "PAYMENT_SNAPSHOT",
     409,
   );
+  const logProvider = signal
+    ? {
+        getLogs(filter) {
+          signal.throwIfAborted();
+          return chain.provider.getLogs(filter);
+        },
+      }
+    : chain.provider;
   const logs = await getLogsChunked(
-    chain.provider,
+    logProvider,
     { address: d.contract },
     d.deploymentBlock,
     block.number,
     5000,
+    signal ? { retries: 0, minStep: 5000 } : undefined,
   );
+  signal?.throwIfAborted();
   const ordered = logs
     .map((log) => {
       let event;
@@ -71,12 +84,14 @@ export async function projectPayments(
     "PendingWithdrawn",
   ]);
   for (const { log, event } of ordered) {
+    signal?.throwIfAborted();
     if (!paymentNames.has(event.name) || receipts.has(log.transactionHash))
       continue;
     const [receipt, tx] = await Promise.all([
       chain.provider.getTransactionReceipt(log.transactionHash),
       chain.provider.getTransaction(log.transactionHash),
     ]);
+    signal?.throwIfAborted();
     requireThat(
       receipt?.status === 1 &&
         receipt.blockHash === log.blockHash &&
@@ -130,6 +145,7 @@ export async function projectPayments(
   /** @type {Array<{type: string, wallet: string, recipient: string | null, amountWei: string, txHash: string, blockNumber: number, logIndex: number, successful: boolean, sourceMethod: string | null}>} */
   const transfers = [];
   for (const { log, event } of ordered) {
+    signal?.throwIfAborted();
     const a = event.args,
       key = log.transactionHash;
     if (event.name === "StakerRegistered") {
@@ -243,6 +259,7 @@ export async function projectPayments(
       sourceMethod: context.method,
     });
   }
+  signal?.throwIfAborted();
   const canonical = await chain.provider.getBlock(block.number);
   requireThat(
     canonical?.hash === block.hash,

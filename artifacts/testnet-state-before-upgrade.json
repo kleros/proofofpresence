@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-28T16:36:12.942Z",
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "records": [
+    {
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "participantId": "0cad9855-c7e6-40d2-bf11-51c5148f135c",
+      "wallet": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+      "depositHash": "0x67f2a5bc4c14caaab37bda045c6fa8f3e58ea8c743c96d423c741059bb4fb316",
+      "depositVerified": true,
+      "admission": "pending",
+      "registered": true,
+      "stakerCount": 3,
+      "poolWei": "3000000000000"
+    },
+    {
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+      "participantId": "0da80c36-0563-45da-bc28-8461964243aa",
+      "wallet": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+      "depositHash": "0x7e6c6b45b40d40676e612d9f81d55c330aa9d6dd0ab4a5ed39f4bf3b66306b28",
+      "depositVerified": true,
+      "admission": "pending",
+      "registered": true,
+      "stakerCount": 1,
+      "poolWei": "2000000000000"
+    }
+  ]
+}

@@ -1,4 +1,39 @@
-# Interactive hosted demo
+# Hosted application deployment
+
+## Current controlled Chiado v8 deployment
+
+The primary [app](https://kleros-event-workbench-preview.netlify.app) now uses `hosted-testnet`,
+real unchanged v8 contracts on Chiado10200 and deliberately controlled arbitration. It requires
+signed wallet authentication and has no demo identity impersonation or time/faucet/ruling controls.
+Netlify serves the frontend and fixed HTTPS gateway; the isolated persistent Railway service is
+`127e805c-b341-45e5-8a6b-822e432ee134` in project `23ab879a-90d0-4f8f-a56a-d63baa85eed5`.
+Its backend is `https://workbench-testnet-api-production.up.railway.app`; volume
+`36657a45-ed66-4497-9711-248aac82b3cf` mounts `/data`. One replica/no sleep; health `/healthz`.
+
+Exact latest source/deploy/image IDs and live verification are in
+[testnet-hosting.json](../artifacts/testnet-hosting.json), [V8_APP_RELEASE](V8_APP_RELEASE.md) and
+[TEST_REPORT](TEST_REPORT.md). Do not infer current source from the historical v7 commands below.
+The public registry is [chiado-v8-controlled](../registry/chiado-v8-controlled.json).
+Private wallet material and runtime state are excluded from both source-bound deployment packages.
+The current backend compiles v7 with pinned ABI/bytecode equality and v8 with its separate compiler.
+It initializes only the fixed volume mount, then drops to uid1000 before importing application code.
+
+Application records survived a real backend image replacement; exact IDs and linked canonical
+receipts are in the before/after upgrade artifacts. Financial state lives on Chiado and is read at a
+fresh pinned block. The public RPC proxy permits reads only; browser wallets use the external chain.
+The primary Netlify origin is required for API calls; immutable deploy URLs intentionally fail exact-
+origin API checks. Existing ordinary private site variables supply only server-side backend settings.
+No paid secret-scoping feature or billing upgrade was enabled.
+
+247 live checks and34 UI-challenge checks passed; all eligible public transactions through matching
+are confirmed. Full public kickbacks/settlement remain gated by the real challenge window; the
+existing user-approved local heartbeat resumes00:20Bangkok30October. See the rehearsal runbook for
+once-only journals, phase audits and recovery. TestXDAI is valueless and mocks have no independent jury.
+
+## Historical v7 hosted demo — superseded
+
+The remaining details describe source371b4c80 and its earlier deployment. The370-check result,
+Ganache chain1337, deliberate impersonation and restart resets apply only to that snapshot.
 
 The full interactive demo is live at
 [kleros-event-workbench-preview.netlify.app](https://kleros-event-workbench-preview.netlify.app).

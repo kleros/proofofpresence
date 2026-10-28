@@ -40,6 +40,126 @@ export function readyAfter(now, timestamp, label) {
     `${label} is not ready. Public testnet time must pass naturally; retry after ${new Date((Number(timestamp) + 1) * 1000).toISOString()}.`,
   );
 }
+
+// Challenge collateral uses _send and has no Payout event. Reconcile its actual
+// recipient balances at the settlement block, accounting separately for gas and
+// any log-explicit attendance payment in the same transaction. This is a bounded
+// EOA fixture proof, not an assertion of a complete internal-call trace.
+export async function proveCollateralDelivery({
+  provider,
+  event,
+  challenge,
+  bob,
+  finalRuling,
+  hash,
+}) {
+  check(
+    [0, 1, 2].includes(finalRuling),
+    "Unsupported final collateral ruling.",
+  );
+  const receipt = await provider.getTransactionReceipt(hash);
+  const tx = await provider.getTransaction(hash);
+  check(
+    receipt?.status === 1 && tx && receipt.blockNumber > 0,
+    "Collateral proof needs a successful settlement receipt.",
+  );
+  const [beforeBlock, afterBlock, rawBlock] = await Promise.all([
+    provider.getBlock(receipt.blockNumber - 1),
+    provider.getBlock(receipt.blockNumber),
+    provider.send("eth_getBlockByNumber", [
+      ethers.toQuantity(receipt.blockNumber),
+      true,
+    ]),
+  ]);
+  check(
+    afterBlock?.hash === receipt.blockHash &&
+      afterBlock.parentHash === beforeBlock?.hash,
+    "Collateral proof block is not canonical.",
+  );
+  const expected = new Map();
+  const add = (wallet, value) => {
+    const key = wallet.toLowerCase();
+    expected.set(key, (expected.get(key) ?? 0n) + value);
+  };
+  const remaining = 2n * challenge.deposit - challenge.arbitrationPaid;
+  add(
+    bob,
+    finalRuling === 1 ? remaining : finalRuling === 0 ? remaining / 2n : 0n,
+  );
+  add(
+    challenge.matcher,
+    finalRuling === 2
+      ? remaining
+      : finalRuling === 0
+        ? remaining - remaining / 2n
+        : 0n,
+  );
+  check(
+    rawBlock?.hash === afterBlock.hash &&
+      Array.isArray(rawBlock?.transactions) &&
+      !rawBlock.transactions.some(
+        (other) =>
+          other.hash.toLowerCase() !== hash.toLowerCase() &&
+          (expected.has(String(other.from).toLowerCase()) ||
+            expected.has(String(other.to).toLowerCase())),
+      ),
+    "Other direct recipient activity makes this block-balance collateral proof ambiguous.",
+  );
+  const delivered = new Map();
+  for (const log of receipt.logs.filter(
+    (item) => item.address.toLowerCase() === event.target.toLowerCase(),
+  )) {
+    const parsed = event.interface.parseLog(log);
+    if (parsed?.name === "Payout") {
+      const key = parsed.args.to.toLowerCase();
+      delivered.set(key, (delivered.get(key) ?? 0n) + parsed.args.amount);
+    }
+  }
+  const rows = await Promise.all(
+    [...expected].map(async ([wallet, collateral]) => {
+      check(
+        (await provider.getCode(wallet, beforeBlock.number)) === "0x",
+        "Block-balance collateral proof is limited to the planned EOA recipients.",
+      );
+      const [before, after] = await Promise.all([
+        provider.getBalance(wallet, beforeBlock.number),
+        provider.getBalance(wallet, afterBlock.number),
+      ]);
+      const gas =
+        tx.from.toLowerCase() === wallet
+          ? receipt.gasUsed * receipt.gasPrice
+          : 0n;
+      const explicitAttendance = delivered.get(wallet) ?? 0n;
+      check(
+        after - before + gas - explicitAttendance === collateral,
+        "Actual recipient balance and gas do not prove the expected challenge collateral delivery.",
+      );
+      return {
+        wallet: ethers.getAddress(wallet),
+        beforeBalanceWei: String(before),
+        afterBalanceWei: String(after),
+        gasPaidWei: String(gas),
+        explicitAttendancePaidWei: String(explicitAttendance),
+        collateralDeliveredWei: String(collateral),
+      };
+    }),
+  );
+  check(
+    (await provider.getBlock(afterBlock.number))?.hash === afterBlock.hash,
+    "Settlement block changed while proving collateral delivery.",
+  );
+  return {
+    method: "canonical-block-recipient-balance-and-gas",
+    transactionHash: hash,
+    blockNumber: afterBlock.number,
+    blockHash: afterBlock.hash,
+    parentBlockHash: beforeBlock.hash,
+    totalChallengeCollateralWei: String(remaining),
+    recipients: rows,
+    scope:
+      "Planned EOA recipients; no other direct recipient transaction in the settlement block. Log-explicit attendance payments are subtracted; this is not an internal-call trace.",
+  };
+}
 export async function runStage({
   stage,
   execute,
@@ -131,8 +251,14 @@ export async function runStage({
       break;
     case "deposit":
       check(
-        now < aRecord.deployment.eventStart,
-        "Deposits have closed at eventStart; do not reuse this consumed rehearsal instance.",
+        now < aRecord.deployment.eventStart ||
+          [
+            "deposit-alice-a",
+            "deposit-bob-a",
+            "deposit-carol-a",
+            "deposit-alice-b",
+          ].every(has),
+        "Deposits have closed at eventStart; only receipt checks for all four already-journaled operations may resume.",
       );
       queue("deposit-alice-a", "alice", a, "deposit", [], 2n * D);
       queue("deposit-bob-a", "bob", a, "deposit", [], D);
@@ -303,6 +429,14 @@ export async function runStage({
           paid.get(carol.toLowerCase()) === expected,
         "Canonical payout logs do not show the expected equal kickbacks.",
       );
+      const collateralDelivery = await proveCollateralDelivery({
+        provider,
+        event: a,
+        challenge,
+        bob,
+        finalRuling,
+        hash: journal.transactions["settle-bob-a"].hash,
+      });
       const proof = {
         status: "passed",
         chainId: 10200,
@@ -313,6 +447,7 @@ export async function runStage({
         verifiedAt: new Date().toISOString(),
         alicePayoutWei: String(paid.get(alice.toLowerCase())),
         carolPayoutWei: String(paid.get(carol.toLowerCase())),
+        collateralDelivery,
         bUnchangedDuringASettlement: true,
         transactions: Object.fromEntries(
           Object.entries(journal.transactions).map(([key, entry]) => [

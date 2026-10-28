@@ -1,41 +1,140 @@
-# Current implementation — 28 October 2026
+# Current implementation — 29 October2026, Asia/Bangkok
 
-This root document is the **single canonical project brain**. The original supplied review is retained
-below as historical source material; this section and linked current docs supersede its implementation
-recommendations and unexecuted-test statements.
+This root document is the **canonical project brain**. The current checkpoint and linked release
+records supersede historical implementation/deployment statements retained below.
 
-## Latest requested phase: simpler v8 app and controlled Chiado testnet
+## Current phase: simpler v8 app and controlled Chiado testnet
 
-The user requested a simpler UX, integration of the new contract and a testnet rehearsal from deposit
-through dispute and kickback. They selected controlled arbitration first, real Kleros Court afterward,
-and funded disposable Chiado wallet `0xf37E491e7117fC1C3351B1548839f727F05f853B` with0.0002testXDAI.
-Only chain10200 and synthetic data are in scope. The original v7/mainnet artifacts remain unchanged.
+The user requested simpler UX, integration of the new contract, and the full deposit→dispute→kickback
+rehearsal. They chose controlled arbitration first, then real Court, funded the disposable Chiado
+wallet with0.0002testXDAI, and explicitly authorized automatic continuation when payouts become
+eligible. Only synthetic fixtures and chain10200 are authorized. Core integration stays in this chat;
+parallel UI and contract chats perform isolated/read-only review.
 
-Implemented: one next action/four-step journey, progressive technical disclosure, explicit v7/v8
-factory version dispatch, payer-owned credit/recovery with canonical receipt replay, wallet-only
-Chiado mode, external signature/chain/origin guards and private manifest-bound persistence.
-See [V8_APP_RELEASE](docs/V8_APP_RELEASE.md), [SIMPLE_UX](docs/SIMPLE_UX.md), updated [API](docs/API.md)
-and [TESTNET_REHEARSAL](docs/TESTNET_REHEARSAL.md). The root owner integrated the existing v8 candidate
-and its local stress evidence; the deployment context excludes signing files and legacy live configs.
+Branch: `codex/core-application`. Integrated v8 foundation `c0fa035abb00414bb278addbcfb865bf2e8863ae`;
+immutable-proof correction `6cd870daff8086cfa181329d89d0c950412e1719`;
+pinned-block parallel reads `8588872f33765d889e44590764b97f5da9d5c4d1`;
+network-label correction `3bef70b59315addcd382b7bc20895506ad24625d`;
+profile-free recovery/status source `27377f19f8bf801fd5dd27a86119850f19471de2`.
+Exact current hosting/source IDs are in [testnet-hosting](artifacts/testnet-hosting.json).
 
-Actual local checks: build/typecheck;164-test Node run found one capability-shape regression, fixed
-and verified with19 hosted/runtime/tooling tests; bounded fee helper then passed10 focused checks.
-Browser suites passed174 checks plus expectations across v7/v8, HTTPS, signing and context. The v8
-application test executes deposit, credit recovery/readmission evidence, combined-credit registration,
-attendance, matched dispute, ordinary payouts with one held share and final kickbacks with B unchanged.
+[Live app](https://kleros-event-workbench-preview.netlify.app): Netlify frontend/gateway and isolated
+Railway `hosted-testnet` backend with `/data` persistence. Signed wallets only; no identity picker,
+faucet, clock controls or browser mock-ruling action. One next action, four participant steps and
+technical disclosures simplify the UI while exact value/recipient/network review stays authoritative.
 
-Public factory/mocks/two children are deployed and verified in `registry/chiado-v8-controlled.json`.
-The policy was published exactly from source `de749dda8836d44e4c788db6a0170a022e30458a`.
-The isolated durable Railway backend and simplified Netlify frontend are being integrated at this
-checkpoint; final cloud health/live acceptance will be recorded after verification. Deposits must be
-made before28October2026 23:21:25Asia/Bangkok. Public challenge/payout timing remains unchanged: one
-full day after attendance before ordinary kickbacks, with separate held-share settlement.
+Implemented routes/interfaces: directory and `/#event=<stable-id>&view=participant|organizer|cases`;
+bootstrap/event reads, signed nonce auth, wallet registration, receipt reconciliation, owner approval,
+staff observations, reviewed drafts→validate→wallet send→canonical confirm. V8 adds payer-owned
+pending credits and independent `withdrawPending(to,amountWei)`. See [API](docs/API.md),
+[CORE_HANDOFF](docs/CORE_HANDOFF.md), [V8_APP_RELEASE](docs/V8_APP_RELEASE.md).
 
-Remaining: finish hosted testnet activation/live acceptance, advance only currently eligible rehearsal
-stages, then resume payouts/settlement when the real chain deadline passes. No automatic rebroadcast,
-state reset, deadline change, mainnet transaction, real guest write or upstream push is authorized.
-Real Court requires a separate precise deployed resolver ABI/provider review before a new event.
-The prior online-demo sections below are historical v7 deployment records.
+Decisions: explicit v7/v8 ABI dispatch; unchanged v8 Solidity; actual factory creation and immutable
+provenance; no mutable financial cache; parallel reads pinned to one fresh block; secret-free
+source-bound hosting packages; private manifest-bound atomic state. Container mount initialization
+drops to uid1000 before importing server code. Original local v7 remains a compatibility runtime.
+All public operations use one shared lock and journal a signed hash before the single broadcast.
+
+## Confirmed public checkpoint
+
+Manifest: [chiado-v8-controlled](registry/chiado-v8-controlled.json). A/B are separate contracts/owners;
+Alice participates in both. Actual deposits, AliceA excess-credit recovery, independent admissions,
+trusted app observations and posted attendance are confirmed. Alice/Carol are listed in A; Bob is
+omitted and challenged through the actual public UI. His challenge was matched by organizerA.
+
+- UI challenge `0xfa6b8126046539d918b1f8a4e3f889e320234c00630664537fb4da53ff62442c`.
+- Match `0x751979ac5cdfde1822bf47aefd4140861a1f9fb67531098933d403b7a91cb108`, block23734075.
+- Bob: Disputed; resolver localID0, arbitratorID1000, unruled. A remains Listed, pool3e12wei,
+  balance3.03e12wei, escrow30e9wei, held shares0 before the ordinary batch. B Listed/balance2e12wei,
+  no cases; exact independent financial comparison passed.
+- A challenge deadline **2026-10-29T17:18:00Z =30October00:18:00Asia/Bangkok**;
+  B deadline17:18:15Z =00:18:15. Eligibility is strictly after the contract deadlines.
+- Bob's match deadline17:30:40Z is no longer a Waiting-case gate because the match is confirmed.
+  Future runs must still re-read actual state rather than infer eligibility from the wall clock.
+
+Evidence:247 live wallet/API/UI checks;34 UI challenge checks with exactly one broadcast;
+[matched proof](artifacts/chiado-dispute-proof.json), [attendance](artifacts/chiado-attendance-proof.json),
+[app bridge](artifacts/chiado-app-sync-proof.json), and durable receipt/registration upgrade checks.
+Local validation: the latest complete Node suite passed206/206 (555.8seconds); build/types passed.
+Later batch-status/recovery, durable browser journal, selected-registration and C operator changes
+have separate focused passing checks; that earlier complete run is not presented as a later rerun.
+The initial164-test compatibility regression was fixed before that successful run. Focused tooling10/10,
+adapter/runtime9/9, app bridge6/6, status UI10, v7 redesign49 and v8 simpleUI18 passed; earlier combined
+browser174 plus expectations also passed. A new real-HTTP wallet/plain-transfer regression proves
+profile-free recovery, a different destination, stable review fingerprint, protected principal and B
+isolation. These are separate runs, not added public transactions or fabricated future payouts.
+
+## Remaining work and automatic continuation
+
+Public kickbacks and final settlement are **not yet complete**. Existing heartbeat
+`finish-kleros-testnet-kickbacks` is ACTIVE at00:20Asia/Bangkok daily, next eligible30October2026.
+It must verify actual chain time/deadlines/state and review each stage before executing once:
+ordinary payout with Bob unresolved/held share→UI/chain snapshot→controlled absent ruling2→
+final-delivered-before-settlement snapshot→settlement/top-ups→UI/chain and canonical-payment proof.
+Check Event B unchanged and owed claims separately; Finalized means ordinary batch processed,
+not all cases settled or all payments delivered. Pause the existing heartbeat only after verified
+completion. The computer must be awake with Codex running. Never create a duplicate operator/job.
+
+Read [TESTNET_REHEARSAL](docs/TESTNET_REHEARSAL.md) and the existing private journals before work.
+An existing submitted hash allows receipt checks only; never re-sign, rebroadcast, reset the plan,
+rotate wallets, redeploy events or change deadlines. Privatekeys/cookies/signatures stay out of logs,
+Git, browser context and chat. No mainnet action, real guest write, upstream push or billing upgrade.
+Real Court is separate and requires deployed resolver ABI/provider compatibility review and more
+faucet funding; controlled mocks do not establish independent jury arbitration.
+
+## Additional human requests under active integration
+
+The human in the coordinated UI chat first asked for Luma, then explicitly deferred it because
+there is no Luma Plus. No Luma key, guest fetch, source module, route or feature was activated.
+Current additional scope is automatic contract depositor monitoring, plus separate batch curated
+approval and trusted check-in. The portable inbox and separate batch UI handoff is final commit
+`1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0` in the isolated UI worktree (monitor milestone `dc62a5b`). Backend owner-only inbox tests passed18 focused financial regressions and14 final
+checks; independent review approved cache/reorg/timeout/ownership hardening. Integration remains
+in progress until source-bound hosting and actual owner browser acceptance finish.
+
+The human in the contract chat explicitly asked for fresh UI-origin deposit→dispute→kickback testing.
+A/B deposit windows are closed. Prepare separate scenario C using the existing reviewed factory and
+controlled resolver, independent plan/keys/journal/one-event manifest/backend volume/Netlify origin.
+Never append C to the existing A/B whole-manifest state or reset it. Shared operator lock still applies.
+Plan: Alice/Bob both deposit through actual UI; list Alice, omit Bob; Bob challenges, owner matches;
+ordinary batch pays Alice while Bob held; controlled ruling1 then UI settlement pays that SAME Bob
+his held share. A's scheduled ruling2 still tests late top-ups. Dynamic C case IDs, scoped bridge keys
+only in Node. C local keys and immutable plan were prepared at2026-10-28T19:45:35Z; fingerprint
+`3637ba50a2b8f1d46cedbe6d678b747c25d19c15e976ae6ea87e63c8be0126fb`.
+Its fixed deposit cutoff/start is2026-10-28T21:45:35Z (29October04:45:35Bangkok).
+One fresh child `0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef` and three exact1e13wei
+role grants are confirmed: four operations, child creation block23735598, transaction
+`0x4aae6f292e9f6e7dbc65751631218a99f3c7bb74e68ea4d768d12f0235efc9cf`.
+Manifest `registry/chiado-v8-ui-c.json` and `artifacts/ui-c-deployment-proof.json` bind the result.
+No actual UI deposit or C continuation job exists yet; hosting is not published. Isolated C resources are configured: Netlify `db303622-4c6c-4034-b289-ccea38f029fc`,
+`https://kleros-ui-c-20261029-9fe71683.netlify.app`; Railway service
+`44d00bdc-2d7e-46cb-aa9c-18f4d3fa2547`, backend
+`https://workbench-ui-rehearsal-c-production.up.railway.app`, separate volume
+`f44ba3f8-c527-4eba-9d7a-7fc85e1e7648` mounted `/data`. Private C proxy key is separate0600,
+never the A/B key; it is not a transaction wallet. Preserve the chosen plan and schedule; require
+healthy reviewed hosting/harness and sufficient real deposit margin before browser deposits.
+C gets a12-hour synthetic check-in window after its fresh start; the actual contract deposit cutoff,
+24-hour challenge/match and7-day claim terms stay unchanged. Current C tooling5/5 local tests plus
+UI pure guards20accepted/109rejected pass; actual C browser execution is still unrun. A/B gas reserve
+5e12wei is protected before any new C role funding.
+No billing upgrade/new paid commitment. Ordinary temporary resources within existing plans are
+an implementation option; avoid broad auth/routing changes only to avoid a fictional restriction.
+
+Core source `27377f19f8bf801fd5dd27a86119850f19471de2` rollout is Railway
+`90ac1c01-63ec-41b4-bc78-f9075a876237`, uploaded17:55:47UTC28October. Linux compile/pinned equality
+passed. A confirmed global Railway deployment incident caused the interim502. Recovery is now
+verified: deployment SUCCESS, image `sha256:0d64a1497bcbcd0985a069cbd288ad578ac52245b62994c6ad84d896cfae5822`,
+health200; matching Netlify deploy `6ae243f22ce33c282d882583` serves27377f1. Strict matched role
+acceptance PASSED202 with8 fully loaded screenshots/3 auth signatures/zero financial signatures or
+broadcasts at `artifacts/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/proof.json`.
+Independent observer208 and historical deposit receipt checks passed after recovery. Existing
+volume/journals/contracts stayed preserved. Earlier135-check browser retry failure is archived,
+not reported as success; no application/source change was needed for its clean retry.
+
+## Historical checkpoints below
+
+The remaining sections record the original local exercise and superseded v7 hosting. Their source,
+check counts, reset behavior and runtime descriptions apply only to those historical snapshots.
 
 ## Active workspace and decision
 

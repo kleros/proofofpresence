@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "chainId": 10200,
+  "originalReviewFinancialStateUnchanged": true,
+  "trustedObservationsReady": true,
+  "observationCount": 3,
+  "proof": ".runtime/testnet/chiado-app-sync-proof.json",
+  "baseline": "artifacts/chiado-app-sync-review.log",
+  "notice": "Off-chain synchronization only. No attendance, challenge, payout or other contract transaction was signed or broadcast."
+}

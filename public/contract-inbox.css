@@ -1,0 +1,527 @@
+/* Owner-only source presentation. Authorization and receipt decisions belong to the server. */
+[data-contract-inbox],
+.contract-dialog-content {
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ink);
+}
+[data-contract-inbox] > *,
+.contract-dialog-content > * {
+  min-width: 0;
+  max-width: 100%;
+}
+[data-contract-inbox] [hidden],
+.contract-dialog-content [hidden] {
+  display: none !important;
+}
+[data-contract-inbox]
+  :where(button, a, input, select, textarea, summary):focus-visible,
+.contract-dialog-content
+  :where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
+}
+.contract-source-choice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+.contract-source-choice > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.contract-source-choice label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.contract-source-choice select {
+  width: auto;
+  min-width: 0;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 9px 32px 9px 12px;
+  border: 1px solid var(--boundary);
+  border-radius: var(--small-radius);
+  background-color: var(--deep);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.contract-source-choice :is(button, a, select):focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
+}
+.contract-source-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  min-width: 0;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--deep);
+}
+.contract-source-bar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.contract-source-title {
+  min-width: 0;
+  color: var(--heading);
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.contract-source-title :is(h2, h3, strong) {
+  margin: 0;
+  color: var(--heading);
+  font: inherit;
+}
+.contract-source-title .simple-icon {
+  margin-right: 5px;
+  color: var(--purple);
+}
+.contract-sync-meta {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.contract-source-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+}
+.contract-source-tools :is(button, a),
+.contract-inbox-table .button {
+  min-height: 44px;
+  max-width: 100%;
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.contract-source-tools :is(button, a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+}
+.contract-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: end;
+  gap: 12px 16px;
+  min-width: 0;
+  margin: 0 0 16px;
+}
+.contract-controls > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.contract-controls label {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.contract-controls :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid var(--boundary);
+  border-radius: var(--small-radius);
+  background: var(--deep);
+  color: var(--ink);
+  font-size: 14px;
+}
+.contract-inbox-table {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: left;
+}
+.contract-inbox-table th {
+  padding: 12px 10px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.7px;
+  line-height: 1.5;
+  text-align: left;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.contract-inbox-table th:first-child {
+  width: 32%;
+}
+.contract-inbox-table th:last-child {
+  width: 25%;
+}
+.contract-inbox-table td {
+  padding: 18px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.contract-inbox-table :is(th, td):first-child {
+  padding-left: 0;
+}
+.contract-inbox-table :is(th, td):last-child {
+  padding-right: 0;
+}
+.contract-inbox-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.contract-inbox-table tbody tr:hover {
+  background: var(--purple-soft);
+}
+.contract-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  min-height: 44px;
+  max-width: 100%;
+  color: var(--heading);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.contract-person:is(button, a) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  white-space: normal;
+}
+.contract-person > :not(.contract-avatar) {
+  min-width: 0;
+  max-width: 100%;
+}
+.contract-person strong {
+  display: block;
+  color: var(--heading);
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 1.5;
+}
+.contract-person small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+.contract-person:is(button, a):hover strong {
+  color: var(--purple-hover, var(--purple));
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.contract-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid var(--purple-border, var(--boundary));
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--purple-soft), var(--raised));
+  color: var(--purple-hover, var(--purple));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+}
+.contract-reference {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 6px;
+  color: var(--ink);
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.contract-link-note {
+  display: block;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.contract-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 20px;
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.contract-state:is(.green, [data-tone="success"]) {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.contract-state:is(.amber, [data-tone="warning"]) {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+.contract-state:is(.red, [data-tone="error"]) {
+  background: var(--red-soft);
+  color: var(--red);
+}
+.contract-state:is(.purple, [data-tone="brand"]) {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+.contract-notice,
+.contract-error,
+.contract-empty {
+  min-width: 0;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.contract-notice {
+  background: var(--deep);
+}
+.contract-error {
+  border-color: var(--red);
+  background: var(--red-soft);
+  color: var(--ink);
+}
+.contract-error strong {
+  color: var(--red);
+}
+.contract-empty {
+  padding: 28px 16px;
+  background: var(--deep);
+  text-align: center;
+}
+:is(.contract-notice, .contract-error, .contract-empty) > :first-child {
+  margin-top: 0;
+}
+:is(.contract-notice, .contract-error, .contract-empty) > :last-child {
+  margin-bottom: 0;
+}
+.contract-dialog-content {
+  font-size: 14px;
+  line-height: 1.7;
+}
+.contract-dialog-content :is(h2, h3, h4, p) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.contract-review-facts {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+  margin: 16px 0;
+}
+.contract-review-facts > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr);
+  gap: 8px 20px;
+  min-width: 0;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.contract-review-facts > div:last-child {
+  border-bottom: 0;
+}
+.contract-review-facts :is(dt, dd) {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.contract-review-facts dt {
+  color: var(--muted);
+}
+.contract-review-facts dd {
+  color: var(--ink);
+}
+.contract-review-facts dd > small {
+  display: block;
+  max-width: 100%;
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: "Geist Mono", monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.contract-review-reference {
+  min-width: 0;
+  max-width: 100%;
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--deep);
+  overflow-wrap: anywhere;
+}
+.contract-review-reference:is(code, pre, textarea, input),
+.contract-review-reference :is(code, pre, textarea, input) {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-family: "Geist Mono", monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.contract-review-reference pre {
+  margin: 0;
+}
+.contract-review-reference:is(textarea),
+.contract-review-reference textarea {
+  min-height: 7em;
+  resize: vertical;
+}
+.contract-review-reference .contract-source-tools {
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+@media (max-width: 760px) {
+  .contract-controls {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9em), 1fr));
+    gap: 12px;
+  }
+}
+@media (max-width: 600px) {
+  .contract-source-bar {
+    gap: 10px;
+    padding: 12px;
+  }
+  .contract-source-tools {
+    justify-content: flex-start;
+  }
+  .contract-source-tools :is(button, a) {
+    padding: 10px;
+  }
+  .contract-inbox-table,
+  .contract-inbox-table :is(tbody, tr, td) {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  /* Retain actual column headings and scope relationships for assistive technology. */
+  [data-contract-inbox] .contract-inbox-table thead {
+    display: table-header-group;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .contract-inbox-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 12px;
+    margin: 0 0 12px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--deep);
+  }
+  .contract-inbox-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+  .contract-inbox-table :is(td, td:first-child, td:last-child) {
+    padding: 8px 0;
+    border: 0;
+  }
+  .contract-inbox-table td:first-child::before {
+    display: none;
+  }
+  .contract-inbox-table td:first-child {
+    order: 0;
+    flex: 1 1 9em;
+    min-width: min(100%, 9em);
+    width: auto;
+  }
+  .contract-inbox-table td:nth-child(2) {
+    order: 2;
+    flex: 1 0 100%;
+  }
+  .contract-inbox-table td:last-child {
+    order: 1;
+    flex: 0 1 auto;
+    align-self: center;
+    width: auto;
+  }
+  .contract-inbox-table td:last-child .button {
+    width: auto;
+  }
+  .contract-avatar {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 10px;
+  }
+  .contract-review-facts > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+  .contract-review-reference {
+    padding: 12px;
+  }
+}
+
+/* Keep accessible labels portable when this source is mounted independently. */
+[data-contract-inbox] .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

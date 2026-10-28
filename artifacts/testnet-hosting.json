@@ -1,0 +1,75 @@
+{
+  "kind": "controlled-chiado-v8-app",
+  "publicOrigin": "https://kleros-event-workbench-preview.netlify.app",
+  "backendOrigin": "https://workbench-testnet-api-production.up.railway.app",
+  "state": "healthy-controlled-testnet-through-matched",
+  "sourceBranch": "codex/core-application",
+  "sourceCommit": "27377f19f8bf801fd5dd27a86119850f19471de2",
+  "railwayProjectId": "23ab879a-90d0-4f8f-a56a-d63baa85eed5",
+  "railwayServiceId": "127e805c-b341-45e5-8a6b-822e432ee134",
+  "railwayDeploymentId": "90ac1c01-63ec-41b4-bc78-f9075a876237",
+  "railwayVolumeId": "36657a45-ed66-4497-9711-248aac82b3cf",
+  "volumeMount": "/data",
+  "netlifySiteId": "f6b82f41-9e30-49b0-a836-40fedbab93a4",
+  "chainId": 10200,
+  "arbitration": "controlled",
+  "factory": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+  "contracts": [
+    "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+    "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB"
+  ],
+  "netlifyDeployId": "6ae243f22ce33c282d882583",
+  "railwayState": "SUCCESS",
+  "railwayImageDigest": "sha256:0d64a1497bcbcd0985a069cbd288ad578ac52245b62994c6ad84d896cfae5822",
+  "runtimeUid": 1000,
+  "chainStateCache": false,
+  "initialObservedSeconds": {
+    "bootstrap": 7.57,
+    "anonymousEventDetail": 18.92
+  },
+  "frontendSourceCommit": "27377f19f8bf801fd5dd27a86119850f19471de2",
+  "currentHealthVerified": true,
+  "providerIncident": {
+    "url": "https://status.railway.com/incident/Z1JDWW1W",
+    "title": "Deployments stuck in initializing",
+    "identifiedAt": "2026-10-28T17:49:00Z",
+    "scope": "All deployment regions including Southeast Asia; observed in actual provider status UI",
+    "recoveryVerifiedAt": "2026-10-28T18:54:48.312Z",
+    "note": "Historical temporary provider outage; actual health and role audits passed after recovery."
+  },
+  "publicAcceptance": {
+    "historicalLiveChecks": 247,
+    "uiChallengeChecks": 34,
+    "canonicalTransactions": 21,
+    "currentlyConfirmedThrough": "matched dispute",
+    "publicPayoutComplete": false,
+    "postRolloutMatchedRoleAudit": {
+      "checksPassed": 202,
+      "proof": "artifacts/testnet-status/matched-2026-10-28T18-58-28-661Z-89fe64a9/proof.json",
+      "financialTransactionsSigned": 0,
+      "financialTransactionsBroadcast": 0
+    },
+    "independentObserverComparisons": 208
+  },
+  "automaticContinuation": {
+    "id": "finish-kleros-testnet-kickbacks",
+    "active": true,
+    "existingABEligibleAfter": "2026-10-29T17:18:15Z",
+    "bangkokABTime": "2026-10-30 00:18:15",
+    "scheduledBangkok": "00:20",
+    "ordinaryRuledSettledAuditsRequired": true
+  },
+  "newCScenario": {
+    "status": "four canonical funding/child-creation transactions confirmed; C hosting not yet deployed, no UI deposits",
+    "isolation": "Separate manifest/journal/keys/backend volume/Netlify origin; A/B manifest unchanged",
+    "expectedRuling": 1,
+    "sameUIDepositorReceivesKickback": true,
+    "planFingerprint": "3637ba50a2b8f1d46cedbe6d678b747c25d19c15e976ae6ea87e63c8be0126fb",
+    "eventStart": "2026-10-28T21:45:35Z",
+    "publicOrigin": "https://kleros-ui-c-20261029-9fe71683.netlify.app",
+    "contract": "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
+    "manifest": "registry/chiado-v8-ui-c.json",
+    "deploymentProof": "artifacts/ui-c-deployment-proof.json"
+  },
+  "luma": "Deferred by human; no key/fetch/module/routes activated"
+}

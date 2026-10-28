@@ -1,22 +1,24 @@
 # Kleros Event Workbench
 
-A unified local application for independent event deposits, reviewed admission, trusted check-in,
-V1 Court challenges, held-share settlement and recovery. The local demo executes the original
-v7 Solidity on Ganache. Court adjudication uses explicit V1 mocks.
+An event workbench for deposits, reviewed admission, trusted check-in, disputes, held-share
+settlement and recovery, with a simpler next-action interface.
 
-[Open the full interactive demo](https://kleros-event-workbench-preview.netlify.app).
-Netlify serves the interface and gateway; one persistent Railway backend runs the unchanged v7 demo.
-Choose a synthetic demo identity to try deposits, admission and event workflows. ETH has no value,
-Court rulings are mocks, and shared chain/session state resets on backend restart.
+[Open the interactive Chiado testnet app](https://kleros-event-workbench-preview.netlify.app).
+Netlify serves the frontend and gateway; a persistent Railway backend connects signed wallets to
+real v8 factory-created contracts on Chiado10200. TestXDAI has no value. Arbitration is deliberately
+controlled and has no independent jury. Private application records persist on a dedicated volume.
 
-The deployed source is `371b4c80b0c65ce7b7f571ca41d9f85c8720660b` on `codex/core-application`.
-All **370 live acceptance checks** passed. [HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) records
-source/deployment IDs, checks and operating limits.
+The current branch is `codex/core-application`. [V8_APP_RELEASE](docs/V8_APP_RELEASE.md) and
+[deployment evidence](artifacts/testnet-hosting.json) record exact source and hosting IDs.
+Public acceptance passed **247 checks**, then **34 challenge checks** including one actual UI
+transaction. Deposits, excess-credit recovery, admission, attendance and a matched dispute are
+confirmed. Public kickbacks and settlement remain pending the unchanged challenge window;
+the user-approved follow-up is scheduled for **30 October2026 at00:20Asia/Bangkok**.
 
-The new [v8 event factory](docs/EVENT_FACTORY_V8.md) creates isolated event contracts with payer-bound
-credits, independent recovery and bounded admission. It is a locally tested deployment candidate;
-the existing workbench and historical deployments continue to use v7. See the
-[contract security review](docs/SMART_CONTRACT_SECURITY_REVIEW.md) for findings and remaining trust boundaries.
+The [v8 event factory](docs/EVENT_FACTORY_V8.md) creates isolated contracts with payer-owned credits,
+independent recovery and bounded admission. Historical v7 source/deployments and the default local
+v7 demo remain available. See the [contract review](docs/SMART_CONTRACT_SECURITY_REVIEW.md) for
+findings and remaining trust boundaries. Real Kleros Court is a separate subsequent phase.
 
 ## Simpler v8 workflow and Chiado rehearsal
 
@@ -56,9 +58,10 @@ storage is labeled `local-only`; a CID alone is never reported as a successful p
 
 ## Verify
 
-The [interactive hosted demo](docs/HOSTED_DEPLOYMENT.md) uses the same authoritative v7 application.
-The earlier [read-only Netlify target](docs/NETLIFY_DEPLOYMENT.md) remains an immutable rollback artifact.
-Live acceptance checks made actual synthetic deposits and verified sessions, isolation and mobile layout.
+The [current hosted deployment](docs/HOSTED_DEPLOYMENT.md) uses controlled Chiado v8 contracts.
+Earlier v7 and [read-only Netlify](docs/NETLIFY_DEPLOYMENT.md) releases are historical snapshots.
+Live acceptance verified actual public receipts, signed sessions, isolation and mobile layout.
+Avoid replaying financial acceptance scripts against the shared fixture.
 
 ```sh
 npx playwright install chromium
@@ -91,7 +94,7 @@ results and limitations in [TEST_REPORT](docs/TEST_REPORT.md), not historical RE
 | `src/workbench.mjs`, `src/imports.mjs` | Event roles, linked wallet identities, receipts/returns, reviewed CSVs, drafts and actions |
 | `src/server.mjs`, `public/` | Local authenticated HTTP API and responsive participant/organizer interface |
 | `references/kickback/` | Retained v7 Solidity, guest/owner tools, improved scripts, pinned ABI, tests and deployment history |
-| `contracts/`, `src/contracts-v8.mjs` | New isolated v8 event/factory contracts and explicit future-deployment adapter; separate compiler/artifacts |
+| `contracts/`, `src/contracts-v8.mjs` | New isolated v8 event/factory contracts and explicit v7/v8 adapter; separate compiler/artifacts |
 | `references/events/` | Retained Next/Supabase content, recordings, private materials, Q&A and public Luma metadata sync |
 | `references/booth/` | Retained separate booth marketing/merch source; **never launched with its live config by this demo** |
 

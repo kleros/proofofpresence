@@ -1,5 +1,58 @@
 # Verification report
 
+## Public Chiado v8 acceptance — 29October2026, Asia/Bangkok
+
+The current hosted app uses real chain10200, unchanged v8 bytecode and controlled V1 mocks.
+
+| Executed check | Actual result |
+|---|---|
+| Latest complete `npm test` | **206/206 passed**,555.8seconds; `artifacts/combined-inbox-batch-node-tests.log`. Later focused additions listed below were verified separately. |
+| Profile-free recovery regression | **1/1 passed** with real local HTTP nonce auth, plain transfer, different payout destination, stable detail/draft fingerprint, no contact record and unchanged committed principal/B state. |
+| Status/browser guards on recovery release | Build/types passed; GET-only status10, v7 redesign49 and v8 simplified18 passed. These are local rendering/regression checks. |
+| Wallet/API/UI acceptance `test/testnet-live.e2e.mjs` | **247 checks** plus browser expectations passed; fully loaded desktop/mobile screenshots. No contract transaction signed by this harness; canonical existing receipts linked. |
+| UI challenge `test/testnet-ui-challenge.e2e.mjs` | **34 checks** plus expectations passed; exactly one Bob wallet submission/broadcast, successful canonical challenge, B unchanged. Local guard self-test19 checks. |
+| Public protocol checkpoint | **21 canonical successful transactions**,7 deployment +14 rehearsal, through attendance/challenge/match. Bob Disputed, localID0/arbitratorID1000, unruled; independent B unchanged. |
+| App bridge focused tests | **6/6 passed**, including stable per-wallet observation binding, endpoint restrictions, preserved records and full financial comparison. |
+| External adapter/runtime regression | **9/9 passed** after immutable-anchor reuse and pinned-block parallel reads; actual code/chain/reorg/manifest tampering and fresh mutable values checked. |
+| v8 app integration | Actual local credit recovery, mixed deposit admission, trusted attendance, matched case, ordinary held share, late win/full kickbacks and B isolation passed. |
+| Durable state across deployed image replacement | Existing Alice A/B registration IDs and canonical receipt links preserved; after/before artifacts retained. |
+
+Public proofs: [UI challenge](../artifacts/testnet-ui-challenge.json),
+[match/full A-B state](../artifacts/chiado-dispute-proof.json),
+[attendance](../artifacts/chiado-attendance-proof.json), [app sync](../artifacts/chiado-app-sync-proof.json)
+and [hosting](../artifacts/testnet-hosting.json). Local browser counts below are separate validation,
+not additional public financial operations. Earlier failed harness-only attempts stopped before signing.
+
+Public ordinary payout, final ruling/held-share settlement and top-ups remain **pending** the unchanged
+challenge deadline. A ends29October17:18:00Z; B17:18:15Z (30October00:18Bangkok). Existing user-approved
+heartbeat00:20Bangkok must capture UI-versus-chain snapshots after ordinary payout, final ruling before
+settlement, and settlement/top-ups. Controlled mocks do not prove an independent jury process;
+real Court is a separate phase. No mainnet, real guest data or upstream push occurred.
+
+## Contract inbox and separate batch actions — combined local verification
+
+The portable UI source is `1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0`. Its five assets were
+integrated into the current controller rather than replacing that controller. Integrated/source
+hashes are recorded in `artifacts/portable-batch-assets-sha.json`.
+
+| Executed check | Result and scope |
+|---|---|
+| Inbox financial/privacy suite |18 focused tests and14 final tests passed; local canonical payer credits, wrapper receipts, returns, owed/held amounts, current-owner privacy, reorg and timeout handling. |
+| Inbox integrated browser |26 checks passed with real local crypto auth/HTTP and chain data. |
+| Separate batch integrated browser |28 checks passed: exact selected registration, blocked unknown/returned rows, owner/staff scope, free check-in, lost commit response and full reload GET-only reconciliation, no financial changes. |
+| Batch status/recovery focused |7 added status tests passed; terminal expired previews cannot be revived and post-auth completion races are covered. Earlier14 batch tests also passed. |
+| Durable batch journal |4 tests passed; fail-closed storage, no contacts, preserved external-chain intent across instance changes, isolated local instances. |
+| Selected on-chain registration |1 actual local v8 test passed: an unselected returned receipt does not block the explicitly selected valid payer; duplicate/invalid selection stops. |
+| C foundation/operator |5 tests passed,38.05seconds, on isolated local10200: one-child/four-operation recovery, dynamic case targeting, attended winner payment and separate collateral proof. |
+| C browser pure guards |20 accepted/109 rejected; no actual public browser transaction is claimed by this self-test. |
+| Regression/build |v7 redesign49, v8 simplified18, build/pinned v7 and v8 equality/typecheck passed. |
+| Recovered A/B public role audit |202 checks passed with8 fully loaded screenshots,3 nonce-auth signatures and zero financial signatures/broadcasts. Independent observer208 comparisons passed. |
+
+The full Node206-test run preceded the final status retirement/race, browser journal, selected
+registration and C tooling additions; those later changes have focused evidence above. Public C UI
+execution remains pending actual hosting and canonical browser-origin receipts. The first A/B deposits
+were CLI-origin; their browser receipt linkage is not labeled UI initiation. Luma remains deferred.
+
 ## Simplified v8 application and testnet integration — latest phase
 
 Build/typecheck passed. The full Node run executed164 tests (163 passed, one hosted capabilities

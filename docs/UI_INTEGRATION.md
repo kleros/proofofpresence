@@ -1,4 +1,29 @@
-# Integrated Option B redesign
+# Current portable inbox and batch integration — 29October2026
+
+Core branch `codex/core-application`; portable UI source
+`1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0`. The contract inbox, selection model and separate
+approval/check-in modules were integrated around the latest core controller. Source/integrated
+asset hashes are in [portable-batch-assets-sha](../artifacts/portable-batch-assets-sha.json).
+
+Backend authority supplies eligibility and opaque preview/commit tokens. Approval and trusted
+check-in are separate atomic off-chain actions; registration and posting monetary attendance still
+require a fresh reviewed contract transaction. Unknown depositors remain wallets, never inferred
+contacts. Filters and event/account changes invalidate unsigned selections and reviews. Submitted
+financial hashes survive those changes.
+
+The durable batch marker saves only scoped IDs/nonces/wallets before a commit POST. After an
+uncertain response or reload, explicit GET status reconciles the same intent; no POST is retried.
+External-chain intent remains discoverable after an instance restart; known terminal expiry prevents
+an old preview from reviving. Storage failure blocks a new commit. Wallet listeners are installed
+on restored sessions as well as fresh connection, and logout meets the JSON body guard.
+
+Combined local browser checks passed26 inbox +28 batch checks; v7 redesign49 and v8 simplified18
+regressions passed, as did build/types. Actual chain/public proof and synthetic presentation tests
+remain distinguished in [TEST_REPORT](TEST_REPORT.md). Luma approval stays manual outside the app;
+no Luma key, source, route or fetch was activated. No further visual polish was added.
+
+## Historical original redesign integration
+
 
 The primary core branch is `codex/core-application`. Integration anchors:
 

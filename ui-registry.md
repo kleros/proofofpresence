@@ -144,3 +144,54 @@ v7 guest/console links are never shown for v8. Public-testnet mode uses wallet a
 server-provided chain/native-currency metadata; it removes demo identity, faucet, time-travel and mock
 Court controls. Its persistent notice explains test tokens and public transactions without claiming
 that a browser fixture constitutes a testnet deployment.
+
+### Contract deposit inbox
+
+Files: `public/contract-inbox.js`, `public/contract-inbox.css`, `public/app.js` · Last updated: 29 October 2026
+
+| Property                | Pattern                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| Source bar              | Deep surface, line border, 12px radius, 14px / 16px padding; muted sync metadata                        |
+| Rows and receipt review | Existing ink/heading/muted text and plum/lavender tokens; grouped wallet observations, native dialog    |
+| Controls                | Existing button variants; purple 3px focus outline and 3px offset; 44px minimum targets                 |
+| Warnings                | Existing amber/red tokens with tinted surfaces; plain stale, unavailable and owner-access reasons       |
+| Technical facts         | Full wrapping wallet, receipt and block identifiers; exact token and wei amounts; contextual disclosure |
+
+Pattern notes: Mount only for the authenticated current v8 owner when the backend advertises the
+capability. Event, wallet, chain, contract, version and server instance scope every read; dispose before
+navigation, reload or identity changes. Unknown payers show only wallet/receipt observations. Verified
+contact links, application receipt linkage, admission and financial registration remain independent.
+The modal preserves its observed block, warns when the source changes, and never becomes a signing
+review. Historical receipts, current unused credit, current committed principal, held case shares,
+owed balances and delivered payment categories are separate facts, never added as disjoint totals.
+Transient failures visibly retain stale observations; proven orphaned anchors clear old rows and
+reviews. Authorization failures remove contacts immediately. Inbox review invalidates unsigned
+financial/import previews while preserving submitted transaction journals. The linked-guest action
+rechecks owner access and focuses only a current, authorized participant already in People review.
+
+### Separate batch approval and trusted check-in
+
+Files: `public/batch-actions.js`, `public/batch-selection.js`, `public/batch-actions.css`, `public/batch-pending.js`, `public/app.js` · Last updated: 29 October 2026
+
+| Property      | Pattern                                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------------------------- |
+| Entry toolbar | Quiet until selection; existing line boundaries, 8px spacing and 13px semibold count                      |
+| Row selection | 44px labelled targets, 18px native checkbox, purple accent, existing small-radius hover surface           |
+| Focus         | Purple 3px outline with 3px offset; native dialog containment and focus restoration                       |
+| Review        | Surface dialog, 20px radius, 24px padding; every selected row plus exact event/account/deployment context |
+| Explanations  | Deep surface, line boundary and 12px radius; muted 13px copy, red unavailable/error states                |
+
+Pattern notes: Curated host approval and trusted door check-in have separate toolbars and selection
+controllers. Owners can use both; staff get check-in only. Each toolbar sits outside its source rows.
+Select visible chooses only current, explicitly eligible records. Unknown payer addresses stay blocked
+with no invented identity. A filter change clears that task's unsigned selection; event, wallet, server,
+permission and view changes dispose private UI before remount. The exact trusted participant ID,
+verified identity and full wallet must agree before a contract row receives a guest link.
+
+Saving is explicit and off-chain. A durable contact-free intent marker must exist before the one save
+request; storage failure visibly locks saving. Uncertain results survive reload and reconcile only
+through authenticated GET status, without automatic POST retry. Submitted financial journals remain
+independent. A saved approval offers a separate explicit registration review for the exact approved
+selection. Changed eligibility blocks that complete selection with a reason; no selected wallet is
+silently dropped. Registration, financial attendance, disputes and payouts retain fresh canonical
+simulation and the existing exact signing review. Luma approval remains a manual task outside this app.

@@ -9,6 +9,7 @@ import {
 } from "./chain.mjs";
 import { importCsv } from "./imports.mjs";
 import { createImportPreviewService } from "./import-preview.mjs";
+import { createBatchService, participantBatchEligibility } from "./batches.mjs";
 import { projectPayments } from "./payments.mjs";
 import { v8DepositCredits } from "./v8-deposits.mjs";
 import { testnetChain, testnetStateStore } from "./testnet-runtime.mjs";
@@ -469,7 +470,11 @@ export async function createWorkbench({
       [...r.participants.values()]
         .filter((p) => privileged || (s && lower(p.wallet) === lower(s.wallet)))
         .map(async (p) => {
-          const status = Number(await contract(eventId).status(p.wallet));
+          const status = Number(
+            await contract(eventId).status(p.wallet, {
+              blockTag: st.blockNumber,
+            }),
+          );
           let verificationState = p.deposit ? "current" : "missing",
             verificationError = null;
           if (p.deposit)
@@ -495,9 +500,23 @@ export async function createWorkbench({
                   verificationError,
                 }
               : null,
+            batchEligibility: Object.fromEntries(
+              ["approve-admission", "check-in"].map((action) => [
+                action,
+                participantBatchEligibility(r, p, st, action, {
+                  depositVerification: verificationState,
+                }),
+              ]),
+            ),
             registered: [1, 2].includes(status),
-            attended: await contract(eventId).attended(p.wallet),
-            owedWei: String(await contract(eventId).owed(p.wallet)),
+            attended: await contract(eventId).attended(p.wallet, {
+              blockTag: st.blockNumber,
+            }),
+            owedWei: String(
+              await contract(eventId).owed(p.wallet, {
+                blockTag: st.blockNumber,
+              }),
+            ),
             ...(r.deployment.contractVersion === "kleros-event-v8"
               ? {
                   pendingCreditWei: st.pendingCredits?.[lower(p.wallet)] ?? "0",
@@ -506,7 +525,9 @@ export async function createWorkbench({
           };
         }),
     );
-    const deposits = privileged ? await depositLedger(eventId) : [];
+    const deposits = privileged
+      ? await depositLedger(eventId, st.blockNumber)
+      : [];
     return {
       event,
       state: st,
@@ -533,20 +554,25 @@ export async function createWorkbench({
       now: st.now,
     };
   }
-  async function depositLedger(eventId) {
+  /** @param {string} eventId @param {number | "latest"} [blockTag]
+   * @param {{signal?: AbortSignal}} [options]
+   */
+  async function depositLedger(eventId, blockTag = "latest", { signal } = {}) {
+    signal?.throwIfAborted();
     const r = events.get(eventId),
       c = contract(eventId),
-      from = r.deployment.deploymentBlock;
-    const [deposited, rejected, refunded] = await Promise.all([
-      c.queryFilter(c.filters.Deposited(), from),
-      c.queryFilter(c.filters.Rejected(), from),
-      c.queryFilter(c.filters.Refunded(), from),
-    ]);
+      from = r.deployment.deploymentBlock,
+      end =
+        blockTag === "latest"
+          ? await chain.provider.getBlockNumber()
+          : blockTag,
+      at = { blockTag: end };
     if (r.deployment.contractVersion === "kleros-event-v8") {
-      const credits = await v8DepositCredits(c, r.deployment);
+      const credits = await v8DepositCredits(c, r.deployment, end, { signal });
       return Promise.all(
         [...credits.values()].map(async (e) => {
-          const pending = await c.pendingDeposits(e.wallet);
+          signal?.throwIfAborted();
+          const pending = await c.pendingDeposits(e.wallet, at);
           const projected = e.lots.reduce((sum, lot) => sum + lot.pending, 0n);
           requireThat(
             pending === projected,
@@ -576,12 +602,20 @@ export async function createWorkbench({
               txHash: lot.txHash,
               logIndex: lot.logIndex,
               amountWei: String(lot.amount),
+              blockNumber: lot.blockNumber,
+              blockHash: lot.blockHash,
             })),
             note: `Unused credit belongs to this payer and can be recovered directly; it is never organizer spare ${nativeSymbol}.`,
           };
         }),
       );
     }
+    const [deposited, rejected, refunded] = await Promise.all([
+      c.queryFilter(c.filters.Deposited(), from, end),
+      c.queryFilter(c.filters.Rejected(), from, end),
+      c.queryFilter(c.filters.Refunded(), from, end),
+    ]);
+    signal?.throwIfAborted();
     /** @type {Map<string,{wallet:string,received:bigint,returned:bigint,transactions:object[]}>} */
     const ledger = new Map();
     const entry = (wallet) => {
@@ -603,6 +637,8 @@ export async function createWorkbench({
         txHash: l.transactionHash,
         logIndex: l.index,
         amountWei: String(l.args.amount),
+        blockNumber: l.blockNumber,
+        blockHash: l.blockHash,
       });
     }
     for (const l of rejected) {
@@ -613,7 +649,7 @@ export async function createWorkbench({
     }
     return Promise.all(
       [...ledger.values()].map(async (e) => {
-        const status = Number(await c.status(e.wallet)),
+        const status = Number(await c.status(e.wallet, at)),
           allocated = [1, 2].includes(status)
             ? BigInt(r.deployment.depositWei)
             : 0n;
@@ -946,9 +982,30 @@ export async function createWorkbench({
     const wallet = () => ethers.getAddress(params.wallet ?? s.wallet);
     const to = () => ethers.getAddress(params.to ?? s.wallet);
     const eligible = async (admission) => {
-      const candidates = [...r.participants.values()].filter(
+      let candidates = [...r.participants.values()].filter(
         (p) => p.admission === admission && p.deposit && p.identityVerified,
       );
+      if (params.wallets) {
+        requireThat(
+          Array.isArray(params.wallets) &&
+            params.wallets.length > 0 &&
+            params.wallets.every((wallet) => ethers.isAddress(wallet)) &&
+            new Set(params.wallets.map(lower)).size === params.wallets.length,
+          "Select unique valid wallets",
+        );
+        candidates = params.wallets.map((wallet) => {
+          const person = candidates.find(
+            (candidate) => lower(candidate.wallet) === lower(wallet),
+          );
+          requireThat(
+            person,
+            "Wallet lacks approved verified evidence",
+            "UNVERIFIED_STAKER",
+            403,
+          );
+          return person;
+        });
+      }
       const result = [];
       for (const p of candidates) {
         const status = Number(await c.status(p.wallet));
@@ -1778,6 +1835,7 @@ export async function createWorkbench({
     owner,
     bootstrap,
     detail,
+    depositLedger,
     createEvent,
     registerParticipant,
     admit,
@@ -1806,6 +1864,10 @@ export async function createWorkbench({
   const previews = createImportPreviewService(w);
   w.previewImport = previews.preview;
   w.commitImport = previews.commit;
+  const batches = createBatchService(w, { authorizeStaff: staff });
+  w.previewBatch = batches.preview;
+  w.commitBatch = batches.commit;
+  w.batchStatus = batches.status;
   if (store)
     for (const name of [
       "registerParticipant",

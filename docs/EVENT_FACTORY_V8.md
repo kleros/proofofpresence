@@ -1,9 +1,14 @@
 # Isolated event factory and hardened v8 contract
 
-Implemented locally on 28 October 2026 after the user confirmed the hardened-child design.
+Initially implemented locally on28October2026 after the user confirmed the hardened-child design.
+The unchanged candidate is now deployed through the controlled Chiado10200 rehearsal; see
+[public manifest](../registry/chiado-v8-controlled.json) and [current checkpoint](V8_APP_RELEASE.md).
+Deposits, credit recovery, attendance and a matched dispute have confirmed public receipts;
+payout/settlement remain pending their real deadlines. This is controlled test arbitration.
 The contracts are [KlerosEventFactoryV8](../contracts/KlerosEventFactoryV8.sol) and
-[KlerosEventV8](../contracts/KlerosEventV8.sol). Existing v7 source, policy, template, ABI and deployment
-verification inputs are preserved. No external deployment or transaction was performed.
+[KlerosEventV8](../contracts/KlerosEventV8.sol). Historical v7 source, policy, template, ABI and
+verification inputs remain preserved. The local-only claims in earlier test reports describe
+those earlier runs, rather than the later authorized testnet deployment.
 
 ## Architecture
 

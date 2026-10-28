@@ -1,0 +1,586 @@
+{
+  "status": "passed-current-checkpoint",
+  "checkedAt": "2026-10-28T18:56:02.193Z",
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "chainId": 10200,
+  "arbitration": "controlled",
+  "instanceId": "dd656a04-4a59-4446-a837-b2bd41c78b24",
+  "manifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+  "controlBaseline": {
+    "file": "artifacts/chiado-flow-audit/9fe71683-1e9b-48a0-94bd-274da4cf3029-control-baseline.json",
+    "blockNumber": 23734393,
+    "sha256": "b7e4e1ca71bcd74949066b596786bfa50fb38c303ec4965bc0ef5d6336c06600"
+  },
+  "checks": 208,
+  "readOnly": true,
+  "signatures": 0,
+  "broadcasts": 0,
+  "observerSha256": "6808afb20bcf1bee59dd302faea2885192271bdb773099976522587720fb1704",
+  "events": [
+    {
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+      "blockNumber": 23734930,
+      "blockHash": "0x253155205fd1400a25a8f212879caa75e567831f66e3c49b5ea967f69620840e",
+      "now": 1793213695,
+      "observedHead": {
+        "blockNumber": 23734936,
+        "blockHash": "0x807ec8bb28007983ef0032e4aab43f5dfdf1f2f21320597ee283404d21335131",
+        "now": 1793213730
+      },
+      "state": {
+        "phase": "Listed",
+        "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+        ],
+        "activeStakers": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+        ],
+        "stakerHistory": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+        ],
+        "attendees": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+        ],
+        "cases": [
+          {
+            "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "matched": true,
+            "outcome": null,
+            "state": "Disputed",
+            "matcher": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+            "matchEndsAt": 1793295040,
+            "depositWei": "30000000000",
+            "localDisputeID": "0",
+            "arbitratorDisputeID": "1000",
+            "heldShareWei": "0",
+            "caseOrganizer": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+            "finalRuling": null,
+            "caseURI": "/ipfs/QmevDcKkYvGCp9RCY9arsfVEsvpZJ7T21orJCxkVwRzHH4",
+            "publication": "unpublished",
+            "appeal": {
+              "ruling": 0,
+              "start": 0,
+              "end": 0,
+              "loserEnd": 0,
+              "costAttended": "0",
+              "costAbsent": "0"
+            }
+          }
+        ],
+        "depositWei": "1000000000000",
+        "poolWei": "3000000000000",
+        "balanceWei": "3030000000000",
+        "reservedWei": "3030000000000",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "30000000000",
+        "payoutShareWei": "0",
+        "stakerCount": 3,
+        "attendeeCount": 2,
+        "challengeEndsAt": 1793294280,
+        "pendingChallenges": 1,
+        "challengeDepositWei": "30000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf": "0",
+          "0x083343a3247df539a460a4a26be8393a3f0fede2": "0",
+          "0xe5a97deece6cc390146fb0496d7b9e2193d9439f": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 3,
+        "remainingAdmissionSlots": 147,
+        "fingerprint": "2c403f9d8ec90733ad30f1c1613698d520966f0cbdb4581375a76edf739d2ea2",
+        "blockNumber": 23734930,
+        "now": 1793213695
+      },
+      "expectedUi": {
+        "depositsOpen": false,
+        "ordinaryBatchProcessed": false,
+        "canReleaseOnChain": false,
+        "allFinancialObligationsComplete": false,
+        "cases": [
+          {
+            "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "label": "Matched controlled test dispute · awaiting final result",
+            "canResolveOnChain": false,
+            "localDisputeID": "0",
+            "arbitratorDisputeID": "1000"
+          }
+        ]
+      },
+      "payments": {
+        "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+        "chainId": 10200,
+        "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+        "contractVersion": "kleros-event-v8",
+        "blockNumber": 23734930,
+        "blockHash": "0x253155205fd1400a25a8f212879caa75e567831f66e3c49b5ea967f69620840e",
+        "attendancePaidWei": "0",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "1000000000000",
+        "directAttendancePaidWei": "0",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "1000000000000",
+        "scope": "Successful kleros-event-v8 log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": [
+          {
+            "type": "pending-credit-withdrawal",
+            "wallet": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "recipient": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "amountWei": "1000000000000",
+            "txHash": "0x3a4ef03362ac684db7cd961f01ebeb59007cd69ae74ad5f0e7d1dd7f57c19825",
+            "blockNumber": 23733273,
+            "logIndex": 0,
+            "successful": true,
+            "sourceMethod": "withdrawPending"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "event": "OwnershipTransferred",
+          "txHash": "0x8da2d93e298a11242d1128dbebd5aa64a234d5d71f08603b4a00ecf95e8a857e",
+          "blockNumber": 23733165,
+          "blockHash": "0x1388125e24a68b54f9580f6e12696e726d786295af743533521ca8f7268c7c89",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+          "valueWei": "0",
+          "method": null,
+          "names": [
+            "OwnershipTransferred"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x0000000000000000000000000000000000000000",
+            "0xf37E491e7117fC1C3351B1548839f727F05f853B"
+          ]
+        },
+        {
+          "event": "Deposited",
+          "txHash": "0x67f2a5bc4c14caaab37bda045c6fa8f3e58ea8c743c96d423c741059bb4fb316",
+          "blockNumber": 23733241,
+          "blockHash": "0x1f6bb0b2a69a61d59e7fe10d28e10a0dd4b71c6f02232a57a8df2401ae5b8a80",
+          "from": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "2000000000000",
+          "method": "deposit",
+          "names": [
+            "Deposited"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "2000000000000"
+          ]
+        },
+        {
+          "event": "Deposited",
+          "txHash": "0x704e38b5e3e76d94a511f36bb27b0f16fb5fafacee4a8eb49f1de794ad61d1e7",
+          "blockNumber": 23733244,
+          "blockHash": "0xc43e07d937e70cfa29caafb688abcf4c42cca09d756529ce6137ec4b8265572d",
+          "from": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "1000000000000",
+          "method": "deposit",
+          "names": [
+            "Deposited"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "Deposited",
+          "txHash": "0x44127d6f14f6209c548f53690c411fc90b7f498401feef9d25a2fd6ffa528315",
+          "blockNumber": 23733247,
+          "blockHash": "0x91b3dd096280a0a78f96722ad2b26ab3f2a91c4638748d65a90ca6f47857f74d",
+          "from": "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "1000000000000",
+          "method": "deposit",
+          "names": [
+            "Deposited"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "PendingWithdrawn",
+          "txHash": "0x3a4ef03362ac684db7cd961f01ebeb59007cd69ae74ad5f0e7d1dd7f57c19825",
+          "blockNumber": 23733273,
+          "blockHash": "0x40f772a312f5509a39d2accdc90fc39ec450643d951456f7014990b734b7c1a4",
+          "from": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "withdrawPending",
+          "names": [
+            "PendingWithdrawn"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "StakerRegistered",
+          "txHash": "0x0b7e08581cb74ba47e3d114a2b2f5379322ec8a6651f53be7f66ddd5045d101d",
+          "blockNumber": 23733290,
+          "blockHash": "0x78a6930310435d43f9f3a8d6a396f366cf1f4e77541dd02ada13ecf2157914a4",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "registerStakers",
+          "names": [
+            "StakerRegistered",
+            "StakerRegistered",
+            "StakerRegistered"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ]
+        },
+        {
+          "event": "StakerRegistered",
+          "txHash": "0x0b7e08581cb74ba47e3d114a2b2f5379322ec8a6651f53be7f66ddd5045d101d",
+          "blockNumber": 23733290,
+          "blockHash": "0x78a6930310435d43f9f3a8d6a396f366cf1f4e77541dd02ada13ecf2157914a4",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "registerStakers",
+          "names": [
+            "StakerRegistered",
+            "StakerRegistered",
+            "StakerRegistered"
+          ],
+          "logIndex": 1,
+          "args": [
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2"
+          ]
+        },
+        {
+          "event": "StakerRegistered",
+          "txHash": "0x0b7e08581cb74ba47e3d114a2b2f5379322ec8a6651f53be7f66ddd5045d101d",
+          "blockNumber": 23733290,
+          "blockHash": "0x78a6930310435d43f9f3a8d6a396f366cf1f4e77541dd02ada13ecf2157914a4",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "registerStakers",
+          "names": [
+            "StakerRegistered",
+            "StakerRegistered",
+            "StakerRegistered"
+          ],
+          "logIndex": 2,
+          "args": [
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+          ]
+        },
+        {
+          "event": "AttendeeAdded",
+          "txHash": "0xa04ed210cfe8022293f4b1029774a29e56eeb481216d63e3b4ba807a82d8f069",
+          "blockNumber": 23733877,
+          "blockHash": "0xa27061e70a2e1b019d4c89bb433576b4fde89f743e44710c6bc7e07e9165d95b",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ]
+        },
+        {
+          "event": "AttendeeAdded",
+          "txHash": "0xa04ed210cfe8022293f4b1029774a29e56eeb481216d63e3b4ba807a82d8f069",
+          "blockNumber": 23733877,
+          "blockHash": "0xa27061e70a2e1b019d4c89bb433576b4fde89f743e44710c6bc7e07e9165d95b",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 1,
+          "args": [
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+          ]
+        },
+        {
+          "event": "AttendancePosted",
+          "txHash": "0xa04ed210cfe8022293f4b1029774a29e56eeb481216d63e3b4ba807a82d8f069",
+          "blockNumber": 23733877,
+          "blockHash": "0xa27061e70a2e1b019d4c89bb433576b4fde89f743e44710c6bc7e07e9165d95b",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 2,
+          "args": [
+            "2",
+            "1793294280"
+          ]
+        },
+        {
+          "event": "Challenged",
+          "txHash": "0xfa6b8126046539d918b1f8a4e3f889e320234c00630664537fb4da53ff62442c",
+          "blockNumber": 23734013,
+          "blockHash": "0x97b4796f9c434ae2b5b97202f9c36f38ba6ba0a097a635f75c009e47aa1f1c0b",
+          "from": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "30000000000",
+          "method": "challenge",
+          "names": [
+            "Challenged"
+          ],
+          "logIndex": 2,
+          "args": [
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "30000000000",
+            "1793295040"
+          ]
+        },
+        {
+          "event": "ChallengeMatched",
+          "txHash": "0x751979ac5cdfde1822bf47aefd4140861a1f9fb67531098933d403b7a91cb108",
+          "blockNumber": 23734075,
+          "blockHash": "0x5334d4a24dd5560b04bf96210c7a1975fc7dd940a2124e9cad00a540fb1b865e",
+          "from": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "to": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "valueWei": "30000000000",
+          "method": "matchChallenge",
+          "names": [
+            "ChallengeMatched"
+          ],
+          "logIndex": 48,
+          "args": [
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+            "1000",
+            "0"
+          ]
+        }
+      ]
+    },
+    {
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+      "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+      "blockNumber": 23734938,
+      "blockHash": "0xcc932fc7b5a6d495558aaf7ef7bbe8061c0222ff4ade4591485c2e9824840a83",
+      "now": 1793213740,
+      "observedHead": {
+        "blockNumber": 23734941,
+        "blockHash": "0x292e9d6b7770b361951636ef0a81308ad13c62484cafe719e1431492335baa38",
+        "now": 1793213755
+      },
+      "state": {
+        "phase": "Listed",
+        "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+        ],
+        "activeStakers": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+        ],
+        "stakerHistory": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+        ],
+        "attendees": [
+          "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+        ],
+        "cases": [],
+        "depositWei": "2000000000000",
+        "poolWei": "2000000000000",
+        "balanceWei": "2000000000000",
+        "reservedWei": "2000000000000",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "0",
+        "payoutShareWei": "0",
+        "stakerCount": 1,
+        "attendeeCount": 1,
+        "challengeEndsAt": 1793294295,
+        "pendingChallenges": 0,
+        "challengeDepositWei": "30000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 1,
+        "remainingAdmissionSlots": 149,
+        "fingerprint": "4723379bf164ba9fb7faf4fe25732ce299f949cb040dd2978b26b1eaf52b2409",
+        "blockNumber": 23734938,
+        "now": 1793213740
+      },
+      "expectedUi": {
+        "depositsOpen": false,
+        "ordinaryBatchProcessed": false,
+        "canReleaseOnChain": false,
+        "allFinancialObligationsComplete": false,
+        "cases": []
+      },
+      "payments": {
+        "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+        "chainId": 10200,
+        "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+        "contractVersion": "kleros-event-v8",
+        "blockNumber": 23734938,
+        "blockHash": "0xcc932fc7b5a6d495558aaf7ef7bbe8061c0222ff4ade4591485c2e9824840a83",
+        "attendancePaidWei": "0",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "0",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "0",
+        "scope": "Successful kleros-event-v8 log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": []
+      },
+      "operations": [
+        {
+          "event": "OwnershipTransferred",
+          "txHash": "0x7b82492ac1ff218ccea7bbbc3bf807070fcc7cd34f87d380587164da0a2d3360",
+          "blockNumber": 23733208,
+          "blockHash": "0xfbf81e99a2137304fc79e9aea447c30b71b5fdc6576a3603f97c28c7723b8cb6",
+          "from": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+          "to": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+          "valueWei": "0",
+          "method": null,
+          "names": [
+            "OwnershipTransferred"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x0000000000000000000000000000000000000000",
+            "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A"
+          ]
+        },
+        {
+          "event": "Deposited",
+          "txHash": "0x7e6c6b45b40d40676e612d9f81d55c330aa9d6dd0ab4a5ed39f4bf3b66306b28",
+          "blockNumber": 23733250,
+          "blockHash": "0x5b56cfe243ed45ed2825a4b07c0bd4a19f65bb8602099ab35dbb5ad45581e12c",
+          "from": "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+          "to": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+          "valueWei": "2000000000000",
+          "method": "deposit",
+          "names": [
+            "Deposited"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "2000000000000"
+          ]
+        },
+        {
+          "event": "StakerRegistered",
+          "txHash": "0xdb56068162e3ca1254ffc331553be8fd5eb669c9540738bd306db33ce19094cd",
+          "blockNumber": 23733293,
+          "blockHash": "0x6a11fe198afc788a4354f4437c052820a2b3277dd2dda28482595418e6082198",
+          "from": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+          "to": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+          "valueWei": "0",
+          "method": "registerStakers",
+          "names": [
+            "StakerRegistered"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ]
+        },
+        {
+          "event": "AttendeeAdded",
+          "txHash": "0x7c86a58ac731c4adc04ba31830d033e1bcf287412a02f5a1928dd3cdfc86fa71",
+          "blockNumber": 23733880,
+          "blockHash": "0xe66e3b87c890778ad9b02519a502eccc5d43b2d4b2278fe4341aa86b8e37a5cc",
+          "from": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+          "to": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ]
+        },
+        {
+          "event": "AttendancePosted",
+          "txHash": "0x7c86a58ac731c4adc04ba31830d033e1bcf287412a02f5a1928dd3cdfc86fa71",
+          "blockNumber": 23733880,
+          "blockHash": "0xe66e3b87c890778ad9b02519a502eccc5d43b2d4b2278fe4341aa86b8e37a5cc",
+          "from": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+          "to": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 1,
+          "args": [
+            "1",
+            "1793294295"
+          ]
+        }
+      ]
+    }
+  ],
+  "notice": "This observer verifies public API and canonical chain facts. UI screenshots and authenticated role assertions are separate evidence; waiting stages are not completed.",
+  "evidenceFile": "artifacts/chiado-flow-audit/2026-10-28T18-54-48-312Z.json"
+}

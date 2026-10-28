@@ -1,0 +1,147 @@
+{
+  "status": "passed-offchain-only",
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "chainId": 10200,
+  "instanceId": "a36a9b27-67e4-4e28-984b-b8ae8500448f",
+  "verifiedAt": "2026-10-28T17:11:23.520Z",
+  "trustedObservationsReady": true,
+  "actions": [
+    {
+      "operation": "preserved-existing-registration",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a"
+    },
+    {
+      "operation": "preserved-existing-deposit",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "hash": "0x67f2a5bc4c14caaab37bda045c6fa8f3e58ea8c743c96d423c741059bb4fb316"
+    },
+    {
+      "operation": "preserved-existing-registration",
+      "role": "bob",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a"
+    },
+    {
+      "operation": "preserved-existing-deposit",
+      "role": "bob",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "hash": "0x704e38b5e3e76d94a511f36bb27b0f16fb5fafacee4a8eb49f1de794ad61d1e7"
+    },
+    {
+      "operation": "preserved-existing-registration",
+      "role": "carol",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a"
+    },
+    {
+      "operation": "preserved-existing-deposit",
+      "role": "carol",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "hash": "0x44127d6f14f6209c548f53690c411fc90b7f498401feef9d25a2fd6ffa528315"
+    },
+    {
+      "operation": "preserved-existing-registration",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b"
+    },
+    {
+      "operation": "preserved-existing-deposit",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+      "hash": "0x7e6c6b45b40d40676e612d9f81d55c330aa9d6dd0ab4a5ed39f4bf3b66306b28"
+    },
+    {
+      "operation": "preserved-existing-observation",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a"
+    },
+    {
+      "operation": "recorded-trusted-synthetic-door-observation",
+      "role": "carol",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a"
+    },
+    {
+      "operation": "owner-approved-offchain",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b"
+    },
+    {
+      "operation": "recorded-trusted-synthetic-door-observation",
+      "role": "alice",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b"
+    }
+  ],
+  "financialBefore": {
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a": {
+      "phase": "Open",
+      "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+      "pendingOwner": "0x0000000000000000000000000000000000000000",
+      "stakerCount": 3,
+      "attendeeCount": 0,
+      "poolWei": "3000000000000",
+      "balanceWei": "3000000000000",
+      "pendingTotalWei": "0",
+      "pendingChallenges": 0,
+      "heldBackWei": "0",
+      "reservedWei": "3000000000000",
+      "owedTotalWei": "0",
+      "challengeEscrowWei": "0",
+      "challengeDepositWei": "30000000000",
+      "payoutShareWei": "0"
+    },
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b": {
+      "phase": "Open",
+      "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+      "pendingOwner": "0x0000000000000000000000000000000000000000",
+      "stakerCount": 1,
+      "attendeeCount": 0,
+      "poolWei": "2000000000000",
+      "balanceWei": "2000000000000",
+      "pendingTotalWei": "0",
+      "pendingChallenges": 0,
+      "heldBackWei": "0",
+      "reservedWei": "2000000000000",
+      "owedTotalWei": "0",
+      "challengeEscrowWei": "0",
+      "challengeDepositWei": "30000000000",
+      "payoutShareWei": "0"
+    }
+  },
+  "financialAfter": {
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a": {
+      "phase": "Open",
+      "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+      "pendingOwner": "0x0000000000000000000000000000000000000000",
+      "stakerCount": 3,
+      "attendeeCount": 0,
+      "poolWei": "3000000000000",
+      "balanceWei": "3000000000000",
+      "pendingTotalWei": "0",
+      "pendingChallenges": 0,
+      "heldBackWei": "0",
+      "reservedWei": "3000000000000",
+      "owedTotalWei": "0",
+      "challengeEscrowWei": "0",
+      "challengeDepositWei": "30000000000",
+      "payoutShareWei": "0"
+    },
+    "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b": {
+      "phase": "Open",
+      "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+      "pendingOwner": "0x0000000000000000000000000000000000000000",
+      "stakerCount": 1,
+      "attendeeCount": 0,
+      "poolWei": "2000000000000",
+      "balanceWei": "2000000000000",
+      "pendingTotalWei": "0",
+      "pendingChallenges": 0,
+      "heldBackWei": "0",
+      "reservedWei": "2000000000000",
+      "owedTotalWei": "0",
+      "challengeEscrowWei": "0",
+      "challengeDepositWei": "30000000000",
+      "payoutShareWei": "0"
+    }
+  },
+  "notice": "Only wallet authentication messages were signed. Existing public receipts were read; no contract transaction, faucet, time control, ruling or execution endpoint was used. Check-ins are synthetic event observations and do not post financial attendance."
+}

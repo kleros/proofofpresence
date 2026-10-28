@@ -8,6 +8,7 @@ import { execFileSync } from "node:child_process";
 import { ethers } from "ethers";
 import { assertDemoChainInstance } from "../public/hosted-wallet.js";
 import { createWorkbench } from "./workbench.mjs";
+import { createDepositInbox } from "./deposit-inbox.mjs";
 import {
   json,
   requireThat,
@@ -133,6 +134,7 @@ export async function startServer({
     localFiles = new Map(),
     configCache = new Map();
   const instanceId = id();
+  const depositInbox = createDepositInbox(w, { environment: mode, instanceId });
   let instanceMarker = null;
   if (hosted && !external) {
     // Chain1337 can already exist in a visitor's wallet. A unique zero-value
@@ -366,6 +368,20 @@ export async function startServer({
         guardMutation(req, p === "/local-upload");
       if (p === "/api/bootstrap" && req.method === "GET") {
         const bootstrap = await w.bootstrap(s);
+        const capabilities = external
+          ? {
+              sharedDemo: false,
+              browserWallet: true,
+              createEvents: false,
+              timeControls: false,
+            }
+          : hosted
+            ? { sharedDemo: true, browserWallet: true }
+            : {};
+        if (bootstrap.contractVersion === "kleros-event-v8") {
+          capabilities.contractInbox = true;
+          capabilities.batchActions = true;
+        }
         return send(res, 200, {
           ...bootstrap,
           mode,
@@ -378,18 +394,7 @@ export async function startServer({
                 : bootstrap.chain.rpcUrl,
             ...(hosted && !external ? { instanceMarker } : {}),
           },
-          ...(external
-            ? {
-                capabilities: {
-                  sharedDemo: false,
-                  browserWallet: true,
-                  createEvents: false,
-                  timeControls: false,
-                },
-              }
-            : hosted
-              ? { capabilities: { sharedDemo: true, browserWallet: true } }
-              : {}),
+          ...(Object.keys(capabilities).length ? { capabilities } : {}),
         });
       }
       if (p === "/api/session" && req.method === "POST") {
@@ -539,6 +544,23 @@ export async function startServer({
       const match = p.match(/^\/api\/events\/([a-zA-Z0-9_-]+)(?:\/(.*))?$/);
       if (match) {
         const [, eventId, tail = ""] = match;
+        if (tail === "deposit-inbox" && req.method === "GET")
+          return send(res, 200, await depositInbox.read(eventId, s));
+        if (tail === "deposit-inbox/refresh" && req.method === "POST") {
+          const input = await body(req);
+          requireThat(
+            input &&
+              typeof input === "object" &&
+              !Array.isArray(input) &&
+              Object.keys(input).length === 0,
+            "Refresh accepts an empty object only",
+          );
+          return send(
+            res,
+            200,
+            await depositInbox.read(eventId, s, { refresh: true }),
+          );
+        }
         await w.state(eventId);
         w.record(eventId, s);
         if (!tail && req.method === "GET")
@@ -610,6 +632,32 @@ export async function startServer({
           );
         if (tail === "checkins" && req.method === "POST")
           return send(res, 201, await w.checkin(eventId, s, await body(req)));
+        if (tail === "batches/preview" && req.method === "POST") {
+          requireThat(s, "Sign in first", "UNAUTHENTICATED", 401);
+          return send(
+            res,
+            201,
+            await w.previewBatch(eventId, s, await body(req)),
+          );
+        }
+        const batchCommit = tail.match(/^batches\/([^/]+)\/commit$/);
+        if (batchCommit && req.method === "POST") {
+          requireThat(s, "Sign in first", "UNAUTHENTICATED", 401);
+          return send(
+            res,
+            200,
+            await w.commitBatch(eventId, s, batchCommit[1], await body(req)),
+          );
+        }
+        const batchStatus = tail.match(/^batches\/([^/]+)$/);
+        if (batchStatus && req.method === "GET") {
+          requireThat(s, "Sign in first", "UNAUTHENTICATED", 401);
+          return send(
+            res,
+            200,
+            await w.batchStatus(eventId, s, batchStatus[1]),
+          );
+        }
         if (tail === "personal" && req.method === "POST")
           return send(res, 200, await w.personal(eventId, s, await body(req)));
         if (tail === "imports" && req.method === "POST")
@@ -906,6 +954,12 @@ export async function startServer({
           "/",
           "/index.html",
           "/app.js",
+          "/contract-inbox.js",
+          "/contract-inbox.css",
+          "/batch-actions.js",
+          "/batch-actions.css",
+          "/batch-selection.js",
+          "/batch-pending.js",
           "/styles.css",
           "/ethers.js",
           "/transaction-context.js",
