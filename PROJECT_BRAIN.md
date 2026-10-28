@@ -134,7 +134,9 @@ never the A/B key; it is not a transaction wallet. Preserve the chosen plan and 
 healthy reviewed hosting/harness and sufficient real deposit margin before browser deposits.
 C gets a12-hour synthetic check-in window after its fresh start; the actual contract deposit cutoff,
 24-hour challenge/match and7-day claim terms stay unchanged. Current C tooling6/6 local tests (including resumed-funding reserve hardening) plus
-UI pure guards20accepted/109rejected pass; actual C browser execution is still unrun. A/B gas reserve
+UI financial guards22accepted/117rejected and read-only phase guards18accepted/117rejected pass.
+Actual C browser deposit42/admission39 and strengthened admitted-role83auth/read checks passed.
+Future attendance, dispute and kickback stages remain pending real deadlines. A/B gas reserve
 5e12wei is protected before any new C role funding.
 No billing upgrade/new paid commitment. Ordinary temporary resources within existing plans are
 an implementation option; avoid broad auth/routing changes only to avoid a fictional restriction.
