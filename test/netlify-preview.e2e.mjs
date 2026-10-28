@@ -239,6 +239,9 @@ try {
     path: path.join(screenshots, "desktop.png"),
     fullPage: true,
   });
+  await page.screenshot({
+    path: path.join(screenshots, "desktop.viewport.png"),
+  });
   const advanced = page.locator(
     'a[href^="/finance/"], a[data-preview-disabled]',
   );
@@ -334,10 +337,18 @@ try {
     await noOverflow(
       `Read-only ${view} preview has no mobile horizontal overflow`,
     );
+    check(
+      (await page.locator(".sidebar").boundingBox()).height < 180,
+      true,
+      `Read-only ${view} preview retains a compact mobile navigation header`,
+    );
   }
   await page.screenshot({
     path: path.join(screenshots, "mobile.png"),
     fullPage: true,
+  });
+  await page.screenshot({
+    path: path.join(screenshots, "mobile.viewport.png"),
   });
   await page.locator("#demo-help").click();
   await expect(page.locator("#review-dialog")).toBeVisible();

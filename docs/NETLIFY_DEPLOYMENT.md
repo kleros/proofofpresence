@@ -50,9 +50,11 @@ deploy until ready, verify its HTTPS URL and rerun the preview browser checks ag
 
 ## Verification record
 
-The initial assembled preview passed build and **31 browser assertions** plus Playwright expectations.
+The assembled preview passed build and **34 browser assertions** plus Playwright expectations.
 These include all event/view/role combinations, disabled inputs and financial controls, direct draft/RPC
 write refusals, zero wallet requests, zero API/RPC/external network calls, separate browser identities,
-mobile layout and loaded assets. Root typecheck also passed. The existing core source was unchanged.
+mobile layout, compact mobile navigation and loaded assets. Visual inspection caught and corrected
+the preview banner's initial mobile header height; the regression is now covered. Root typecheck also
+passed. The existing core source was unchanged.
 The online URL and deployment verification are recorded below after publication. This record supplements
 the completed core results in [TEST_REPORT](TEST_REPORT.md); it does not replace them.

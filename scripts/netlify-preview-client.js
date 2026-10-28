@@ -208,7 +208,7 @@ style.textContent = `
   #preview-banner {position:sticky;top:0;z-index:10000;display:block;padding:12px 24px;background:#fff1c8;color:#493500;border-bottom:1px solid #dec98a;font:12px/1.55 system-ui,sans-serif}
   #preview-banner strong {font-weight:750;margin-right:10px} #preview-banner span {font-size:11px}
   #preview-banner p {margin:3px 0 0;max-width:110ch;font-size:11px}
-  .netlify-readonly-preview .sidebar {top:var(--preview-banner-height,80px);height:calc(100vh - var(--preview-banner-height,80px))}
+  @media(min-width:901px){.netlify-readonly-preview .sidebar {top:var(--preview-banner-height,80px);height:calc(100vh - var(--preview-banner-height,80px))}}
   [data-preview-blocked] {cursor:not-allowed!important;opacity:.5}
   #dialog-body .preview-dialog-notice {margin:0 0 16px;padding:10px 12px;background:#fff7df;color:#614600;border:1px solid #ead69e;border-radius:8px;font-size:11px}
   @media(max-width:600px){#preview-banner{padding:10px 18px}#preview-banner strong,#preview-banner span{display:block}}
