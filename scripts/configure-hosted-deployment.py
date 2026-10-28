@@ -54,7 +54,10 @@ for name, value in variables.items():
 print('Configured backend variable names: ' + ', '.join(variables), flush=True)
 values = {'KLEROS_BACKEND_URL':args.backend_origin,'KLEROS_PUBLIC_ORIGIN':args.public_origin,'KLEROS_PROXY_SECRET':key}
 for name, value in values.items():
-    payload = {'key':name, 'values':[{'context':'production','value':value}], 'is_secret':name=='KLEROS_PROXY_SECRET'}
+    # Standard private site environment variables work on the existing plan.
+    # Granular scopes/secret-redaction features require an upgrade. The frontend
+    # build never reads these values; only the server-side gateway consumes them.
+    payload = {'key':name, 'values':[{'context':'production','value':value}]}
     if name in existing: api('PUT',endpoint+'/'+name+query,payload)
     else: api('POST',endpoint+query,[payload])
 print('Configured Netlify runtime variable names: ' + ', '.join(values))
