@@ -7,10 +7,10 @@ recommendations and unexecuted-test statements.
 ## Active workspace and decision
 
 - Workspace: `/Users/hashmanansala/Documents/ChatGPT/Kleros projects`; root Git began as unborn `main`.
-  Latest hosted implementation checkpoint `25c4797ea3475bb8e0a58c529ead0b62b8a6802d` is on
+  Deployed hosted source `371b4c80b0c65ce7b7f571ca41d9f85c8720660b` is on
   `codex/core-application`; the integrated UI baseline is `52b66cc5687936cbdbb2eed3578105bb5b215d2d`.
-  no upstream push or live financial/data write was made. A separate read-only Netlify viewing target
-  is now published as recorded below; the financial backend remains local.
+  The requested full interactive Netlify/Railway demo is live and passed370 live acceptance checks.
+  Only synthetic valueless transactions were made; no upstream push or production-system write occurred.
 - All three fetched `main` heads exactly match the original review. Source bases and packaging are
   recorded in [references/SOURCES.json](references/SOURCES.json). Reference trees are vendored,
   not gitlinks; original cloned metadata is preserved locally under ignored `.runtime/source-history/`.
@@ -63,8 +63,9 @@ lost/mis-scoped submission hashes, terminal reverted-receipt handling and same-w
 
 ## Operating boundary and remaining work
 
-The root server is **local-demo only**. Chain and off-chain projections reset on restart. Demo account
-selection is intentionally impersonation; EOA wallet signatures are verified, but email ownership,
+The root server defaults to loopback **local-demo**; explicit **hosted-demo** powers the online demo.
+Chain and off-chain projections reset on restart. Demo account selection is intentionally impersonation;
+EOA wallet signatures are verified, but email ownership,
 general smart-wallet signature/UserOperation linkage and production session membership/persistence
 require a real deployment design. Existing contract-wallet recovery remains supported by v7 tools/tests.
 Court rulings are mocks, local evidence storage is not public IPFS, and no real provider writes occur.
@@ -75,7 +76,7 @@ interactive legacy setup. Booth queue/uniqueness/consent defects remain in the i
 VM tests reproduce them and no financial ingestion consumes that data. Dependency audit advisories
 remain in the development stack; production dependency surface needs remediation.
 
-Next external phase: use [RUNBOOK](docs/RUNBOOK.md) to choose persistent auth/hosting, rehearse content
+Next production phase: use [RUNBOOK](docs/RUNBOOK.md) to design durable auth/storage, rehearse content
 mapping/private migrations in disposable staging, run a local mainnet fork, review future immutable
 policies/deployments and prepare exact authorized production actions. No production credentials are
 needed for the completed local exercise. No production action is authorized by this memory.
@@ -91,39 +92,39 @@ for routes/interfaces and [UI_INTEGRATION](docs/UI_INTEGRATION.md) for source an
 No additional visual polish or upstream push was performed. The local exercise is complete; the next
 phase is the explicitly documented production preparation above.
 
-## Online viewing preview
+## Interactive online demo
 
-At the user's request for Netlify viewing, a separate static target was added at source commit
-`8e1c59e1058e844e18fe15d66c29e62131a492b5` and published at
+The user requested Netlify deployment and selected the full interactive demo. It is live at
 [kleros-event-workbench-preview.netlify.app](https://kleros-event-workbench-preview.netlify.app).
-This is clearly labeled **read-only**: saved synthetic local v7 projections, browser-only identity
-selection, no wallet signing/data entry/API backend or hosted chain. A has paid ordinary attendees
-with one held disputed share; B remains independent. The full local application is unchanged.
+Netlify serves the integrated UI and gateway; one persistent Railway process hosts Node/Ganache.
+The deployed source is `371b4c80b0c65ce7b7f571ca41d9f85c8720660b`, branch `codex/core-application`.
+This immutable v7 snapshot excludes the separate concurrent v8 experiment in the shared directory.
+Backend/financial behavior remains authoritative; no further redesign polish was added.
 
-`npm run build:netlify` verifies actual local receipts and artifact equality, then closes its chain.
-The static preview passed34 browser assertions locally and the same34 against the live HTTPS site,
-plus Playwright expectations. Hosted snapshot bytes matched the tested artifact and security headers
-were verified. Deployment IDs, commands and limitations are in
-[NETLIFY_DEPLOYMENT](docs/NETLIFY_DEPLOYMENT.md) and `artifacts/netlify-deployment.json`.
-Only generated public assets and synthetic snapshots were uploaded; no upstream repository, backend,
-credentials, user attachment or existing financial deployment was published or modified.
+Netlify deploy `6ae2154852ea8b5634d56e84` is ready. Railway deployment
+`2186138d-9268-4ec8-8ab9-575c76067ca7` is healthy, with one replica, no sleeping and `/healthz`.
+The actual Linux image compiled with pinned v7 ABI/bytecode equality. Its optional macOS-only
+Ganache dependency lock metadata was corrected without changing versions or financial code.
+The closed upload context excludes credentials, user attachments, live configs and concurrent WIP.
 
-Netlify Functions cannot preserve this application's current in-memory Node/Ganache state across
-ephemeral invocations. A full interactive online version still needs a persistent backend and explicit
-HTTPS/Host/wallet-RPC adapters. The preview is not a completed production authentication or hosting migration.
+Secure sessions/public-domain nonce proof, fixed HTTPS proxy destination, protected backend API,
+bounded signed chain1337 RPC and unique-instance wallet checks are implemented. The public app
+passed **370 live acceptance checks**: actual A/B deposits, owner A admission/registration with B
+unchanged, unauthorized cross-event action rejection, Secure/HttpOnly sessions, a separate memory-only
+EOA's signed deposit/reconciliation, instance identity, loaded assets and mobile bounds. Full local
+verification previously passed build/typecheck,121 Node tests and143 browser assertions. Live acceptance
+covers deposit/admission flows; arbitration and payout lifecycle evidence remains in the local suite.
 
-The user subsequently selected the **full interactive demo**. At implemented checkpoint `25c4797`,
-the hosted backend, Netlify gateway,
-secure sessions/public nonce domain, bounded signed RPC and unique demo-instance signing checks are
-now implemented locally. The shared online notice explains intentional demo impersonation, valueless
-ETH/mock Court and state resets. Financial contracts/domain rules are unchanged. Focused validation
-passed7 hosted server tests,19 gateway tests,4 wallet-instance tests and35 real local HTTPS integration
-browser assertions. The full verification then passed build/typecheck,121 Node tests and143 browser
-assertions plus expectations. A closed production-dependency package also
-built and served the advanced guest/console/settings routes. The gateway bundles successfully.
-See [HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) for the concrete Railway/Netlify rollout.
-Railway sign-in is pending because the existing login expired. No interactive backend is deployed yet;
-the public Netlify link remains the verified read-only preview until full live checks pass.
+This is shared synthetic state with intentional demo identity impersonation, valueless ETH and mock
+Court adjudication. State resets on backend restart; it is not production authentication or durability.
+A normal browser extension was not used in live acceptance. For wallet use, chain1337 must point to
+this site's `/rpc`; signing checks the current backend's marker. No real guests, original production
+systems, mainnet contracts, upstream Git or billing upgrades were changed.
+
+[HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md), `artifacts/hosted-deployment.json`,
+`artifacts/hosted-live-verification.json` and `artifacts/hosted-readiness.json` record the final evidence.
+The earlier read-only deployment `6ae2003e06e5123259e8297c` remains an immutable rollback artifact;
+its historical record is [NETLIFY_DEPLOYMENT](docs/NETLIFY_DEPLOYMENT.md).
 
 ## Navigation
 

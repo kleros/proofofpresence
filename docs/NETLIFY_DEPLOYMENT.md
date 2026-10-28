@@ -1,4 +1,9 @@
-# Netlify viewing preview
+# Historical Netlify viewing preview
+
+The primary URL now serves the [full interactive demo](HOSTED_DEPLOYMENT.md). This document records
+its earlier read-only deployment, retained as an immutable rollback artifact at
+[6ae2003e06e5123259e8297c--kleros-event-workbench-preview.netlify.app](https://6ae2003e06e5123259e8297c--kleros-event-workbench-preview.netlify.app).
+The statements below describe that historical deployment.
 
 The Netlify target is an explicitly **read-only preview** of the integrated interface. It publishes
 synthetic projections captured from actual local v7 execution, not a live financial application.
@@ -62,7 +67,8 @@ This record supplements the completed core results in [TEST_REPORT](TEST_REPORT.
 
 ## Published deployment
 
-- URL: [kleros-event-workbench-preview.netlify.app](https://kleros-event-workbench-preview.netlify.app).
+- Immutable URL: [read-only deployment](https://6ae2003e06e5123259e8297c--kleros-event-workbench-preview.netlify.app).
+- The primary URL has since been replaced by the interactive demo.
 - Source: `8e1c59e1058e844e18fe15d66c29e62131a492b5`, branch `codex/core-application`.
 - Site ID: `f6b82f41-9e30-49b0-a836-40fedbab93a4`.
 - Deploy ID: `6ae2003e06e5123259e8297c`; observed state `ready`.

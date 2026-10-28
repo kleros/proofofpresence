@@ -117,7 +117,7 @@ production auth/persistence, staging content RLS/migrations, public IPFS publish
 fork remain external work. Dependency audit advisories remain in the development stack. No remote
 CI or production rollout has been run. Follow [RUNBOOK](RUNBOOK.md) for the next authorized phase.
 
-## Netlify read-only preview
+## Historical Netlify read-only preview
 
 Following the user's online-viewing request, separate source commit
 `8e1c59e1058e844e18fe15d66c29e62131a492b5` added a static preview without changing the core backend.
@@ -130,11 +130,12 @@ height issue, with3 regression assertions added to the original31-check preview 
 
 Netlify reported deploy `6ae2003e06e5123259e8297c` ready. Page/snapshot requests returned200,
 the captured bytes matched the local artifact exactly, and CSP/`nosniff` headers were present.
-This is a deployed **read-only viewing preview**, not the interactive Node backend or financial
-production rollout discussed above. [NETLIFY_DEPLOYMENT](NETLIFY_DEPLOYMENT.md) records the URL,
+This historical **read-only viewing preview** was subsequently replaced at the primary URL by the
+interactive demo below; its immutable deploy remains available as rollback. It is not a financial
+production rollout. [NETLIFY_DEPLOYMENT](NETLIFY_DEPLOYMENT.md) records the URL,
 source/deploy IDs, commands and limitations.
 
-## Prepared full interactive hosting
+## Full interactive hosting: local and live evidence
 
 After the user selected full interaction, explicit hosted mode, a Netlify gateway, secure sessions,
 public-domain nonce auth, constrained signed RPC and unique-instance wallet checks were implemented.
@@ -147,10 +148,24 @@ Focused checks include7 hosted server,19 gateway and4 wallet-instance tests. The
 suite uses a real temporary local HTTPS frontend→real gateway→real backend, Secure cookies, actual
 A/B deposits and isolated registration, RPC/Origin guards, advanced financial pages and mobile layout.
 The gateway bundles with official Netlify CLI27.15.0. A clean closed package with only production
-dependencies passed install/build and guest/console/settings smoke checks. Local Docker's daemon was
-unavailable; actual Linux container execution remains a Railway deployment check.
+dependencies passed install/build and guest/console/settings smoke checks. Actual Railway Linux
+build/deployment `2186138d-9268-4ec8-8ab9-575c76067ca7` subsequently succeeded with Node22, production-only
+install and pinned v7 ABI/bytecode equality. A missing optional flag on Ganache's nested macOS-only
+fsevents lock entry was corrected without changing versions. The healthy service has one replica
+and sleeping disabled.
 
-`test/hosted-live.e2e.mjs` is prepared with strict origin/chain/instance/fresh-state guards and has only
-passed syntax/format checks; it has **not** run against a live interactive backend. Railway sign-in is
-pending after the existing login expired. The published site remains the read-only preview, and no
-interactive hosted deployment is claimed. [HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md) records next steps.
+Netlify deploy `6ae2154852ea8b5634d56e84` is ready at the public URL. The deployed backend/frontend
+source is immutable v7 commit `371b4c80b0c65ce7b7f571ca41d9f85c8720660b`, excluding concurrent v8 work.
+`HOSTED_DEMO_URL=https://kleros-event-workbench-preview.netlify.app node test/hosted-live.e2e.mjs`
+passed **370 live acceptance checks**, recording five actual synthetic chain1337 transaction hashes.
+Coverage includes browser A/B deposits, owner A admission/registration with B unchanged, cross-event
+403, Secure/HttpOnly sessions, public-domain nonce proof, an independent memory-only EOA's signed
+RPC deposit and canonical reconciliation, instance guards, loaded assets and mobile bounds. No external
+requests, browser runtime errors, state reset, automatic rebroadcast or persisted private keys occurred.
+A normal browser extension was not used; full arbitration and payout flows retain prior local evidence.
+
+Final read-only readiness checks confirmed backend health200, unkeyed API403, public bootstrap200,
+mode hosted-demo, chain1337 and the same instance as live acceptance. Public artifacts are
+`artifacts/hosted-live-verification.json`, `artifacts/hosted-readiness.json` and
+`artifacts/hosted-deployment.json`. [HOSTED_DEPLOYMENT](HOSTED_DEPLOYMENT.md) records operations and limits.
+This is a shared synthetic demo with valueless ETH, mock Court and restart resets, not a production rollout.

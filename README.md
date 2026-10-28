@@ -4,13 +4,14 @@ A unified local application for independent event deposits, reviewed admission, 
 V1 Court challenges, held-share settlement and recovery. The local demo executes the original
 v7 Solidity on Ganache. Court adjudication uses explicit V1 mocks.
 
-[View the online read-only preview](https://kleros-event-workbench-preview.netlify.app).
-It shows captured synthetic contract states; wallet and data-entry actions are disabled.
-Use the local runtime below for the complete interactive application.
+[Open the full interactive demo](https://kleros-event-workbench-preview.netlify.app).
+Netlify serves the interface and gateway; one persistent Railway backend runs the unchanged v7 demo.
+Choose a synthetic demo identity to try deposits, admission and event workflows. ETH has no value,
+Court rulings are mocks, and shared chain/session state resets on backend restart.
 
-The requested full online demo is being prepared with a persistent backend and Netlify gateway;
-[HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) records the architecture, checks and deployment steps.
-The public link stays read-only until the replacement is verified.
+The deployed source is `371b4c80b0c65ce7b7f571ca41d9f85c8720660b` on `codex/core-application`.
+All **370 live acceptance checks** passed. [HOSTED_DEPLOYMENT](docs/HOSTED_DEPLOYMENT.md) records
+source/deployment IDs, checks and operating limits.
 
 ## Run
 
@@ -39,9 +40,9 @@ storage is labeled `local-only`; a CID alone is never reported as a successful p
 
 ## Verify
 
-For online viewing, the separate [Netlify target](docs/NETLIFY_DEPLOYMENT.md) builds a clearly labeled
-read-only preview from synthetic local contract snapshots. The interactive application still uses
-the local runtime above; the preview does not accept deposits, wallet connections or personal data.
+The [interactive hosted demo](docs/HOSTED_DEPLOYMENT.md) uses the same authoritative v7 application.
+The earlier [read-only Netlify target](docs/NETLIFY_DEPLOYMENT.md) remains an immutable rollback artifact.
+Live acceptance checks made actual synthetic deposits and verified sessions, isolation and mobile layout.
 
 ```sh
 npx playwright install chromium
