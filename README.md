@@ -31,6 +31,10 @@ storage is labeled `local-only`; a CID alone is never reported as a successful p
 
 ## Verify
 
+For online viewing, the separate [Netlify target](docs/NETLIFY_DEPLOYMENT.md) builds a clearly labeled
+read-only preview from synthetic local contract snapshots. The interactive application still uses
+the local runtime above; the preview does not accept deposits, wallet connections or personal data.
+
 ```sh
 npx playwright install chromium
 npm run verify           # build, types, Node integration, lifecycle/UI/safety/context browser checks

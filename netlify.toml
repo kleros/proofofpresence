@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build:netlify"
+  publish = "dist/netlify-preview"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# This target intentionally publishes a read-only visual preview. The full local
+# Node/Ganache application is not a stateless Netlify Function.

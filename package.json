@@ -11,6 +11,8 @@
     "build": "npm run compile && node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "demo": "node src/server.mjs",
+    "build:netlify": "npm run build && node scripts/build-netlify-preview.mjs",
+    "test:netlify": "node test/netlify-preview.e2e.mjs",
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "test:contracts": "npm --prefix references/kickback test",
     "test:browser": "node test/app.e2e.mjs",

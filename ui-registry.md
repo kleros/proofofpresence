@@ -78,3 +78,13 @@ Files: `public/styles.css`, `public/app.js` · Last updated: 28 October 2026
 | Missing totals | Visible “Unavailable” plus explanation, never estimated from remaining balance |
 
 Pattern notes: Sent, reserved case shares, owed failed transfers and challenge escrow have separate explanations. Total reserves overlap these obligations and must not be added again. Appeal costs and deadlines use the current resolver projection. A jury vote, final resolver result, settled challenge and delivered ETH are separate states. Waiting challenges have no Court IDs.
+
+### Read-only online preview
+
+Files: `scripts/netlify-preview-client.js` · Last updated: 28 October 2026
+
+Pattern notes: A persistent, plainly labeled preview notice explains captured synthetic data and disabled
+transactions. Reuse the existing plum/lavender typography and surfaces. Identity switching is presented
+as choosing a saved view. Disable data-entry and financial controls with a reason; retain event/view
+navigation, disclosures and help. Refuse writes in the adapter as well as disabling UI controls. The
+full local application retains its original behavior and visual patterns.
