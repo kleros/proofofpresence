@@ -1,6 +1,6 @@
 # Controlled Chiado full-flow acceptance
 
-Status: **IN PROGRESS — deposits and registration are verified; public kickbacks and final settlement are pending.**
+Status: **IN PROGRESS — C deposits, registration, attendance and matched dispute are verified; public kickbacks and final settlement are pending.**
 Current checkpoint: 29 October 2026, Asia/Bangkok. `PROJECT_BRAIN.md` remains the
 canonical project memory. This record covers the original A/B plan
 `9fe71683-1e9b-48a0-94bd-274da4cf3029` and isolated UI scenario C plan
@@ -12,6 +12,24 @@ Alice/Bob wallets, manifest, backend volume and app origin:
 Child: `0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef`.
 The **Unify Kleros event deposits** chat remains the sole financial operator.
 The contract chat independently reviews public evidence and makes no transactions.
+
+## Current automatic C milestone — 29October, after event start
+
+Root completed actual UI attendance (Alice only), the SAME Bob UI depositor's challenge, and owner
+matching. Canonical hashes/blocks and complete UI proofs are bound in
+[attendance](../artifacts/ui-c-attendance.json), [challenge](../artifacts/ui-c-challenge.json) and
+[match](../artifacts/ui-c-match.json). Each stage produced one request/broadcast and unchanged A/B
+financial records; stage checks33/31/31 and independent C observer checks96/110/115 passed.
+The Waiting case had no invented Court IDs or inherited A0/1000; matching verified C local1/arbitrator1001.
+Bob is Disputed/unruled. Pool2D and escrow30e9 remain protected, with held/owed/attendance-paid0.
+
+The [matched three-role UI audit](../artifacts/ui-c-status-matched.json) passed83read/auth requests,
+3nonce signatures,6desktop captures,0financial signatures/broadcasts and no failures. This supersedes
+admitted-only readiness as the latest C state, while retaining all earlier proofs below.
+ACTUAL challengeEndsAt1793311190 =30October04:59:50Bangkok. Root rescheduled the SAME C job to
+30October05:02Bangkok, preserving A/B's separate00:20job/configuration. No payout/ruling/settlement
+occurred. Future ordinary unruled/held, final1-delivered/unsettled and settled payment/collateral proofs
+are still required. Earlier04:50schedule and admitted-state descriptions below are historical.
 
 ## Current C evidence
 
@@ -46,21 +64,18 @@ operation was replayed to improve coverage.
 
 ## Scheduled continuation and limits
 
-C starts **29October04:45:35Bangkok**. Its existing C-only heartbeat
-`finish-kleros-ui-testnet-flow-c` is **ACTIVE at04:50Bangkok today**, targeting the
-sole operator's core chat. The parent checked its native view, saved settings and
-[continuation evidence](../artifacts/ui-c-continuation.json). It requires the latest
-hash-bound admitted-role proof and current auditor before a new financial stage.
+C started **29October04:45:35Bangkok**. Root completed the actual UI attendance/challenge/match
+sequence above. Its existing C-only heartbeat `finish-kleros-ui-testnet-flow-c` is now **ACTIVE at
+30October05:02Bangkok**, after the ACTUAL challenge deadline04:59:50. The SAME job was updated,
+with A/B's separate automation file byte-for-byte preserved; no duplicate operator was created.
+[Continuation evidence](../artifacts/ui-c-continuation.json) and the matched-role pointer record scope.
 
-The next stages are actual UI attendance for Alice only, Bob's UI challenge and
-owner UI matching. The same C job then reschedules itself after the ACTUAL posted
-`challengeEndsAt` plus margin, accounting for any still-Waiting matching gate.
-Ordinary payout must pay Alice while Bob's share remains held and unruled. A final
-controlled attended ruling1 must be captured before UI settlement pays the SAME
-Bob who deposited. Each financial stage requires its unique browser proof,
-per-operation A/B isolation, role UI audit and `--scenario c` public observer.
-Separate unlogged collateral delivery must be verified without calling it an
-attendance payment. The full C dispute/kickback sequence is **not complete**.
+Remaining stages are fresh matched readiness, ordinary UI payout with Alice D/Bob unruled and held D,
+controlled attended ruling1, then UI settlement and actual SAME Bob D attendance payment plus separate
+collateral verification. Ordinary, ruled-before-settlement and settled states each require current
+role UI and scoped C observer proofs before the next financial action. Real public time stays unchanged.
+The full C dispute/kickback sequence is **not complete**. Delete only the C automation after verified
+completion under heartbeat cleanup instructions; local scheduling needs the machine awake/Codex running.
 
 The independent A/B heartbeat stays ACTIVE at **30October00:20Bangkok**. C never
 appends to or resets A/B's whole-manifest state. The current A/B observer passed209

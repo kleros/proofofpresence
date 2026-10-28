@@ -10,8 +10,10 @@ The existing local v7 runtime remains compatible; historical v7 hosting sections
 Deployed combined application source: `f4643f8b3a2938d4cbcebe233e202656847a3084`; final Node221/221,
 local inbox26/batch28, live main role226/owner inbox141 and independent observer209 passed.
 Operator guard66715b4 and C read-only phase auditor0b62229 are separate local tools.
-C real UI deposits42/registration39 are confirmed; its ACTIVE04:50Bangkok29October continuation
-uses actual future attendance deadlines, while A/B remains ACTIVE00:20Bangkok30October.
+C real UI deposits42/registration39 and attendance33/challenge31/match31 are confirmed. Its
+matched three-role83auth/read audit passed. C is unruled with local1/arbitrator1001; the SAME job
+is ACTIVE05:02Bangkok30October after its actual challenge deadline04:59:50. A/B remains ACTIVE
+00:20Bangkok30October, unchanged.
 
 Public interfaces remain directory and event participant/organizer/cases routes; bootstrap/event reads,
 signed wallet nonce authentication, private registration and approval, canonical receipt reconciliation,

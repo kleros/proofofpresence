@@ -5,7 +5,28 @@ follow the same depositor through dispute and kickback. Root is the sole financi
 Only disposable synthetic wallets and Chiado chain10200 are used. Existing A/B scenarios, deadlines,
 manifest, application records and scheduled payout operation remain independent.
 
-## Confirmed checkpoint
+## Current matched checkpoint — automatic run29October
+
+Actual UI attendance33, Bob challenge31 and owner matching31 checks passed, with exactly one
+financial request/broadcast per stage. [Attendance](../artifacts/ui-c-attendance.json),
+[challenge](../artifacts/ui-c-challenge.json) and [match](../artifacts/ui-c-match.json) summaries bind
+all immutable source/receipt/UI proofs. Independent post-stage observers passed96/110/115.
+A/B financial state stayed unchanged across each operation and each complete stage.
+
+C is Listed with Alice alone; the SAME Bob UI depositor is Disputed and unruled. Its dynamically
+verified resolver/arbitrator IDs are1/1001. Two principals total2D; balance/reserved2D+30e9 escrow;
+unused credit, held share, owed credit and attendance sent are all0. The earlier Waiting case correctly
+had no Court IDs/period/finality and did not inherit A's0/1000. The current matched role audit passed
+83read/auth requests,3nonce signatures,6desktop screenshots and zero financial signatures/broadcasts:
+[latest pointer](../artifacts/ui-c-status-matched.json). The root visually reviewed Bob's actual UI.
+
+ACTUAL attendance challengeEndsAt1793311190 is **30October04:59:50Bangkok**
+(29October21:59:50UTC). The SAME C job is ACTIVE at **30October05:02Bangkok**, after this deadline.
+Its old04:50attendance schedule is superseded. No ordinary payout, controlled ruling or settlement
+has occurred. Remaining stages below must preserve the unruled held-share test before ruling1.
+
+## Earlier deposits and registration
+
 
 C plan fingerprint: `3637ba50a2b8f1d46cedbe6d678b747c25d19c15e976ae6ea87e63c8be0126fb`.
 [Public manifest](../registry/chiado-v8-ui-c.json) identifies event
@@ -102,12 +123,13 @@ separate C stages is permitted; an individual C operation must leave A/B unchang
 browser evidence with `scripts/chiado-deposit-receipt-audit.mjs` for independent canonical receipt
 checks; that receipt-only tool deliberately reports `uiInitiationVerified:false`.
 
-The existing `finish-kleros-testnet-kickbacks` job owns A/B only. C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE, first scheduled **29October04:50Bangkok**,
-after its actual start. It will execute actual UI attendance/challenge/match only after fresh gates,
-then reschedule the SAME C job after the observed on-chain attendance challenge deadline.
-[Continuation evidence](../artifacts/ui-c-continuation.json) records scope and timing. Every matched,
-ordinary, ruled-before-settlement and settled phase requires nonce-authenticated GET-only
-`test/testnet-ui-c-status.e2e.mjs --phase PHASE` plus the C observer; failed audits stop dependent
-financial stages. The final read-only auditor has18 accepted/117 rejected pure guards; source0b62229.
-Keep each job scoped, use the shared lock, and pause only after its own verified completion.
-Local scheduling requires the computer awake and Codex running.
+The existing `finish-kleros-testnet-kickbacks` job owns A/B only and remains unchanged at
+30October00:20Bangkok. C job `finish-kleros-ui-testnet-flow-c` was rescheduled in place to
+30October05:02Bangkok, after its ACTUAL attendance challenge deadline. Its next run must freshly
+verify current matched source/state/UI, then ordinary payout with Bob unruled. Role phases ordinary,
+ruled-before-settlement and settled plus the C observer gate every next financial stage. Same-Bob
+attendance payment and separate unlogged collateral delivery require final independent verification.
+[Continuation record](../artifacts/ui-c-continuation.json) records exact scope, timing and preservation
+of A/B's job. The read-only auditor source0b62229/18accepted117rejected guards is unchanged.
+Delete only the C follow-up after verified C completion under current heartbeat cleanup rules;
+preserve the independent A/B job. Local scheduling needs this computer awake with Codex running.

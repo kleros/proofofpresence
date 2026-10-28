@@ -17,8 +17,8 @@ and34 UI-challenge checks remain separate historical evidence.
 
 The [isolated C UI rehearsal](https://kleros-ui-c-20261029-9fe71683.netlify.app) confirmed two real
 UI-origin deposits and one reviewed organizer registration (42/39 checks, three broadcasts).
-Its continuation is ACTIVE at **29October04:50Asia/Bangkok** for actual attendance/dispute steps;
-payout timing follows the actual attendance challenge deadline. Original A/B kickbacks remain gated
+Attendance/challenge/matching are now verified through actual UI transactions. Its SAME continuation
+is ACTIVE at **30October05:02Asia/Bangkok**, after the actual challenge deadline04:59:50. Original A/B kickbacks remain gated
 by their unchanged window, with continuation **30October00:20Asia/Bangkok**. See
 [TESTNET_UI_C](docs/TESTNET_UI_C.md). Local scheduled runs require the computer awake and Codex running.
 

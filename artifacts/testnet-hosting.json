@@ -60,7 +60,7 @@
     "ordinaryRuledSettledAuditsRequired": true
   },
   "newCScenario": {
-    "status": "actual C UI deposits42 and registration39 passed; no attendance/dispute/payout yet",
+    "status": "C actual UI attendance/challenge/match verified; Disputed/unruled, no payout yet",
     "isolation": "Separate manifest/journal/keys/backend volume/Netlify origin; A/B manifest unchanged",
     "expectedRuling": 1,
     "sameUIDepositorReceivesKickback": true,
@@ -77,11 +77,31 @@
     "continuation": {
       "id": "finish-kleros-ui-testnet-flow-c",
       "active": true,
-      "firstBangkok": "2026-10-29 04:50",
-      "payoutTiming": "derive from actual attendance challengeEndsAt; strict chain gates required"
+      "phase": "matched-unruled-waiting-natural-challenge-window",
+      "previousBangkok": "2026-10-29 04:50",
+      "nextBangkok": "2026-10-30 05:02",
+      "nextUTC": "2026-10-29T22:02:00Z",
+      "challengeEndsAt": 1793311190,
+      "challengeDeadlineUTC": "2026-10-29T21:59:50Z",
+      "challengeDeadlineBangkok": "2026-10-30 04:59:50",
+      "marginSeconds": 130,
+      "nextStage": "fresh matched-role and chain audit, then ordinary UI payout with Bob unruled; ordinary/ruled/settled audits gate later actions",
+      "resolverLocalID": "1",
+      "arbitratorDisputeID": "1001",
+      "matchedRoleProof": "artifacts/ui-c/status-matched-2026-10-28T22-19-39-177Z-52ca689b/proof.json",
+      "sameExistingJobRescheduled": true,
+      "separateABJobPreserved": true,
+      "abNextBangkok": "2026-10-30 00:20",
+      "abAutomationFileUnchanged": true,
+      "completionCleanup": "Delete only C automation after verified C completion; preserve A/B job."
     },
     "admittedRoleProof": "artifacts/ui-c-status-admitted.json",
-    "admittedRoleStatus": "passed-strengthened-auth-and-read-only"
+    "admittedRoleStatus": "passed-strengthened-auth-and-read-only",
+    "uiAttendanceProof": "artifacts/ui-c/attendance-2026-10-28T21-56-21.471Z-db7a00a1/proof.json",
+    "uiChallengeProof": "artifacts/ui-c/challenge-2026-10-28T22-04-50.283Z-a7cc62ea/proof.json",
+    "uiMatchProof": "artifacts/ui-c/match-2026-10-28T22-13-36.697Z-d0a6310e/proof.json",
+    "matchedRoleProof": "artifacts/ui-c-status-matched.json",
+    "postMatchObserverChecks": 115
   },
   "luma": "Deferred by human; no key/fetch/module/routes activated",
   "combinedRelease": {

@@ -407,3 +407,31 @@ attendance/dispute steps, and original A/B at30October00:20Bangkok for eligible 
 C will reschedule the SAME job after its ACTUAL posted attendance challenge deadline. Source
 f4643f8 remains deployed; these observer-only changes require no app redeployment. Full public
 controlled kickbacks/settlement and later real Court remain outstanding, with actual gates recorded.
+
+
+## Scheduled C attendance/dispute run — 29October2026, Asia/Bangkok
+
+No application/contract/operator source changed and no prior transaction was replayed. The unchanged
+financial guards22accepted/117rejected and status guards18accepted/117rejected passed before action.
+Fresh admitted C observer93 and all seven prior canonical receipts/proof bindings passed first.
+
+| Actual command/stage | Result |
+|---|---|
+| C financial UI `--stage attendance` |33checks passed, Alice-only trusted check-in and one canonical postAttendance broadcast; A/B unchanged. |
+| C observer after attendance |96passed; actual posted challenge deadline1793311190 =30October04:59:50Bangkok. |
+| C financial UI `--stage challenge` |31checks passed, exactly one Bob challenge broadcast/30e9; A/B unchanged. |
+| C observer after challenge |110passed; Waiting has null Court IDs/period/finality/appeal, escrow30e9, no inherited A0/1000. |
+| C financial UI `--stage match` |31checks passed, exactly one owner matching broadcast; receipt/mapping dynamically identify local1/arbitrator1001; A/B unchanged. |
+| C observer after matching |115passed; Listed, Alice-only, Bob Disputed/unruled, balance/reserved2D+30e9, held/owed/paid0. |
+| C status `--phase matched` |83auth/read requests,3nonce logins,6desktop captures,0financial signatures/broadcasts, no failures. Exact current auditorSHA and immutable proof verified. |
+
+[Attendance](../artifacts/ui-c-attendance.json), [challenge](../artifacts/ui-c-challenge.json),
+[match](../artifacts/ui-c-match.json) and [matched role](../artifacts/ui-c-status-matched.json) summaries
+bind unique actual browser/receipt proofs. Counts include repeated source/provenance/transport guards;
+they are not distinct financial workflows. Exactly three new financial transactions occurred.
+Existing sourcef4643f8/Linux/build/typecheck/221Node results remain the application regression evidence;
+this clocked, unchanged-source run did not rerun that entire suite. C actual captures remain desktop.
+
+The same C automation is ACTIVE30October05:02Bangkok, 130seconds after the ACTUAL challenge deadline;
+A/B's00:20job/config file remained byte-for-byte unchanged. No C payout/ruling/settlement has occurred.
+Future ordinary/ruled/settled UI and canonical audits must pass before dependent financial actions.

@@ -43,11 +43,39 @@
       "viewport": "desktop1440",
       "visibleFacts": "exactwallet/event/child, hostapproval, canonicaldeposit, contractregistration, zero unusedcredit, no deposit/creditwithdraw, no attendance/payout, release disabled/no case to settle",
       "nonceAuthenticationOnly": true
-    }
+    },
+    "cUIAttendanceChecks": 33,
+    "cUIChallengeChecks": 31,
+    "cUIMatchChecks": 31,
+    "cFinancialBroadcastsThisHeartbeat": 3,
+    "cMatchedRoleAudit": {
+      "status": "passed",
+      "phase": "matched",
+      "proof": "artifacts/ui-c/status-matched-2026-10-28T22-19-39-177Z-52ca689b/proof.json",
+      "proofSha256": "00bcc337d3122e1ec47637dc7e091c3ae2980430d746f6c85ef108973e52ad4d",
+      "auditorCommit": "0b62229",
+      "harnessSha256": "d74815f61a4671726da6c1ebe95d59c9dc0f069ee92dc21af7f5b8151b10071b",
+      "counts": {
+        "http": 83,
+        "nonceSignatures": 3,
+        "financialSignatures": 0,
+        "broadcasts": 0
+      },
+      "roleCount": 3,
+      "screenshots": 6,
+      "viewport": "desktop1440",
+      "resolverLocalID": "1",
+      "arbitratorDisputeID": "1001",
+      "finalRuling": null,
+      "heldShareWei": "0",
+      "owedWei": "0",
+      "sentWei": "0"
+    },
+    "cPostMatchObserverComparisons": 115
   },
   "financialCheckpoint": {
     "ab": "matched unruled; ordinary payouts pending actual deadline",
-    "c": "Open;2 registered;2D committed;pending0;attendance0;no cases or payouts"
+    "c": "Listed;2 registered;Alice listed/Bob matched unruled;IDs1/1001;pool2D,escrow30e9;held/owed/paid0;natural deadline30Oct04:59:50Bangkok"
   },
   "limits": [
     "Controlled test arbitrator; independent Court process remains separate.",

@@ -46,6 +46,12 @@ was disabled. The fixed326-byte non-executable C-site hosting comment is recogni
 hash comparison; all remaining bytes/scripts must match, and the browser receives the unchanged
 published response. Harness correction66715b4 passed22positive/117negative pure guards.
 
+C's automatic event-start run has now verified actual UI attendance, Bob challenge and owner
+matching (33/31/31 checks, one financial broadcast each), independent observers96/110/115 and
+matched three-role83read/auth checks with zero financials. Sourcef4643f8 is unchanged. C is Listed,
+Disputed/unruled (IDs1/1001), no attendance payout yet. The SAME C job resumes30October05:02Bangkok,
+after actual challenge deadline04:59:50, preserving A/B00:20. See the updated C runbook/proof pointers.
+
 ## Historical v7 hosted demo — superseded
 
 The remaining details describe source371b4c80 and its earlier deployment. The370-check result,

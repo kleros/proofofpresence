@@ -34,3 +34,12 @@ while A's absent ruling2 independently tests top-ups. Every future phase require
 and canonical-chain checks before dependent financial work. Both schedules require Codex/computer
 running. Sourcef4643f8 is deployed; operator guard66715b4 and read-only C audit0b62229 are local
 source-bound tools. Final future-phase audit readiness/proof is recorded in the C runbook.
+
+
+Latest C automatic run supersedes the earlier04:50attendance plan: UI attendance33/challenge31/
+match31 and matched-role83read/auth checks passed, one new financial broadcast per stage, A/B unchanged.
+C localID1/arbitrator1001 are dynamically verified, Bob Disputed/unruled. ACTUAL challenge deadline
+30October04:59:50Bangkok; the SAME C job is now ACTIVE05:02Bangkok30October. Read the current C
+runbook and latest matched pointer before payout. Ordinary held Bob share must be proved BEFORE
+ruling1, final-delivered/unsettled BEFORE UI settlement, then same-Bob payment/collateral verification.
+Delete C automation only after verified completion; preserve independent A/B00:20job.

@@ -1,0 +1,23 @@
+{
+  "status": "passed",
+  "phase": "matched",
+  "proof": "artifacts/ui-c/status-matched-2026-10-28T22-19-39-177Z-52ca689b/proof.json",
+  "proofSha256": "00bcc337d3122e1ec47637dc7e091c3ae2980430d746f6c85ef108973e52ad4d",
+  "auditorCommit": "0b62229",
+  "harnessSha256": "d74815f61a4671726da6c1ebe95d59c9dc0f069ee92dc21af7f5b8151b10071b",
+  "counts": {
+    "http": 83,
+    "nonceSignatures": 3,
+    "financialSignatures": 0,
+    "broadcasts": 0
+  },
+  "roleCount": 3,
+  "screenshots": 6,
+  "viewport": "desktop1440",
+  "resolverLocalID": "1",
+  "arbitratorDisputeID": "1001",
+  "finalRuling": null,
+  "heldShareWei": "0",
+  "owedWei": "0",
+  "sentWei": "0"
+}

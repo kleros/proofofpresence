@@ -1,9 +1,21 @@
 {
   "id": "finish-kleros-ui-testnet-flow-c",
   "active": true,
-  "nextBangkok": "2026-10-29 04:50",
-  "nextStage": "actual UI attendance, Bob challenge, owner match",
-  "eligibilitySource": "actual fresh chain time within immutable event hours; future payout deadline is the actual attendance post challengeEndsAt, plus any Waiting case gate",
-  "rescheduleSameJobAfterMatching": true,
-  "separateABJobPreserved": true
+  "phase": "matched-unruled-waiting-natural-challenge-window",
+  "previousBangkok": "2026-10-29 04:50",
+  "nextBangkok": "2026-10-30 05:02",
+  "nextUTC": "2026-10-29T22:02:00Z",
+  "challengeEndsAt": 1793311190,
+  "challengeDeadlineUTC": "2026-10-29T21:59:50Z",
+  "challengeDeadlineBangkok": "2026-10-30 04:59:50",
+  "marginSeconds": 130,
+  "nextStage": "fresh matched-role and chain audit, then ordinary UI payout with Bob unruled; ordinary/ruled/settled audits gate later actions",
+  "resolverLocalID": "1",
+  "arbitratorDisputeID": "1001",
+  "matchedRoleProof": "artifacts/ui-c/status-matched-2026-10-28T22-19-39-177Z-52ca689b/proof.json",
+  "sameExistingJobRescheduled": true,
+  "separateABJobPreserved": true,
+  "abNextBangkok": "2026-10-30 00:20",
+  "abAutomationFileUnchanged": true,
+  "completionCleanup": "Delete only C automation after verified C completion; preserve A/B job."
 }

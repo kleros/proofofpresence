@@ -61,9 +61,11 @@ pure guards; the strengthened admitted run passed83auth/read requests,3nonce log
 zero financial signatures/broadcasts. [Latest pointer](../artifacts/ui-c-status-admitted.json)
 binds the immutable proof. C public role captures are desktop-only.
 
-C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE29October04:50Bangkok, independent of the
-existing A/B00:20Bangkok30October job. C's future payout schedule must derive from the ACTUAL
-posted attendance challengeEndsAt; do not use eventStart+24hours or A/B's deadlines. Matched,
+C attendance33/challenge31/match31 stages and matched-role83auth/read checks now passed, one
+new financial UI broadcast per stage. Dynamic C IDs1/1001 remain unruled, all held/owed/sent0.
+C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE30October05:02Bangkok, rescheduled in place
+after ACTUAL challengeEndsAt1793311190 (04:59:50Bangkok). Independent A/B00:20job is unchanged.
+Do not use eventStart+24hours or A/B's deadlines. Matched,
 ordinary, ruled-before-settlement and settled stages require C role UI/API/chain proofs and the
 scoped observer. Same-Bob attended ruling1 complements A's absent ruling2/top-ups. Full public
 kickbacks and real Court are not yet complete. [C runbook](TESTNET_UI_C.md) records exact hashes,

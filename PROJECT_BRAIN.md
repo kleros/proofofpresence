@@ -83,6 +83,39 @@ Git, browser context and chat. No mainnet action, real guest write, upstream pus
 Real Court is separate and requires deployed resolver ABI/provider compatibility review and more
 faucet funding; controlled mocks do not establish independent jury arbitration.
 
+## Automatic C continuation — 29October2026, matched checkpoint
+
+The scheduled C run completed actual UI attendance, Bob's challenge and owner matching, one reviewed
+wallet request/broadcast each; no prior action was replayed:
+
+| Stage | Canonical transaction | Block | UI checks | Independent C observer |
+|---|---|---|---|---|
+| Alice-only attendance | `0x661804b1b74975dc19ac487a9a4b511aa54906938b46efa5583286434954dbfd` |23736947|33|96|
+| Same Bob UI depositor challenges omission | `0x1093fd138977a95c946670de24f4ef267f9ea4b068441b995cf5547d5f91187b` |23737036|31|110|
+| C owner matches | `0xcad5d288f2a518aeef233a989a7a27f225baf54c8536b2a554f6e8c2aa3ad8c2` |23737132|31|115|
+
+Summary/immutable proofs: `artifacts/ui-c-attendance.json`, `ui-c-challenge.json`, `ui-c-match.json`.
+Every operation and full stage proved A/B financial snapshots unchanged. The Waiting-case observer
+confirmed null Court IDs/finality/appeal, avoiding A's real0/1000. Matching then dynamically verified
+C resolver localID1/arbitratorID1001 and C owner as matcher/case organizer. C is Listed: two stakers,
+Alice alone included, Bob Disputed/unruled, pool2e12wei, balance/reserved2.03e12wei, escrow30e9wei,
+pending credit/held/owed/direct attendance payments0. Held share is not allocated until ordinary release.
+
+Strict matched Alice/Bob/owner UI audit PASSED83auth/read requests,3nonce logins,6desktop captures,
+zero financial signatures/broadcasts and no failures. `artifacts/ui-c-status-matched.json` binds the
+immutable proof and current auditorSHA; source0b62229 is unchanged. Applicationf4643f8 and financial
+UI operator66715b4 remain unchanged. Public extension-wallet prompts remain outside this bridge test.
+
+The ACTUAL posted attendance challenge deadline is1793311190 =2026-10-29T21:59:50Z =
+**30October04:59:50Bangkok**. The SAME C heartbeat is ACTIVE, rescheduled to
+**30October05:02Bangkok** (130seconds after the deadline), with a fresh matched-role/chain audit
+before ordinary UI payout. Bob's match deadline1793311675 is no longer a Waiting gate because he is
+canonically matched; always re-read actual cases. Ordinary Alice D/Bob held D must pass audits before
+controlled ruling1; final-delivered/unsettled must pass before UI settlement and actual same-Bob D plus
+separate collateral proof. No payout, ruling or settlement has occurred yet. Delete only the completed
+C follow-up after full verification under heartbeat cleanup rules. A/B's independent ACTIVE00:20Bangkok
+30October job/configuration is unchanged. See `artifacts/ui-c-continuation.json` and the C runbook.
+
 ## Additional human requests under active integration
 
 The human in the coordinated UI chat first asked for Luma, then explicitly deferred it because
@@ -117,9 +150,10 @@ canonical UI reconciliation, leaving pending2D/pool0/stakers0 before admission. 
 Independent receipt checks accepted both; C observer90 passed at the post-deposit checkpoint.
 Owner approval/separate on-chain registration passed39 checks with exactly one UI broadcast:
 `0x5a67239bb778dea7a9607b1a5240d1ca25b1b9fa8ccf8942e02afdd8f7333367`, block23735984.
-C is Open, stakers2/pending0/pool2D/attendance0/owed0. Independent post-admit observer93 passed.
-C heartbeat `finish-kleros-ui-testnet-flow-c` is ACTIVE29October04:50Bangkok; it owns C only and
-reschedules the SAME job after the actual posted challenge deadline, preserving A/B00:20.
+At the admitted checkpoint C was Open, stakers2/pending0/pool2D/attendance0/owed0;
+independent observer93 passed. The newer matched checkpoint above supersedes that phase.
+C heartbeat `finish-kleros-ui-testnet-flow-c` first ran29October04:50Bangkok. It is now ACTIVE
+30October05:02Bangkok, rescheduled in place after the actual posted deadline, preserving A/B00:20.
 First admitted role audit passed3nonce logins/6desktop captures/zero financials; the final strengthened
 read-only audit0b62229 PASSED83auth/read requests,3nonce logins,6desktop captures,zero
 financial signatures/broadcasts and no failures. `artifacts/ui-c-status-admitted.json` binds its
