@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "contractVersion": "kleros-event-v10-uups",
+  "status": "draft-unpublished",
+  "policyPath": "docs/contracts/v10-luma-generic-policy.md",
+  "sha256": "525453aee59b7d3f48e96f6ad5ea6aa9807fc6cfef8a495f5f645e3e3ca231a4",
+  "bytes": 9906,
+  "uri": null,
+  "publicationApproved": false,
+  "governance": {
+    "kind": "single-owner-immediate",
+    "upgradeDelaySeconds": 0,
+    "renounceable": true
+  },
+  "preservesPublishedV9Policy": true
+}

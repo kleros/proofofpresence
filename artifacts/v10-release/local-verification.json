@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS-local-contract-candidate",
+  "contractVersion": "kleros-event-v10-uups",
+  "sourceBaseCommit": "09ac3a9134fc0cf04cd0179774154df5cfe08df4",
+  "sourceFiles": {
+    "contracts/v10/KlerosEventFactoryV10.sol": "157ea2b2fd7b74bd3d1639012645a0667f9a5de121b922431aa7f9ac72bfb025",
+    "contracts/v10/KlerosEventV10.sol": "b1e2b7573d7d863d806933404a218c4316a65c8e9f263866bc940fd43f31088d",
+    "contracts/v10/KlerosUpgradeControllerV10.sol": "e128cff31b51b67acf82c9123dbd6314cf6f8a083618f2eaee37ea4811a091fb",
+    "contracts/v10/KlerosUpgradeGateV10.sol": "c06b76141a0e8dd19573db99801702c98b6cd27ce7c64a6ba6469cfd18ef6bfe",
+    "scripts/compile-contracts-v10.mjs": "b95cecdfb0b53e7ad627b4f79964c9ac35a149869ed5a9ef243a1f7cb41a9382",
+    "scripts/mainnet/prepare-v10-release.mjs": "1a33eb9404f6a2c6068e88b153831bae91b89a07aebe4ff09689db1b115b4f4e",
+    "test/event-v10.test.mjs": "ea0097b27f6a03d93b80327302c49f2a42dcf1e1b5f2e2bbf72a691fa6a096a3",
+    "test/event-v10-security.test.mjs": "d9bdc25ec144d2c5f530036098210bac83179adbb9a82d629f2e640491eb254a",
+    "test/mainnet-v10-release.test.mjs": "652671b54e77779698a21f8a74a055d8975074b2d1d46a36e59914c93c1fa55c",
+    "docs/contracts/v10-luma-generic-policy.md": "525453aee59b7d3f48e96f6ad5ea6aa9807fc6cfef8a495f5f645e3e3ca231a4",
+    "docs/contracts/V10_IMMEDIATE_UPGRADES_HANDOFF.md": "4725e001b86eef39a7a1e4640f0b8733c562a9b1b6b4071fb50c2356ab71af97",
+    "package.json": "11a4db02843aa679f56d2044d8503d38c04a87dbccf22e9fc31e949a0a3705cf"
+  },
+  "build": {
+    "manifestFileSha256": "4cbb51a87de44d03a25a7bec310c3107ba2b9887985e087f80d04d4d7f118f79",
+    "standardInputFileSha256": "f66e17270fc7bb62027ed8b5d3fd4459e1b97f3f2df54e4b96621f2da5640094",
+    "profile": "kleros-event-v10-uups",
+    "compiledSourceCount": 19
+  },
+  "checks": [
+    {
+      "command": "node scripts/compile-contracts-v10.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "node --test --test-concurrency=1 test/event-v10.test.mjs",
+      "result": "PASS",
+      "tests": 5,
+      "durationSeconds": 13.05,
+      "operator": "implementation-agent"
+    },
+    {
+      "command": "node --test --test-concurrency=1 test/event-v10-security.test.mjs",
+      "result": "PASS",
+      "tests": 8,
+      "durationSeconds": 29.406,
+      "operator": "independent-security-agent"
+    },
+    {
+      "command": "node --test test/mainnet-v10-release.test.mjs",
+      "result": "PASS",
+      "tests": 7,
+      "durationSeconds": 7.906,
+      "operator": "release-planner-agent"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "PASS",
+      "operator": "root"
+    },
+    {
+      "command": "npm run build",
+      "result": "PASS",
+      "operator": "root"
+    },
+    {
+      "command": "node scripts/mainnet/prepare-v10-release.mjs",
+      "result": "PASS-offline-instructions",
+      "operator": "root"
+    }
+  ],
+  "focusedTestsPassed": 20,
+  "localSetupProof": "artifacts/v10-release/local-setup-measured-2026-10-29T16-07-19-937Z.json",
+  "localSetupProofSha256": "3a56bce25315ac1fe36cbcbccbc4663ba9e3753dac99e9baafe095a7df78a11f",
+  "unchangedV9PolicySha256": "24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308",
+  "publicNetworkRequests": 0,
+  "mainnetTransactions": 0,
+  "liveIntegrationVerified": false,
+  "policyPublished": false,
+  "limitations": [
+    "Local synthetic contract and deployment-bundle testing only; Court adjudication mocked.",
+    "No new V10 production app/browser integration or public Court flow claimed.",
+    "Local Shanghai gas is not a current Ethereum fork estimate or approved budget.",
+    "Immediate owner control must be trusted until reviewed finalization; metadata does not prove authorized replacement code safe."
+  ]
+}

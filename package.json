@@ -12,7 +12,7 @@
     "compile:v9": "node scripts/compile-contracts-v9.mjs",
     "stress:contracts": "npm run compile && npm run compile:v8 && node scripts/stress-contracts.mjs",
     "test:contracts:v8": "npm run compile && npm run compile:v8 && node --test --test-concurrency=1 test/event-v8.test.mjs test/event-factory.test.mjs test/event-v8-arbitration.test.mjs",
-    "build": "npm run compile && npm run compile:v8 && npm run compile:test15m && npm run compile:v9 && node scripts/build.mjs",
+    "build": "npm run compile && npm run compile:v8 && npm run compile:test15m && npm run compile:v9 && npm run compile:v10 && node scripts/build.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "demo": "node src/server.mjs",
     "build:netlify": "npm run build && node scripts/build-netlify-preview.mjs",
@@ -20,7 +20,7 @@
     "test:netlify": "node test/netlify-preview.e2e.mjs",
     "test:hosted": "node test/hosted-integration.e2e.mjs",
     "test:hosted:live": "node test/hosted-live.e2e.mjs",
-    "test": "npm run compile && npm run compile:v8 && npm run compile:test15m && npm run compile:v9 && node --test --test-concurrency=1 test/*.test.mjs",
+    "test": "npm run compile && npm run compile:v8 && npm run compile:test15m && npm run compile:v9 && npm run compile:v10 && node --test --test-concurrency=1 test/*.test.mjs",
     "test:contracts:v9": "npm run compile && npm run compile:v8 && npm run compile:v9 && node --test --test-concurrency=1 test/event-v9*.test.mjs",
     "test:contracts": "npm --prefix references/kickback test",
     "test:browser": "node test/app.e2e.mjs",
@@ -34,7 +34,9 @@
     "testnet:prepare": "node scripts/testnet-deploy.mjs --prepare",
     "testnet:deploy": "node scripts/testnet-deploy.mjs --deploy",
     "testnet:rehearse": "node scripts/testnet-rehearsal.mjs",
-    "compile:test15m": "node scripts/compile-contracts-test15m.mjs"
+    "compile:test15m": "node scripts/compile-contracts-test15m.mjs",
+    "compile:v10": "node scripts/compile-contracts-v10.mjs",
+    "test:contracts:v10": "npm run compile && npm run compile:v10 && node --test --test-concurrency=1 test/event-v10.test.mjs test/event-v10-security.test.mjs test/mainnet-v10-release.test.mjs"
   },
   "dependencies": {
     "@openzeppelin/contracts": "5.7.0",
