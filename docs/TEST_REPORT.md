@@ -1,3 +1,14 @@
+## Organizer504 and blank wallet feedback repair — 29 October2026
+
+LIVE source9cac8df/Netlify6ae34f33c420d0953a515606, backend4028e8c/Railway30d0d598-a118-46c3-b523-0f9858e7a8e6.
+70/70 final local job/client/HTTP tests, typecheck/static build,10 combined browsergroups,3 job-widget
+groups and8 date groups PASS. The single fake wallet send in widget tests is a stub, not a signature
+or broadcast. Full financial methods/sender unchanged. Published3exactassets +catalog200 +anonymous
+jobs401 verified; no authenticated productionjob/event was posted. HumanconfirmedbeforeMetaMask.
+Diagnosis29942ms/origin499; no unproven fixedplatformlimit claim. Full source pins/limitations and
+archivedharness prose correction: docs/ORGANIZER_SETUP_REPAIR.md and organizer-jobs-combined-checks.json.
+Current releasepointer: artifacts/mainnet-release/mainnet-portal-release.json.
+
 # Fast portal and date release verification — 29 October 2026
 
 LIVE frontendfec6211 / Netlify6ae3462bcb1e1d2301a97fb2; backend73fb2ff / Railway

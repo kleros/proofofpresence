@@ -3,40 +3,47 @@
   "publicOrigin": "https://kleros-luma-ethereum.netlify.app",
   "branch": "codex/core-application",
   "frontend": {
-    "sourceCommit": "fec62112aca1bb36cab08a02d823044646a73a6e",
-    "uiSource": "354e04562ada1e40e1f88cefcb82b70071670cd5",
-    "deployId": "6ae3462bcb1e1d2301a97fb2",
+    "sourceCommit": "9cac8df641ec0d3d8ac66531bfaa48936282e4f5",
+    "uiSource": "c36754918a2853158d3daf6f688d6557c98ae833",
+    "deployId": "6ae34f33c420d0953a515606",
     "siteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
     "context": "production",
-    "appSha256": "3b121b188de579b418b3b7df63c0764a190dbe46d14529570d93082b6c17769f",
+    "appSha256": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
     "searchHelperSha256": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
     "launchCssSha256": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
-    "loadingCssSha256": "5ac82bfa51a50bc954b9646a142a8340a44a068f6184f2ef02a6bc38c087feec",
+    "loadingCssSha256": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
     "indexSha256": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
-    "setupSha256": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6"
+    "setupSha256": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509"
   },
   "backend": {
-    "sourceCommit": "73fb2ff09c112b40873bc9571f1ea34fb2b6e37b",
-    "deploymentId": "3ca7a15d-c52f-447f-a40c-f8b4f8979384",
-    "imageDigest": "sha256:7c7a19bff2bf571ffc0e52dc000235618f32b26914deed3de13c7dc93da1caa4",
+    "sourceCommit": "4028e8c04b490507ddef2b2899ceadd0713ac1fe",
+    "deploymentId": "30d0d598-a118-46c3-b523-0f9858e7a8e6",
+    "imageDigest": null,
     "mode": "hosted-production",
     "chainId": 1,
     "serverSigning": false,
-    "restartedForCatalog": true,
-    "restartAuthorization": "Human explicitly answered Restart now"
+    "restartedForCatalog": false,
+    "restartAuthorization": "Human explicitly answered Restart now",
+    "imageDigestNote": "Current deployment identity and health verified; prior image digest is not reused.",
+    "restartedForOrganizerRepair": true
   },
   "acceptance": {
-    "proof": "artifacts/portal-performance-readonly/2026-10-29T13-13-43-310Z-catalog-a44a438d-fa3e-4b1a-8e72-d02544fcc150/proof.json",
-    "sha256": "fbfe0dad4927f55b8c14414df8ca2bfe0e36c0a0245a8ba52c2f9e4b981527a1",
-    "observedAt": "2026-10-29T13:13:47.640Z",
-    "loadedAssets": 26,
-    "apiRequests": 1,
-    "publicEventCount": 0,
-    "screenshots": 2,
-    "errors": [],
-    "searchAdditionalRequests": 0,
-    "performanceComparison": "artifacts/mainnet-release/portal-performance-comparison.json",
-    "homeUsableMs": 3358.900000035763
+    "kind": "public-static-and-anonymous-organizer-repair-readback",
+    "proof": "artifacts/mainnet-release/organizer-jobs-live-readback.json",
+    "sha256": "74d844f3fb984f66f814241a32dd27eb2ee5fb33196e9c64b8b0d4397ae664b8",
+    "observedAt": "2026-10-29T13:53:10.234Z",
+    "servedAssetsVerified": 3,
+    "apiGets": 2,
+    "authenticatedJobStarts": 0,
+    "actualWalletRequests": 0,
+    "financialActions": 0,
+    "publicEventCountAtReadback": 0,
+    "localCombinedBrowserGroups": 10,
+    "localJobWidgetGroups": 3,
+    "localDateGroups": 8,
+    "localUnitAndHttpTests": 70,
+    "priorPerformanceComparison": "artifacts/mainnet-release/portal-performance-comparison.json",
+    "humanAuthenticatedReviewRetestRequired": true
   },
   "infrastructure": {
     "factory": "0xEe049D03a007e150ec8ec46B066823043BAcf14E",
@@ -53,17 +60,16 @@
     "retiredRehearsalsResumed": false
   },
   "priorRelease": {
-    "frontendSource": "50a7e9f38795c1e62deeacc0f07ccd84bb7a1c55",
-    "netlifyDeployId": "6ae33baabb014155c2c1cac6",
-    "backendSource": "ae63380642173ebd92afbf76a97d827a3aaa06f3",
-    "railwayDeploymentId": "d112f94a-0027-41be-b9c4-99e81064f95a",
-    "proof": "artifacts/catalog-hosting-readonly/2026-10-29T12-29-32-093Z-e68b478e-7d01-4ab5-9d90-5040c8bd873a/proof.json"
+    "frontendSource": "fec62112aca1bb36cab08a02d823044646a73a6e",
+    "netlifyDeployId": "6ae3462bcb1e1d2301a97fb2",
+    "backendSource": "73fb2ff09c112b40873bc9571f1ea34fb2b6e37b",
+    "railwayDeploymentId": "3ca7a15d-c52f-447f-a40c-f8b4f8979384",
+    "proof": "artifacts/portal-performance-readonly/2026-10-29T13-13-43-310Z-catalog-a44a438d-fa3e-4b1a-8e72-d02544fcc150/proof.json"
   },
   "limits": [
-    "One controlled cold anonymous browser visit per version, not warm-cache/field/median/SLA.",
-    "After3.3589s remains slightly above a strict3s target; real measured improvement is7.013x, not a1-second claim.",
-    "Public event count0 is an observation; preserve subsequently created real events.",
-    "No selected-child latency or mainnet deposit/dispute/kickback/jury result was tested.",
-    "Opening an event, setup or wallet action retains full fresh verification."
+    "The authenticated human review must be retried by the human. No real event terms were posted and no independent wallet was impersonated.",
+    "Local70checks/10combinedbrowser/3job-widget/date8 provide orchestration evidence; not a mainnet-created event or economic outcome.",
+    "The prior7x homepage measurement belongs to the preceding release; do not present it as a fresh timing measurement of this repair.",
+    "User-authorized frontend/duplicate-RPC optimization is a separate next phase, with free plans and every transaction check preserved."
   ]
 }

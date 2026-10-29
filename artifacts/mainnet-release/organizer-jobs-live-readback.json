@@ -1,0 +1,51 @@
+{
+  "status": "passed",
+  "kind": "public-static-and-anonymous-organizer-repair-readback",
+  "checkedAt": "2026-10-29T13:53:10.234Z",
+  "sourceCommit": "9cac8df641ec0d3d8ac66531bfaa48936282e4f5",
+  "siteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
+  "deployId": "6ae34f33c420d0953a515606",
+  "publishedDeployId": "6ae34f33c420d0953a515606",
+  "context": "production",
+  "state": "ready",
+  "checks": [
+    {
+      "path": "/app.js",
+      "httpStatus": 200,
+      "sha256": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
+      "matches": true
+    },
+    {
+      "path": "/loading.css",
+      "httpStatus": 200,
+      "sha256": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+      "matches": true
+    },
+    {
+      "path": "/luma-setup.js",
+      "httpStatus": 200,
+      "sha256": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509",
+      "matches": true
+    },
+    {
+      "path": "/api/public-catalog",
+      "httpStatus": 200,
+      "publicEventCount": 0,
+      "metadataOnly": true
+    },
+    {
+      "path": "/api/organizer/events/jobs/anonymous-release-check",
+      "httpStatus": 401,
+      "code": "UNAUTHENTICATED",
+      "noSetCookie": true
+    }
+  ],
+  "jobStarts": 0,
+  "actualWalletRequests": 0,
+  "financialActions": 0,
+  "forcedReload": false,
+  "limits": [
+    "The authenticated human review must be retried by the human. No real event terms were posted and no independent wallet was impersonated.",
+    "Local70checks/10combinedbrowser/3job-widget/date8 provide orchestration evidence; not a mainnet-created event or economic outcome."
+  ]
+}
