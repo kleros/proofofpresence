@@ -275,6 +275,13 @@ export async function verifyUiDFactory({ provider, plan, artifacts, journal }) {
 }
 
 /** Only a fully verified four-receipt setup earns the narrower child-only resume margin. */
+export function assertDDeploymentLead(now, eventStart, completeSetup) {
+  const minimumLeadSeconds = completeSetup ? 20 * 60 : 45 * 60;
+  check(Number.isSafeInteger(now) && Number.isSafeInteger(eventStart) && now + minimumLeadSeconds < eventStart,
+    completeSetup ? "D child-only resume needs more than20minutes remaining; no new child is permitted."
+      : "Fresh D setup needs more than45minutes remaining; no new grants are permitted.");
+  return minimumLeadSeconds;
+}
 export async function deploymentDLead({ provider, plan, artifacts, journal, funderAddress, childOnly = false }) {
   const createAction = `create-${plan.event.id}`, existing = journal.transactions[createAction];
   if (existing) {
@@ -301,10 +308,7 @@ export async function deploymentDLead({ provider, plan, artifacts, journal, fund
       same(await anchor.factory.eventFor(plan.addresses.owner, plan.event.eventKey), ethers.ZeroAddress),
       "D child-only resume requires owner pending nonce1 and an unused exact factory event key.");
   } else check(!childOnly, "An unseen D child cannot be signed before all four setup receipts are canonical.");
-  const minimumLeadSeconds = completeSetup ? 30 * 60 : 45 * 60;
-  check((await provider.getBlock("latest")).timestamp + minimumLeadSeconds < plan.event.eventStart,
-    completeSetup ? "D child-only resume needs more than30minutes remaining; no new child is permitted."
-      : "Fresh D setup needs more than45minutes remaining; no new grants are permitted.");
+  const minimumLeadSeconds = assertDDeploymentLead((await provider.getBlock("latest")).timestamp, plan.event.eventStart, completeSetup);
   return { mode: completeSetup ? "verified-child-only" : "fresh-setup", minimumLeadSeconds };
 }
 
@@ -333,6 +337,8 @@ export function boundedDSigner(signer, { provider, plan, journal, action, reques
     getAddress: () => signer.getAddress(),
     populateTransaction: (tx) => signer.populateTransaction(tx),
     signTransaction: async (tx) => {
+      check(!Object.entries(journal.transactions).some(([name, entry]) => name.startsWith("create-") && entry),
+        "Any existing D child entry permits receipt inspection only; all signing is forbidden; key not used.");
       const address = await signer.getAddress(), fee = BigInt(tx.maxFeePerGas ?? tx.gasPrice ?? 0),
         gas = BigInt(tx.gasLimit ?? 0), ceiling = BigInt(plan.deploymentBudget.maxFeePerGas),
         funding = action.startsWith("fund-d-"), factory = action === "deploy-d-factory";
@@ -403,14 +409,14 @@ export async function deployUiD({ plan, source, protectedC, stack, provider, art
     assertProtectedDUnchanged(before, await protectedDContext(source, protectedC, provider, legacyArtifacts));
     return receipt;
   };
-  if (lead.mode !== "verified-child-only")
+  if (lead.mode === "fresh-setup")
     for (const role of ROLES) await perform(`fund-d-${role}`, funder,
       { to: plan.addresses[role], value: BigInt(plan.fundingWei), gasLimit: 21000n });
   const owner = new ethers.Wallet(wallets.roles.owner.privateKey, provider);
   if (!journal.transactions["deploy-d-factory"])
     check((await provider.getTransactionCount(owner.address, "pending")) === 0 &&
       (await provider.getCode(plan.factory)) === "0x", "D factory owner nonce or predicted address is already occupied.");
-  if (lead.mode !== "verified-child-only")
+  if (lead.mode === "fresh-setup")
     await perform("deploy-d-factory", owner, { data: factoryArtifact.bytecode, value: 0n,
       gasLimit: UI_D.maximumFactoryGas });
   const factoryAnchor = await verifyUiDFactory({ provider, plan, artifacts, journal });

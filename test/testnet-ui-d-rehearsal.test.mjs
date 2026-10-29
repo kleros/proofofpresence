@@ -87,7 +87,7 @@ test("local10200 D deploys its own factory once and verifies900s held-share/ruli
     const selected = verifyCompiledInputs(ROOT, UI_D.contractVersion), legacy = verifyCompiledInputs(ROOT);
     await (await chain.liquid.setFeeForJuror(10_000_000_000n)).wait();
     const factory = await chain.deploy("KlerosEventFactoryV8", chain.signers[0]);
-    const initial = (await chain.provider.getBlock("latest")).timestamp, legacyStart = initial + 1800;
+    const initial = (await chain.provider.getBlock("latest")).timestamp, legacyStart = initial + 6000;
     const records = [];
     for (const [index, name] of ["a", "b", "c"].entries()) {
       const definition = { id: `protected-${name}`, title: `Protected ${name}`, location: "Synthetic local venue",
@@ -129,13 +129,45 @@ test("local10200 D deploys its own factory once and verifies900s held-share/ruli
       legacyArtifacts: legacy.artifacts, wallets, funder, budgetApproval: uiDBudgetApproval(plan), policyText, journalPath, manifestPath };
     const baseline = await protectedDContext(source, protectedC, chain.provider, legacy.artifacts);
     await assert.rejects(deployUiD({ ...inputs, budgetApproval: "0".repeat(64) }), /approve.*budget/);
-    const result = await deployUiD(inputs), manifest = result.manifest, record = manifest.events[0];
+    const clockProvider = timestamp => new Proxy(chain.provider, { get(target, property) {
+      if (property === "getBlock") return async tag => { const block = await target.getBlock(tag);
+        return tag === "latest" ? { ...block, timestamp } : block; };
+      const value = Reflect.get(target, property); return typeof value === "function" ? value.bind(target) : value;
+    } });
+    let blockedSends = 0;
+    await assert.rejects(deployUiD({ ...inputs, provider: clockProvider(plan.event.eventStart - 35 * 60),
+      send: async () => { blockedSends++; throw Error("unexpected grant"); } }), /45minutes/);
+    assert.equal(blockedSends, 0); assert.equal(fs.existsSync(journalPath), false);
+    await assert.rejects(deployUiD({ ...inputs, send: async options => {
+      if (options.action === `create-${plan.event.id}`) throw Error("fixture pause after four confirmed setup receipts");
+      return sendOnce(options);
+    } }), /fixture pause/);
+    const four = loadJournal(journalPath, plan);
+    assert.equal(Object.keys(four.transactions).length, 4);
+    assert.ok(Object.values(four.transactions).every(e => e.state === "confirmed"));
+    const funderNonce = await chain.provider.getTransactionCount(funder.address);
+    await chain.provider.send("evm_increaseTime", [plan.event.eventStart - 25 * 60 - (await chain.provider.getBlock("latest")).timestamp]);
+    await chain.provider.send("evm_mine", []);
+    await assert.rejects(deployUiD({ ...inputs, provider: clockProvider(plan.event.eventStart - 20 * 60),
+      send: async () => { blockedSends++; throw Error("unexpected child"); } }), /20minutes/);
+    assert.equal(blockedSends, 0);
+    assert.equal(Object.keys(loadJournal(journalPath, plan).transactions).length, 4);
+    const resumedActions = [];
+    const result = await deployUiD({ ...inputs, send: async options => {
+      resumedActions.push(options.action); return sendOnce(options);
+    } }), manifest = result.manifest, record = manifest.events[0];
+    assert.deepEqual(resumedActions, [`create-${plan.event.id}`]);
+    assert.equal(await chain.provider.getTransactionCount(funder.address), funderNonce);
     const journal = loadJournal(journalPath, plan);
     assert.equal(Object.keys(journal.transactions).length, 5);
     assert.ok(Object.values(journal.transactions).every(e => e.state === "confirmed"));
     assertUiDDeployment(record, plan, journal, uiDCreateRequest(plan, selected.artifacts), selected.artifacts);
     const beforeNonces = await Promise.all([funder.address, plan.addresses.owner].map(a => chain.provider.getTransactionCount(a)));
-    await deployUiD(inputs);
+    const recoveryActions = [];
+    await deployUiD({ ...inputs, provider: clockProvider(plan.event.eventStart + 1), send: async options => {
+      recoveryActions.push(options.action); return sendOnce(options);
+    } });
+    assert.deepEqual(recoveryActions, [`create-${plan.event.id}`]);
     assert.deepEqual(await Promise.all([funder.address, plan.addresses.owner].map(a => chain.provider.getTransactionCount(a))), beforeNonces);
     const event = new ethers.Contract(record.deployment.contract, selected.artifacts[UI_D.eventArtifact].abi, chain.provider);
     assert.equal(await event.VERSION(), 80015n); assert.equal(await event.CHALLENGE_PERIOD(), 900n); assert.equal(await event.MATCH_PERIOD(), 900n);

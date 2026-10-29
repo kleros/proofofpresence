@@ -6,7 +6,7 @@ import path from "node:path";
 import { ethers } from "ethers";
 import { UI_D, prepareUiDPlan, validateUiDPlan, validateUiDOrigin, validateUiDBudget,
   uiDBudgetApproval, assertUiDArtifacts, boundedDSigner, assertProtectedDUnchanged,
-  preparationFeeCeiling, deployUiD, main } from "../scripts/testnet-ui-d-scenario.mjs";
+  preparationFeeCeiling, assertDDeploymentLead, deployUiD, main } from "../scripts/testnet-ui-d-scenario.mjs";
 import { sendOnce, fingerprint } from "../src/testnet-config.mjs";
 import { dFixture, copy, addr } from "./testnet-ui-d-fixture.mjs";
 
@@ -41,6 +41,10 @@ test("D profile is isolated from A/B+C, pins80015/900s and preserves a hosting/d
   }
   for (const startInMinutes of [0, 59, 241, NaN]) assert.throws(() => prepareUiDPlan({ ...f, startInMinutes }));
   for (const startInMinutes of [60, 240]) assert.doesNotThrow(() => prepareUiDPlan({ ...f, startInMinutes }));
+  assert.equal(assertDDeploymentLead(10000 - 1201, 10000, true), 1200);
+  for (const now of [10000 - 1200, 10000 - 1199, 10000])
+    assert.throws(() => assertDDeploymentLead(now, 10000, true), /20minutes/);
+  assert.throws(() => assertDDeploymentLead(10000 - 2700, 10000, false), /45minutes/);
 });
 
 test("D factory+child provenance changes fail before funding or provider access", async () => {
@@ -97,5 +101,11 @@ test("D pre-sign guard stops a fee spike after quote/sendOnce fee refetch withou
     provider.getBalance = async () => 40_000_000_000_000n;
     await assert.rejects(guarded.signTransaction(tx), /protected A\/B\+C/);
     assert.equal(signed, 0);
+    journal.transactions[`create-${f.plan.event.id}`] = { state: "submission-uncertain", hash: ethers.id("known-child") };
+    for (const action of ["fund-d-owner", "deploy-d-factory", `create-${f.plan.event.id}`]) {
+      const recoveryGuard = boundedDSigner(signer, { provider, plan: f.plan, journal, action, request });
+      await assert.rejects(recoveryGuard.signTransaction(tx), /all signing is forbidden/);
+    }
+    assert.equal(signed, 0); assert.equal(broadcast, 0);
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 });
