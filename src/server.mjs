@@ -11,6 +11,7 @@ import { createWorkbench } from "./workbench.mjs";
 import { createDepositInbox } from "./deposit-inbox.mjs";
 import { productionErrorResponse } from "./production-errors.mjs";
 import { createOrganizerJobService } from "./organizer-jobs.mjs";
+import { V10_WALLET_CAPABILITIES } from "./v10-production-wallets.mjs";
 import {
   json,
   requireThat,
@@ -69,6 +70,7 @@ const staticPaths = new Set([
   "/loading.css",
   "/contract-inbox.js",
   "/contract-profiles.js",
+  "/v10-wallet-account.js",
   "/contract-inbox.css",
   "/batch-actions.js",
   "/batch-actions.css",
@@ -190,6 +192,7 @@ export async function startServer({
       testnet: external && !isProduction ? testnet : null,
       production: isProduction ? production : null,
       serverInstanceId: instanceId,
+      productionOrigin: isProduction ? publicUrl.origin : null,
     }),
     sessions = new Map(),
     nonces = new Map(),
@@ -200,8 +203,15 @@ export async function startServer({
     "Production runtime must be verified chain1 with no server signers", "WRONG_CHAIN", 409);
   const organizerFactory = production?.manifest?.factoryDeployment?.factory ??
     Reflect.get(w.chain, "factoryDeployment")?.factory;
+  const productionProfile = isProduction ? production?.manifest?.factoryDeployment?.contractVersion ??
+    production?.manifest?.events?.[0]?.deployment?.contractVersion ??
+    Reflect.get(w.chain, "manifest")?.factoryDeployment?.contractVersion ?? "kleros-event-v9-uups" : null;
+  requireThat(!isProduction || ["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(productionProfile),
+    "Choose one exact production contract profile", "DEPLOYMENT_MISMATCH", 409);
+  const v10Production = productionProfile === "kleros-event-v10-uups";
+  const originalCreationRecovery = isProduction && !v10Production;
   const organizerJobs = isProduction && ethers.isAddress(organizerFactory)
-    ? createOrganizerJobService({ instanceId, factory: organizerFactory,
+    ? createOrganizerJobService({ instanceId, factory: organizerFactory, contractVersion: productionProfile,
       isSessionCurrent: (session) => [...sessions.values()].some((entry) =>
         entry.session.id === session.id && entry.session.mode === "wallet" &&
         entry.session.wallet.toLowerCase() === session.wallet.toLowerCase() && entry.expiry > Date.now()),
@@ -537,6 +547,7 @@ export async function startServer({
                 supportedAccountTypes: ["eoa"], contractWallets: false,
                 erc1271: false, eip7702: false, reset: false, timeTravel: false,
                 mockRulings: false,
+                ...(v10Production ? { ...V10_WALLET_CAPABILITIES, casePublication: false, originalCreationRecovery: false } : {}),
               } : {}),
             }
           : hosted
@@ -648,7 +659,7 @@ export async function startServer({
       }
       if (p === "/api/recovery/auth/challenge" && req.method === "POST") {
         requireThat(
-          isProduction && typeof w.creationRecoveryScope === "function",
+          originalCreationRecovery && typeof w.creationRecoveryScope === "function",
           "Creation recovery is unavailable",
           "NOT_FOUND",
           404,
@@ -692,7 +703,7 @@ export async function startServer({
       }
       if (p === "/api/recovery/auth/verify" && req.method === "POST") {
         requireThat(
-          isProduction && typeof w.creationRecoveryScope === "function",
+          originalCreationRecovery && typeof w.creationRecoveryScope === "function",
           "Creation recovery is unavailable",
           "NOT_FOUND",
           404,
@@ -755,7 +766,7 @@ export async function startServer({
       }
       if (p === "/api/recovery/original-creation" && req.method === "GET") {
         requireThat(
-          isProduction && typeof w.inspectCreationRecovery === "function",
+          originalCreationRecovery && typeof w.inspectCreationRecovery === "function",
           "Creation recovery is unavailable",
           "NOT_FOUND",
           404,

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "discover-desktop",
+    "source": "discover-desktop.html",
+    "artboardWidth": 1440,
+    "previewHeight": 900,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  },
+  {
+    "name": "participant-confirmed-desktop",
+    "source": "participant-confirmed.html",
+    "artboardWidth": 1440,
+    "previewHeight": 1100,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  },
+  {
+    "name": "participant-deposit-desktop",
+    "source": "participant-deposit.html",
+    "artboardWidth": 1440,
+    "previewHeight": 1100,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  },
+  {
+    "name": "participant-confirmed-mobile",
+    "source": "participant-confirmed.html",
+    "artboardWidth": 400,
+    "previewHeight": 1100,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  },
+  {
+    "name": "organizer-payouts-desktop",
+    "source": "organizer-payouts.html",
+    "artboardWidth": 1440,
+    "previewHeight": 1000,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  },
+  {
+    "name": "organizer-import-desktop",
+    "source": "organizer-wrong-event.html",
+    "artboardWidth": 1440,
+    "previewHeight": 1100,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  },
+  {
+    "name": "case-open-desktop",
+    "source": "case-open.html",
+    "artboardWidth": 1440,
+    "previewHeight": 1100,
+    "pages": 1,
+    "evidence": "Static document render; not a browser screenshot; browser viewport QA pending"
+  }
+]

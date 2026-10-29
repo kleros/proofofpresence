@@ -1,0 +1,189 @@
+[
+  {
+    "name": "Events body on page",
+    "foreground": "#E6E1EE",
+    "background": "#17131F",
+    "ratio": 14.242014804646905,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Events muted on surface",
+    "foreground": "#A69FB5",
+    "background": "#201A2B",
+    "ratio": 6.629836610711493,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Events primary button",
+    "foreground": "#17131F",
+    "background": "#A78BFA",
+    "ratio": 6.713760587232279,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Events title on page",
+    "foreground": "#F2EEF7",
+    "background": "#17131F",
+    "ratio": 15.963876313333817,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Kickback guest primary button",
+    "foreground": "#FFFFFF",
+    "background": "#1F5FD6",
+    "ratio": 5.728075548849101,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Kickback console primary button SOURCE",
+    "foreground": "#FFFFFF",
+    "background": "#9747FF",
+    "ratio": 4.505319025662607,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Proposed control boundary on surface",
+    "foreground": "#81788F",
+    "background": "#201A2B",
+    "ratio": 4.032491475402179,
+    "AA_normal": false,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": false,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected success on surface",
+    "foreground": "#86D9B4",
+    "background": "#201A2B",
+    "ratio": 10.126440663769026,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected success on raised",
+    "foreground": "#86D9B4",
+    "background": "#2A2336",
+    "ratio": 9.049351049086598,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected warning on surface",
+    "foreground": "#F0C08A",
+    "background": "#201A2B",
+    "ratio": 10.13772447346825,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected warning on raised",
+    "foreground": "#F0C08A",
+    "background": "#2A2336",
+    "ratio": 9.059434666670484,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected danger on surface",
+    "foreground": "#FF8FA3",
+    "background": "#201A2B",
+    "ratio": 7.804992765943941,
+    "AA_normal": true,
+    "AAA_normal": true,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected danger on raised",
+    "foreground": "#FF8FA3",
+    "background": "#2A2336",
+    "ratio": 6.974821837184382,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected muted on surface",
+    "foreground": "#A69FB5",
+    "background": "#201A2B",
+    "ratio": 6.629836610711493,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected muted on raised",
+    "foreground": "#A69FB5",
+    "background": "#2A2336",
+    "ratio": 5.924660093360443,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected focus ring on page",
+    "foreground": "#A78BFA",
+    "background": "#17131F",
+    "ratio": 6.713760587232279,
+    "AA_normal": true,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": true,
+    "non_text_3to1": true
+  },
+  {
+    "name": "Selected control boundary on raised surface",
+    "foreground": "#81788F",
+    "background": "#2A2336",
+    "ratio": 3.6035792017154313,
+    "AA_normal": false,
+    "AAA_normal": false,
+    "AA_large": true,
+    "AAA_large": false,
+    "non_text_3to1": true
+  }
+]

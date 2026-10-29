@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "kind": "synthetic-loopback-date-widget",
+  "checks": [
+    "Asia/Bangkok:default-two-hours-and-day-month-year-leap-rollovers",
+    "Asia/Bangkok:partial-past-and-uncommitted-start-do-not-rewrite-end",
+    "Asia/Bangkok:manual-valid-invalid-and-partial-end-values-preserved",
+    "Asia/Bangkok:new-form-and-independent-mount-date-state-isolated",
+    "Asia/Bangkok:existing-utc-payload-and-interval-validation-preserved",
+    "Asia/Bangkok:dispose-removes-date-listeners-and-prevents-late-edits",
+    "America/New_York:dst-gap-and-repeated-hour-do-not-silently-change-instant",
+    "America/New_York:dispose-removes-date-listeners-and-prevents-late-edits"
+  ],
+  "forbidden": [],
+  "errors": [],
+  "logicalReviewRequests": 1,
+  "walletCalls": 0,
+  "sourceSha256": {
+    "public/luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    "test/luma-setup-dates.e2e.mjs": "7824672a7c37a9549657bf39aba3708bd28f409f12a321ac12711ce744d35067"
+  }
+}

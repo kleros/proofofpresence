@@ -1,0 +1,151 @@
+{
+  "status": "passed",
+  "checks": [
+    "Mounted V10 setup waits for account proof before consuming validation; expiry during its read prevents wallet marker/send",
+    "Mounted V10 setup rechecks context after account proof; revocation prevents wallet marker/send and retains foreign journals"
+  ],
+  "scenarios": [
+    {
+      "scenario": "validation-expiry",
+      "calls": [
+        "eth_accounts",
+        "eth_chainId",
+        "eth_chainId",
+        "eth_accounts",
+        "eth_getBlockByNumber",
+        "eth_getCode",
+        "eth_getBlockByNumber",
+        "eth_chainId",
+        "eth_accounts"
+      ],
+      "phases": [
+        "prepared"
+      ],
+      "requests": [
+        {
+          "url": "/api/organizer/events/jobs",
+          "operation": "prepare"
+        },
+        {
+          "url": "/api/organizer/events/jobs",
+          "operation": "validate"
+        }
+      ],
+      "foreignJournal": "original-financial-hash"
+    },
+    {
+      "scenario": "context-revoked",
+      "calls": [
+        "eth_accounts",
+        "eth_chainId",
+        "eth_chainId",
+        "eth_accounts",
+        "eth_getBlockByNumber",
+        "eth_getCode",
+        "eth_getBlockByNumber",
+        "eth_chainId",
+        "eth_accounts"
+      ],
+      "phases": [
+        "prepared"
+      ],
+      "requests": [
+        {
+          "url": "/api/organizer/events/jobs",
+          "operation": "prepare"
+        },
+        {
+          "url": "/api/organizer/events/jobs",
+          "operation": "validate"
+        }
+      ],
+      "foreignJournal": "original-financial-hash"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js"
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js"
+    },
+    {
+      "method": "GET",
+      "path": "/v10-wallet-account.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js"
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js"
+    },
+    {
+      "method": "GET",
+      "path": "/v10-wallet-account.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    }
+  ],
+  "forbidden": [],
+  "errors": [],
+  "sources": {
+    "public/app.js": "b7354d1a12f764b804dd8ea7d2b63e18d919cb16dca32c354ce3614a7a04cb04",
+    "public/luma-setup.js": "83481a6560c1c5ea1b6fbdc178a03254f21430ef67abe011de233f020817068b",
+    "public/environment.js": "39c52279367396d944b1ded077da55105a7d3d6f0604af4e31a98767d854f969",
+    "public/v10-wallet-account.js": "e158b18deb2daa4bda75ae3d912b580ead58874328774a7554059fd7ec46e903",
+    "test/v10-wallet-callers.e2e.mjs": "034bc4d6e9eb0c86456f7aab7b97182c98ca63d2043e89507088d7399ca1eafe"
+  },
+  "limits": [
+    "Actual mounted setup and frozen read-only helper, synthetic DTOs/provider only. No signature, send, backend API or canonical receipt proof."
+  ]
+}

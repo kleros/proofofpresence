@@ -5,6 +5,9 @@ import {
   V9_TESTNET_CONTRACT_VERSION,
   isVerifiedV9TestnetEvent,
   isVerifiedV9TestnetProfile,
+  V10_PRODUCTION_CONTRACT_VERSION,
+  isVerifiedV10ProductionEvent,
+  isVerifiedV10ProductionProfile,
 } from "./contract-profiles.js";
 
 // Presentation classification never grants transaction authority.
@@ -100,6 +103,41 @@ function verifiedUpgrade(upgrade) {
   );
 }
 
+// Immediate governance has no timelock queue. A source-verified renunciation is
+// valid, but must not be inferred from a zero owner without the finalization facts.
+export function isVerifiedV10Upgrade(upgrade, scope) {
+  const ownerAddress = (value) =>
+    typeof value === "string" && /^0x[0-9a-f]{40}$/i.test(value);
+  const zero = (value) => /^0x0{40}$/i.test(value);
+  return (
+    !!upgrade &&
+    typeof upgrade === "object" &&
+    !Array.isArray(upgrade) &&
+    ["event", "factory", "factory-proxy"].includes(scope) &&
+    upgrade.kind === "uups" &&
+    upgrade.verified === true &&
+    upgrade.version === 10 &&
+    upgrade.governanceKind === "single-owner-immediate" &&
+    address(upgrade.implementation) &&
+    hash(upgrade.implementationCodeHash) &&
+    address(upgrade.authority) &&
+    hash(upgrade.authorityCodeHash) &&
+    address(upgrade.initialOwner) &&
+    ownerAddress(upgrade.owner) &&
+    ownerAddress(upgrade.pendingOwner) &&
+    typeof upgrade.upgradesDisabled === "boolean" &&
+    upgrade.finalizationVerified === upgrade.upgradesDisabled &&
+    upgrade.finalizationScope === scope &&
+    upgrade.delaySeconds === 0 &&
+    ["pending", "pendingOperationCount", "executingOperationCount"].every(
+      (key) => !Object.hasOwn(upgrade, key),
+    ) &&
+    (upgrade.upgradesDisabled
+      ? zero(upgrade.owner) && zero(upgrade.pendingOwner)
+      : !zero(upgrade.owner))
+  );
+}
+
 // Read-only rendering and known-hash reconciliation do not request transaction readiness.
 const production = Object.freeze({
   mode: "hosted-production",
@@ -111,6 +149,12 @@ const production = Object.freeze({
   arbitration: "kleros-v1",
   verifyProfile: isVerifiedProductionProfile,
   verifyEvent: isVerifiedProductionEvent,
+});
+const productionV10 = Object.freeze({
+  ...production,
+  profile: V10_PRODUCTION_CONTRACT_VERSION,
+  verifyProfile: isVerifiedV10ProductionProfile,
+  verifyEvent: isVerifiedV10ProductionEvent,
 });
 const v9Testnet = Object.freeze({
   mode: "hosted-v9-testnet",
@@ -129,12 +173,35 @@ function v9ContextIssue(
   { requireTransactions = false, requireWallet = false },
   expected,
 ) {
+  const v10 = expected.profile === V10_PRODUCTION_CONTRACT_VERSION;
+  const family = v10 ? "V10" : "V9";
   if (bootstrap?.mode !== expected.mode)
-    return "The explicit verified V9 environment is required.";
+    return `The explicit verified ${family} environment is required.`;
   if (!text(bootstrap.instanceId)) return "The server instance is unavailable.";
   const env = bootstrap.environment,
     caps = bootstrap.capabilities,
     chain = bootstrap.chain;
+  // Only a separately released V10 server policy may advertise this complete
+  // account profile. Client acceptance never enables backend authorization.
+  const support = bootstrap.walletSupport;
+  const reviewedV10Accounts =
+    v10 &&
+    support?.type === "eoa-or-metamask-protected-self-v1.3" &&
+    support.eoa === true &&
+    support.eip7702 === true &&
+    support.erc1271 === false &&
+    support.accountPolicyVersion === "v10-metamask-self-v1.3-1" &&
+    caps?.production === true &&
+    caps.browserWallet === true &&
+    caps.walletTransactions === true &&
+    caps.serverSigning === false &&
+    caps.eip7702 === true &&
+    caps.erc1271 === false &&
+    caps.contractWallets === false &&
+    Array.isArray(caps.supportedAccountTypes) &&
+    caps.supportedAccountTypes.length === 2 &&
+    caps.supportedAccountTypes[0] === "eoa" &&
+    caps.supportedAccountTypes[1] === "metamask-protected-self-v1.3";
   if (
     env?.production !== expected.production ||
     env.network !== expected.network ||
@@ -149,11 +216,12 @@ function v9ContextIssue(
     return "A credential-free HTTPS RPC is required.";
   if (
     bootstrap.contractVersion !== expected.profile ||
+    (v10 && bootstrap.abiVersion !== expected.profile) ||
     (bootstrap.abiVersion !== undefined &&
       bootstrap.abiVersion !== expected.profile) ||
     !expected.verifyProfile(bootstrap.contractProfile)
   )
-    return "The verified V9 contract profile is unavailable.";
+    return `The verified ${family} contract profile is unavailable.`;
   if (
     caps?.production !== expected.production ||
     (expected.production ? caps.v9Testnet === true : caps.v9Testnet !== true) ||
@@ -162,20 +230,18 @@ function v9ContextIssue(
     caps.serverSigning !== false ||
     caps.financialInterface !== "kleros-native-v1" ||
     typeof caps.transactionsReady !== "boolean" ||
-    !Array.isArray(caps.supportedAccountTypes) ||
-    caps.supportedAccountTypes.length !== 1 ||
-    caps.supportedAccountTypes[0] !== "eoa" ||
-    [
-      "contractWallets",
-      "erc1271",
-      "eip7702",
-      "sharedDemo",
-      "reset",
-      "timeTravel",
-      "mockRulings",
-    ].some((key) => caps[key] !== false)
+    (!reviewedV10Accounts &&
+      (!Array.isArray(caps.supportedAccountTypes) ||
+        caps.supportedAccountTypes.length !== 1 ||
+        caps.supportedAccountTypes[0] !== "eoa" ||
+        caps.contractWallets !== false ||
+        caps.erc1271 !== false ||
+        caps.eip7702 !== false)) ||
+    ["sharedDemo", "reset", "timeTravel", "mockRulings"].some(
+      (key) => caps[key] !== false,
+    )
   )
-    return "The V9 environment capabilities are missing or unsupported.";
+    return `The ${family} environment capabilities are missing or unsupported.`;
   const court = bootstrap.arbitration;
   if (
     court?.mode !== expected.arbitration ||
@@ -186,20 +252,24 @@ function v9ContextIssue(
     !address(court.arbitrator)
   )
     return "Verified arbitration metadata is unavailable.";
-  const support = bootstrap.walletSupport;
   if (
-    support?.type !== "eoa-only" ||
-    support.eoa !== true ||
-    support.erc1271 !== false ||
-    support.eip7702 !== false ||
+    (!reviewedV10Accounts &&
+      (support?.type !== "eoa-only" ||
+        support.eoa !== true ||
+        support.erc1271 !== false ||
+        support.eip7702 !== false)) ||
     !text(support.notice)
   )
     return "The supported wallet types are unavailable.";
   const governance = bootstrap.governance;
   if (
-    governance?.kind !== "single-owner-timelock" ||
-    !address(governance.initialOwner) ||
-    governance.minimumDelaySeconds !== 172800 ||
+    !address(governance?.initialOwner) ||
+    (v10
+      ? governance.kind !== "single-owner-immediate" ||
+        governance.upgradeDelaySeconds !== 0 ||
+        governance.renounceable !== true
+      : governance.kind !== "single-owner-timelock" ||
+        governance.minimumDelaySeconds !== 172800) ||
     ["label", "notice"].some(
       (key) => governance[key] !== undefined && !text(governance[key]),
     )
@@ -212,7 +282,7 @@ function v9ContextIssue(
       !text(event.id) ||
       !address(event.contract)
     )
-      return "The event does not have the verified V9 contract profile.";
+      return `The event does not have the verified ${family} contract profile.`;
     for (const key of ["resolver", "arbitrator"])
       if (
         event[key] !== undefined &&
@@ -222,7 +292,13 @@ function v9ContextIssue(
         return "The event arbitration addresses differ from the verified configuration.";
     if (detail.deploymentTrust?.status !== "verified")
       return "The event deployment is unavailable or has changed. Refresh its verified state.";
-    if (!verifiedUpgrade(detail.upgrade))
+    if (
+      v10
+        ? !isVerifiedV10Upgrade(detail.upgrade, "event") ||
+          detail.upgrade.initialOwner.toLowerCase() !==
+            governance.initialOwner.toLowerCase()
+        : !verifiedUpgrade(detail.upgrade)
+    )
       return "The event upgrade governance verification is incomplete or unavailable.";
   }
   if (
@@ -241,7 +317,15 @@ export const productionContextIssue = (
   bootstrap,
   detail = null,
   options = {},
-) => v9ContextIssue(bootstrap, detail, options, production);
+) =>
+  v9ContextIssue(
+    bootstrap,
+    detail,
+    options,
+    bootstrap?.contractVersion === V10_PRODUCTION_CONTRACT_VERSION
+      ? productionV10
+      : production,
+  );
 export const v9TestnetContextIssue = (bootstrap, detail = null, options = {}) =>
   v9ContextIssue(bootstrap, detail, options, v9Testnet);
 

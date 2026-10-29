@@ -16,11 +16,17 @@ import { projectPayments } from "./payments.mjs";
 import { v8DepositCredits } from "./v8-deposits.mjs";
 import { testnetChain, testnetStateStore } from "./testnet-runtime.mjs";
 import { mainnetChain, mainnetStateStore } from "./mainnet-runtime.mjs";
+import { v10MainnetChain, v10MainnetStateStore } from "./v10-mainnet-runtime.mjs";
 import { assertProductionEOAWallet } from "./production-wallets.mjs";
 import { IMPLEMENTATION_SLOT, verifyV9FactoryDeployment } from "./upgrade-verification.mjs";
 import { createFactoryOnboardingService } from "./factory-onboarding.mjs";
+import { createV10FactoryOnboardingService } from "./v10-factory-onboarding.mjs";
+import { createV10ReceiptContext } from "./v10-receipt-context.mjs";
+import { V10_WALLET_SUPPORT } from "./v10-production-wallets.mjs";
+import { verifyV10FactoryDeployment } from "./v10-upgrade-verification.mjs";
 import { createFactoryCreationRecovery } from "./creation-recovery.mjs";
 import { eventV9LumaTemplate, V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
+import { eventV10LumaTemplate, V10_LUMA_ATTENDANCE_STANDARD } from "./contracts-v10-luma.mjs";
 import { createProductionCasePublicationService } from "./production-case-publication.mjs";
 import { createFactoryRefresh } from "./shared-factory-refresh.mjs";
 import { publicCatalogSnapshot } from "./public-catalog.mjs";
@@ -70,7 +76,8 @@ export async function createWorkbench({
   testnet = null,
   production = null,
   serverInstanceId = id(),
-} = {}, { productionRuntime = mainnetChain, productionStore = mainnetStateStore } = {}) {
+  productionOrigin = null,
+} = {}, { productionRuntime = null, productionStore = null, assertWallet: trustedAssertWallet = null } = {}) {
   requireThat(
     contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
     "Unsupported contract version",
@@ -78,7 +85,17 @@ export async function createWorkbench({
   requireThat(!(testnet && production), "Choose one external environment");
   const external = !!(testnet || production);
   const externalConfig = production || testnet;
-  const activeContractVersion = production ? "kleros-event-v9-uups"
+  const productionProfile = production ? production.manifest?.factoryDeployment?.contractVersion ??
+    production.manifest?.events?.[0]?.deployment?.contractVersion : null;
+  requireThat(!production || ["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(productionProfile),
+    "Choose one exact reviewed production profile", "DEPLOYMENT_MISMATCH", 409);
+  requireThat(trustedAssertWallet === null || typeof trustedAssertWallet === "function",
+    "Wallet policy must be a trusted server dependency", "INVALID_INPUT", 400);
+  const productionV10 = productionProfile === "kleros-event-v10-uups";
+  const productionFactoryVerifier = productionV10 ? verifyV10FactoryDeployment : verifyV9FactoryDeployment;
+  const attendanceTemplate = productionV10 ? eventV10LumaTemplate : eventV9LumaTemplate;
+  const attendanceStandard = productionV10 ? V10_LUMA_ATTENDANCE_STANDARD : V9_LUMA_ATTENDANCE_STANDARD;
+  const activeContractVersion = production ? productionProfile
     : external ? externalConfig.manifest.events[0].deployment.contractVersion : contractVersion;
   requireThat(external || !eventV8Profile(contractVersion)?.upgradeable,
     "Upgradeable production events require an explicit reviewed production manifest");
@@ -86,24 +103,35 @@ export async function createWorkbench({
     ? (externalConfig.manifest?.chain?.nativeCurrency?.symbol ?? "native token")
     : "ETH";
   const chain = production
-    ? await productionRuntime(production.manifest, production.rpcUrl)
+    ? await (productionRuntime ?? (productionV10 ? v10MainnetChain : mainnetChain))(production.manifest, production.rpcUrl)
     : external
     ? await testnetChain(externalConfig.manifest, testnet.rpcUrl)
     : await localChain(rpcPort);
   const store = production
-    ? productionStore(production.stateFile, production.manifest)
+    ? (productionStore ?? (productionV10 ? v10MainnetStateStore : mainnetStateStore))(production.stateFile, production.manifest)
     : external
     ? testnetStateStore(testnet.stateFile, externalConfig.manifest)
     : null;
   const factoryDeployment = production ? production.manifest.factoryDeployment ?? Reflect.get(chain, "factoryDeployment") : null;
   // Overlapping public bootstrap requests share one complete factory read. There
   // is no TTL or saved-result shortcut; financial draft checks remain separate.
-  const refreshFactory = createFactoryRefresh(chain, factoryDeployment, verifyV9FactoryDeployment);
-  async function assertWallet(wallet) {
+  const refreshFactory = createFactoryRefresh(chain, factoryDeployment, productionFactoryVerifier);
+  async function assertWallet(wallet, observation = null) {
     if (!production) return null;
     requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,
       "Production RPC chain changed", "WRONG_CHAIN", 409);
-    const result = await assertProductionEOAWallet(chain.provider, wallet);
+    let result;
+    if (trustedAssertWallet) result = await trustedAssertWallet(wallet, observation);
+    else if (productionV10) result = await v10Receipts.assertWallet(wallet, observation);
+    else {
+      result = await assertProductionEOAWallet(chain.provider, wallet);
+      if (productionV10) result = { ...result, codeHash: ethers.keccak256("0x"), financialEligible: true, accountType: "eoa" };
+    }
+    if (productionV10) requireThat(result && Object.keys(result).length === 6 && lower(result.wallet) === lower(wallet) &&
+      Number.isSafeInteger(result.blockNumber) && result.blockNumber >= 0 && ethers.isHexString(result.blockHash, 32) &&
+      ethers.isHexString(result.codeHash, 32) && result.financialEligible === true &&
+      ["eoa", "metamask-protected-self-v1.3"].includes(result.accountType),
+      "The V10 wallet has no verified financial account policy", "UNSUPPORTED_WALLET", 422);
     requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,
       "Production RPC chain changed", "WRONG_CHAIN", 409);
     return result;
@@ -141,9 +169,11 @@ export async function createWorkbench({
       environment: { production: true, network: "ethereum-mainnet", chainId: 1 },
       arbitration: { ...production.manifest.arbitration, verified: true,
         label: "Kleros V1 · Ethereum", notice: "Real Kleros arbitration on Ethereum mainnet" },
-      walletSupport: { type: "eoa-only", eoa: true, erc1271: false, eip7702: false,
+      walletSupport: productionV10 ? { ...V10_WALLET_SUPPORT,
+        notice: "Use a standard Ethereum account or the source-verified MetaMask v1.3 protected-self account. Other contract and delegated accounts are unsupported." } : { type: "eoa-only", eoa: true, erc1271: false, eip7702: false,
         notice: "Use a standard wallet account. Smart contract and delegated accounts are not supported." },
-      contractProfile: { ...eventV8Profile("kleros-event-v9-uups"), verified: true },
+      contractProfile: { ...eventV8Profile(activeContractVersion), verified: true },
+      ...(productionV10 ? { abiVersion: activeContractVersion } : {}),
       governance: { ...production.manifest.governance },
       ...(factoryDeployment ? {
         factory: { chainId: 1, address: factoryDeployment.factory, contractVersion: activeContractVersion,
@@ -153,9 +183,10 @@ export async function createWorkbench({
         organizerSetup: { policyURI: factoryDeployment.policy?.uri ?? null,
           policySha256: factoryDeployment.policy?.sha256 ?? null,
           policyStatus: factoryDeployment.policyStatus === "published" && factoryDeployment.policy?.uri ? "verified" : "unpublished",
-          attendanceStandard: { ...V9_LUMA_ATTENDANCE_STANDARD },
+          attendanceStandard: { ...attendanceStandard },
           challengeWindowSeconds: 86400, matchWindowSeconds: 86400, minimumClaimDays: 7 },
       } : {}),
+      ...(productionV10 ? { features: { casePublication: false, originalCreationRecovery: false } } : {}),
       // Only a wallet's own saved reviews reveal these minimal identities.
       // They authorize receipt lookup, never a fresh financial action.
       recoveryEvents: s?.wallet ? [...new Set([...drafts.values()]
@@ -502,12 +533,17 @@ export async function createWorkbench({
       for (const [key, value] of saved.drafts) drafts.set(key, value);
     }
   }
-  const factoryService = factoryDeployment ? createFactoryOnboardingService(/** @type {any} */ ({
+  const v10Receipts = productionV10 ? createV10ReceiptContext({
+    chain, origin: productionOrigin, instanceId: serverInstanceId, drafts,
+  }) : null;
+  if (v10Receipts) Reflect.set(chain, "assertTransactionIntent", v10Receipts.assertTransactionIntent);
+  const factoryService = factoryDeployment ? (productionV10 ? createV10FactoryOnboardingService : createFactoryOnboardingService)(/** @type {any} */ ({
     chain, factoryDeployment, events, drafts, store, instanceId: serverInstanceId, assertWallet,
-    verifyFactory: (context, deployment) => verifyV9FactoryDeployment(context, deployment),
+    ...(productionV10 ? { origin: productionOrigin, receiptContext: v10Receipts } : {}),
+    verifyFactory: (context, deployment) => productionFactoryVerifier(context, deployment),
   })) : null;
   // Factual recovery has no onboarding or financial authority.
-  const creationRecovery = production && factoryDeployment
+  const creationRecovery = production && !productionV10 && factoryDeployment
     ? createFactoryCreationRecovery({ chain, factoryDeployment, drafts, instanceId: serverInstanceId })
     : null;
   function onboarding() {
@@ -518,12 +554,12 @@ export async function createWorkbench({
     const st = knownState ?? (await chainState(chain, r));
     let immutableLuma = {};
     if (production && r.dynamic === true) {
-      const template = eventV9LumaTemplate({ eventName: r.deployment.eventName, depositAmount: r.deployment.depositWei,
+      const template = attendanceTemplate({ eventName: r.deployment.eventName, depositAmount: r.deployment.depositWei,
         policyURI: r.deployment.policyURI, policySha256: hash(r.policy), lumaUrl: r.definition.lumaUrl,
         startsAt: r.definition.startsAt, endsAt: r.definition.endsAt, timezone: r.definition.timezone });
       requireThat(hash([template.pieces, template.slots]) === r.deployment.templateHash,
         "The Luma destination or event terms differ from the verified contract", "IMMUTABLE_EVENT_TERMS", 409);
-      immutableLuma = { attendanceStandard: { ...V9_LUMA_ATTENDANCE_STANDARD },
+      immutableLuma = { attendanceStandard: { ...attendanceStandard },
         immutableTerms: { lumaUrl: r.definition.lumaUrl, startsAt: r.definition.startsAt, endsAt: r.definition.endsAt,
           timezone: r.definition.timezone, policySha256: hash(r.policy) } };
     }
@@ -997,7 +1033,8 @@ export async function createWorkbench({
       event,
       state: stateDTO,
       payments: await projectPayments(chain, r, { blockTag: st.blockNumber }),
-      ...(production ? { deploymentTrust: st.deploymentTrust, upgrade: st.upgrade } : {}),
+      ...(production ? { deploymentTrust: st.deploymentTrust, upgrade: st.upgrade,
+        ...(productionV10 ? { features: { casePublication: false, originalCreationRecovery: false } } : {}) } : {}),
       ownWallet,
       participants,
       deposits,
@@ -1266,7 +1303,7 @@ export async function createWorkbench({
     );
     const log = logs[0];
     requireThat(
-      production && d.contractVersion === "kleros-event-v9-uups"
+      production && ["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(d.contractVersion)
         ? log.parsed.args.amount > 0n
         : log.parsed.args.amount >= BigInt(d.depositWei),
       "Deposit amount is too small",
@@ -1286,7 +1323,7 @@ export async function createWorkbench({
       const aggregatePending = person?.lots.reduce((sum, item) => sum + item.pending, 0n) ?? 0n;
       requireThat(
         lot &&
-          ((production && d.contractVersion === "kleros-event-v9-uups"
+          ((production && ["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(d.contractVersion)
             ? lot.pending > 0n && aggregatePending >= BigInt(d.depositWei)
             : lot.pending >= BigInt(d.depositWei)) ||
             (lot.committed > 0n && committed === BigInt(d.depositWei))),
@@ -1875,8 +1912,13 @@ export async function createWorkbench({
       registryHash: hash(r.deployment),
       transaction: JSON.parse(json(tx)),
       used: false,
+      ...(productionV10 ? { scopeKind: "event-call", mode: "hosted-production", instanceId: serverInstanceId, origin: productionOrigin } : {}),
     };
     drafts.set(draft.id, draft);
+    if (v10Receipts) {
+      try { v10Receipts.sealDraft(draft); await store?.save(events, drafts); }
+      catch (error) { drafts.delete(draft.id); throw error; }
+    }
     return { ...draft };
   }
   async function validateDraft(eventId, s, draftId) {
@@ -1899,6 +1941,11 @@ export async function createWorkbench({
       "STALE_DRAFT",
       409,
     );
+    if (v10Receipts) {
+      requireThat(d.instanceId === serverInstanceId && d.origin === productionOrigin,
+        "The V10 review belongs to another server instance", "STALE_DRAFT", 409);
+      v10Receipts.sealDraft(d);
+    }
     const st = await state(eventId);
     requireThat(
       d.registryHash === hash(r.deployment) &&
@@ -1980,6 +2027,46 @@ export async function createWorkbench({
       locks.delete(eventId);
     }
   }
+  async function retainV10Submission(r, d, txHash) {
+    requireThat(/^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""), "Invalid transaction hash");
+    v10Receipts.sealDraft(d);
+    requireThat(!d.submittedHash || lower(d.submittedHash) === lower(txHash),
+      "Another hash belongs to this review", "TX_MISMATCH", 409);
+    requireThat(!d.confirmedHash || lower(d.confirmedHash) === lower(txHash),
+      "Another confirmed hash belongs to this review", "TX_MISMATCH", 409);
+    requireThat(![...drafts.values()].some(other => other !== d &&
+      [other.submittedHash, other.confirmedHash].some(value => value && lower(value) === lower(txHash))),
+      "This hash belongs to another review", "DUPLICATE_TRANSACTION", 409);
+    let entry = r.transactions.find(t => lower(t.hash) === lower(txHash));
+    requireThat(!entry || entry.draftId === d.id, "Transaction hash is already recorded", "DUPLICATE_TRANSACTION", 409);
+    d.submittedHash = txHash;
+    if (!entry) {
+      entry = { hash: txHash, status: "pending", action: d.action, wallet: d.wallet,
+        eventId: d.eventId, draftId: d.id, chainId: d.chainId, contract: d.contract, submittedAt: Date.now() };
+      r.transactions.push(entry);
+    }
+    // The original hash and once fence reach durable storage before any RPC.
+    await store?.save(events, drafts);
+    return entry;
+  }
+  async function assertReviewedTransaction(d, tx, canonical) {
+    requireThat(tx && lower(tx.from) === lower(d.wallet) && Number(tx.chainId) === d.chainId,
+      "Transaction differs from the original reviewed wallet or chain", "TX_MISMATCH", 409);
+    if (v10Receipts) requireThat(lower(tx.hash) === lower(d.submittedHash ?? d.confirmedHash),
+      "Transaction differs from the original recorded hash", "TX_MISMATCH", 409);
+    const direct = lower(tx.to) === lower(d.transaction.to) && tx.data === d.transaction.data && String(tx.value) === d.valueWei;
+    if (v10Receipts && (Number(tx.type) === 4 || !direct))
+      return v10Receipts.inspectDraftTransaction(d, tx, { canonical });
+    requireThat(direct, "Transaction differs from the original reviewed terms", "TX_MISMATCH", 409);
+  }
+  function requireOriginalV10Hash(d, txHash) {
+    if (!v10Receipts) return;
+    requireThat(d.submittedHash || d.confirmedHash,
+      "The original wallet submission must be recorded first; the saved review is preserved",
+      "ORIGINAL_HASH_NOT_RECORDED", 409);
+    requireThat([d.submittedHash, d.confirmedHash].filter(Boolean).every(value => lower(value) === lower(txHash)),
+      "Another hash belongs to this review", "TX_MISMATCH", 409);
+  }
   async function confirmDraft(eventId, s, draftId, txHash) {
     // External wallets can only confirm the exact reviewed transaction, with a canonical successful receipt.
     authenticated(s);
@@ -1995,6 +2082,7 @@ export async function createWorkbench({
       "DRAFT_SCOPE",
       409,
     );
+    requireOriginalV10Hash(d, txHash);
     requireThat(
       d.expiresAt > Date.now() &&
         d.registryHash === hash(r.deployment) &&
@@ -2017,20 +2105,18 @@ export async function createWorkbench({
       "DUPLICATE_TRANSACTION",
       409,
     );
+    if (v10Receipts) await retainV10Submission(r, d, txHash);
     const tx = await chain.provider.getTransaction(txHash),
       receipt = await chain.provider.getTransactionReceipt(txHash);
     requireThat(
       tx &&
         receipt?.status === 1 &&
-        lower(tx.from) === lower(s.wallet) &&
-        lower(tx.to) === lower(d.transaction.to) &&
-        tx.data === d.transaction.data &&
-        String(tx.value) === d.valueWei &&
-        Number(tx.chainId) === d.chainId,
+        lower(tx.from) === lower(s.wallet),
       "Transaction does not match reviewed draft",
       "TX_MISMATCH",
       409,
     );
+    await assertReviewedTransaction(d, tx, true);
     requireThat(
       receipt.blockNumber > d.reviewBlock,
       "Transaction predates this review",
@@ -2089,18 +2175,11 @@ export async function createWorkbench({
       "SUBMITTED_DRAFT",
       409,
     );
+    const retained = v10Receipts ? await retainV10Submission(r, d, txHash) : null;
     const tx = await chain.provider.getTransaction(txHash);
     if (tx)
-      requireThat(
-        lower(tx.from) === lower(d.wallet) &&
-          lower(tx.to) === lower(d.transaction.to) &&
-          tx.data === d.transaction.data &&
-          String(tx.value) === d.valueWei &&
-          Number(tx.chainId) === d.chainId,
-        "Submitted transaction differs from the reviewed transaction",
-        "TX_MISMATCH",
-        409,
-      );
+      await assertReviewedTransaction(d, tx, Number.isSafeInteger(tx.blockNumber));
+    if (retained) return { ...retained };
     const existing = r.transactions.find(
       (t) => lower(t.hash) === lower(txHash),
     );
@@ -2170,6 +2249,7 @@ export async function createWorkbench({
       /^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""),
       "Invalid transaction hash",
     );
+    requireOriginalV10Hash(d, txHash);
     requireThat(
       d.registryHash === hash(r.deployment),
       "Deployment identity changed",
@@ -2188,21 +2268,13 @@ export async function createWorkbench({
       "DRAFT_SCOPE",
       409,
     );
+    const retained = v10Receipts ? await retainV10Submission(r, d, txHash) : null;
     const [tx, receipt] = await Promise.all([
       chain.provider.getTransaction(txHash),
       chain.provider.getTransactionReceipt(txHash),
     ]);
-    requireThat(
-      tx &&
-        lower(tx.from) === lower(s.wallet) &&
-        lower(tx.to) === lower(d.transaction.to) &&
-        tx.data === d.transaction.data &&
-        String(tx.value) === d.valueWei &&
-        Number(tx.chainId) === d.chainId,
-      "Transaction differs from the original reviewed terms",
-      "TX_MISMATCH",
-      409,
-    );
+    if (!tx && retained && !receipt) return { ...retained };
+    await assertReviewedTransaction(d, tx, !!receipt);
     let status = "pending";
     if (receipt) {
       requireThat(
@@ -2362,6 +2434,7 @@ export async function createWorkbench({
   }
   function caseContext(eventId, s, wallet, assertSession = () => {}) {
     requireThat(production, "Production case publication requires Ethereum V9", "FORBIDDEN", 403);
+    requireThat(!productionV10, "V10 case publication is not enabled", "NOT_FOUND", 404);
     requireThat(typeof wallet === "string" && ethers.isAddress(wallet), "Choose a challenged wallet");
     return { eventId, session: s, wallet: ethers.getAddress(wallet), assertSession };
   }
@@ -2430,7 +2503,7 @@ export async function createWorkbench({
       content: metadata[0], expectedURI: metadata[1],
     };
   }
-  const casePublications = production ? createProductionCasePublicationService({
+  const casePublications = production && !productionV10 ? createProductionCasePublicationService({
     readCase: readProductionCase,
     // Stored bytes stay internal until readCase refreshes authority. Cached or
     // empty access metadata must not reject a newly transferred private owner.
@@ -2489,9 +2562,9 @@ export async function createWorkbench({
     mockRuling,
     mockAppeal,
     publish,
-    caseArtifact: (eventId, s, wallet, assertSession) => casePublications.exportCase(caseContext(eventId, s, wallet, assertSession)),
-    publishCaseArtifact: (eventId, s, wallet, approval, assertSession) => casePublications.publishCase(caseContext(eventId, s, wallet, assertSession), approval),
-    verifyCaseArtifact: (eventId, s, wallet, assertSession) => casePublications.verifyCase(caseContext(eventId, s, wallet, assertSession)),
+    caseArtifact: (eventId, s, wallet, assertSession) => { const context = caseContext(eventId, s, wallet, assertSession); return casePublications.exportCase(context); },
+    publishCaseArtifact: (eventId, s, wallet, approval, assertSession) => { const context = caseContext(eventId, s, wallet, assertSession); return casePublications.publishCase(context, approval); },
+    verifyCaseArtifact: (eventId, s, wallet, assertSession) => { const context = caseContext(eventId, s, wallet, assertSession); return casePublications.verifyCase(context); },
     close: async () => {
       store?.save(events, drafts);
       await chain.close();

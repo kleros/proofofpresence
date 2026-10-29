@@ -1,0 +1,1650 @@
+{
+  "status": "passed",
+  "checks": [
+    "V9 current timelock, deposit-readiness and unsigned review remain available without a V10 governance notice",
+    "V10 active authority has a visible immediate custody warning before Confirm in its actual unsigned review, without V9 timelock claims",
+    "Only exact event-scoped verified renunciation is displayed; wrong/missing finalization blocks deposit review",
+    "V10 disabled case-publication and V9-only original-creation recovery entries stay hidden; V9 positive controls remain"
+  ],
+  "sourceSha256": {
+    "public/app.js": "c5220df0bba1ab8eb7c8cfab0b1aa558975eeb923f15c7e1ff97d34f94e56ca2",
+    "public/contract-profiles.js": "ce2f72b60a2b8e74c533cbd77d65415e8aad4011fe09bfd8ab600e59a4c6a8ec",
+    "public/environment.js": "9f6cea65c818eaed4084cd93d3831f6e03d2ac0b0c349d3656ff4a5527bcfe83",
+    "public/luma-factory.js": "296eb39cd8dfb4a6e1506246bc3fe39893adb0ac7c5e013f48f1cf5f6ef758f2",
+    "public/luma-setup.js": "ec776cf1a89898c592cdc8fce5b79eb618b87ef226c31f8a582a80b6b6462673"
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/luma-launch-synthetic-event/drafts",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/luma-launch-synthetic-event",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/luma-launch-synthetic-event/drafts",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/luma-launch-synthetic-event",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/luma-launch-synthetic-event/drafts",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/luma-launch-synthetic-event",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/app.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": ""
+    }
+  ],
+  "forbidden": [],
+  "external": [],
+  "errors": [],
+  "walletRequests": [],
+  "unsignedReviewPosts": 3,
+  "screenshots": [
+    "desktop-v10-active-review.png",
+    "mobile-v10-renounced-review.png"
+  ],
+  "limits": [
+    "Synthetic DTO projections and static UI only; no actual receipt, authentication, chain, financial execution or adoption proof.",
+    "EOA-only metadata remains required. No delegated financial eligibility is enabled or established.",
+    "Only a synthetic unsigned deposit-draft POST is permitted; Confirm, validation, submitted hashes and wallet execution are never requested.",
+    "Known-hash journals and canonical adoption are covered by separate unit/actual-local suites, not this unsigned-review harness."
+  ],
+  "harnessSha256": "98efaaab6ba11fe56c8a8dd3ef8dafc98c1d89b5d5813153cd7e31fa407d149d",
+  "completedAt": "2026-10-29T18:05:46.117Z"
+}

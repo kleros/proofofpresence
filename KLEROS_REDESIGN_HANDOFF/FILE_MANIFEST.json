@@ -1,0 +1,221 @@
+{
+  "preparedAt": "2026-10-28",
+  "purpose": "Continuation design handoff for the active Codex implementation",
+  "files": [
+    {
+      "path": "CODEX_DESIGN_FOLLOWUP.md",
+      "bytes": 8217,
+      "sha256": "6c48e26094a86242ff1a4037aa03c504fd926d8c5114652ceac4caaf9c65870e"
+    },
+    {
+      "path": "DESIGN_OPTIONS.html",
+      "bytes": 221489,
+      "sha256": "111b091369f4deabc3672e1493c18771ffee080d3f87e1557cf3a156ff52496c"
+    },
+    {
+      "path": "KLEROS_REDESIGN_PROTOTYPE.html",
+      "bytes": 198754,
+      "sha256": "4226756a46ba707fcfc63ed55b51b9a64add5bbe4e14ef8c6ffc81cedf8f6899"
+    },
+    {
+      "path": "KLEROS_REDESIGN_SUMMARY.pdf",
+      "bytes": 2733037,
+      "sha256": "cef0cad00a774ad477ca5271e8862061ece8eeca08cc769bd0377c67f10e3fe9"
+    },
+    {
+      "path": "PROJECT_BRAIN_DESIGN_ADDENDUM.md",
+      "bytes": 4868,
+      "sha256": "6c2e61c71e8227aa60487eac2ce9e0c9b50ace832dfa192ee5ca7fcb3eba7aff"
+    },
+    {
+      "path": "QA_REPORT.md",
+      "bytes": 7544,
+      "sha256": "5ceee24b6ca2075277e08e142582f00f2c27c4e6972fcfeeb91ee9ddfa162774"
+    },
+    {
+      "path": "REDESIGN_HANDOFF.md",
+      "bytes": 17279,
+      "sha256": "8ca937001907a47fba7308c17e115e14edcf8af4c4fb94318dae3c4d2ab1a213"
+    },
+    {
+      "path": "START_HERE.md",
+      "bytes": 2203,
+      "sha256": "59771b57e866a44b806b31e1a1c91fa699ab713244bd62391bd6414fc5629764"
+    },
+    {
+      "path": "assets/ASSET_PROVENANCE.md",
+      "bytes": 2111,
+      "sha256": "fe03990a05ef0350c12b6b904d3ca2eb27f43d4eaf228ea9c7e10399feaf8ee3"
+    },
+    {
+      "path": "assets/FONT_PROVENANCE.json",
+      "bytes": 977,
+      "sha256": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a"
+    },
+    {
+      "path": "assets/GEIST_MONO_OFL.txt",
+      "bytes": 4388,
+      "sha256": "6a873c900f584109b13ae0aaf81d6e3cf0a68751a216b03f7b6c68d547057bb4"
+    },
+    {
+      "path": "assets/GEIST_OFL.txt",
+      "bytes": 4388,
+      "sha256": "6a873c900f584109b13ae0aaf81d6e3cf0a68751a216b03f7b6c68d547057bb4"
+    },
+    {
+      "path": "assets/INSTRUMENT_SERIF_OFL.txt",
+      "bytes": 4406,
+      "sha256": "03a0d23feada968b189fe795a5bc9c90dfe1d6f8426d8fca078d4bc90cd53f30"
+    },
+    {
+      "path": "assets/geist-latin.woff2",
+      "bytes": 29288,
+      "sha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608"
+    },
+    {
+      "path": "assets/geist-mono-latin.woff2",
+      "bytes": 23108,
+      "sha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b"
+    },
+    {
+      "path": "assets/instrument-serif-italic.woff2",
+      "bytes": 15684,
+      "sha256": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702"
+    },
+    {
+      "path": "assets/instrument-serif-regular.woff2",
+      "bytes": 15040,
+      "sha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d"
+    },
+    {
+      "path": "assets/kleros-logo.svg",
+      "bytes": 4891,
+      "sha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a"
+    },
+    {
+      "path": "assets/kleros-symbol.svg",
+      "bytes": 1664,
+      "sha256": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86"
+    },
+    {
+      "path": "design-tokens.json",
+      "bytes": 1581,
+      "sha256": "f7c7522c1bb7dccf4daa1a6b5d5795862fa88637d35deb3de88d71310583fb5b"
+    },
+    {
+      "path": "evidence/DESIGN_EVIDENCE.md",
+      "bytes": 11975,
+      "sha256": "b4e476fa34fce75c66673de80c65a07223bf35517edb5b4c1d561eac05954937"
+    },
+    {
+      "path": "evidence/FRESH_CRITIQUE.md",
+      "bytes": 16411,
+      "sha256": "523bf1c5f6d2c78aac502562214731cc5a6a4b61a08504953c72194aded7d72c"
+    },
+    {
+      "path": "evidence/booth-before-desktop.jpg",
+      "bytes": 82359,
+      "sha256": "a228eeb7de8ce49ba9b7bd96312c57081e446f4f5cf6e64314e38628d787d2ef"
+    },
+    {
+      "path": "evidence/contrast-calculations.json",
+      "bytes": 4444,
+      "sha256": "f4cc6db046ae5b0025ab01183215fed45614887c1f2a5be5cfccef77f3f5966f"
+    },
+    {
+      "path": "evidence/events-before-desktop.jpg",
+      "bytes": 103265,
+      "sha256": "7cad408b69fa3f17b632bbde596a1e57974e7a59d291f5b712f706cdf623ecff"
+    },
+    {
+      "path": "evidence/kickback-before-desktop.jpg",
+      "bytes": 91478,
+      "sha256": "d6da95419e62c068f935710cc93013387700dbb9c2fc7cc5d2020d4a190339fc"
+    },
+    {
+      "path": "evidence/source_events_inventory.md",
+      "bytes": 12983,
+      "sha256": "ff7e7ef45a770cd641c8cbe25276cd05aadb1badb44211401860d352a790de9f"
+    },
+    {
+      "path": "evidence/source_finance_inventory.md",
+      "bytes": 18715,
+      "sha256": "05a2acbdf2180eb849ffd276916a16509a1a16e42e77e836bb86440ac3194e06"
+    },
+    {
+      "path": "evidence/status-before-desktop.jpg",
+      "bytes": 81564,
+      "sha256": "37b52342fc5afaeb0a3fb4b05409b76bacc5a12144ec2228d286fa8c907f1e99"
+    },
+    {
+      "path": "previews/README.md",
+      "bytes": 851,
+      "sha256": "3b19cb4c7d0df7d30a90bcc4eb5fd54c543de901a64f9f79d101209f95b06678"
+    },
+    {
+      "path": "previews/case-open-desktop.png",
+      "bytes": 114910,
+      "sha256": "e202a60be696df182e9d25f61352f9e1e48f1d9f0dfb6750dad2746ff7bbb361"
+    },
+    {
+      "path": "previews/discover-desktop.png",
+      "bytes": 93836,
+      "sha256": "6d3a92e0d2b854d59519971500656855c43c10b0ee9103306a3a76a4a953f3f2"
+    },
+    {
+      "path": "previews/organizer-import-desktop.png",
+      "bytes": 118237,
+      "sha256": "5fb4121ab42121c4de3a5f0af50fe35a3712b5e6f12ca29f92b7eb13de15d9bf"
+    },
+    {
+      "path": "previews/organizer-payouts-desktop.png",
+      "bytes": 98483,
+      "sha256": "c6d0322dfbd498bc3e63dc72aa9fb88aa9189ec8a69b8e2d3f800c2c80bfafb9"
+    },
+    {
+      "path": "previews/participant-confirmed-desktop.png",
+      "bytes": 141559,
+      "sha256": "3170bc1698eb6d410328c69e65beaa5aacb567854575322572ffb8773b96826e"
+    },
+    {
+      "path": "previews/participant-confirmed-mobile.png",
+      "bytes": 57990,
+      "sha256": "42f04b712cbaa30da607094d53d2c7ff240a8fc0d5e6846fe32c9a6bbf6b376d"
+    },
+    {
+      "path": "previews/participant-deposit-desktop.png",
+      "bytes": 138770,
+      "sha256": "e66fb5a198b27fbac2ab55bf8c6f1000bed3fba90ddf442131ffb235095fc9af"
+    },
+    {
+      "path": "previews/render-report.json",
+      "bytes": 1789,
+      "sha256": "c6e8d17f4ae5afaee07996b41caa2143911b83c86e644a8c52e858db9b1022eb"
+    },
+    {
+      "path": "qa/README.md",
+      "bytes": 2063,
+      "sha256": "f5c622e38dd9624330de26a1b35531e796c6daa3a9433dad23a91f5e1f47220f"
+    },
+    {
+      "path": "qa/browser-check.mjs",
+      "bytes": 8422,
+      "sha256": "b3ec9ae680c240be17b8e1ead711ce181ff6385905235fa3eb7045827634a2c3"
+    },
+    {
+      "path": "qa/dom-check.mjs",
+      "bytes": 11719,
+      "sha256": "db77b78915f1dd8e2e360b1ff0f07536aebfac6320878c27507a58cdc8356e55"
+    },
+    {
+      "path": "qa/dom-results.json",
+      "bytes": 4998,
+      "sha256": "f57972fc82d77920d00f0ecf672df55aef72639aa39cc3d8473df1171871a29e"
+    },
+    {
+      "path": "qa/package.json",
+      "bytes": 265,
+      "sha256": "b8d97d40dd15e0e4e757264a6e6954cbcb19daf9ed2b1b41ad29941cabb6345e"
+    }
+  ]
+}

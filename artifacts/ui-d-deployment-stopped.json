@@ -1,0 +1,36 @@
+{
+  "status": "stopped-before-child-preparation",
+  "checkedAt": "2026-10-29T01:38:37.569Z",
+  "confirmedTransactions": [
+    {
+      "action": "fund-d-owner",
+      "hash": "0x6d425b5297201b5397829bb6c16ea220dea8f323a2692f533637fe8d81935307",
+      "blockNumber": 23739241,
+      "state": "confirmed"
+    },
+    {
+      "action": "fund-d-alice",
+      "hash": "0x52522106bf1215fab830d95eb6e0847effd83597aa3b5b6d17e3a6d3fcca0332",
+      "blockNumber": 23739248,
+      "state": "confirmed"
+    },
+    {
+      "action": "fund-d-bob",
+      "hash": "0x02f3ab1d25a421d1139e2e64e8a9d745e9fd5fd7fa64548229b8e5688f8e7e92",
+      "blockNumber": 23739255,
+      "state": "confirmed"
+    },
+    {
+      "action": "deploy-d-factory",
+      "hash": "0x4c978ac1e6e2c0e2285f893ae8838595d765b18c7054987d6a7e39126ce71c5c",
+      "blockNumber": 23739261,
+      "state": "confirmed"
+    }
+  ],
+  "receiptCheck": "All four status1 receipts freshly verified canonical; original factory provenance passed and child eth_estimateGas returned5311210.",
+  "childJournalEntryAbsent": true,
+  "ownerNonce": 1,
+  "ownerBalanceWei": "9395859013091",
+  "financialReplayPermitted": false,
+  "nextAction": "Existing confirmed actions permit canonical receipt checks only. The separately authorized child has never been prepared or submitted; same-plan continuation must preserve every original journal entry."
+}

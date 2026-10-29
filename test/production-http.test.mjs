@@ -975,6 +975,10 @@ test("production HTTP errors redact provider signatures, URL credentials and cal
     "BAD_SIGNATURE",
     "DEPLOYMENT_MISMATCH",
     "UNSUPPORTED_WALLET",
+    "ORIGINAL_HASH_NOT_RECORDED",
+    "V10_WALLET_UNAVAILABLE",
+    "V10_TRANSACTION_UNCONFIRMED",
+    "V10_RECEIPT_CONTEXT_AMBIGUOUS",
   ]) {
     f.w.bootstrapFailure = Object.assign(new Error(errorPayload), {
       code,
@@ -994,6 +998,10 @@ test("production HTTP errors redact provider signatures, URL credentials and cal
         BAD_SIGNATURE: 403,
         DEPLOYMENT_MISMATCH: 409,
         UNSUPPORTED_WALLET: 422,
+        ORIGINAL_HASH_NOT_RECORDED: 409,
+        V10_WALLET_UNAVAILABLE: 503,
+        V10_TRANSACTION_UNCONFIRMED: 409,
+        V10_RECEIPT_CONTEXT_AMBIGUOUS: 409,
       }[code],
     );
   }

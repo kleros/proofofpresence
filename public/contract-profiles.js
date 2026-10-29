@@ -81,6 +81,13 @@ export const isVerifiedSupportedProductionEvent = (event) =>
       ? isVerifiedV10ProductionEvent(event)
       : false;
 const profiles = Object.freeze({
+  [V10_PRODUCTION_CONTRACT_VERSION]: Object.freeze({
+    contractVersion: V10_PRODUCTION_CONTRACT_VERSION,
+    financialInterface: "v8",
+    ...v10Facts,
+    testOnly: false,
+    chainId: 1,
+  }),
   [PRODUCTION_CONTRACT_VERSION]: Object.freeze({
     contractVersion: PRODUCTION_CONTRACT_VERSION,
     financialInterface: "v8",
@@ -123,6 +130,11 @@ export function contractProfileForEvent(event) {
     : null;
   if (!profile) return null;
   if (
+    event.contractVersion === V10_PRODUCTION_CONTRACT_VERSION &&
+    !isVerifiedV10ProductionEvent(event)
+  )
+    return null;
+  if (
     event.contractVersion === PRODUCTION_CONTRACT_VERSION &&
     !isVerifiedProductionEvent(event)
   )
@@ -159,7 +171,7 @@ export const hasV8FinancialInterface = (event) =>
 export const supportsBatchJournalProfile = (scope) => {
   if (scope?.chainId === 1)
     return (
-      scope.contractVersion === PRODUCTION_CONTRACT_VERSION &&
+      isSupportedProductionVersion(scope.contractVersion) &&
       scope.mode === "hosted-production"
     );
   if (
@@ -171,7 +183,7 @@ export const supportsBatchJournalProfile = (scope) => {
       scope.chainId === 10200 &&
       scope.mode === "hosted-v9-testnet"
     );
-  if (scope?.contractVersion === PRODUCTION_CONTRACT_VERSION) return false;
+  if (isSupportedProductionVersion(scope?.contractVersion)) return false;
   const profile = Object.hasOwn(profiles, scope?.contractVersion)
     ? profiles[scope.contractVersion]
     : null;

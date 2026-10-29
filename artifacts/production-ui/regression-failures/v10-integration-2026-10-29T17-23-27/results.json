@@ -1,0 +1,178 @@
+{
+  "status": "failed",
+  "checks": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css"
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-setup.js"
+    },
+    {
+      "method": "GET",
+      "path": "/owned-events.js"
+    },
+    {
+      "method": "GET",
+      "path": "/case-publication.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/luma-factory.js"
+    },
+    {
+      "method": "GET",
+      "path": "/setup-progress.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    }
+  ],
+  "forbidden": [],
+  "external": [],
+  "walletCalls": [],
+  "errors": [],
+  "screenshots": [],
+  "limitations": [
+    "Loopback synthetic projections only; no production economics, ABI, governance, deployment or EOA policy is proved by mocked data.",
+    "Auth challenge/verify and fresh-EOA denial are local typed mocks. personal_sign returns a non-cryptographic literal.",
+    "All financial endpoints, wallet transaction methods, RPC, external requests and WebSockets are blocked. The explicit submission-reconciliation POST is an isolated read-only receipt mock.",
+    "Contradictory-mode clicks prove prepare-time denial; no prepared financial draft or send-time contract interaction is exercised."
+  ],
+  "failure": {
+    "message": "expect(locator).toHaveValue(expected) failed\n\nLocator: locator('#event-switch')\nExpected: \"production-ui-synthetic-event\"\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.have.value\" with timeout 5000ms\n  - waiting for locator('#event-switch')\n",
+    "stack": "Error: expect(locator).toHaveValue(expected) failed\n\nLocator: locator('#event-switch')\nExpected: \"production-ui-synthetic-event\"\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.have.value\" with timeout 5000ms\n  - waiting for locator('#event-switch')\n\n    at Proxy.<anonymous> (/Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at visit (file:///Users/hashmanansala/Documents/ChatGPT/Kleros%20projects/test/production-ui.e2e.mjs:421:55)\n    at async runLoopback (file:///Users/hashmanansala/Documents/ChatGPT/Kleros%20projects/test/production-ui.e2e.mjs:470:7)\n    at async file:///Users/hashmanansala/Documents/ChatGPT/Kleros%20projects/test/production-ui.e2e.mjs:1060:3"
+  },
+  "assetSha256": {
+    "index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-launch.css": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+    "entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "app.js": "1a7f6dfede6422aa765200e0d90ee2bb630c76cfa98c2bd857f15eb03042c843",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "event-search.js": "d856002a8c0c6da6ebee0c54a2646550b9fd6fe773d0d80f892466a755185f29",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "ec776cf1a89898c592cdc8fce5b79eb618b87ef226c31f8a582a80b6b6462673",
+    "owned-events.js": "2f5a85d1b481f7f5127328daee898b415ccd12ab4c1fa6ab7612624007b4f410",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "environment.js": "9f6cea65c818eaed4084cd93d3831f6e03d2ac0b0c349d3656ff4a5527bcfe83",
+    "contract-profiles.js": "ce2f72b60a2b8e74c533cbd77d65415e8aad4011fe09bfd8ab600e59a4c6a8ec",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "luma-factory.js": "296eb39cd8dfb4a6e1506246bc3fe39893adb0ac7c5e013f48f1cf5f6ef758f2",
+    "setup-progress.js": "ada969fc9d86c145fd01e87cfd453cbf165797c500f7c505714c869962b01209"
+  }
+}

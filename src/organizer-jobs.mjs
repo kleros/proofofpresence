@@ -35,13 +35,14 @@ function payloadOf(body) {
  * Jobs live only in this server instance and never evict consumed identities. Capacity exhaustion fails closed.
  * isSessionCurrent is synchronous and must check the trusted server's original session, never a supplied actor claim.
  * @param {{instanceId:string,factory:string,execute:(operation:string,context:any)=>any,
- * isSessionCurrent:(session:any)=>boolean,now?:()=>number,maxActive?:number,maxRecords?:number}} options
+ * isSessionCurrent:(session:any)=>boolean,contractVersion?:string,now?:()=>number,maxActive?:number,maxRecords?:number}} options
  */
-export function createOrganizerJobService({ instanceId, factory, execute, isSessionCurrent, now = Date.now, maxActive = 1, maxRecords = 128 }) {
+export function createOrganizerJobService({ instanceId, factory, execute, isSessionCurrent, contractVersion = PROFILE, now = Date.now, maxActive = 1, maxRecords = 128 }) {
   check(stable(instanceId, 160) && ethers.isAddress(factory) && factory.toLowerCase() !== ethers.ZeroAddress &&
     typeof execute === "function" && typeof isSessionCurrent === "function" && typeof now === "function" &&
     Number.isSafeInteger(maxActive) && maxActive >= 1 && maxActive <= 64 &&
-    Number.isSafeInteger(maxRecords) && maxRecords >= 1 && maxRecords <= 4096,
+    Number.isSafeInteger(maxRecords) && maxRecords >= 1 && maxRecords <= 4096 &&
+    [PROFILE, "kleros-event-v10-uups"].includes(contractVersion),
   "INVALID_INPUT", 400, "Invalid organizer job configuration.");
   factory = ethers.getAddress(factory);
   const jobs = new Map(); let active = 0, lastTime = 0;
@@ -72,7 +73,7 @@ export function createOrganizerJobService({ instanceId, factory, execute, isSess
       (expiresAt !== null && at >= expiresAt);
     const state = expired ? "expired" : job.state;
     return copy({ schemaVersion: 1, kind: "organizer-job", requestId: job.requestId, instanceId,
-      operation: job.operation, chainId: 1, factory, contractVersion: PROFILE, wallet: job.wallet, state,
+      operation: job.operation, chainId: 1, factory, contractVersion, wallet: job.wallet, state,
       ...(state === "pending" ? { pollAfterMs: 1000 } : {}),
       ...(state === "ready" ? { result: job.result, expiresAt } : {}),
       ...(state === "failed" ? { error: job.error } : {}) });
@@ -105,6 +106,9 @@ export function createOrganizerJobService({ instanceId, factory, execute, isSess
           if (!belongs(job, session)) { job.state = "expired"; return; }
           const { operation, ...args } = copy(payload);
           const result = await execute(operation, { session, ...args });
+          const returnedProfile = operation === "validate" ? result?.draft?.contractVersion : result?.contractVersion;
+          check(returnedProfile === undefined || returnedProfile === contractVersion,
+            "DRAFT_SCOPE", 409, "The organizer result belongs to another contract profile.");
           job.completedAt = clock();
           if (!belongs(job, session) || job.completedAt - job.startedAt >= PENDING_MS) job.state = "expired";
           else { job.result = copy(result); job.state = "ready"; }

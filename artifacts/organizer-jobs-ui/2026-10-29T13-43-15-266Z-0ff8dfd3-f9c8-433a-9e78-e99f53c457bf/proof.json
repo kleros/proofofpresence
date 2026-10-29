@@ -1,0 +1,13 @@
+{
+  "status": "failed",
+  "kind": "synthetic-loopback-organizer-job-widget",
+  "checks": [],
+  "errors": [
+    "listen EPERM: operation not permitted 127.0.0.1"
+  ],
+  "forbidden": [],
+  "sources": {
+    "public/luma-setup.js": "c28370c53bcca94da3440e0e2694029cb5e748373ac016135bde5112123144b7",
+    "test/organizer-jobs-ui.e2e.mjs": "8722654d600cd3fa744703b909fc09d8a5ea9b0d0fbdab6fbd20dfbd7eb568e3"
+  }
+}

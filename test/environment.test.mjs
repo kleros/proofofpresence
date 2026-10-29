@@ -41,6 +41,11 @@ function context() {
     instanceId: "synthetic-server-one",
     contractVersion: V,
     contractProfile: profile(),
+    governance: {
+      kind: "single-owner-timelock",
+      initialOwner: a("9"),
+      minimumDelaySeconds: 172800,
+    },
     environment: { production: true, network: "ethereum-mainnet", chainId: 1 },
     chain: {
       chainId: 1,
@@ -100,7 +105,11 @@ function context() {
       implementationCodeHash: h("b"),
       version: 9,
       authority: a("8"),
-      multisig: a("9"),
+      governanceKind: "single-owner-timelock",
+      owner: a("9"),
+      pendingOwner: null,
+      pendingOperationCount: 0,
+      executingOperationCount: 0,
       delaySeconds: 172800,
       pending: null,
     },
@@ -280,7 +289,11 @@ test("governance details and queued upgrade facts cannot be omitted or malformed
     implementationCodeHash: h("0"),
     version: 8,
     authority: a("0"),
-    multisig: "missing",
+    governanceKind: "multisig",
+    owner: "missing",
+    pendingOwner: "missing",
+    pendingOperationCount: -1,
+    executingOperationCount: -1,
     delaySeconds: 900,
     pending: undefined,
   })) {
@@ -308,6 +321,14 @@ test("governance details and queued upgrade facts cannot be omitted or malformed
     const bad = context();
     bad.detail.upgrade.pending = { ...pending, [key]: value };
     assert.ok(ready(bad), key);
+  }
+  for (const mutate of [
+    (value) => delete value.bootstrap.governance,
+    (value) => (value.bootstrap.governance.kind = "single-owner-immediate"),
+    (value) => (value.bootstrap.governance.minimumDelaySeconds = 900),
+    (value) => (value.bootstrap.governance.initialOwner = "missing"),
+  ]) {
+    const bad = context(); mutate(bad); assert.ok(ready(bad));
   }
 });
 

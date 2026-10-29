@@ -11,9 +11,11 @@ import {
   assertCreationReceipt,
   lumaEventUrl,
   depositWei,
+  creationReviewDisclosure,
 } from "./luma-factory.js";
 import { attendanceStandardText } from "./luma-launch.js";
 import { mountSetupProgress } from "./setup-progress.js";
+import { assertV10WalletAccount } from "./v10-wallet-account.js";
 
 const escape = (value) =>
   String(value ?? "").replace(
@@ -59,7 +61,6 @@ const completeLocalDate = (value) => {
 };
 
 const JOB_PATH = "/api/organizer/events/jobs";
-const JOB_PROFILE = "kleros-event-v9-uups";
 const JOB_FIELDS = [
   "title",
   "lumaUrl",
@@ -95,7 +96,7 @@ export function createOrganizerJobClient({
     chainId: 1,
     factory: read.contract.toLowerCase(),
     wallet: read.wallet.toLowerCase(),
-    contractVersion: JOB_PROFILE,
+    contractVersion: read.abiVersion,
   });
   const prefix =
     "kleros-organizer-job:v1:" +
@@ -299,7 +300,7 @@ export function createOrganizerJobClient({
             envelope.operation !== operation ||
             envelope.chainId !== 1 ||
             !same(envelope.factory, scope.factory) ||
-            envelope.contractVersion !== JOB_PROFILE ||
+            envelope.contractVersion !== scope.contractVersion ||
             !same(envelope.wallet, scope.wallet) ||
             !["pending", "ready", "failed", "expired"].includes(envelope.state)
           )
@@ -436,7 +437,7 @@ export function createOrganizerJobClient({
         context.chainId !== 1 ||
         !same(context.wallet, scope.wallet) ||
         !same(context.contract, scope.factory) ||
-        context.abiVersion !== JOB_PROFILE ||
+        context.abiVersion !== scope.contractVersion ||
         context.mode !== scope.mode ||
         completed.expiresAt <= clock() ||
         active.has(completed.key) ||
@@ -761,6 +762,7 @@ export function mountLumaSetup(host, options) {
     bootstrap?.session?.mode === "wallet" &&
     typeof bootstrap.session.wallet === "string";
   const readyIssue = factorySetupIssue(bootstrap, { requireWallet: true });
+  const disclosure = creationReviewDisclosure(bootstrap);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
   const dateForms = new WeakMap();
   const dateState = (form) => {
@@ -928,6 +930,8 @@ export function mountLumaSetup(host, options) {
   const offerTransactionInspection = (cause) => {
     if (
       !current() ||
+      bootstrap?.features?.originalCreationRecovery === false ||
+      bootstrap?.contractVersion === "kleros-event-v10-uups" ||
       cause.code !== "TX_MISMATCH" ||
       !hashPattern.test(marker?.hash ?? "")
     )
@@ -1134,7 +1138,7 @@ export function mountLumaSetup(host, options) {
     const standard = attendanceStandardText(
       bootstrap.organizerSetup?.attendanceStandard,
     );
-    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">FOR LUMA ORGANIZERS</div><h1>Set up kickback.</h1><p>Create one deposit page for your Luma event. Review the fixed terms before your wallet opens.</p>${issue ? `<p class="luma-setup-notice" data-luma-setup-issue>${escape(issue)}</p>` : ""}${standard ? `<p class="luma-setup-notice" data-luma-attendance-standard>${escape(standard)}</p>` : ""}${!authenticated ? '<div class="luma-launch-card"><h2>Connect your organizer wallet</h2><p>Use the wallet that will manage this event.</p><button class="button button-primary" data-connect-wallet>Connect wallet</button></div>' : `<form class="luma-setup-form" data-luma-form><div class="full"><label for="luma-title">Event title</label><input id="luma-title" name="title" required maxlength="120" autocomplete="off" /></div><div class="full"><label for="luma-url">Luma event URL</label><input id="luma-url" name="lumaUrl" type="url" required placeholder="https://luma.com/your-event" /><p class="field-help">Registration stays on Luma. No guest names or emails are imported.</p></div><div><label for="luma-start">Starts · your local time</label><input id="luma-start" name="startsAt" type="datetime-local" required /></div><div><label for="luma-end">Ends · your local time</label><input id="luma-end" name="endsAt" type="datetime-local" required aria-describedby="luma-end-help" /><p id="luma-end-help" class="field-help">Defaults to 2 hours after start until you edit it.</p></div><div><label for="luma-timezone">Your time zone</label><input id="luma-timezone" name="timezone" readonly value="${escape(timezone)}" /></div><div><label for="luma-deposit">Deposit per guest · ETH</label><input id="luma-deposit" name="depositEth" required inputmode="decimal" placeholder="0.01" autocomplete="off" /></div><p class="luma-setup-capacity full">Fixed capacity: <strong>150 guests</strong> · Claim period: <strong>7 days</strong> · Challenge and response windows: <strong>1 day each</strong></p><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="review" ${readyIssue ? "disabled" : ""}>Review event setup</button></div></form>`}<p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
+    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">FOR LUMA ORGANIZERS</div><h1>Set up kickback.</h1><p>Create one deposit page for your Luma event. Review the fixed terms before your wallet opens.</p>${issue ? `<p class="luma-setup-notice" data-luma-setup-issue>${escape(issue)}</p>` : ""}${standard ? `<p class="luma-setup-notice" data-luma-attendance-standard>${escape(standard)}</p>` : ""}${!authenticated ? '<div class="luma-launch-card"><h2>Connect your organizer wallet</h2><p>Use the wallet that will manage this event.</p><button class="button button-primary" data-connect-wallet>Connect wallet</button></div>' : `<form class="luma-setup-form" data-luma-form><div class="full"><label for="luma-title">Event title</label><input id="luma-title" name="title" required maxlength="120" autocomplete="off" /></div><div class="full"><label for="luma-url">Luma event URL</label><input id="luma-url" name="lumaUrl" type="url" required placeholder="https://luma.com/your-event" /><p class="field-help">Registration stays on Luma. No guest names or emails are imported.</p></div><div><label for="luma-start">Starts · your local time</label><input id="luma-start" name="startsAt" type="datetime-local" required /></div><div><label for="luma-end">Ends · your local time</label><input id="luma-end" name="endsAt" type="datetime-local" required aria-describedby="luma-end-help" /><p id="luma-end-help" class="field-help">Defaults to 2 hours after start until you edit it.</p></div><div><label for="luma-timezone">Your time zone</label><input id="luma-timezone" name="timezone" readonly value="${escape(timezone)}" /></div><div><label for="luma-deposit">Deposit per guest · ETH</label><input id="luma-deposit" name="depositEth" required inputmode="decimal" placeholder="0.01" autocomplete="off" /></div>${disclosure ? `<p class="luma-setup-notice full" data-luma-publication-disclosure>${escape(disclosure.publicationNotice)}</p>` : ""}<p class="luma-setup-capacity full">Fixed capacity: <strong>150 guests</strong> · Claim period: <strong>7 days</strong> · Challenge and response windows: <strong>1 day each</strong></p><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="review" ${readyIssue ? "disabled" : ""}>Review event setup</button></div></form>`}<p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
   };
   const formInput = (form) => {
     const values = new FormData(form),
@@ -1181,7 +1185,7 @@ export function mountLumaSetup(host, options) {
     dialog.className = "luma-setup-review";
     dialog.setAttribute("data-luma-dialog", "");
     dialog.setAttribute("aria-labelledby", "luma-review-title");
-    dialog.innerHTML = `<header><h2 id="luma-review-title" tabindex="-1">Review event setup</h2><button type="button" class="button button-quiet" data-luma-action="close">Close</button></header><p>These event terms are fixed when this transaction confirms.</p><dl class="luma-setup-terms"><dt>Event</dt><dd>${escape(terms.title)}</dd><dt>Luma registration</dt><dd>${escape(terms.lumaUrl)}</dd><dt>Starts</dt><dd>${escape(date(terms.eventStart))}<small>${escape(terms.timezone)}</small></dd><dt>Ends</dt><dd>${escape(new Date(terms.endsAt).toISOString())}</dd><dt>Deposit per guest</dt><dd>${escape(terms.depositEth)} ETH<small>${escape(terms.depositWei)} wei</small></dd><dt>Capacity</dt><dd>150 guests</dd><dt>Claim deadline</dt><dd>${escape(date(terms.claimDeadline))} · 7 days</dd><dt>Challenge / response</dt><dd>1 day each</dd><dt>Attendance standard</dt><dd data-luma-review-attendance-standard>${escape(attendanceStandardText(terms.attendanceStandard))}</dd><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Organizer wallet</dt><dd><code>${escape(draft.wallet)}</code></dd><dt>Factory recipient</dt><dd><code>${escape(draft.contract)}</code></dd><dt>Transaction value</dt><dd>0 ETH · wallet estimates network fees</dd><dt>Gas estimate</dt><dd>${escape(draft.transaction.gasLimit)} gas · not a fixed fee</dd><dt>Policy</dt><dd>${escape(terms.policyURI)}<small><code>${escape(terms.policySha256)}</code></small></dd><dt>Review block / expiry</dt><dd>${escape(draft.reviewBlock)} · ${escape(new Date(draft.expiresAt).toISOString())}</dd></dl><p class="luma-setup-notice">The upgrade owner can change contract logic after the 48-hour timelock. Ownership transfers require acceptance; this delay does not guarantee withdrawals.</p><p data-luma-dialog-status role="status"></p><div class="luma-setup-actions"><button type="button" class="button button-primary" data-luma-action="confirm">Create event in wallet</button></div>`;
+    dialog.innerHTML = `<header><h2 id="luma-review-title" tabindex="-1">Review event setup</h2><button type="button" class="button button-quiet" data-luma-action="close">Close</button></header><p>These event terms are fixed when this transaction confirms.</p><dl class="luma-setup-terms"><dt>Event</dt><dd>${escape(terms.title)}</dd><dt>Luma registration</dt><dd>${escape(terms.lumaUrl)}</dd><dt>Starts</dt><dd>${escape(date(terms.eventStart))}<small>${escape(terms.timezone)}</small></dd><dt>Ends</dt><dd>${escape(new Date(terms.endsAt).toISOString())}</dd><dt>Deposit per guest</dt><dd>${escape(terms.depositEth)} ETH<small>${escape(terms.depositWei)} wei</small></dd><dt>Capacity</dt><dd>150 guests</dd><dt>Claim deadline</dt><dd>${escape(date(terms.claimDeadline))} · 7 days</dd><dt>Challenge / response</dt><dd>1 day each</dd>${disclosure ? `<dt>Publication</dt><dd data-luma-review-publication>${escape(disclosure.publication)}<small>${escape(disclosure.publicationNotice)}</small></dd>` : ""}<dt>Attendance standard</dt><dd data-luma-review-attendance-standard>${escape(attendanceStandardText(terms.attendanceStandard))}</dd><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Organizer wallet</dt><dd><code>${escape(draft.wallet)}</code></dd><dt>Factory recipient</dt><dd><code>${escape(draft.contract)}</code></dd><dt>Transaction value</dt><dd>0 ETH · wallet estimates network fees</dd><dt>Gas estimate</dt><dd>${escape(draft.transaction.gasLimit)} gas · not a fixed fee</dd><dt>Policy</dt><dd>${escape(terms.policyURI)}<small><code>${escape(terms.policySha256)}</code></small></dd><dt>Review block / expiry</dt><dd>${escape(draft.reviewBlock)} · ${escape(new Date(draft.expiresAt).toISOString())}</dd></dl><p class="luma-setup-notice">${disclosure ? escape(disclosure.upgradeNotice) : "The upgrade owner can change contract logic after the 48-hour timelock. Ownership transfers require acceptance; this delay does not guarantee withdrawals."}</p><p data-luma-dialog-status role="status"></p><div class="luma-setup-actions"><button type="button" class="button button-primary" data-luma-action="confirm">Create event in wallet</button></div>`;
     host.append(dialog);
     dialog.addEventListener("cancel", (event) => {
       if (busy) event.preventDefault();
@@ -1287,6 +1291,18 @@ export function mountLumaSetup(host, options) {
               throw Error(
                 "The authenticated setup context changed. No wallet request was made.",
               );
+            if (context.abiVersion === "kleros-event-v10-uups") {
+              await assertV10WalletAccount({
+                provider: rawProvider,
+                wallet: context.wallet,
+                bootstrap,
+              });
+              if (!reviewCurrent() || options.provider?.() !== rawProvider)
+                throw Error(
+                  "The reviewed V10 wallet or setup context changed. Prepare a fresh review.",
+                );
+              assertCreationDraft(draft, bootstrap);
+            }
             if (jobs) jobs.consumeValidation();
             persist({ ...marker, phase: "wallet-requested" });
             showProgress("wallet-review");

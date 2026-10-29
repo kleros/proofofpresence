@@ -67,7 +67,7 @@ export function validateV10OrganizerTerms(input, policy, now) {
 
 /** All injected dependencies are trusted server code, never request/manifest-selected callbacks. */
 export function createV10FactoryOnboardingService({ chain, factoryDeployment, events, drafts, store,
-  instanceId = id(), assertWallet, verifyFactory } = {}) {
+  instanceId = id(), origin = null, receiptContext = null, assertWallet, verifyFactory } = {}) {
   check(chain?.provider && factoryDeployment && events instanceof Map && drafts instanceof Map,
     "Factory onboarding needs a reviewed runtime, factory and scoped stores", "FACTORY_UNAVAILABLE", 503);
   check((assertWallet === undefined || typeof assertWallet === "function") &&
@@ -226,15 +226,20 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     const draft = { scopeKind: "factory-create", id: id(), eventId, eventKey, wallet: actor.wallet, sessionId: actor.id, instanceId,
       chainId: 1, contractVersion: PROFILE, abiVersion: PROFILE, factory: factoryDeployment.factory, method: "createEvent", args: [eventKey, config],
       mode: "hosted-production", action: "createEvent", contract: factoryDeployment.factory, valueWei: "0",
+      ...(receiptContext ? { origin } : {}),
       terms, config, template, transaction, factorySource: source(), policyText: policy.text,
       factoryFingerprint: factoryHash(), registryHash: hash(source()), snapshot: verified.snapshot,
       createdAt: Date.now(), expiresAt: Date.now() + TTL, reviewBlock: verified.result.anchor.number, status: "reviewed", used: false };
     draft.transaction.gasLimit = String(await simulate(draft));
     await finishSigningChecks(actor, draft);
-    drafts.set(draft.id, draft); await persist(); return dto(draft);
+    drafts.set(draft.id, draft);
+    try { if (receiptContext) receiptContext.sealDraft(draft); await persist(); }
+    catch (error) { drafts.delete(draft.id); throw error; }
+    return dto(draft);
   }
   async function validateFact(session, draftId) {
     const { actor, draft } = find(session, draftId, true); approvedPolicy();
+    if (receiptContext) receiptContext.sealDraft(draft);
     exactReview(draft);
     await assertWallet(actor.wallet);
     check(await simulate(draft) <= BigInt(draft.transaction.gasLimit), "Creation gas changed; review again", "STALE_DRAFT", 409);
@@ -249,12 +254,14 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     if (tx) {
       check(same(tx.hash, txHash) && Number(tx.chainId) === 1, "Transaction left its reviewed chain or hash", "TX_MISMATCH", 409);
       const direct = same(tx.from, draft.wallet) && same(tx.to, draft.factory) && tx.data === draft.transaction.data && tx.value === 0n;
-      if (!direct) {
+      if (!direct || Number(tx.type) === 4) {
         check(typeof chain.assertTransactionIntent === "function", "Transaction differs from the reviewed creation", "TX_MISMATCH", 409);
         const expected = Object.freeze({ chainId: 1, transactionHash: txHash, from: draft.wallet, to: draft.factory,
           valueWei: "0", data: draft.transaction.data });
         const actualSnapshot = transactionSnapshot(tx);
-        const proof = await chain.assertTransactionIntent(tx, expected);
+        const proof = receiptContext
+          ? await receiptContext.inspectDraftTransaction(draft, tx, { canonical: Number.isSafeInteger(tx.blockNumber) })
+          : await chain.assertTransactionIntent(tx, expected);
         check(transactionSnapshot(tx) === actualSnapshot && proof && Object.keys(proof).length === 7 && proof.verified === true && proof.chainId === 1 &&
           same(proof.transactionHash, txHash) && same(proof.from, draft.wallet) && same(proof.to, draft.factory) &&
           proof.valueWei === "0" && same(proof.dataHash, ethers.keccak256(draft.transaction.data)),
@@ -263,26 +270,38 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     }
     return tx;
   }
+  async function retainSubmission(draft, txHash) {
+    check(/^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""), "Use a valid transaction hash");
+    if (receiptContext) receiptContext.sealDraft(draft);
+    check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
+    check(!draft.confirmedHash || same(draft.confirmedHash, txHash), "A different confirmed transaction belongs to this review", "TX_MISMATCH", 409);
+    check(![...drafts.values()].some(d => d !== draft && [d.submittedHash, d.confirmedHash].some(value => value && same(value, txHash))),
+      "Transaction hash already belongs to another review", "TX_MISMATCH", 409);
+    draft.submittedHash = txHash;
+    if (!draft.used) draft.status = "pending";
+    await persist(); // Preserve the original once-only hash before any RPC or inspection.
+  }
   async function recordSubmittedFact(session, draftId, txHash) {
     const { draft } = find(session, draftId);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
+    await retainSubmission(draft, txHash);
     await exactTransaction(draft, txHash);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
     if (draft.used) return { status: draft.status, hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1,
       blockNumber: draft.blockNumber, ...(draft.createdContract ? { contract: draft.createdContract } : {}) };
     check(![...drafts.values()].some((d) => d.id !== draft.id && same(d.submittedHash ?? "", txHash)), "Transaction hash already belongs to another creation", "TX_MISMATCH", 409);
-    draft.submittedHash = txHash; draft.status = "pending"; await persist();
     return { status: "pending", hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1 };
   }
   function recordSubmitted(session, draftId, txHash) { return serial(draftId, () => recordSubmittedFact(session, draftId, txHash)); }
   async function reconcileFact(session, draftId, txHash) {
     const { draft } = find(session, draftId);
+    if (receiptContext) check(draft.submittedHash || draft.confirmedHash,
+      "The original wallet submission must be recorded first; the saved review is preserved", "ORIGINAL_HASH_NOT_RECORDED", 409);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
+    await retainSubmission(draft, txHash);
     await network(); const tx = await exactTransaction(draft, txHash);
     check(tx, "Transaction is not visible yet; preserve its hash and retry the read", "TX_UNAVAILABLE", 409);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
-    // Bind the validated known hash durably before receipt/source reads can fail.
-    draft.submittedHash = txHash; if (!draft.used) draft.status = "pending"; await persist();
     const receipt = await chain.provider.getTransactionReceipt(txHash);
     if (!receipt) return { status: "pending", hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1 };
     const receiptHeader = await chain.provider.getBlock(receipt.blockNumber);

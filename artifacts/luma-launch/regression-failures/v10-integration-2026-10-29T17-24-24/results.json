@@ -1,0 +1,101 @@
+{
+  "status": "failed",
+  "checks": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/",
+      "query": "?synthetic=1"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/entry.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": ""
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": ""
+    }
+  ],
+  "forbidden": [
+    {
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": ""
+    }
+  ],
+  "external": [],
+  "walletCalls": [],
+  "errors": [],
+  "screenshots": [],
+  "limits": [
+    "Synthetic loopback projections only; Core's actual proxy/backend integration test remains a separate acceptance requirement.",
+    "Fake wallet authentication uses a non-cryptographic signature literal. No real provider, Luma API, RPC, public request or transaction execution is available."
+  ],
+  "failure": {
+    "message": "expect(locator).toBeVisible() failed\n\nLocator: locator('[data-launch-root]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for locator('[data-launch-root]')\n",
+    "stack": "Error: expect(locator).toBeVisible() failed\n\nLocator: locator('[data-launch-root]')\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for locator('[data-launch-root]')\n\n    at Proxy.<anonymous> (/Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at run (file:///Users/hashmanansala/Documents/ChatGPT/Kleros%20projects/test/luma-launch.e2e.mjs:519:54)\n    at async file:///Users/hashmanansala/Documents/ChatGPT/Kleros%20projects/test/luma-launch.e2e.mjs:1277:61"
+  },
+  "assetSha256": {
+    "index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-launch.css": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+    "entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "event-search.js": "d856002a8c0c6da6ebee0c54a2646550b9fd6fe773d0d80f892466a755185f29",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "contract-profiles.js": "ce2f72b60a2b8e74c533cbd77d65415e8aad4011fe09bfd8ab600e59a4c6a8ec"
+  }
+}

@@ -1,5 +1,10 @@
 # Kleros Event Workbench
 
+> Private development snapshot captured on 30 October 2026. Start with
+> [PROJECT_BRAIN.md](PROJECT_BRAIN.md) for current status and
+> [GitHub snapshot notes](docs/GITHUB_SNAPSHOT.md) for branch coverage. Older release and schedule
+> descriptions below are historical; main includes work still in progress.
+
 An event workbench for deposits, reviewed admission, trusted check-in, disputes, held-share
 settlement and recovery, with a simpler next-action interface.
 

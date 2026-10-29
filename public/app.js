@@ -23,6 +23,7 @@ import {
   attendanceStandardText,
 } from "./luma-launch.js";
 import { mountLumaSetup } from "./luma-setup.js";
+import { assertV10WalletAccount } from "./v10-wallet-account.js";
 import { projectOwnedEvents, renderOwnedEvents } from "./owned-events.js";
 import {
   validateCaseArtifact,
@@ -39,6 +40,7 @@ import {
   contractProfileForEvent,
   hasV8FinancialInterface,
   isTest15mVersion,
+  isSupportedProductionVersion,
 } from "./contract-profiles.js";
 import {
   createTransactionJournal,
@@ -640,7 +642,7 @@ function appealRewardsReady(item) {
 }
 function assertFinancialEnvironment(action, params = {}) {
   const event = app.detail?.event;
-  const productionProfile = "kleros-event-v9-uups";
+  const productionProfiles = ["kleros-event-v9-uups", "kleros-event-v10-uups"];
   if (
     !isGuardedV9() &&
     (Number(app.bootstrap?.chain?.chainId) === 1 ||
@@ -652,17 +654,17 @@ function assertFinancialEnvironment(action, params = {}) {
         event?.contractProfile,
       ].some(
         (value) =>
-          [productionProfile, "kleros-event-v9-uups-chiado"].includes(
+          [...productionProfiles, "kleros-event-v9-uups-chiado"].includes(
             value?.contractVersion,
           ) ||
-          [productionProfile, "kleros-event-v9-uups-chiado"].includes(
+          [...productionProfiles, "kleros-event-v9-uups-chiado"].includes(
             value?.abiVersion,
           ) ||
-          value?.version === 9,
+          [9, 10].includes(value?.version),
       ))
   )
     throw new Error(
-      "V9 transactions require their exact verified production or Chiado test environment.",
+      `${event?.contractVersion === "kleros-event-v10-uups" || app.bootstrap?.contractVersion === "kleros-event-v10-uups" ? "V10" : "V9"} transactions require their exact verified production or Chiado test environment.`,
     );
   if (isGuardedV9()) {
     if (app.detail?.event.id !== app.route.eventId)
@@ -709,12 +711,14 @@ function assertProductionDraft(draft) {
   if (!isGuardedV9()) {
     if (
       Number(draft?.chainId) === 1 ||
-      ["kleros-event-v9-uups", "kleros-event-v9-uups-chiado"].includes(
-        draft?.abiVersion,
-      )
+      [
+        "kleros-event-v9-uups",
+        "kleros-event-v10-uups",
+        "kleros-event-v9-uups-chiado",
+      ].includes(draft?.abiVersion)
     )
       throw new Error(
-        "V9 transactions require their exact verified production or Chiado test environment.",
+        `${draft?.abiVersion === "kleros-event-v10-uups" ? "V10" : "V9"} transactions require their exact verified production or Chiado test environment.`,
       );
     return;
   }
@@ -749,11 +753,13 @@ const versionLabel = (event = app.detail?.event) =>
       ? "v8"
       : event?.contractVersion === "kleros-event-v9-uups"
         ? "v9 · upgradeable"
-        : event?.contractVersion === "kleros-event-v9-uups-chiado"
-          ? "v9 · Chiado testnet"
-          : event?.contractVersion === "truth-pays-v7"
-            ? "v7"
-            : "Unsupported profile";
+        : event?.contractVersion === "kleros-event-v10-uups"
+          ? "v10 · immediate upgrades"
+          : event?.contractVersion === "kleros-event-v9-uups-chiado"
+            ? "v9 · Chiado testnet"
+            : event?.contractVersion === "truth-pays-v7"
+              ? "v7"
+              : "Unsupported profile";
 const contractDeadline = (value, timezone, event = app.detail?.event) =>
   isTest15mVersion(event?.contractVersion)
     ? formatDeadline(value, timezone)
@@ -773,11 +779,30 @@ const networkName = () =>
     : (app.bootstrap?.chain?.name ?? "Network unavailable");
 
 function productionUpgradeNotice(delaySeconds = null) {
+  if (app.bootstrap?.contractVersion === "kleros-event-v10-uups")
+    return '<p class="field-help">The V10 controller owner can upgrade immediately until upgrade authority is renounced. The event financial owner is separate. Renunciation disables this controller, but verified current implementations and the selected event still need their own source checks. Existing V9 events remain separate.</p>';
   const period =
     Number.isSafeInteger(delaySeconds) && delaySeconds > 0
       ? `The verified ${delaySeconds / 3600}-hour upgrade review period`
       : "An upgrade review period";
   return `<p class="field-help">Each event has its own upgradeable contract. ${escape(period)} is not a guaranteed withdrawal window. Upgrade authority can change contract behavior and custody of funds. Future events created through a factory are separate deployments.</p>`;
+}
+function v10FinancialReviewNotice() {
+  if (
+    !isProduction() ||
+    app.bootstrap?.contractVersion !== "kleros-event-v10-uups"
+  )
+    return "";
+  const upgrade = app.detail?.upgrade;
+  if (productionContextIssue(app.bootstrap, app.detail))
+    return '<div class="notice warning" data-v10-review-governance>Current upgrade authority is unavailable. Refresh the event before signing.</div>';
+  const renounced =
+    upgrade?.upgradesDisabled === true &&
+    upgrade.finalizationVerified === true &&
+    upgrade.finalizationScope === "event";
+  return renounced
+    ? '<div class="notice" data-v10-review-governance>Upgrade authority is renounced for this verified event.</div>'
+    : '<div class="notice warning" data-v10-review-governance><strong>Immediate upgrade authority</strong><br>The upgrade owner can change this contract and custody rules immediately, with no waiting period.</div>';
 }
 function renderProductionDetails() {
   if (!isGuardedV9()) return "";
@@ -799,6 +824,14 @@ function renderProductionDetails() {
   const issueAttribute = isV9Testnet()
     ? "data-v9-testnet-unavailable"
     : "data-production-unavailable";
+  if (app.bootstrap?.contractVersion === "kleros-event-v10-uups") {
+    const renounced =
+      verified &&
+      upgrade.upgradesDisabled === true &&
+      upgrade.finalizationVerified === true &&
+      upgrade.finalizationScope === "event";
+    return `${issue ? `<div class="notice warning" ${issueAttribute} role="status">${escape(issue)}</div>` : ""}<details class="disclosure" ${detailsAttribute}><summary>${environment}, arbitration & upgrades</summary><p>${escape(arbitrationLabel())}</p><p>${escape(arbitrationNotice())}</p><p>${escape(walletSupportNotice())}</p>${verified ? `<dl class="details-list"><div><dt>Deployment verification</dt><dd>${escape(detail.deploymentTrust.status)}</dd></div><div><dt>Upgrade model</dt><dd>V10 · immediate controller / per-event UUPS</dd></div><div><dt>Implementation</dt><dd class="mono">${escape(upgrade.implementation)}</dd></div><div><dt>Implementation code hash</dt><dd class="mono">${escape(upgrade.implementationCodeHash)}</dd></div><div><dt>Upgrade authority contract</dt><dd class="mono">${escape(upgrade.authority)}</dd></div><div><dt>Upgrade owner</dt><dd class="mono">${escape(upgrade.owner)}</dd></div><div><dt>Proposed next owner</dt><dd class="mono">${/^0x0{40}$/i.test(upgrade.pendingOwner) ? "None" : escape(upgrade.pendingOwner)}</dd></div><div><dt>Event financial owner</dt><dd class="mono">${escape(detail.state.owner)}</dd></div><div><dt>Upgrade authority status</dt><dd>${renounced ? "Renounced · verified for this event" : "Active · changes can take effect immediately"}</dd></div><div><dt>Resolver</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.resolver)}</dd></div><div><dt>Arbitrator</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.arbitrator)}</dd></div></dl><p class="field-help">A new upgrade owner must accept the ownership transfer. Renouncing ownership permanently disables this controller's upgrades and factory implementation selection.</p>` : "<p>Verified upgrade metadata is unavailable. Financial review is disabled.</p>"}${productionUpgradeNotice()}</details>`;
+  }
   return `${issue ? `<div class="notice warning" ${issueAttribute} role="status">${escape(issue)}</div>` : ""}<details class="disclosure" ${detailsAttribute}><summary>${environment}, arbitration & upgrades</summary><p>${escape(arbitrationLabel())}</p><p>${escape(arbitrationNotice())}</p><p>${escape(walletSupportNotice())}</p>${verified ? `<dl class="details-list"><div><dt>Deployment verification</dt><dd>${escape(detail.deploymentTrust.status)}</dd></div><div><dt>Upgrade model</dt><dd>Per-event UUPS / ERC1967</dd></div><div><dt>Implementation</dt><dd class="mono">${escape(upgrade.implementation)}</dd></div><div><dt>Implementation code hash</dt><dd class="mono">${escape(upgrade.implementationCodeHash)}</dd></div><div><dt>Implementation version</dt><dd>${escape(upgrade.version)}</dd></div><div><dt>Upgrade authority contract</dt><dd class="mono">${escape(upgrade.authority)}</dd></div><div><dt>Upgrade owner</dt><dd class="mono">${escape(upgrade.owner)}</dd></div><div><dt>Pending upgrade owner</dt><dd class="mono">${upgrade.pendingOwner === null ? "None" : escape(upgrade.pendingOwner)}</dd></div><div><dt>Initial upgrade owner · historical</dt><dd class="mono">${escape(app.bootstrap?.governance?.initialOwner)}</dd></div><div><dt>Pending governance operations</dt><dd>${escape(upgrade.pendingOperationCount)}</dd></div><div><dt>Executing governance operations</dt><dd>${escape(upgrade.executingOperationCount)}</dd></div><div><dt>Event financial owner</dt><dd class="mono">${escape(detail.state.owner)}</dd></div><div><dt>Upgrade delay</dt><dd>${escape(upgrade.delaySeconds)} seconds · ${escape(upgrade.delaySeconds / 3600)} hours</dd></div><div><dt>Pending upgrade</dt><dd>${pending ? `${escape(pending.status)}<br>Operation: <span class="mono">${escape(pending.operationId)}</span><br>New implementation: <span class="mono">${escape(pending.newImplementation)}</span><br>Eligible: ${escape(formatTime(pending.eligibleAt, detail.event.timezone))}` : "None reported in this verified snapshot"}</dd></div><div><dt>Resolver</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.resolver)}</dd></div><div><dt>Arbitrator</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.arbitrator)}</dd></div></dl><p class="field-help">The upgrade owner is separate from the event financial owner. An upgrade ownership transfer requires the proposed owner to accept while the pending and executing operation counts are both zero.</p>` : "<p>Verified upgrade metadata is unavailable. Financial review is disabled.</p>"}${productionUpgradeNotice(verified ? upgrade.delaySeconds : null)}</details>`;
 }
 function disableUnreadyProductionActions() {
@@ -1017,8 +1050,9 @@ function participantWalletVerified(person, event = app.detail?.event) {
     person?.identityVerified === true ||
     (isProduction() &&
       event?.chainId === 1 &&
-      event.contractVersion === "kleros-event-v9-uups" &&
-      event.abiVersion === "kleros-event-v9-uups" &&
+      isSupportedProductionVersion(event.contractVersion) &&
+      event.contractVersion === app.bootstrap?.contractVersion &&
+      event.abiVersion === event.contractVersion &&
       person?.walletVerified === true)
   );
 }
@@ -1269,6 +1303,8 @@ async function connectWallet() {
   cancelRead();
   walletSessionEpoch++;
   const connection = walletSessionContext();
+  const v10Connection =
+    app.bootstrap?.contractVersion === "kleros-event-v10-uups";
   walletConnectionPending = true;
   rememberSetupExpectation(null);
   disposeContractInbox();
@@ -1352,10 +1388,25 @@ async function connectWallet() {
         app.bootstrap.chain.rpcUrl,
       );
     assertConnectionCurrent();
+    const assertV10ConnectionAccount = async () => {
+      const capturedBootstrap = app.bootstrap;
+      await assertV10WalletAccount({
+        provider,
+        wallet: accounts[0],
+        bootstrap: capturedBootstrap,
+      });
+      assertConnectionCurrent();
+      if (app.bootstrap !== capturedBootstrap || walletProvider() !== provider)
+        throw new Error(
+          "The V10 wallet context changed. Reconnect before signing in.",
+        );
+    };
+    if (v10Connection) await assertV10ConnectionAccount();
     const { nonce, message } = await post("/api/auth/challenge", {
       wallet: accounts[0],
     });
     assertConnectionCurrent();
+    if (v10Connection) await assertV10ConnectionAccount();
     const messageHex = `0x${[...new TextEncoder().encode(message)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
     const signature = await provider.request({
       method: "personal_sign",
@@ -1480,7 +1531,11 @@ function showSetupFailure(error) {
   $("#content").hidden = false;
   $("#content").innerHTML =
     `<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"><section class="luma-setup" data-setup-feedback><div class="eyebrow">KICKBACK SETUP</div><h1>${cancelled ? "Wallet sign-in was cancelled." : "Setup could not be checked."}</h1><p class="error-panel" role="alert" data-setup-feedback-error>${escape(error?.message ?? "The current wallet session could not be verified.")}</p><p>${contextChanged ? "Reload setup to read the current server context. Your saved transaction records are retained." : "Check setup again or reconnect your wallet. The form opens after a fresh session and Ethereum setup check."}</p><div class="luma-setup-actions">${contextChanged ? '<button class="button button-primary" data-setup-reload>Reload setup</button>' : '<button class="button button-primary" data-setup-retry>Check setup again</button><button class="button button-secondary" data-connect-wallet>Reconnect wallet</button>'}</div></section></div></section>`;
-  if (error?.code === "UNSUPPORTED_WALLET") {
+  if (
+    error?.code === "UNSUPPORTED_WALLET" &&
+    app.bootstrap?.contractVersion === "kleros-event-v9-uups" &&
+    app.bootstrap?.features?.originalCreationRecovery !== false
+  ) {
     const notice = document.createElement("p"),
       link = document.createElement("a");
     notice.textContent = "Already created an event with this wallet? ";
@@ -2277,10 +2332,13 @@ function restoreTransactionJournal() {
 }
 // Saved-review identities locate existing journal records only. They are never
 // event summaries, verified financial profiles or authority to prepare a send.
-function submittedRecoveryProfile(mode) {
-  if (isProductionMode(mode))
-    return { chainId: 1, version: "kleros-event-v9-uups", label: "Ethereum" };
-  if (isV9TestnetMode(mode))
+function submittedRecoveryProfile(bootstrap) {
+  if (isProductionMode(bootstrap?.mode)) {
+    const version = bootstrap?.contractVersion;
+    if (!isSupportedProductionVersion(version)) return null;
+    return { chainId: 1, version, label: "Ethereum" };
+  }
+  if (isV9TestnetMode(bootstrap?.mode))
     return {
       chainId: 10200,
       version: "kleros-event-v9-uups-chiado",
@@ -2289,7 +2347,7 @@ function submittedRecoveryProfile(mode) {
   return null;
 }
 function submittedRecoveryIdentity(bootstrap, eventId) {
-  const expected = submittedRecoveryProfile(bootstrap?.mode);
+  const expected = submittedRecoveryProfile(bootstrap);
   if (
     !expected ||
     !Array.isArray(bootstrap?.events) ||
@@ -2332,7 +2390,7 @@ function submittedRecoveryFromManifest(record, error) {
     return null;
   const bootstrap = record.readBootstrap;
   const session = bootstrap?.session;
-  const expected = submittedRecoveryProfile(bootstrap?.mode);
+  const expected = submittedRecoveryProfile(bootstrap);
   const address = (value) =>
     typeof value === "string" &&
     /^0x[0-9a-f]{40}$/i.test(value) &&
@@ -3188,8 +3246,12 @@ function renderCase(item) {
   return `<article class="case-card case-summary"><h3>${escape(title)}</h3><p>${escape(statusNote)}</p><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(title ?? "Challenge", resolved ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(contractDeadline(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ${escape(currencySymbol())}</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ${escape(currencySymbol())}</dd></div><div><dt>Resolver local ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.localDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.arbitratorDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Final ruling</dt><dd>${!hasRuling ? "Not final" : invalidRuling ? "Unavailable · unsupported result" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][rulingNumber(item.finalRuling)])}</dd></div></dl>${invalidRuling ? '<div class="button-row"><button class="button button-secondary button-small" data-reload>Refresh ruling status</button></div>' : ""}${isV8() || invalidRuling ? `<details class="disclosure case-source-details"><summary>Case organizer & source details</summary>${isV8() ? `<dl class="details-list"><div><dt>Organizer for this case</dt><dd class="mono">${escape(item.caseOrganizer ?? "Unavailable")}</dd></div></dl><p>The contract captured this organizer when the challenge opened. A later owner change does not rewrite this case identity.</p>` : ""}${invalidRuling ? `<p>Reported ruling, not accepted for settlement: <code>${escape(item.finalRuling)}</code></p>` : ""}</details>` : ""}<div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !waiting || matchExpired ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || resolved || !((waiting && matchExpired) || (matched && final)) ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Deliver final ruling</button></div>${renderCasePublication(item)}<details class="disclosure" ${!hasCourtCase ? "hidden" : ""}><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p>${!isProduction() ? `<div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify server copy" : "Store exact bytes on this server"}</button></div>` : ""}<form data-form="evidence" data-wallet="${caseWallet}">${isProduction() ? '<p class="field-help">Enter an evidence URI for a separately reviewed submission. File uploads are unavailable here.</p>' : `<label for="evidence-file-${caseWallet}">Store an evidence file on this server (optional)</label><input id="evidence-file-${caseWallet}" type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored by this app; it is not published to IPFS.</p>`}<label for="evidence-uri-${caseWallet}" style="margin-top:12px">Evidence URI</label><input id="evidence-uri-${caseWallet}" name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form>${renderAppealStatus(item)}<form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label for="appeal-side-${caseWallet}">Ruling side</label><select id="appeal-side-${caseWallet}" name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label for="appeal-amount-${caseWallet}">Contribution (${escape(currencySymbol())})</label><input id="appeal-amount-${caseWallet}" name="amount" inputmode="decimal" required placeholder="Enter contribution"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() || (isGuardedV9() && !appealRewardsReady(item)) ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. A contribution is separate from the attendance share reserved by the event contract.</p></form></details>${owner && isSandbox() ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real ${versionLabel()} event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
 }
 
+const casePublicationAvailable = () =>
+  isProduction() &&
+  app.bootstrap?.contractVersion === "kleros-event-v9-uups" &&
+  app.bootstrap?.features?.casePublication !== false;
 function renderCasePublication(item) {
-  if (!isProduction()) return "";
+  if (!casePublicationAvailable()) return "";
   const status =
     item.publication && typeof item.publication === "object"
       ? item.publication
@@ -3210,7 +3272,7 @@ function caseArtifactCurrent(review) {
   return (
     caseArtifactReview === review &&
     review.generation === caseArtifactGeneration &&
-    isProduction() &&
+    casePublicationAvailable() &&
     app.generation === scope.generation &&
     app.unsignedReviewVersion === scope.unsignedReviewVersion &&
     app.bootstrap?.instanceId === scope.instanceId &&
@@ -3257,7 +3319,11 @@ function renderCaseArtifactReview(review) {
   );
 }
 async function openCaseArtifact(wallet, action = "review") {
-  if (!isProduction() || !/^0x[0-9a-f]{40}$/i.test(wallet))
+  if (!casePublicationAvailable())
+    throw new Error(
+      "Exact case artifact publication is unavailable for this contract profile.",
+    );
+  if (!/^0x[0-9a-f]{40}$/i.test(wallet))
     throw new Error("Choose a production attendance case.");
   if (
     app.detail?.event.id !== app.route.eventId ||
@@ -3475,7 +3541,7 @@ async function prepareTransaction(action, params = {}) {
   app.draftParams = { ...params };
   const event = app.detail.event;
   showDialog(
-    `${testProfileNotice(event)}<div class="dialog-eyebrow">Review before signing</div><h2 class="dialog-title" id="dialog-title">${escape(actionNames[action] ?? action)}</h2><p class="dialog-body-text">${escape(typeof draft.summary === "string" ? draft.summary : JSON.stringify(draft.summary))}</p><div class="review-list"><dl class="details-list"><div><dt>Event</dt><dd><strong>${escape(event.title)}</strong><br>${escape(draft.eventId)}</dd></div>${action === "postAttendance" ? `<div><dt>Proposed attendees</dt><dd><strong>${draft.args[0].length} registered wallets</strong></dd></div><div><dt>Initial share</dt><dd><strong>${eth(draft.args[1])} ${escape(currencySymbol())}</strong></dd></div><div><dt>Registered pool</dt><dd>${eth(app.detail.state.poolWei)} ${escape(currencySymbol())}</dd></div>` : ""}${action === "register" || action === "reject" ? `<div><dt>Reviewed wallets</dt><dd><strong>${draft.args[0].length} verified participants</strong></dd></div>` : ""}<div><dt>Network</dt><dd>${escape(networkName())} · ${escape(draft.chainId)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(draft.contract)}</dd></div>${!same(draft.contract, draft.transaction.to) ? `<div><dt>Transaction recipient</dt><dd class="mono">${escape(draft.transaction.to)}</dd></div>` : ""}<div><dt>Signing wallet</dt><dd class="mono">${escape(draft.wallet)}</dd></div><div><dt>Value</dt><dd><strong>${eth(draft.valueWei)} ${escape(currencySymbol())}</strong><br><span class="small mono">${escape(draft.valueWei)} wei</span></dd></div><div><dt>Method</dt><dd><code>${escape(draft.method)}</code></dd></div><div><dt>Policy</dt><dd>${escape(event.policyURI ?? event.policyUri ?? "Immutable event policy")}</dd></div><div><dt>Review expires</dt><dd>${escape(formatTime(draft.expiresAt, "UTC"))}</dd></div></dl></div>${isProduction() && action === "deposit" ? renderAttendanceStandard(event) : ""}<details class="disclosure"><summary>Inspect calldata and arguments</summary><pre class="review-code">${escape(JSON.stringify({ args: draft.args, transaction: draft.transaction, snapshot: draft.snapshot }, null, 2))}</pre></details>${action === "release" ? releaseBreakdown() : ""}<div class="notice warning">Confirming sends a transaction from the selected wallet on ${escape(networkName())} (${escape(draft.chainId)}). The server checks this state snapshot again and rejects an expired or stale draft. Changing event or wallet clears the review.</div><div id="transaction-status" role="status"></div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" id="execute-transaction" data-execute>${isProduction() ? "Confirm Ethereum transaction" : Number(draft.chainId) === 1337 ? "Confirm local transaction" : "Confirm testnet transaction"}</button></div>`,
+    `${testProfileNotice(event)}<div class="dialog-eyebrow">Review before signing</div><h2 class="dialog-title" id="dialog-title">${escape(actionNames[action] ?? action)}</h2><p class="dialog-body-text">${escape(typeof draft.summary === "string" ? draft.summary : JSON.stringify(draft.summary))}</p>${v10FinancialReviewNotice()}<div class="review-list"><dl class="details-list"><div><dt>Event</dt><dd><strong>${escape(event.title)}</strong><br>${escape(draft.eventId)}</dd></div>${action === "postAttendance" ? `<div><dt>Proposed attendees</dt><dd><strong>${draft.args[0].length} registered wallets</strong></dd></div><div><dt>Initial share</dt><dd><strong>${eth(draft.args[1])} ${escape(currencySymbol())}</strong></dd></div><div><dt>Registered pool</dt><dd>${eth(app.detail.state.poolWei)} ${escape(currencySymbol())}</dd></div>` : ""}${action === "register" || action === "reject" ? `<div><dt>Reviewed wallets</dt><dd><strong>${draft.args[0].length} verified participants</strong></dd></div>` : ""}<div><dt>Network</dt><dd>${escape(networkName())} · ${escape(draft.chainId)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(draft.contract)}</dd></div>${!same(draft.contract, draft.transaction.to) ? `<div><dt>Transaction recipient</dt><dd class="mono">${escape(draft.transaction.to)}</dd></div>` : ""}<div><dt>Signing wallet</dt><dd class="mono">${escape(draft.wallet)}</dd></div><div><dt>Value</dt><dd><strong>${eth(draft.valueWei)} ${escape(currencySymbol())}</strong><br><span class="small mono">${escape(draft.valueWei)} wei</span></dd></div><div><dt>Method</dt><dd><code>${escape(draft.method)}</code></dd></div><div><dt>Policy</dt><dd>${escape(event.policyURI ?? event.policyUri ?? "Immutable event policy")}</dd></div><div><dt>Review expires</dt><dd>${escape(formatTime(draft.expiresAt, "UTC"))}</dd></div></dl></div>${isProduction() && action === "deposit" ? renderAttendanceStandard(event) : ""}<details class="disclosure"><summary>Inspect calldata and arguments</summary><pre class="review-code">${escape(JSON.stringify({ args: draft.args, transaction: draft.transaction, snapshot: draft.snapshot }, null, 2))}</pre></details>${action === "release" ? releaseBreakdown() : ""}<div class="notice warning">Confirming sends a transaction from the selected wallet on ${escape(networkName())} (${escape(draft.chainId)}). The server checks this state snapshot again and rejects an expired or stale draft. Changing event or wallet clears the review.</div><div id="transaction-status" role="status"></div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" id="execute-transaction" data-execute>${isProduction() ? "Confirm Ethereum transaction" : Number(draft.chainId) === 1337 ? "Confirm local transaction" : "Confirm testnet transaction"}</button></div>`,
   );
 }
 function releaseBreakdown() {
@@ -3533,11 +3599,48 @@ async function executeTransaction() {
           { code: "TRANSACTION_STORAGE_UNAVAILABLE" },
         );
       const rawProvider = walletProvider();
+      const isCurrentSubmission = (captured) =>
+        app.draft?.id === draft.id &&
+        app.route.eventId === captured.eventId &&
+        same(currentIdentity()?.wallet, captured.wallet) &&
+        app.bootstrap?.instanceId === captured.instanceId &&
+        app.bootstrap?.mode === captured.mode &&
+        app.detail?.event.chainId === captured.chainId &&
+        same(app.detail?.event.contract, captured.contract) &&
+        app.detail?.event.abiVersion === captured.abiVersion;
       const guardedProvider = {
         request: async (request) => {
           if (request.method === "eth_sendTransaction") {
             assertFinancialEnvironment(draft.action, app.draftParams ?? {});
             assertProductionDraft(draft);
+            if (context.abiVersion === "kleros-event-v10-uups") {
+              const capturedBootstrap = app.bootstrap;
+              await assertV10WalletAccount({
+                provider: rawProvider,
+                wallet: context.wallet,
+                bootstrap: capturedBootstrap,
+              });
+              if (
+                !isCurrentSubmission(context) ||
+                app.bootstrap !== capturedBootstrap ||
+                walletProvider() !== rawProvider
+              )
+                throw new Error(
+                  "The reviewed V10 wallet or event context changed. Prepare a fresh review.",
+                );
+              const checkedAt = Date.now();
+              if (
+                !Number.isSafeInteger(checkedAt) ||
+                checkedAt < 0 ||
+                !Number.isSafeInteger(draft.expiresAt) ||
+                checkedAt >= draft.expiresAt
+              )
+                throw new Error(
+                  "The V10 transaction review expired during the account check. Prepare a fresh review.",
+                );
+              assertFinancialEnvironment(draft.action, app.draftParams ?? {});
+              assertProductionDraft(draft);
+            }
             if (isHostedDemo())
               await assertDemoChainInstance(
                 rawProvider,
@@ -3555,15 +3658,7 @@ async function executeTransaction() {
         context,
         provider: guardedProvider,
         journal: transactionJournal,
-        isCurrentContext: (captured) =>
-          app.draft?.id === draft.id &&
-          app.route.eventId === captured.eventId &&
-          same(currentIdentity()?.wallet, captured.wallet) &&
-          app.bootstrap?.instanceId === captured.instanceId &&
-          app.bootstrap?.mode === captured.mode &&
-          app.detail?.event.chainId === captured.chainId &&
-          same(app.detail?.event.contract, captured.contract) &&
-          app.detail?.event.abiVersion === captured.abiVersion,
+        isCurrentContext: isCurrentSubmission,
         validate: (eventId, id) =>
           post(
             `/api/events/${encodeURIComponent(eventId)}/drafts/${encodeURIComponent(id)}/validate`,

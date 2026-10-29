@@ -189,9 +189,9 @@ test("non-direct creation requires an exact trusted factual proof; raw transacti
     return { verified: true, chainId: 1, transactionHash: expected.transactionHash, from: expected.from, to: expected.to,
       valueWei: "0", dataHash: bad ? ethers.ZeroHash : ethers.keccak256(expected.data) };
   };
-  await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("TX_MISMATCH")); assert.equal(f.drafts.get(draft.id).submittedHash, undefined);
+  await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("TX_MISMATCH")); assert.equal(f.drafts.get(draft.id).submittedHash, tx.hash);
   bad = false; mutate = true;
-  await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("TX_MISMATCH")); assert.equal(f.drafts.get(draft.id).submittedHash, undefined);
+  await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("TX_MISMATCH")); assert.equal(f.drafts.get(draft.id).submittedHash, tx.hash);
   mutate = false; await f.service.recordSubmitted(f.session, draft.id, tx.hash);
   const result = await f.service.reconcile(f.session, draft.id, tx.hash); assert.equal(result.status, "confirmed"); assert.ok(proofs >= 3);
   assert.equal((await backend.getTransaction(tx.hash)).data, "0x1234"); assert.equal(forbiddenCalls, 0);

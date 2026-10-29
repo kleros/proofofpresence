@@ -78,8 +78,47 @@ define(
 define(422, "Use a valid Ethereum wallet address.", ["INVALID_WALLET"]);
 define(
   422,
-  "This production app supports wallets without deployed code. Contract wallets and delegated wallets are unsupported.",
+  "This wallet is outside the account profiles supported by this application.",
   ["UNSUPPORTED_WALLET"],
+);
+define(
+  409,
+  "The original wallet submission must be recorded first; the saved review is preserved.",
+  ["ORIGINAL_HASH_NOT_RECORDED"],
+);
+define(
+  503,
+  "Wallet compatibility could not be checked. Try again with a fresh chain read.",
+  ["V10_WALLET_UNAVAILABLE"],
+);
+define(
+  409,
+  "The original transaction is not confirmed yet. Preserve its existing transaction ID.",
+  ["V10_TRANSACTION_UNCONFIRMED"],
+);
+define(
+  409,
+  "The chain or account changed during verification. Preserve the original transaction ID and check again.",
+  ["V10_WALLET_REORG", "V10_TRANSACTION_REORG", "V10_WALLET_FRAMEWORK_CHANGED"],
+);
+define(
+  409,
+  "The transaction does not match its original saved V10 review or supported account profile.",
+  [
+    "V10_WALLET_SCOPE",
+    "V10_WALLET_EVIDENCE",
+    "V10_TRANSACTION_CODEC",
+    "V10_INTENT_MISMATCH",
+    "V10_PERMISSION_UNSUPPORTED",
+    "V10_RECEIPT_CONTEXT_SCOPE",
+    "V10_RECEIPT_CONTEXT_CHANGED",
+    "V10_RECEIPT_CONTEXT_UNSEALED",
+    "V10_RECEIPT_CONTEXT_MISMATCH",
+    "V10_RECEIPT_CONTEXT_UNKNOWN_HASH",
+    "V10_RECEIPT_CONTEXT_PROOF",
+    "V10_RECEIPT_CONTEXT_AMBIGUOUS",
+    "V10_RECEIPT_CONTEXT_MUTATED",
+  ],
 );
 define(
   503,

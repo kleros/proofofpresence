@@ -3,6 +3,8 @@ import { ethers } from "ethers";
 import { hash, requireThat } from "./utils.mjs";
 import { MAINNET_PROFILE, validateMainnetManifest, validateMainnetDynamicEvent } from "./mainnet-runtime.mjs";
 import { V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
+import { V10_MAINNET_PROFILE, validateV10MainnetManifest, validateV10MainnetDynamicEvent } from "./v10-mainnet-runtime.mjs";
+import { V10_LUMA_ATTENDANCE_STANDARD } from "./contracts-v10-luma.mjs";
 
 const same = (a, b) => typeof a === "string" && typeof b === "string" && a.toLowerCase() === b.toLowerCase();
 const digest = (value) => ethers.isHexString(value, 32) && value !== ethers.ZeroHash;
@@ -14,18 +16,21 @@ const FACTORY_SOURCE_FIELDS = ["chainId", "contractVersion", "abiVersion", "fact
   "upgradeAuthority", "upgradeAuthorityCodeHash", "initialUpgradeOwner", "factoryDeploymentTxHash", "factoryDeploymentBlock",
   "timelockDeploymentTxHash", "timelockDeploymentBlock"];
 
-function adoptedEntry(eventId, record, draftEntries, manifest) {
+function adoptedEntry(eventId, record, draftEntries, manifest, profile) {
   const d = record.deployment, definition = record.definition, factory = manifest.factoryDeployment;
   if (record.dynamic !== true || !d || definition.id !== eventId || d.eventId !== eventId ||
     d.eventKey !== ethers.id(eventId)) return null;
   // This is structural/immutable validation, not a current on-chain verification.
-  validateMainnetDynamicEvent(record, manifest);
+  const v10 = profile === V10_MAINNET_PROFILE;
+  (v10 ? validateV10MainnetDynamicEvent : validateMainnetDynamicEvent)(record, manifest);
   const matches = draftEntries.filter(([, draft]) => draft?.scopeKind === "factory-create" && draft.eventId === eventId &&
     draft.status === "confirmed" && draft.used === true && draft.adoptionStatus === "verified");
   if (matches.length !== 1) return null;
   const [draftId, draft] = matches[0], terms = draft.terms, tx = draft.transaction;
-  if (!terms || draft.id !== draftId || draft.chainId !== 1 || draft.contractVersion !== MAINNET_PROFILE ||
-    draft.abiVersion !== MAINNET_PROFILE || draft.mode !== "hosted-production" || draft.action !== "createEvent" ||
+  const sourceFields = v10 ? FACTORY_SOURCE_FIELDS.filter(key => !["timelockDeploymentTxHash", "timelockDeploymentBlock"].includes(key))
+    .concat(["controllerDeploymentTxHash", "controllerDeploymentBlock"]) : FACTORY_SOURCE_FIELDS;
+  if (!terms || draft.id !== draftId || draft.chainId !== 1 || draft.contractVersion !== profile ||
+    draft.abiVersion !== profile || draft.mode !== "hosted-production" || draft.action !== "createEvent" ||
     draft.method !== "createEvent" || draft.valueWei !== "0" || !same(draft.contract, factory.factory) ||
     !same(draft.factory, factory.factory) || draft.factoryFingerprint !== hash(factory) ||
     draft.eventKey !== d.eventKey || !same(draft.wallet, d.creator) || !same(draft.createdContract, d.contract) ||
@@ -33,7 +38,7 @@ function adoptedEntry(eventId, record, draftEntries, manifest) {
     !same(draft.confirmedHash, d.deploymentTxHash) || !positive(draft.blockNumber) ||
     draft.blockNumber !== d.deploymentBlock || !digest(draft.blockHash) ||
     !positive(draft.reviewBlock) || draft.reviewBlock >= draft.blockNumber ||
-    !FACTORY_SOURCE_FIELDS.every((key) => typeof factory[key] === "number"
+    !sourceFields.every((key) => typeof factory[key] === "number"
       ? draft.factorySource?.[key] === factory[key] : same(draft.factorySource?.[key], factory[key]))) return null;
   const configuration = { depositAmount: d.depositWei, eventName: d.eventName, eventStart: d.eventStart, claimDeadline: d.claimDeadline,
     arbitration: { disputeResolver: d.resolver, extraData: d.arbitratorExtraData,
@@ -47,10 +52,10 @@ function adoptedEntry(eventId, record, draftEntries, manifest) {
     terms.claimDeadline !== d.claimDeadline || terms.lumaUrl !== definition.lumaUrl ||
     terms.startsAt !== definition.startsAt || terms.endsAt !== definition.endsAt || terms.timezone !== definition.timezone ||
     terms.policyURI !== d.policyURI || terms.policySha256 !== hash(record.policy) ||
-    hash(terms.attendanceStandard) !== hash(V9_LUMA_ATTENDANCE_STANDARD)) return null;
+    hash(terms.attendanceStandard) !== hash(v10 ? V10_LUMA_ATTENDANCE_STANDARD : V9_LUMA_ATTENDANCE_STANDARD)) return null;
   return { id: eventId, title: definition.title, startsAt: definition.startsAt, endsAt: definition.endsAt,
     timezone: definition.timezone, depositWei: d.depositWei, chainId: 1, contract: d.contract,
-    contractVersion: MAINNET_PROFILE, abiVersion: MAINNET_PROFILE, visibility: "public", editorialStatus: "published",
+    contractVersion: profile, abiVersion: profile, visibility: "public", editorialStatus: "published",
     adoption: { kind: "recorded-adoption", txHash: draft.confirmedHash, blockNumber: draft.blockNumber, blockHash: draft.blockHash } };
 }
 
@@ -61,14 +66,15 @@ export function publicCatalogSnapshot({ manifest: input, events, drafts, instanc
   requireThat(events instanceof Map && drafts instanceof Map && typeof instanceId === "string" &&
     /^[A-Za-z0-9_-]{1,160}$/.test(instanceId) && Number.isSafeInteger(now) && now >= 0 && now <= 8_640_000_000_000_000,
   "Public catalog requires a scoped production registry and clock", "PUBLIC_CATALOG_SCOPE", 409);
-  const manifest = validateMainnetManifest(input);
+  const profile = input?.factoryDeployment?.contractVersion === V10_MAINNET_PROFILE ? V10_MAINNET_PROFILE : MAINNET_PROFILE;
+  const manifest = (profile === V10_MAINNET_PROFILE ? validateV10MainnetManifest : validateMainnetManifest)(input);
   requireThat(manifest.factoryDeployment, "Public catalog requires the reviewed production factory", "PUBLIC_CATALOG_SCOPE", 409);
   const candidates = [], draftEntries = [...drafts];
   for (const [eventId, record] of events) {
     try {
       // This must precede title, deployment, participant or search-index access.
       if (record?.definition?.visibility !== "public" || record.definition.editorialStatus !== "published") continue;
-      const entry = adoptedEntry(eventId, record, draftEntries, manifest);
+      const entry = adoptedEntry(eventId, record, draftEntries, manifest, profile);
       if (entry) candidates.push(entry);
     } catch { /* Malformed or unbound records are omitted without diagnostics or private metadata. */ }
   }
@@ -78,6 +84,7 @@ export function publicCatalogSnapshot({ manifest: input, events, drafts, instanc
   const rows = candidates.filter((row) => [`id:${row.id}`, `contract:${row.contract.toLowerCase()}`, `tx:${row.adoption.txHash.toLowerCase()}`]
     .every((value) => counts.get(value) === 1));
   return structuredClone({ schemaVersion: 1, kind: "public-catalog", mode: "hosted-production", instanceId,
+    ...(profile === V10_MAINNET_PROFILE ? { contractVersion: profile, governance: { ...manifest.governance } } : {}),
     environment: { production: true, network: "ethereum-mainnet", chainId: 1 },
     chain: { chainId: 1, name: manifest.chain.name, rpcUrl: manifest.chain.rpcUrl,
       nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 } },

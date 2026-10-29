@@ -1,0 +1,235 @@
+{
+  "kind": "v10-type4-protected-local-protocol-custody",
+  "schemaVersion": 1,
+  "runId": "2026-10-29T17-17-34.576Z-52d319c0-fcdb-40e0-8ee2-0daf1750a04b",
+  "startedAt": "2026-10-29T17:17:34.577Z",
+  "passed": false,
+  "chainId": 1,
+  "environment": "fresh-loopback-anvil-prague-no-fork",
+  "publicNetworkRequests": 0,
+  "keysPersisted": false,
+  "walletCodeFixtureShortcut": false,
+  "frameworkSourceVerified": true,
+  "source": {
+    "harnessSha256": "5a4addf7b8d4a110c66eba338a9e9cd87437c5cacb340e73d69dc7ffb6d5602c",
+    "observedRuntimeFileSha256": "486913a5210ab05284468ce4a4efa2d9f279de44e120aadf3718d957678495eb",
+    "compatibilitySha256": "12a6d577b443e69c869b5bebec72863c809ea9cda35f5c4c6465d82f228c8485",
+    "v10BuildManifestSha256": "159da1bbb8a32fa0d98011a3b2e187807f6c124420f1933d594ddfa3970338b9",
+    "v10StandardInputSha256": "a19b7b236c2292222d8f6f090ba931a6c46d0205d213b3706e12635c700421d5"
+  },
+  "fixtures": [
+    {
+      "name": "manager",
+      "address": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+      "codeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3",
+      "bytes": 11503
+    },
+    {
+      "name": "delegate",
+      "address": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+      "codeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab",
+      "bytes": 11185
+    },
+    {
+      "name": "nativeBalanceEnforcer",
+      "address": "0xbD7B277507723490Cd50b12EaaFe87C616be6880",
+      "codeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76",
+      "bytes": 2084
+    }
+  ],
+  "checks": [
+    "fresh official local Anvil1.7.1 chain1 Prague with no fork",
+    "synthetic authority begins as empty-code EOA",
+    "fresh authority nonce starts at zero",
+    "initial EOA direct CREATE controller",
+    "initial EOA direct CREATE event implementation",
+    "initial EOA direct CREATE factory implementation",
+    "initial EOA direct CREATE factory proxy",
+    "actual initial EOA deployer controls immediate V10 controller",
+    "four setup CREATEs alone do not create an event",
+    "local Court fixture liquid",
+    "local Court fixture resolver",
+    "authority remains EOA at nonce4 after exact four setup CREATEs",
+    "protected self creation signature and exact zero-value guard match",
+    "actual type4 manager protected-self creates V10 child",
+    "factory creator and child owner are authority wallet, not manager/delegate",
+    "canonical child membership binds original authority",
+    "first protected execution actually installed protocol designation",
+    "same type4 transaction proves selfauthorization signature and protected creation intent",
+    "wrapped creation preserves original V10 config hash and version",
+    "deposit guard maxDecrease equals exact inner native value",
+    "actual type4 protected-self deposit transfers native D from authority to event"
+  ],
+  "transactions": [
+    {
+      "label": "initial EOA direct CREATE controller",
+      "hash": "0xd76d9fd0fdc609936d06fa72821aa7332c3f2c9844a118ecb0ba9fb503ba39fc",
+      "type": 2,
+      "blockNumber": 1,
+      "blockHash": "0x2096814c4d6c27d34024fa3ed28a1ed061ed574d9a44a1048d00e057dfa04f1d",
+      "status": 1,
+      "gasUsed": "669197",
+      "effectiveGasPriceWei": "2000000000",
+      "from": "0x2a9A1C2457a55bD0f81F2e93bac9d52cCe39e1f1",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "initial EOA direct CREATE event implementation",
+      "hash": "0xaedb4a0829e0cc450f0a6598c9a0e9a7a60e2dd1dce7aa0ac796ae8ada14d3c6",
+      "type": 2,
+      "blockNumber": 2,
+      "blockHash": "0x7c7d9c08215c4e2540885e10774e673810793e27dd0725ebd1f21c994ce8fd5d",
+      "status": 1,
+      "gasUsed": "4641208",
+      "effectiveGasPriceWei": "1877788321",
+      "from": "0x2a9A1C2457a55bD0f81F2e93bac9d52cCe39e1f1",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "initial EOA direct CREATE factory implementation",
+      "hash": "0x6cbc6a0903daf1c295beea7392a74dad611a6857e99f0c06c27ef9df70c60516",
+      "type": 2,
+      "blockNumber": 3,
+      "blockHash": "0xb515ce66c01f57eb2b6e08430b4a0541173e926a32b2f86c084c5cbdccfaf3f1",
+      "status": 1,
+      "gasUsed": "1654634",
+      "effectiveGasPriceWei": "1785039774",
+      "from": "0x2a9A1C2457a55bD0f81F2e93bac9d52cCe39e1f1",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "initial EOA direct CREATE factory proxy",
+      "hash": "0x71d88301b182209e602e329ed74cd419cf662ad6f006b7cb1bb78f2f69799f76",
+      "type": 2,
+      "blockNumber": 4,
+      "blockHash": "0xeaba360c5164d81f50eeeaf7deff5abeb0ec43e65d81f4bbb288389be81bce52",
+      "status": 1,
+      "gasUsed": "229827",
+      "effectiveGasPriceWei": "1692322109",
+      "from": "0x2a9A1C2457a55bD0f81F2e93bac9d52cCe39e1f1",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "local Court fixture liquid",
+      "hash": "0xd34b7510812c2901e36e4e26777c87fc2f996866e7df82bf7f2298a439927083",
+      "type": 2,
+      "blockNumber": 5,
+      "blockHash": "0xce051214246c1dbcc46ae71ce8c4255777c2d17e9f2b31b6ef8b04ed34bd0b22",
+      "status": 1,
+      "gasUsed": "1200883",
+      "effectiveGasPriceWei": "1606444822",
+      "from": "0xd0CFb1A83602B50BD1fFACc183ddCF8b66694b06",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "local Court fixture resolver",
+      "hash": "0x064bbe1fa86be577276ba8cd0d9ddbc8e16c28c70c7519da64f2e17cdd72af2b",
+      "type": 2,
+      "blockNumber": 6,
+      "blockHash": "0x17b7d1781369c09273d734739110206b7417bff441cdad8ade2a833a73ff0a10",
+      "status": 1,
+      "gasUsed": "1846213",
+      "effectiveGasPriceWei": "1533673675",
+      "from": "0xd0CFb1A83602B50BD1fFACc183ddCF8b66694b06",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "actual type4 manager protected-self creates V10 child",
+      "hash": "0x20049c8bc7780f8e3fceabc363ff30c2eacf9017dc0cf7616cf9a86edb3e1adc",
+      "type": 4,
+      "blockNumber": 7,
+      "blockHash": "0x7376bde0e20d1d5857b638a84e6fdb146850f3916e80c4f2f9aabcab4b685351",
+      "status": 1,
+      "gasUsed": "903873",
+      "effectiveGasPriceWei": "1471069780",
+      "from": "0x2a9A1C2457a55bD0f81F2e93bac9d52cCe39e1f1",
+      "to": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+      "valueWei": "0"
+    },
+    {
+      "label": "actual type4 protected-self deposit transfers native D from authority to event",
+      "hash": "0x532f392de291d2a251266c554af1d927cdd5c2c42d97a8d754e261ed223b209b",
+      "type": 4,
+      "blockNumber": 8,
+      "blockHash": "0x814aec768b4ec6fc025a81e57a68d0ae2b949ed5d980f797c92b33284b61d0b7",
+      "status": 1,
+      "gasUsed": "188500",
+      "effectiveGasPriceWei": "1413960172",
+      "from": "0x2a9A1C2457a55bD0f81F2e93bac9d52cCe39e1f1",
+      "to": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+      "valueWei": "0"
+    }
+  ],
+  "limits": [
+    "Framework contract code is installed from observed public runtime; this does not itself prove its source.",
+    "No mainnet transaction, current user wallet, live state adoption, app authorization or financial activation is performed.",
+    "Only pending native deposits/recovery are exercised; the separate contract suite covers adjudication and held-share economics."
+  ],
+  "frameworkSourceProofSha256": "7108974bc07ca8b46964d855887d9c26c1891386d21c5cf1bdb3f628fb7cb17c",
+  "anvil": {
+    "version": "1.7.1",
+    "binarySha256": "5c9f9aad323062b1c0421a63595741430acaea150da3611e38c45071e4cf4e28",
+    "hardfork": "prague",
+    "noFork": true
+  },
+  "authorizationShapeChecks": [
+    {
+      "hash": "0x20049c8bc7780f8e3fceabc363ff30c2eacf9017dc0cf7616cf9a86edb3e1adc",
+      "fields": [
+        "address",
+        "chainId",
+        "nonce",
+        "r",
+        "s",
+        "yParity"
+      ],
+      "rIsBytes32": true,
+      "sIsBytes32": true,
+      "canonicalChainQuantity": true,
+      "canonicalNonceQuantity": true,
+      "canonicalParityQuantity": true,
+      "canonicalTransactionNonce": true
+    },
+    {
+      "hash": "0x532f392de291d2a251266c554af1d927cdd5c2c42d97a8d754e261ed223b209b",
+      "fields": [
+        "address",
+        "chainId",
+        "nonce",
+        "r",
+        "s",
+        "yParity"
+      ],
+      "rIsBytes32": false,
+      "sIsBytes32": true,
+      "canonicalChainQuantity": true,
+      "canonicalNonceQuantity": true,
+      "canonicalParityQuantity": true,
+      "canonicalTransactionNonce": true
+    }
+  ],
+  "authorizationChecks": [
+    {
+      "hash": "0x20049c8bc7780f8e3fceabc363ff30c2eacf9017dc0cf7616cf9a86edb3e1adc",
+      "chainId": 1,
+      "delegate": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+      "outerNonce": 4,
+      "authorizationNonce": 5,
+      "signerMatchesAuthority": true,
+      "canonicalRawUnchanged": true,
+      "factualIntentFields": 7
+    }
+  ],
+  "stopped": {
+    "stage": "actual-native-deposit-custody",
+    "code": "V10_AUTHORIZATION_UNKNOWN"
+  },
+  "finishedAt": "2026-10-29T17:17:34.918Z",
+  "actualBroadcasts": 8
+}

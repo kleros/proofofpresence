@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { ethers } from "ethers";
 import { hash, lower, requireThat } from "./utils.mjs";
 import { verifyV10ArtifactSources } from "./v10-upgrade-artifacts.mjs";
+import { createV10ReceiptContext } from "./v10-receipt-context.mjs";
 import { createReadOnlyHttpProvider } from "./mainnet-runtime.mjs";
 import {
   eventV10LumaTemplate,
@@ -463,6 +464,15 @@ export function validateV10MainnetDynamicEvent(record, manifestInput) {
 }
 
 function validateFactoryDraft(key, draft, manifest) {
+  if (draft?.scopeKind === "event-call" || draft?.v10Intent) {
+    requireThat(draft.id === key && draft.v10Intent, "A saved V10 financial review needs its original seal", "STATE_SCOPE");
+    try {
+      createV10ReceiptContext({ chain: { production: true, chainId: 1, manifest },
+        origin: draft.origin, instanceId: draft.instanceId, drafts: new Map([[key, draft]]) }).sealDraft(draft);
+    } catch {
+      requireThat(false, "Saved V10 review differs from its original sealed scope", "STATE_SCOPE");
+    }
+  }
   if (draft?.scopeKind !== "factory-create") return;
   const factory = manifest.factoryDeployment;
   requireThat(
@@ -1117,7 +1127,7 @@ export function v10MainnetStateStore(filename, input) {
         for (const [key, draft] of drafts) {
           validateFactoryDraft(key, draft, manifest);
           const old = previous?.drafts.find(([oldKey]) => oldKey === key)?.[1];
-          if (old?.scopeKind === "factory-create") {
+          if (["factory-create", "event-call"].includes(old?.scopeKind)) {
             const immutable = [
               "scopeKind",
               "id",
@@ -1126,6 +1136,12 @@ export function v10MainnetStateStore(filename, input) {
               "wallet",
               "sessionId",
               "instanceId",
+              "origin",
+              "mode",
+              "action",
+              "contract",
+              "valueWei",
+              "v10Intent",
               "chainId",
               "contractVersion",
               "abiVersion",
@@ -1142,6 +1158,11 @@ export function v10MainnetStateStore(filename, input) {
               "snapshot",
               "registryHash",
               "reviewBlock",
+              "method",
+              "args",
+              "params",
+              "summary",
+              "revision",
             ];
             requireThat(
               immutable.every(
@@ -1154,7 +1175,7 @@ export function v10MainnetStateStore(filename, input) {
                   same(old.confirmedHash, draft.confirmedHash)) &&
                 (!["confirmed", "failed"].includes(old.status) || draft.status === old.status) &&
                 (old.used !== true || draft.used === true),
-              "Persisted factory creation review cannot change its wallet, request or submitted hash",
+              "Persisted V10 review cannot change its wallet, request or submitted hash",
               "STATE_SCOPE",
             );
           }
@@ -1163,11 +1184,11 @@ export function v10MainnetStateStore(filename, input) {
           !previous ||
             previous.drafts.every(
               ([key, draft]) =>
-                draft?.scopeKind !== "factory-create" ||
+                !["factory-create", "event-call"].includes(draft?.scopeKind) ||
                 !draft.submittedHash ||
                 drafts.has(key),
             ),
-          "Submitted factory creation reviews must remain recoverable",
+          "Submitted V10 reviews must remain recoverable",
           "STATE_SCOPE",
         );
         const data = {

@@ -1,0 +1,62 @@
+{
+  "status": "ESTIMATE: selected redesign values; provenance specifies observed source tokens",
+  "colors": {
+    "background": "#17131F",
+    "deep": "#120F19",
+    "surface": "#201A2B",
+    "raised": "#2A2336",
+    "decorativeBorder": "#352D44",
+    "controlBoundary": "#81788F",
+    "text": "#E6E1EE",
+    "heading": "#F2EEF7",
+    "muted": "#A69FB5",
+    "accent": "#A78BFA",
+    "onAccent": "#17131F",
+    "success": "#86D9B4",
+    "warning": "#F0C08A",
+    "danger": "#FF8FA3"
+  },
+  "typography": {
+    "display": "Instrument Serif",
+    "body": "Geist",
+    "technical": "Geist Mono",
+    "bodyPx": 16,
+    "bodyLineHeight": 1.6,
+    "controlPx": 14,
+    "metadataPx": 13,
+    "heroDesktopPxMax": 60,
+    "heroMobilePx": 46
+  },
+  "spacingPx": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "radiiPx": {
+    "card": 14,
+    "control": 8
+  },
+  "layout": {
+    "containerMaxPx": 1180,
+    "pageGutterPx": 16,
+    "participantPanelPx": 350,
+    "stackBreakpointPx": 900,
+    "mobileBreakpointPx": 600
+  },
+  "interaction": {
+    "primaryTargetMinPx": 44,
+    "focusOutlinePx": 3,
+    "focusOffsetPx": 3,
+    "motion": "No required animation; honor prefers-reduced-motion"
+  },
+  "provenance": {
+    "observed": "Events colors except controlBoundary/danger; exact fonts and Kleros assets; base geometry source precedent",
+    "proposed": "Control boundary, danger treatment, app text sizes, panel geometry, 44px targets and new state composition"
+  },
+  "financialBaseline": "Legacy v7 ETH / Kleros V1; versioned adapters; immutable old deployments"
+}

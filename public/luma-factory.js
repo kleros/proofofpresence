@@ -1,5 +1,12 @@
-import { productionContextIssue, isVerifiedV9Upgrade } from "./environment.js";
-import { PRODUCTION_CONTRACT_VERSION } from "./contract-profiles.js";
+import {
+  productionContextIssue,
+  isVerifiedV9Upgrade,
+  isVerifiedV10Upgrade,
+} from "./environment.js";
+import {
+  V10_PRODUCTION_CONTRACT_VERSION,
+  isSupportedProductionVersion,
+} from "./contract-profiles.js";
 import { knownAttendanceStandard } from "./luma-launch.js";
 const same = (a, b) =>
   String(a ?? "").toLowerCase() === String(b ?? "").toLowerCase();
@@ -60,7 +67,8 @@ export function factorySetupIssue(bootstrap, { requireWallet = false } = {}) {
   });
   if (issue) return issue;
   const setup = bootstrap.organizerSetup,
-    factory = bootstrap.factory;
+    factory = bootstrap.factory,
+    profile = bootstrap.contractVersion;
   if (setup?.policyStatus !== "verified")
     return "Event creation is unavailable until the event policy is published and verified.";
   if (!knownAttendanceStandard(setup.attendanceStandard))
@@ -82,17 +90,21 @@ export function factorySetupIssue(bootstrap, { requireWallet = false } = {}) {
   if (
     factory?.chainId !== 1 ||
     !address(factory.address) ||
-    factory.contractVersion !== PRODUCTION_CONTRACT_VERSION ||
-    factory.abiVersion !== PRODUCTION_CONTRACT_VERSION ||
+    factory.contractVersion !== profile ||
+    factory.abiVersion !== profile ||
     factory.verified !== true ||
     factory.deploymentTrust?.status !== "verified" ||
-    !isVerifiedV9Upgrade(factory.upgrade)
+    (profile === V10_PRODUCTION_CONTRACT_VERSION
+      ? !isVerifiedV10Upgrade(factory.upgrade, "factory") ||
+        !same(factory.upgrade.initialOwner, bootstrap.governance.initialOwner)
+      : !isVerifiedV9Upgrade(factory.upgrade))
   )
     return "The event factory could not be verified. New event creation is unavailable.";
   return null;
 }
 // These facts scope known-hash receipt reads even when current factory trust is unavailable.
 export function factoryReadScope(bootstrap) {
+  const profile = bootstrap?.factory?.abiVersion;
   must(
     bootstrap?.mode === "hosted-production" &&
       bootstrap.chain?.chainId === 1 &&
@@ -100,16 +112,38 @@ export function factoryReadScope(bootstrap) {
       address(bootstrap.session.wallet) &&
       text(bootstrap.instanceId, 200) &&
       address(bootstrap.factory?.address) &&
-      bootstrap.factory.abiVersion === PRODUCTION_CONTRACT_VERSION,
+      isSupportedProductionVersion(profile) &&
+      (profile === V10_PRODUCTION_CONTRACT_VERSION
+        ? bootstrap.contractVersion === profile &&
+          bootstrap.abiVersion === profile &&
+          bootstrap.factory.contractVersion === profile
+        : true),
     "Authenticate the original factory wallet and environment to check this transaction.",
   );
   return Object.freeze({
     wallet: bootstrap.session.wallet,
     chainId: 1,
     contract: bootstrap.factory.address,
-    abiVersion: PRODUCTION_CONTRACT_VERSION,
+    abiVersion: profile,
     mode: "hosted-production",
     instanceId: bootstrap.instanceId,
+  });
+}
+// V10's fixed onboarding policy creates public, published events. These words
+// disclose that consequence; they do not authorize creation or prove adoption.
+export function creationReviewDisclosure(bootstrap) {
+  if (
+    bootstrap?.contractVersion !== V10_PRODUCTION_CONTRACT_VERSION ||
+    factorySetupIssue(bootstrap)
+  )
+    return null;
+  return Object.freeze({
+    publication: "Public · Published",
+    publicationNotice:
+      "After verified creation, this event is Public · Published and appears in the public event directory. Its title, event times, deposit and Luma link are public. No guest names or emails are published.",
+    upgradeNotice: bootstrap.factory.upgrade.upgradesDisabled
+      ? "The verified V10 controller has permanently disabled upgrades for this scope. Existing V9 events remain separate."
+      : "The V10 upgrade owner can change contract logic immediately until ownership is renounced. There is no mandatory upgrade delay. Existing V9 events remain separate.",
   });
 }
 export function creationContext(bootstrap, draft) {
@@ -137,7 +171,7 @@ export function assertCreationDraft(
       same(draft.contract, context.contract) &&
       draft.chainId === 1 &&
       draft.abiVersion === context.abiVersion &&
-      draft.contractVersion === PRODUCTION_CONTRACT_VERSION &&
+      draft.contractVersion === context.abiVersion &&
       draft.mode === context.mode &&
       draft.instanceId === context.instanceId &&
       text(draft.sessionId, 200),
