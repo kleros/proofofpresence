@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "v10-exact-four-create-local-rehearsal",
+  "status": "passed",
+  "chainId": 1,
+  "environment": "fresh-loopback-anvil-prague-no-fork",
+  "sourceCommit": "2a281c606445d2eb646b3ab6d47b97f83449dad9",
+  "sourcePins": {
+    "scripts/mainnet/rehearse-v10-bundle.mjs": "f449517326a27ae3c218913e537849d06d55946ea5338519aad97d5e0e8cb68f",
+    "scripts/mainnet/prepare-v10-release.mjs": "d9c0ec01c208134bc8daa4406bf1d0b41f6449f12c363529a69216c7fd11de1b",
+    "scripts/compile-contracts-v10.mjs": "b95cecdfb0b53e7ad627b4f79964c9ac35a149869ed5a9ef243a1f7cb41a9382",
+    "scripts/verify-metamask-v1.3-runtime.mjs": "ed5a6bdaff07ac3cbae55e8f58899df738dace1ce42b48fb018c709649cea50c",
+    "src/v10-wallet-compatibility.mjs": "12a6d577b443e69c869b5bebec72863c809ea9cda35f5c4c6465d82f228c8485",
+    "package.json": "11a4db02843aa679f56d2044d8503d38c04a87dbccf22e9fc31e949a0a3705cf",
+    "package-lock.json": "c622f472674738eb5228015a11dcb3cb75aa075dd529a8f6c4f31c57aa261758",
+    "contracts/v10/KlerosEventV10.sol": "b1e2b7573d7d863d806933404a218c4316a65c8e9f263866bc940fd43f31088d",
+    "contracts/v10/KlerosUpgradeGateV10.sol": "c06b76141a0e8dd19573db99801702c98b6cd27ce7c64a6ba6469cfd18ef6bfe",
+    "contracts/v10/KlerosUpgradeControllerV10.sol": "e128cff31b51b67acf82c9123dbd6314cf6f8a083618f2eaee37ea4811a091fb",
+    "contracts/v10/KlerosEventFactoryV10.sol": "157ea2b2fd7b74bd3d1639012645a0667f9a5de121b922431aa7f9ac72bfb025"
+  },
+  "planSha256": "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+  "observedRuntimeSha256": "486913a5210ab05284468ce4a4efa2d9f279de44e120aadf3718d957678495eb",
+  "frameworkProofSha256": "7108974bc07ca8b46964d855887d9c26c1891386d21c5cf1bdb3f628fb7cb17c",
+  "accountObservationSha256": "8890a6d8be7cd5734edd5ade016cc8dc886491606f35339706d8ec8fccb40e6f",
+  "mainnetObservedAnchor": {
+    "number": 26299673,
+    "hash": "0x5b783d801638f76fc8275ac3135fe0ec6cfea9ef297f63ef13fbd3526d82b464",
+    "timestamp": 1793292239,
+    "baseFeePerGasWei": "285820286",
+    "gasLimit": "60000000"
+  },
+  "observedAvailableBalanceWei": "9129904262762008",
+  "mainnetObservedFees": {
+    "baseFeePerGasWei": "285820286",
+    "suggestedPriorityFeePerGasWei": "9800"
+  },
+  "anvilBinarySha256": "5c9f9aad323062b1c0421a63595741430acaea150da3611e38c45071e4cf4e28",
+  "gasBudgetApproval": "NONE",
+  "publicNetworkRequests": 0,
+  "mainnetPreflightVerified": false,
+  "deploymentAuthorized": false,
+  "financialEligibilityEstablished": false,
+  "declaredFees": {
+    "maxFeePerGasWei": "750000000",
+    "maxPriorityFeePerGasWei": "10000000"
+  },
+  "declaredGasLimits": {
+    "KlerosUpgradeControllerV10": "850000",
+    "KlerosEventV10": "5600000",
+    "KlerosEventFactoryV10": "2000000",
+    "ERC1967Proxy": "300000"
+  },
+  "declaredMaximumGasCostWei": "6562500000000000",
+  "privateFilesRead": 0,
+  "signatures": 0,
+  "userSignatureEstablished": false,
+  "localImpersonation": true,
+  "walletDesignationInstalledByLocalCheat": true,
+  "localTransactions": [
+    {
+      "contract": "KlerosUpgradeControllerV10",
+      "transactionHash": "0xfdbbd736f5e927d7f1ea46dd3ee09676aac03c2eff1748d09ae64a113dfe4337",
+      "status": "confirmed",
+      "gasLimit": "850000",
+      "estimatedGas": "669197",
+      "address": "0x8819994609eC122AaC2B4CC2200e694C6b039Cd2",
+      "blockNumber": 1,
+      "blockHash": "0xc072c9bb48c40a6d356c9a8262d1ed2d1eb31f323735868aa8ba66b5431bd14b",
+      "runtimeCodeHash": "0x9e961091b2154b92db4c6f0ece66ea5bdfeaf996ebf427703156a596967885ae",
+      "gasUsed": "669197",
+      "effectiveGasPriceWei": "295820286"
+    },
+    {
+      "contract": "KlerosEventV10",
+      "transactionHash": "0x29545739fad87a9a0cb66b7c285b888d0238cf6d19cdf705c174f86cbb21b640",
+      "status": "confirmed",
+      "gasLimit": "5600000",
+      "estimatedGas": "4641208",
+      "address": "0x411ADfb7490C664362D7F933f693B41eE4E997c3",
+      "blockNumber": 2,
+      "blockHash": "0x9d937209a870c0436aeba8a734e8877884bad04053c4da45a1cf0e3b5fd9c13f",
+      "runtimeCodeHash": "0x2624cfc1b089d060017c3749ea7d6c7ae360d3deaccf5af2535170e67f630f5c",
+      "gasUsed": "4641208",
+      "effectiveGasPriceWei": "260889709"
+    },
+    {
+      "contract": "KlerosEventFactoryV10",
+      "transactionHash": "0x3d340e0c86e4802767635ede6d349e2e58ad6a65ad8cb49148ca5c3e592fe1df",
+      "status": "confirmed",
+      "gasLimit": "2000000",
+      "estimatedGas": "1654634",
+      "address": "0x5bD88F176d66e7daF87BD3Ff1d783DC26322B829",
+      "blockNumber": 3,
+      "blockHash": "0xa407a3d2c8c2ffd5bb7db402a66ef69c237d3c2254568470d926ed24f9ec38a0",
+      "runtimeCodeHash": "0x3c679dbdd2e12c71d55f073d5e1ddafaaab37762d0f20f4f212a901ad7e72a90",
+      "gasUsed": "1654634",
+      "effectiveGasPriceWei": "234380293"
+    },
+    {
+      "contract": "ERC1967Proxy",
+      "transactionHash": "0x16f7053f9ba90973c0a178905d823fffc2d0227f873795b479aa7ec9dffc0531",
+      "status": "confirmed",
+      "gasLimit": "300000",
+      "estimatedGas": "229827",
+      "address": "0x2E10024bD326FD34757b021A72F46813Fc1C61D2",
+      "blockNumber": 4,
+      "blockHash": "0x60830efbae05ec4fcb33ffed2c9e4953561b56ccdab888a782b74d41c3a6e3de",
+      "runtimeCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+      "gasUsed": "229827",
+      "effectiveGasPriceWei": "207879704"
+    }
+  ],
+  "checks": [
+    "Fresh official loopback Prague/no-fork node; fixed framework runtimes and planned local designation/nonce installed",
+    "1: exact KlerosUpgradeControllerV10 CREATE, canonical receipt/runtime, gas and controller state verified",
+    "2: exact KlerosEventV10 CREATE, canonical receipt/runtime, gas and controller state verified",
+    "3: exact KlerosEventFactoryV10 CREATE, canonical receipt/runtime, gas and controller state verified",
+    "4: exact ERC1967Proxy CREATE, canonical receipt/runtime, gas and controller state verified"
+  ],
+  "limits": [
+    "Exact CREATE gas rehearsal uses locally impersonated planned address; it is not a user signature or mainnet deployment.",
+    "No fork or public RPC is used. Framework runtime bytes are installed as local fixtures; controller/factory storage is created by the exact plan.",
+    "Gas figures describe this isolated Prague execution. Human budget approval and fresh mainnet wallet/nonce/fee checks remain required."
+  ],
+  "localInitialBaseFeePerGasWei": "285820286",
+  "gas": {
+    "estimatedGasAtDeclaredMaxFeeWei": "5396149500000000",
+    "actualGasAtDeclaredMaxFeeWei": "5396149500000000",
+    "localActualGasPaidWei": "1844395422917784"
+  },
+  "localRemainingBalanceWei": "7285508839844224"
+}

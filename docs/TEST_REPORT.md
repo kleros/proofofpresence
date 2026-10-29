@@ -1,3 +1,27 @@
+## V10 isolated source and four-CREATE preparation — 29 October 2026
+
+Source checkpoint `2a281c606445d2eb646b3ab6d47b97f83449dad9` on `codex/core-application`.
+Exact plan canonicalSHA2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37.
+Actual fresh no-fork Anvil Prague exact bundle PASSED first run: estimates = gas used
+669197/4641208/1654634/229827, total7194866; full runtime/receipt/nonce6–9/type2/value0,
+controller owner/pending0/disabledfalse/VERSION10/delay0 and factory slots/default/eventCount0 passed.
+Proof `artifacts/v10-integration/bundle/2026-10-29T16-52-27-140Z-78a7539c-5d32-4f4a-8bd8-d4c71b765070/proof.json`,
+SHAd8b569a5675e247ee4ab3d716c3b7f96f4a7242bbe91a8203abd033a69e43022. It explicitly uses local
+impersonation and designation/nonce fixtures, zero public RPC or user signatures; not a mainnet estimate.
+
+Separately actual type4 authorization +delegated directCREATE/native deposit/withdrawal passed37checks/
+14localtx. Independent exactsolc0.8.23 compilation reproduced all3frameworkruntime bytes, including
+metadata/derivedimmutables. Focused13preflight/6bundle/4observer/17compatibility tests and7source
+rejection probes passed; new19-field envelope fences passed their affected actual-local regressions.
+Root additionally ran typecheck, the changed planner prerequisite test1/1, observer4/4 and diffcheck.
+The frozen contract handoff's20tests are reused source-bound evidence; no redundant broad finance rerun.
+
+First actual closing public preflight STOPPED `RPC_READ_FAILED`; preserve stopped proof under
+`artifacts/v10-release/preflight-stopped-2026-10-29T16-52-34-151Z.json`. It is NOT a passed preflight.
+Safe diagnostics and explicit fixed dRPC primary support are the narrow follow-up. Proposed maximum
+0.0065625ETH remains UNAPPROVED. V10 signing bridge/browser, final public checks, actual human signing,
+app integration/policy/hosting remain pending. No V9 state or retired A/B/C financial work occurred.
+
 ## Original-child public provenance attempts and vendor report — 29October2026
 
 Actual readonlychain probes: PublicNode chain1passed/historicalcode403; officialanonymousdRPC

@@ -33,6 +33,24 @@ class PreflightError extends Error {
     this.code = code;
   }
 }
+function readFailure(metadata = {}) {
+  const error = new PreflightError("RPC_READ_FAILED"),
+    safe = { networkTimeout: metadata.networkTimeout === true };
+  if (
+    Number.isInteger(metadata.httpStatus) &&
+    metadata.httpStatus >= 100 &&
+    metadata.httpStatus <= 599
+  )
+    safe.httpStatus = metadata.httpStatus;
+  if (
+    Number.isSafeInteger(metadata.rpcNumericCode) &&
+    metadata.rpcNumericCode >= -2147483648 &&
+    metadata.rpcNumericCode <= 2147483647
+  )
+    safe.rpcNumericCode = metadata.rpcNumericCode;
+  error.publicRead = Object.freeze(safe);
+  return error;
+}
 const check = (condition, code) => {
   if (!condition) throw new PreflightError(code);
 };
@@ -387,8 +405,22 @@ export async function inspectV10Preflight({
         : rpc);
     try {
       return await selected.request({ method, params });
-    } catch {
-      throw new PreflightError("RPC_READ_FAILED");
+    } catch (error) {
+      const metadata = Object.getOwnPropertyDescriptor(
+        error ?? {},
+        "publicRead",
+      )?.value;
+      const failure = readFailure(
+        metadata && typeof metadata === "object" ? metadata : {},
+      );
+      failure.publicRead = Object.freeze({
+        readNumber: reads,
+        method,
+        endpointKind:
+          selected === historicalCodeRpc ? "historical-code" : "primary",
+        ...failure.publicRead,
+      });
+      throw failure;
     }
   };
   check(quantity(await read("eth_chainId", [])) === 1n, "WRONG_CHAIN");
@@ -655,8 +687,11 @@ export function validateV10PreflightRpcUrl(url, historicalCodeOnly = false) {
   }
   check(
     parsed.protocol === "https:" &&
-      parsed.hostname ===
-        (historicalCodeOnly ? "eth.drpc.org" : "ethereum-rpc.publicnode.com") &&
+      (historicalCodeOnly
+        ? parsed.hostname === "eth.drpc.org"
+        : ["ethereum-rpc.publicnode.com", "eth.drpc.org"].includes(
+            parsed.hostname,
+          )) &&
       parsed.pathname === "/" &&
       !parsed.username &&
       !parsed.password &&
@@ -667,8 +702,13 @@ export function validateV10PreflightRpcUrl(url, historicalCodeOnly = false) {
   );
   return parsed;
 }
-function publicReadTransport(url, historicalCodeOnly = false) {
+export function createV10PreflightReadTransport(
+  url,
+  historicalCodeOnly = false,
+  { fetch: fetcher = globalThis.fetch } = {},
+) {
   const parsed = validateV10PreflightRpcUrl(url, historicalCodeOnly);
+  check(typeof fetcher === "function", "INVALID_READ_TRANSPORT");
   let id = 0;
   return {
     async request({ method, params }) {
@@ -682,24 +722,47 @@ function publicReadTransport(url, historicalCodeOnly = false) {
           "FORBIDDEN_RPC_METHOD",
         );
       const requestId = ++id;
-      const response = await fetch(parsed, {
-        method: "POST",
-        redirect: "error",
-        signal: AbortSignal.timeout(20000),
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: requestId, method, params }),
-      });
-      check(response.ok, "RPC_READ_FAILED");
-      const bytes = await response.text();
-      check(bytes.length <= 131072, "RPC_READ_FAILED");
-      const value = JSON.parse(bytes);
-      check(
-        value?.jsonrpc === "2.0" &&
+      const signal = AbortSignal.timeout(20000);
+      let response;
+      try {
+        response = await fetcher(parsed, {
+          method: "POST",
+          redirect: "error",
+          signal,
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: requestId,
+            method,
+            params,
+          }),
+        });
+      } catch {
+        throw readFailure({ networkTimeout: signal.aborted });
+      }
+      if (!response.ok) throw readFailure({ httpStatus: response.status });
+      let bytes, value;
+      try {
+        bytes = await response.text();
+        if (bytes.length <= 131072) value = JSON.parse(bytes);
+      } catch {
+        throw readFailure({
+          httpStatus: response.status,
+          networkTimeout: signal.aborted,
+        });
+      }
+      if (
+        !(
+          value?.jsonrpc === "2.0" &&
           value.id === requestId &&
           !Object.hasOwn(value, "error") &&
-          Object.hasOwn(value, "result"),
-        "RPC_READ_FAILED",
-      );
+          Object.hasOwn(value, "result")
+        )
+      )
+        throw readFailure({
+          httpStatus: response.status,
+          rpcNumericCode: value?.error?.code,
+        });
       return value.result;
     },
   };
@@ -809,9 +872,9 @@ export async function main(argv = []) {
       build,
     ).review;
   }
-  const rpc = publicReadTransport(flags["--rpc-url"]);
+  const rpc = createV10PreflightReadTransport(flags["--rpc-url"]);
   const historicalCodeRpc = flags["--historical-code-rpc-url"]
-    ? publicReadTransport(flags["--historical-code-rpc-url"], true)
+    ? createV10PreflightReadTransport(flags["--historical-code-rpc-url"], true)
     : null;
   const observation = await inspectV10Preflight({
     plan,
@@ -841,5 +904,12 @@ if (
           ? error.message
           : "V10 read-only preflight stopped: INVALID_PUBLIC_INPUT_OR_BUILD",
       );
+      if (error instanceof PreflightError && error.publicRead)
+        console.error(
+          JSON.stringify({
+            code: "RPC_READ_FAILED",
+            publicRead: error.publicRead,
+          }),
+        );
       process.exitCode = 1;
     });

@@ -19,6 +19,7 @@ import {
   validateV10PreflightPlan,
   validateDelegatedV10CreateReview,
   validateV10PreflightRpcUrl,
+  createV10PreflightReadTransport,
   V10_PREFLIGHT_DEPLOYER,
 } from "../scripts/mainnet/preflight-v10-release.mjs";
 import { METAMASK_V130 } from "../src/v10-wallet-compatibility.mjs";
@@ -734,7 +735,147 @@ test("dRPC alternative serves only pinned historical code plus matching chain/ca
     assert.throws(() => validateV10PreflightRpcUrl(url, true), {
       code: "INVALID_PUBLIC_RPC",
     });
-  assert.throws(() => validateV10PreflightRpcUrl("https://eth.drpc.org"), {
-    code: "INVALID_PUBLIC_RPC",
-  });
+  assert.equal(
+    validateV10PreflightRpcUrl("https://eth.drpc.org").hostname,
+    "eth.drpc.org",
+  );
+  for (const url of [
+    "https://unknown.invalid",
+    "https://x@eth.drpc.org",
+    "https://eth.drpc.org?token=x",
+  ])
+    assert.throws(() => validateV10PreflightRpcUrl(url), {
+      code: "INVALID_PUBLIC_RPC",
+    });
+});
+
+test("failed read exposes only safe method/index/endpoint/status diagnostics without reflecting upstream secrets", async () => {
+  const primary = createV10PreflightReadTransport(
+    "https://eth.drpc.org",
+    false,
+    {
+      fetch: async () => ({
+        ok: false,
+        status: 429,
+        text: () => {
+          throw Error("SECRET-BODY-MUST-NOT-BE-READ");
+        },
+      }),
+    },
+  );
+  await assert.rejects(
+    inspectV10Preflight({ ...options(plan), rpc: primary }),
+    (error) => {
+      assert.equal(error.code, "RPC_READ_FAILED");
+      assert.deepEqual(error.publicRead, {
+        readNumber: 1,
+        method: "eth_chainId",
+        endpointKind: "primary",
+        networkTimeout: false,
+        httpStatus: 429,
+      });
+      assert.doesNotMatch(
+        JSON.stringify(error) + error.message,
+        /SECRET|params|https|drpc/,
+      );
+      return true;
+    },
+  );
+  const historical = createV10PreflightReadTransport(
+    "https://eth.drpc.org",
+    true,
+    {
+      fetch: async (_url, request) => {
+        const input = JSON.parse(request.body),
+          value =
+            input.method === "eth_chainId"
+              ? { result: "0x1" }
+              : {
+                  error: {
+                    code: -32602,
+                    message: "UPSTREAM-SECRET",
+                    data: "SECRET-PARAMS",
+                  },
+                };
+        return {
+          ok: true,
+          status: 200,
+          text: async () =>
+            JSON.stringify({ jsonrpc: "2.0", id: input.id, ...value }),
+        };
+      },
+    },
+  );
+  await assert.rejects(
+    inspectV10Preflight({
+      ...options(plan),
+      rpc: fakeRpc(),
+      historicalCodeRpc: historical,
+    }),
+    (error) => {
+      assert.deepEqual(error.publicRead, {
+        readNumber: 4,
+        method: "eth_getCode",
+        endpointKind: "historical-code",
+        networkTimeout: false,
+        httpStatus: 200,
+        rpcNumericCode: -32602,
+      });
+      assert.doesNotMatch(
+        JSON.stringify(error) + error.message,
+        /UPSTREAM|SECRET|params|https/,
+      );
+      return error.code === "RPC_READ_FAILED";
+    },
+  );
+  const network = createV10PreflightReadTransport(
+    "https://eth.drpc.org",
+    false,
+    {
+      fetch: async () => {
+        throw Error("SECRET-NETWORK-CREDENTIAL");
+      },
+    },
+  );
+  await assert.rejects(
+    inspectV10Preflight({ ...options(plan), rpc: network }),
+    (error) => {
+      assert.deepEqual(error.publicRead, {
+        readNumber: 1,
+        method: "eth_chainId",
+        endpointKind: "primary",
+        networkTimeout: false,
+      });
+      assert.doesNotMatch(JSON.stringify(error) + error.message, /SECRET/);
+      return error.code === "RPC_READ_FAILED";
+    },
+  );
+  await assert.rejects(
+    inspectV10Preflight({
+      ...options(plan),
+      rpc: fakeRpc(() => {
+        throw Object.assign(Error("SECRET-TIMEOUT"), {
+          publicRead: {
+            networkTimeout: true,
+            httpStatus: 999,
+            rpcNumericCode: "SECRET",
+            params: ["SECRET"],
+          },
+        });
+      }),
+    }),
+    (error) => {
+      assert.deepEqual(error.publicRead, {
+        readNumber: 1,
+        method: "eth_chainId",
+        endpointKind: "primary",
+        networkTimeout: true,
+      });
+      assert.doesNotMatch(
+        JSON.stringify(error) + error.message,
+        /SECRET|params/,
+      );
+      return error.code === "RPC_READ_FAILED";
+    },
+  );
 });

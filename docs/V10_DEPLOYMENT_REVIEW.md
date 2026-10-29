@@ -63,10 +63,23 @@ The affected planner test also passed after its prerequisite-description change.
 mutation fences each passed their targeted actual-local regression. The separate contract handoff's
 20 financial/security/planning tests remain its source-bound evidence and were not broadly rerun.
 
-Next: commit the reviewed operators; run the exact nonce-6 four-CREATE sequential local gas rehearsal;
-run one fresh canonical public preflight including framework code and unused predicted addresses;
-finish and review the separate V10 wallet handoff, then present one exact gas-cap approval in the
-contract chat. No signing or broadcast is authorized by this file.
+The operators were committed as `2a281c606445d2eb646b3ab6d47b97f83449dad9`. The exact sequential
+nonce-6 bundle passed on fresh, unforked local Anvil Prague. Per-step estimate = gas used:
+669,197 / 4,641,208 / 1,654,634 / 229,827, total **7,194,866**. All four runtime bytes and initial
+controller/factory state matched. Proof:
+`artifacts/v10-integration/bundle/2026-10-29T16-52-27-140Z-78a7539c-5d32-4f4a-8bd8-d4c71b765070/proof.json`,
+SHA256 `d8b569a5675e247ee4ab3d716c3b7f96f4a7242bbe91a8203abd033a69e43022`.
+Local impersonation and designation/nonce fixtures are explicitly disclosed. Its local paid cost
+uses simulated declining base fees and is not a live price quote.
+
+The first fresh public preflight stopped with `RPC_READ_FAILED`; its exact method was unavailable
+under the initial redaction. Preserve `artifacts/v10-release/preflight-stopped-2026-10-29T16-52-34-151Z.json`.
+The follow-up operator adds sanitized method/read-index/HTTP/RPC-code diagnostics and permits the
+already-used fixed public dRPC origin explicitly as primary. It retains all account/framework,
+canonical head, nonce, address, fee and balance checks, with no retries or signing interface.
+
+Next: complete a fresh canonical public preflight and finish the V10 wallet handoff review, then
+present one exact gas-cap approval in the contract chat. No signing or broadcast is authorized by this file.
 
 New V10 backend modules exist locally with explicit version dispatch, separate manifest/state,
 immediate-governance verifiers and onboarding. No V10 production route or financial capability is

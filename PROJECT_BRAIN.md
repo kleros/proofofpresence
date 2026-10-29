@@ -1,6 +1,6 @@
 # V10 four-CREATE deployment preparation — 29 October 2026, 23:51 Bangkok
 
-Active branch `codex/core-application`; preceding integrated HEAD `7841d6e032384a4524c04574e8b45e5856e6c4ea`.
+Active branch `codex/core-application`; reviewed operator checkpoint `2a281c606445d2eb646b3ab6d47b97f83449dad9`.
 Frozen V10 contracts and finite UI projections are integrated locally; existing live V9 remains09ac3a9.
 Human explicitly prioritized finishing wallet checks and preparing four fresh mainnet setup transactions
 and a new gas cap while app integration continues. The contract chat will present ONE approval;
@@ -15,8 +15,11 @@ custody. Opt-in preflight narrows account compatibility to those4directtype2CREA
 financial eligibility stays false. Unknown code remains blocked. No V9 permission/cap reuse.
 
 See `docs/V10_DEPLOYMENT_REVIEW.md` for exact addresses, interfaces, proofs, checks and remaining work.
-Next source-freeze, exact sequential local gas rehearsal, fresh canonical account/framework/address
-preflight and concrete V10 wallet handoff review precede human approval/signing. Keep A/B/C paused
+Exact sequential local bundle passed first run, total7194866gas, all4runtimes/controller/factory state
+matched. First public preflight STOPPED RPC_READ_FAILED, preservedwithunknownfailedmethod; follow-up
+adds safe method/readindex/status diagnostics and explicit publicdRPC primary, no omittedchecks/retries.
+Fresh canonical account/framework/address preflight and concrete V10 wallet handoff review still
+precede human approval/signing. Keep A/B/C paused
 and untouched; old V9 events/policy/records remain separate. App auth/dispatch/public adoption/hosting
 are still incomplete and must not be described as launched.
 
