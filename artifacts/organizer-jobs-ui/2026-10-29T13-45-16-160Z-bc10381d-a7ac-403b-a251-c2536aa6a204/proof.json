@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "kind": "synthetic-loopback-organizer-job-widget",
+  "checks": [
+    "Explicit review → validation job → one exact synthetic wallet request → direct hash report → receipt job; wallet delay preserves recovery",
+    "Lost acknowledgement preserves form and reload resumes the same ID by GET without replay",
+    "Validation expiring during wallet account check blocks send, preserves form, and requires explicit new-review reset"
+  ],
+  "errors": [],
+  "forbidden": [],
+  "sources": {
+    "public/luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509",
+    "test/organizer-jobs-ui.e2e.mjs": "2177e14f30655355aab2815fdd73970c21246a35f1ad7d386d8d05e4ea01e3a3"
+  },
+  "totals": {
+    "walletRequests": 1,
+    "prepares": 4,
+    "validates": 2,
+    "reconciles": 2,
+    "reports": 1
+  }
+}

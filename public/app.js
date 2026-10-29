@@ -570,6 +570,9 @@ const publicSearch = { scope: "", query: "", entries: Object.freeze([]) };
 let displayCatalog = null;
 // Negative-only invalidation hint: the display-only catalog has no session DTO.
 let walletSessionObserved = false;
+let walletConnectionPending = false;
+let walletSessionEpoch = 0;
+let setupFeedbackExpectation = null;
 const publicCatalogScreen = () =>
   displayCatalog !== null && !app.route.eventId && !app.route.setup;
 const publicHomePresentation = () => publicCatalogScreen() || isProduction();
@@ -1155,20 +1158,41 @@ async function switchIdentity(id) {
   if (id && !isSandbox())
     throw new Error("Demo identities are available only in the sandbox.");
   cancelRead();
+  walletSessionEpoch++;
+  walletConnectionPending = false;
+  const context = walletSessionContext();
+  rememberSetupExpectation(null);
   disposeContractInbox();
   invalidateDraft();
-  let acknowledgedWallet = null;
-  if (!id) await signOutSession();
-  else
-    acknowledgedWallet = sessionWalletFromAck(
-      await post("/api/session", { identity: id }),
-    );
-  await load({ acknowledgedWallet });
-  toast(
-    id
-      ? "Demo identity changed. Previous transaction drafts were cleared."
-      : "Signed out.",
+  showSetupLoading(
+    "Checking Ethereum setup",
+    "Updating your wallet sign-in. The setup form stays unavailable until a fresh session is checked.",
   );
+  try {
+    let acknowledgedWallet = null;
+    if (!id) await signOutSession();
+    else
+      acknowledgedWallet = sessionWalletFromAck(
+        await post("/api/session", { identity: id }),
+      );
+    if (!walletSessionContextCurrent(context)) return;
+    await load({ acknowledgedWallet });
+    if (
+      context.epoch !== walletSessionEpoch ||
+      JSON.stringify(readRoute()) !== context.route
+    )
+      return;
+    toast(
+      id
+        ? "Demo identity changed. Previous transaction drafts were cleared."
+        : "Signed out.",
+    );
+  } catch (error) {
+    if (walletSessionContextCurrent(context)) showSetupFailure(error);
+    throw error;
+  } finally {
+    if (!activeLoad && walletSessionContextCurrent(context)) setReadBusy(false);
+  }
 }
 
 function walletProvider() {
@@ -1187,19 +1211,44 @@ function installWalletSessionListeners(provider) {
   const invalidateSession = async () => {
     if (currentIdentity()?.mode !== "wallet" && !walletSessionObserved) return;
     cancelRead();
+    walletSessionEpoch++;
+    walletConnectionPending = false;
+    const context = walletSessionContext();
+    rememberSetupExpectation(null);
     disposeContractInbox();
     invalidateDraft();
-    await signOutSession();
-    await load({ silent: true, acknowledgedWallet: null });
-    toast(
-      "Wallet account or network changed. Authenticate again before signing.",
-      true,
+    showSetupLoading(
+      "Checking Ethereum setup",
+      "Your wallet account or network changed. Checking sign-out before setup can continue.",
     );
+    try {
+      await signOutSession();
+      if (!walletSessionContextCurrent(context)) return;
+      await load({ silent: true, acknowledgedWallet: null });
+      if (
+        context.epoch !== walletSessionEpoch ||
+        JSON.stringify(readRoute()) !== context.route
+      )
+        return;
+      toast(
+        "Wallet account or network changed. Authenticate again before signing.",
+        true,
+      );
+    } catch (error) {
+      if (walletSessionContextCurrent(context)) {
+        showSetupFailure(error);
+        toast(error.message, true);
+      }
+    } finally {
+      if (!activeLoad && walletSessionContextCurrent(context))
+        setReadBusy(false);
+    }
   };
   provider.on("accountsChanged", invalidateSession);
   provider.on("chainChanged", invalidateSession);
 }
 async function connectWallet() {
+  if (walletConnectionPending) return;
   if (isGuardedV9()) {
     const issue = productionConnectionIssue();
     if (issue) throw new Error(issue);
@@ -1207,19 +1256,19 @@ async function connectWallet() {
     throw new Error(
       "The application environment is unavailable. Refresh before connecting a wallet.",
     );
+  cancelRead();
+  walletSessionEpoch++;
+  const connection = walletSessionContext();
+  walletConnectionPending = true;
+  rememberSetupExpectation(null);
   disposeContractInbox();
   invalidateDraft();
-  const connection = {
-    mode: app.bootstrap?.mode,
-    instanceId: app.bootstrap?.instanceId,
-    chainId: app.bootstrap?.chain?.chainId,
-  };
+  showSetupLoading(
+    "Waiting for wallet sign-in",
+    "Check your wallet to choose an account and approve the sign-in request. No event transaction is being sent.",
+  );
   const assertConnectionCurrent = () => {
-    if (
-      connection.mode !== app.bootstrap?.mode ||
-      connection.instanceId !== app.bootstrap?.instanceId ||
-      connection.chainId !== app.bootstrap?.chain?.chainId
-    )
+    if (!walletSessionContextCurrent(connection))
       throw new Error(
         "The wallet environment changed. Connect again using the current event network.",
       );
@@ -1228,94 +1277,124 @@ async function connectWallet() {
       if (issue) throw new Error(issue);
     }
   };
-  const provider = walletProvider();
-  const accounts = await provider.request({ method: "eth_requestAccounts" });
-  assertConnectionCurrent();
-  if (!accounts?.[0]) throw new Error("No wallet account was selected.");
-  const expectedChain = Number(app.bootstrap?.chain?.chainId);
-  if (
-    !Number.isSafeInteger(expectedChain) ||
-    expectedChain <= 0 ||
-    (expectedChain === 1 && !isProduction())
-  )
-    throw new Error(
-      "A configured demo or test network is required before connecting.",
-    );
-  const chainHex = `0x${expectedChain.toString(16)}`;
-  let chain = await provider.request({ method: "eth_chainId" });
-  if (Number(BigInt(chain)) !== expectedChain) {
-    try {
-      await provider.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: chainHex }],
-      });
-    } catch (error) {
-      if (error.code !== 4902) throw error;
-      await provider.request({
-        method: "wallet_addEthereumChain",
-        params: [
-          {
-            chainId: chainHex,
-            chainName:
-              app.bootstrap.chain.name ??
-              (isHostedDemo()
-                ? "Kleros shared demo sandbox"
-                : "Kleros isolated local demo"),
-            rpcUrls: [app.bootstrap.chain.rpcUrl],
-            nativeCurrency: app.bootstrap.chain.nativeCurrency ?? {
-              name: "Local Ether",
-              symbol: "ETH",
-              decimals: 18,
+  try {
+    const provider = walletProvider();
+    const accounts = await provider.request({ method: "eth_requestAccounts" });
+    assertConnectionCurrent();
+    if (!accounts?.[0]) throw new Error("No wallet account was selected.");
+    const expectedChain = Number(app.bootstrap?.chain?.chainId);
+    if (
+      !Number.isSafeInteger(expectedChain) ||
+      expectedChain <= 0 ||
+      (expectedChain === 1 && !isProduction())
+    )
+      throw new Error(
+        "A configured demo or test network is required before connecting.",
+      );
+    const chainHex = `0x${expectedChain.toString(16)}`;
+    let chain = await provider.request({ method: "eth_chainId" });
+    assertConnectionCurrent();
+    if (Number(BigInt(chain)) !== expectedChain) {
+      try {
+        await provider.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: chainHex }],
+        });
+        assertConnectionCurrent();
+      } catch (error) {
+        if (error.code !== 4902) throw error;
+        await provider.request({
+          method: "wallet_addEthereumChain",
+          params: [
+            {
+              chainId: chainHex,
+              chainName:
+                app.bootstrap.chain.name ??
+                (isHostedDemo()
+                  ? "Kleros shared demo sandbox"
+                  : "Kleros isolated local demo"),
+              rpcUrls: [app.bootstrap.chain.rpcUrl],
+              nativeCurrency: app.bootstrap.chain.nativeCurrency ?? {
+                name: "Local Ether",
+                symbol: "ETH",
+                decimals: 18,
+              },
             },
-          },
-        ],
-      });
+          ],
+        });
+        assertConnectionCurrent();
+      }
     }
-  }
-  chain = await provider.request({ method: "eth_chainId" });
-  assertConnectionCurrent();
-  if (Number(BigInt(chain)) !== expectedChain)
-    throw new Error(
-      `Select ${networkName()} (${expectedChain}) before authenticating.`,
+    chain = await provider.request({ method: "eth_chainId" });
+    assertConnectionCurrent();
+    if (Number(BigInt(chain)) !== expectedChain)
+      throw new Error(
+        `Select ${networkName()} (${expectedChain}) before authenticating.`,
+      );
+    if (isGuardedV9()) {
+      const issue = productionConnectionIssue();
+      if (issue) throw new Error(issue);
+    }
+    if (isHostedDemo())
+      await assertDemoChainInstance(
+        provider,
+        app.bootstrap.chain.instanceMarker,
+        app.bootstrap.chain.rpcUrl,
+      );
+    assertConnectionCurrent();
+    const { nonce, message } = await post("/api/auth/challenge", {
+      wallet: accounts[0],
+    });
+    assertConnectionCurrent();
+    const messageHex = `0x${[...new TextEncoder().encode(message)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+    const signature = await provider.request({
+      method: "personal_sign",
+      params: [messageHex, accounts[0]],
+    });
+    assertConnectionCurrent();
+    cancelRead();
+    const verified = await post("/api/auth/verify", { nonce, signature });
+    assertConnectionCurrent();
+    const acknowledgedWallet = sessionWalletFromAck(verified, accounts[0]);
+    walletSessionObserved = true;
+    installWalletSessionListeners(provider);
+    rememberSetupExpectation(acknowledgedWallet);
+    showSetupLoading(
+      "Checking Ethereum setup",
+      "Wallet sign-in was acknowledged. Verifying the current session, factory and setup terms before showing the form.",
     );
-  if (isGuardedV9()) {
-    const issue = productionConnectionIssue();
-    if (issue) throw new Error(issue);
-  }
-  if (isHostedDemo())
-    await assertDemoChainInstance(
-      provider,
-      app.bootstrap.chain.instanceMarker,
-      app.bootstrap.chain.rpcUrl,
+    const verificationRead = load({ silent: true, acknowledgedWallet });
+    const verificationGeneration = app.generation;
+    await verificationRead;
+    if (
+      app.generation !== verificationGeneration ||
+      connection.epoch !== walletSessionEpoch ||
+      JSON.stringify(readRoute()) !== connection.route ||
+      app.bootstrap?.mode !== connection.mode ||
+      app.bootstrap?.instanceId !== connection.instanceId ||
+      currentIdentity()?.mode !== "wallet" ||
+      !same(currentIdentity()?.wallet, acknowledgedWallet) ||
+      (readRoute().setup && !lumaSetupController)
+    )
+      return;
+    toast(
+      isProduction()
+        ? "Wallet ownership verified. Every Ethereum transaction requires a separate review."
+        : isV9Testnet()
+          ? "Wallet ownership verified. V9 Chiado uses test XDAI and controlled arbitration. Every transaction requires a separate review."
+          : isTestnet()
+            ? "Wallet ownership verified. You can now review actions on the configured testnet."
+            : "Wallet ownership verified by a one-use nonce signature. Use “Choose identity” to receive local demo ETH if needed.",
     );
-  assertConnectionCurrent();
-  const { nonce, message } = await post("/api/auth/challenge", {
-    wallet: accounts[0],
-  });
-  assertConnectionCurrent();
-  const messageHex = `0x${[...new TextEncoder().encode(message)].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
-  const signature = await provider.request({
-    method: "personal_sign",
-    params: [messageHex, accounts[0]],
-  });
-  assertConnectionCurrent();
-  cancelRead();
-  const acknowledgedWallet = sessionWalletFromAck(
-    await post("/api/auth/verify", { nonce, signature }),
-    accounts[0],
-  );
-  walletSessionObserved = true;
-  await load({ silent: true, acknowledgedWallet });
-  installWalletSessionListeners(provider);
-  toast(
-    isProduction()
-      ? "Wallet ownership verified. Every Ethereum transaction requires a separate review."
-      : isV9Testnet()
-        ? "Wallet ownership verified. V9 Chiado uses test XDAI and controlled arbitration. Every transaction requires a separate review."
-        : isTestnet()
-          ? "Wallet ownership verified. You can now review actions on the configured testnet."
-          : "Wallet ownership verified by a one-use nonce signature. Use “Choose identity” to receive local demo ETH if needed.",
-  );
+  } catch (error) {
+    if (walletSessionContextCurrent(connection)) showSetupFailure(error);
+    throw error;
+  } finally {
+    if (connection.epoch === walletSessionEpoch)
+      walletConnectionPending = false;
+    if (!activeLoad && walletSessionContextCurrent(connection))
+      setReadBusy(false);
+  }
 }
 
 // Only GETs belong to this controller. Reconciliation and wallet submissions keep
@@ -1333,6 +1412,102 @@ function setReadBusy(busy) {
   $("#refresh").disabled = busy;
   $("#refresh").setAttribute("aria-busy", String(busy));
   $("#content").setAttribute("aria-busy", String(busy));
+}
+function walletSessionContext() {
+  return {
+    mode: app.bootstrap?.mode,
+    instanceId: app.bootstrap?.instanceId,
+    chainId: app.bootstrap?.chain?.chainId,
+    generation: app.generation,
+    epoch: walletSessionEpoch,
+    route: JSON.stringify(readRoute()),
+  };
+}
+function walletSessionContextCurrent(context) {
+  return (
+    context.generation === app.generation &&
+    context.epoch === walletSessionEpoch &&
+    context.route === JSON.stringify(readRoute()) &&
+    context.mode === app.bootstrap?.mode &&
+    context.instanceId === app.bootstrap?.instanceId &&
+    context.chainId === app.bootstrap?.chain?.chainId
+  );
+}
+function productionSetupRoute() {
+  const route = readRoute();
+  return (
+    isProduction() &&
+    route.setup &&
+    !route.eventId &&
+    app.route.setup &&
+    !app.route.eventId
+  );
+}
+function rememberSetupExpectation(wallet) {
+  if (!productionSetupRoute()) return;
+  setupFeedbackExpectation = {
+    route: JSON.stringify(readRoute()),
+    mode: app.bootstrap.mode,
+    instanceId: app.bootstrap.instanceId,
+    wallet,
+  };
+}
+function showSetupLoading(title, message) {
+  if (!productionSetupRoute()) return false;
+  loadingStage(message, title);
+  $("#loading").setAttribute("data-setup-loading", "");
+  $("#loading").hidden = false;
+  $("#content").hidden = true;
+  $("#top-identity").disabled = true;
+  setReadBusy(true);
+  return true;
+}
+function showSetupFailure(error) {
+  if (!productionSetupRoute()) return false;
+  const cancelled = error?.code === 4001 || error?.code === "ACTION_REJECTED";
+  const contextChanged = error?.code === "SETUP_CONTEXT_CHANGED";
+  $("#loading").hidden = true;
+  $("#content").hidden = false;
+  $("#content").innerHTML =
+    `<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"><section class="luma-setup" data-setup-feedback><div class="eyebrow">KICKBACK SETUP</div><h1>${cancelled ? "Wallet sign-in was cancelled." : "Setup could not be checked."}</h1><p class="error-panel" role="alert" data-setup-feedback-error>${escape(error?.message ?? "The current wallet session could not be verified.")}</p><p>${contextChanged ? "Reload setup to read the current server context. Your saved transaction records are retained." : "Check setup again or reconnect your wallet. The form opens after a fresh session and Ethereum setup check."}</p><div class="luma-setup-actions">${contextChanged ? '<button class="button button-primary" data-setup-reload>Reload setup</button>' : '<button class="button button-primary" data-setup-retry>Check setup again</button><button class="button button-secondary" data-connect-wallet>Reconnect wallet</button>'}</div></section></div></section>`;
+  if (!activeLoad) setReadBusy(false);
+  return true;
+}
+function assertSetupSession(record, bootstrap) {
+  if (
+    !record.route.setup ||
+    (bootstrap?.mode !== "hosted-production" &&
+      record.capturedMode !== "hosted-production")
+  )
+    return;
+  const session = bootstrap.session;
+  const walletSession =
+    session?.mode === "wallet" &&
+    typeof session.wallet === "string" &&
+    /^0x[0-9a-f]{40}$/i.test(session.wallet) &&
+    !/^0x0{40}$/i.test(session.wallet);
+  if (
+    bootstrap.mode !== "hosted-production" ||
+    (record.capturedMode !== null && record.capturedMode !== bootstrap.mode) ||
+    (record.capturedInstanceId !== null &&
+      record.capturedInstanceId !== bootstrap.instanceId)
+  )
+    throw Object.assign(
+      Error(
+        "The setup server context changed. Reload setup before continuing.",
+      ),
+      { code: "SETUP_CONTEXT_CHANGED" },
+    );
+  if (
+    !(session === null || walletSession) ||
+    (record.hasCapturedSession &&
+      (record.capturedWallet === null
+        ? session !== null
+        : !walletSession || !same(record.capturedWallet, session.wallet)))
+  )
+    throw Error(
+      "The setup sign-in changed. Check setup again or reconnect the intended wallet before continuing.",
+    );
 }
 function loadingStage(message, title = null) {
   $("#loading-status").textContent = message;
@@ -1368,6 +1543,14 @@ function load({
 } = {}) {
   const route = readRoute();
   const key = JSON.stringify(route);
+  if (!route.setup) setupFeedbackExpectation = null;
+  else if (
+    acknowledgedWallet === undefined &&
+    setupFeedbackExpectation?.route === key &&
+    setupFeedbackExpectation.mode === app.bootstrap?.mode &&
+    setupFeedbackExpectation.instanceId === app.bootstrap?.instanceId
+  )
+    acknowledgedWallet = setupFeedbackExpectation.wallet;
   if (coalesce && activeLoad?.key === key) return activeLoad.promise;
   cancelRead();
   const record = {
@@ -1425,7 +1608,12 @@ async function loadView(record, silent) {
   const generation = record.generation;
   invalidateDraft();
   app.route = record.route;
-  if (!silent && !preserveCatalog) {
+  const setupLoading = showSetupLoading(
+    "Checking Ethereum setup",
+    "Verifying the current wallet session, factory and setup terms before showing the form.",
+  );
+  if (!setupLoading) $("#loading").removeAttribute("data-setup-loading");
+  if (!silent && !preserveCatalog && !setupLoading) {
     loadingStage(
       "Checking your event network…",
       app.route.eventId ? "Opening your event" : "Opening your events",
@@ -1479,6 +1667,7 @@ async function loadView(record, silent) {
     const bootstrap = await readForLoad(bootstrapPath, record);
     if (generation !== app.generation) return;
     record.readBootstrap = bootstrap;
+    assertSetupSession(record, bootstrap);
     app.bootstrap = bootstrap;
     setPublicSearchScope(bootstrap.mode, bootstrap.instanceId);
     if (!isSandbox() && !isTestnet() && !isGuardedV9()) {
@@ -1632,6 +1821,10 @@ async function loadView(record, silent) {
     $("#loading").hidden = true;
     $("#content").hidden = false;
     app.detail = null;
+    if (showSetupFailure(error)) {
+      if (restoreError) $("[data-setup-retry],[data-setup-reload]")?.focus();
+      return;
+    }
     app.submittedRecovery = submittedRecoveryFromManifest(record, error);
     if (app.submittedRecovery) sidebar();
     $("#content").innerHTML =
@@ -1723,6 +1916,7 @@ function updatePublicEventResults() {
 function mountLaunchSetup() {
   const host = $("#luma-setup");
   if (!host || !isProduction() || !app.route.setup || app.route.eventId) return;
+  setupFeedbackExpectation = null;
   const scope = {
     generation: app.generation,
     instanceId: app.bootstrap?.instanceId,
@@ -3636,6 +3830,14 @@ document.addEventListener("click", async (event) => {
   if (!button || button.disabled) return;
   const data = button.dataset;
   try {
+    if ("setupReload" in data) {
+      if (productionSetupRoute()) window.location.reload();
+      return;
+    }
+    if ("setupRetry" in data) {
+      if (productionSetupRoute()) await load({ silent: true });
+      return;
+    }
     if ("publicEventClear" in data) {
       const field = $("[data-public-event-search]");
       if (publicHomePresentation() && field) {
@@ -3727,6 +3929,12 @@ document.addEventListener("click", async (event) => {
       return;
     }
     if ("connectWallet" in data) {
+      if (walletConnectionPending) {
+        toast(
+          "Complete or cancel the existing wallet sign-in request before trying again.",
+        );
+        return;
+      }
       button.disabled = true;
       await connectWallet();
       return;

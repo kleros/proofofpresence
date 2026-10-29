@@ -1,0 +1,55 @@
+{
+  "status": "passed-local-combined-repair",
+  "checkedAt": "2026-10-29T13:50:04.473Z",
+  "backendSource": "4028e8c04b490507ddef2b2899ceadd0713ac1fe",
+  "feedbackUiSource": "c36754918a2853158d3daf6f688d6557c98ae833",
+  "productSha256": {
+    "public/app.js": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
+    "public/loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "public/luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509"
+  },
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 test/organizer-jobs.test.mjs test/organizer-job-client.test.mjs test/production-http.test.mjs",
+      "passed": 70,
+      "failed": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/build.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node test/setup-wallet-feedback.e2e.mjs --run-loopback",
+      "passedGroups": 10,
+      "proof": "artifacts/setup-wallet-feedback/final-2026-10-29T13-47-35.613Z/results.json",
+      "sha256": "8e9d765e6bead42d97c45670789c8b695749ea65e9bfb6a7f48b591e441b044c",
+      "note": "Actual source pins appa61e10/widget829d8c and organizerJobs enabled. The archived harness carries a stale UI-only390aac limitation sentence; actual asset pins and this combined statement supersede it. The current harness corrects that prose only."
+    },
+    {
+      "command": "node test/organizer-jobs-ui.e2e.mjs",
+      "passedGroups": 3,
+      "proof": "artifacts/organizer-jobs-ui/2026-10-29T13-45-16-160Z-bc10381d-a7ac-403b-a251-c2536aa6a204/proof.json",
+      "note": "Synthetic job+wallet transport only: one stub eth_sendTransaction, no real signature/broadcast."
+    },
+    {
+      "command": "node test/luma-setup-dates.e2e.mjs",
+      "passedGroups": 8,
+      "proof": "artifacts/luma-setup-dates/2026-10-29T13-45-16-160Z-0e37a9ae-965f-41f0-8654-ecb66525565d/proof.json",
+      "note": "Agent actual local date-regression run on finalwidget829d8c."
+    }
+  ],
+  "unchangedFinancialGuards": [
+    "src/factory-onboarding.mjs",
+    "src/workbench.mjs",
+    "src/upgrade-verification.mjs",
+    "src/production-wallets.mjs",
+    "public/transaction-context.js"
+  ],
+  "actualMainnetFinancialActions": 0,
+  "publicReviewJobStartedByAgent": 0,
+  "remaining": "Netlify publication and anonymous/static readback; next performance optimization is a separate authorized phase after this repair."
+}

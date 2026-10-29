@@ -311,3 +311,22 @@ Open event links. The recorded metadata projection says **Check status on open**
 current status and wallet actions are checked there. Never borrow financial-ready styling or current
 Open/Paid states from the fast catalog. Search/clear are local, counts exclude private/draft/missing
 flags before indexing, errors require explicit retry, and same-scope refresh keeps the search caret.
+
+### Setup wallet progress and recovery
+
+Files: `public/app.js`, `public/loading.css`. Updated29October2026, using the imprint pattern.
+
+| Property | Pattern |
+| --- | --- |
+| Container | Existing `.loading-shell`; setup variant `#loading[data-setup-loading]` |
+| Background/border | `--surface`, 1px `--line`; existing `--radius` cards |
+| Text | Existing Instrument Serif loading heading, Geist muted status; teal eyebrow/spinner |
+| Shape/spacing | Form-shaped context and two field cards, existing24px panel padding/gaps |
+| Busy state | Stale form disposed; `#content` hidden/busy; polite status stays outside that subtree |
+| Error | Existing `.luma-setup`, `.error-panel` and alert; persistent explanation, wrapped text |
+| Recovery | Existing teal primary/outlined secondary44px buttons with normal keyboard focus styles |
+| Motion | Existing reduced-motion rules; no new shimmer or transition |
+
+Stages distinguish wallet sign-in from Ethereum/session verification. Errors never restore a cached
+signed-in form. Normal retry performs a fresh read; a changed server instance explicitly asks the
+user to reload. No automatic reload or transaction resend. Preserve saved transaction journals.

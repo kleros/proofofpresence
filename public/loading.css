@@ -160,6 +160,24 @@
 .loading-bar-wide {
   width: 88%;
 }
+#loading[data-setup-loading] .loading-context {
+  min-height: 84px;
+  background: var(--surface);
+}
+#loading[data-setup-loading] .loading-card {
+  min-height: 112px;
+}
+#loading[data-setup-loading] .loading-bar {
+  width: 100%;
+  height: 16px;
+}
+#loading[data-setup-loading] .loading-bar-title {
+  width: 42%;
+  height: 10px;
+}
+#loading[data-setup-loading] .loading-bar-short {
+  display: none;
+}
 /* Reserve the account slot before bootstrap as well as after authentication. */
 .app-shell .topbar-actions {
   min-width: 0;

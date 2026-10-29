@@ -1,0 +1,48 @@
+{
+  "status": "passed-local-ready-for-primary",
+  "branch": "codex/kleros-ui-ux-speed-audit",
+  "worktree": "/Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros projects",
+  "startingCommit": "c6674b6",
+  "baseLiveIntegratedSource": "fec62112aca1bb36cab08a02d823044646a73a6e",
+  "sourceSha256": {
+    "public/app.js": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
+    "public/loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "public/luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    "test/setup-wallet-feedback.e2e.mjs": "9f96605065e71a75f2a43e4bc5823a3f45b1b623be64c09dc941504f9c5a0ead"
+  },
+  "productFiles": [
+    "public/app.js",
+    "public/loading.css"
+  ],
+  "widgetNotIncluded": "public/luma-setup.js is the tested dependency only; Core owns its new review timeout orchestration. Never overwrite its newer widget.",
+  "testsActuallyRun": [
+    {
+      "command": "node test/setup-wallet-feedback.e2e.mjs --baseline-repro",
+      "result": "2 original blank-state bugs reproduced against archived3b121b/390aac assets"
+    },
+    {
+      "command": "node test/setup-wallet-feedback.e2e.mjs --run-loopback",
+      "result": "10 final focused groups passed on a61e10c9; previous candidate/preparation results preserved"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed finala61e"
+    },
+    {
+      "command": "node scripts/build.mjs",
+      "result": "passed static app/modules and pinned historical ABI/build comparison; no Solidity compilation"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "finalProof": "artifacts/setup-wallet-feedback/final-2026-10-29T13-40-38.475Z/final-provenance.json",
+  "finalProofSha256": "79fe019dc7ef241c099411903d3f2995191e8a82c792e825acc3ee842a54bf67",
+  "review": "Independent bounded read-only source review PASS. Root inspected saved mobile pending/error and desktop instance-reload PNGs; readable, no clipping.",
+  "limits": [
+    "Synthetic loopback auth/session fixtures only; no real wallet, cryptographic signature, external request, RPC, financial endpoint or transaction.",
+    "Core owns review504 job transport and newer setup widget, integration, publication and live verification.",
+    "This patch improves progress/recovery UI; it does not shorten actual chain verification or alter paid plans."
+  ]
+}

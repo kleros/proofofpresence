@@ -1,0 +1,122 @@
+{
+  "status": "passed",
+  "scope": "Local setup wallet/authentication feedback and stale-session UI guards only",
+  "groups": 10,
+  "command": "node test/setup-wallet-feedback.e2e.mjs --run-loopback",
+  "result": "artifacts/setup-wallet-feedback/final-2026-10-29T13-40-38.475Z/results.json",
+  "sourceSha256": {
+    "app.js": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6"
+  },
+  "allSnapshotAssetSha256": {
+    "app.js": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "index.html": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "luma-launch.css": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "inputSha256": {
+    "test/setup-wallet-feedback.e2e.mjs": "9f96605065e71a75f2a43e4bc5823a3f45b1b623be64c09dc941504f9c5a0ead",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+    "test/fixtures/production-ui-fixture.mjs": "69cf2f4fd7e664a6bd0c61b89a5f61ecdb784adbc33cb7b35b4e3d895a654fce"
+  },
+  "methodCounts": {
+    "fakeProvider": {
+      "eth_requestAccounts": 9,
+      "eth_chainId": 14,
+      "personal_sign": 7
+    },
+    "mockLocalAPI": {
+      "GET /api/bootstrap": 21,
+      "POST /api/auth/challenge": 7,
+      "POST /api/auth/verify": 7,
+      "DELETE /api/session": 4,
+      "GET /api/public-catalog": 2
+    },
+    "externalRequests": 0,
+    "financialEndpoints": 0,
+    "providerTransactionOrRPCMethods": 0,
+    "pageErrors": 0,
+    "blockedRequests": 0
+  },
+  "baseline": {
+    "command": "node test/setup-wallet-feedback.e2e.mjs --baseline-repro",
+    "status": "two blank states reproduced",
+    "result": "artifacts/setup-wallet-feedback/baseline-repro-2026-10-29T13-28-25.317Z/results.json",
+    "assetPins": "artifacts/setup-wallet-feedback/baseline/asset-sha256.json",
+    "appSha256": "3b121b188de579b418b3b7df63c0764a190dbe46d14529570d93082b6c17769f"
+  },
+  "precedingProofs": [
+    {
+      "result": "artifacts/setup-wallet-feedback/final-2026-10-29T13-34-22.506Z/results.json",
+      "status": "partial3; fixture reset used identical-fragment navigation, corrected to explicit reload without relaxing assertions/timeouts"
+    },
+    {
+      "result": "artifacts/setup-wallet-feedback/final-2026-10-29T13-35-25.959Z/results.json",
+      "status": "8passed on02fb candidate before concrete restart/epoch fixes"
+    },
+    {
+      "result": "artifacts/setup-wallet-feedback/final-2026-10-29T13-38-50.738Z/results.json",
+      "status": "10passed ond773 candidate before duplicate-prompt control guard"
+    }
+  ],
+  "visualReview": {
+    "inspectedFinal": [
+      "mobile-wallet-pending.png",
+      "mobile-wallet-cancelled.png",
+      "desktop-server-change-reload.png"
+    ],
+    "precedingSameLayoutInspected": [
+      "desktop-wallet-pending.png",
+      "mobile-auth-bootstrap.png",
+      "mobile-verified-form.png",
+      "desktop-verified-form.png"
+    ],
+    "result": "Readable desktop/mobile skeleton, persistent cancellation error and visible recovery controls. Explicit context reload view is clear. No blank state remains in tested flows. No WCAG or real extension-conformance claim."
+  },
+  "checks": [
+    "Deferred fake wallet prompt shows announced setup loading on desktop and mobile, busy content and no stale form",
+    "4001 cancellation leaves a persistent reconnect/error view; explicit retry reads fresh bootstrap only",
+    "Delayed challenge, verify and acknowledged bootstrap each retain skeleton/status; only fresh same-actor verified read restores the unchanged date form",
+    "Verify acknowledgment for A followed by bootstrap B fails closed with persistent retry, never a B signing form",
+    "accountsChanged during the first post-ACK deferred bootstrap signs out and prevents the old actor form; only fresh anonymous reconnect UI returns",
+    "chainChanged during the first post-ACK deferred bootstrap signs out and prevents the old actor form; only fresh anonymous reconnect UI returns",
+    "Explicit sign-out retains setup loading during the fresh anonymous read and cannot leave the disposed old form",
+    "A changed server instance offers only explicit Reload setup, never auto-refreshes or renders stale form; user reload safely obtains the fresh instance",
+    "While no GET is active, wallet invalidation and held logout supersede a held old auth ACK; old ACK/finally cannot start authenticated read or clear current busy state",
+    "Away/back during a pending prompt cannot disable fresh Connect or create another prompt; rejecting the old request leaves a usable retry, and its later authenticated read cannot remount after catalog navigation"
+  ],
+  "limits": [
+    "All provider responses and signatures are synthetic literals. No real account, key, RPC, signature, transaction, auth service, production server or public HTTP was used.",
+    "Only exact local mocked auth challenge/verify and DELETEsession are permitted writes. No organizer creation/draft, financial or publication endpoint exists in the fixture.",
+    "The unchanged setup/date widget is pinned390aac98. Core owns the separate ReviewsetupHTTP504/async review flow and its newer widget; this proof does not test that work.",
+    "Existing public-catalog timing8/2 and broad financial evidence are preserved, not rerun or relabeled as this source.",
+    "The later combined primary backend/frontend release requires its own bounded integration acceptance."
+  ],
+  "sessionsRunning": false
+}

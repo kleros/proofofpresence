@@ -1,0 +1,631 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { makeLumaSetupFixture } from "./fixtures/luma-launch-fixture.mjs";
+import { FIXTURE_WALLET as actor } from "./fixtures/production-ui-fixture.mjs";
+
+// TEST ONLY: actual static UI plus local synthetic authentication. Never a real provider.
+const root = fileURLToPath(new URL("../", import.meta.url));
+const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const mime = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
+};
+async function readAssets(directory, prefix = "", result = new Map()) {
+  for (const item of await fs.readdir(directory, { withFileTypes: true })) {
+    const name = prefix + item.name;
+    if (item.isDirectory())
+      await readAssets(path.join(directory, item.name), name + "/", result);
+    else if (mime[path.extname(name)])
+      result.set(name, await fs.readFile(path.join(directory, item.name)));
+  }
+  return result;
+}
+function allowed(origin, url, method, body, names) {
+  const u = new URL(url);
+  if (u.origin !== origin || u.search) return false;
+  if (method === "GET")
+    return (
+      !body &&
+      (["/", "/api/bootstrap", "/api/public-catalog"].includes(u.pathname) ||
+        names.has(u.pathname.slice(1)))
+    );
+  if (method === "DELETE")
+    return u.pathname === "/api/session" && body === "{}";
+  if (method !== "POST") return false;
+  let data;
+  try {
+    data = JSON.parse(body);
+  } catch {
+    return false;
+  }
+  if (u.pathname === "/api/auth/challenge")
+    return Object.keys(data).length === 1 && data.wallet === actor;
+  return (
+    u.pathname === "/api/auth/verify" &&
+    Object.keys(data).length === 2 &&
+    data.nonce === "synthetic-feedback-nonce" &&
+    data.signature === "0x" + "7".repeat(130)
+  );
+}
+async function run(baseline) {
+  const { chromium, expect } = await import("@playwright/test");
+  const output = path.join(
+    root,
+    "artifacts/setup-wallet-feedback",
+    (baseline ? "baseline-repro-" : "final-") +
+      new Date().toISOString().replaceAll(":", "-"),
+  );
+  await fs.mkdir(output, { recursive: true });
+  const assets = await readAssets(
+    path.join(
+      root,
+      baseline ? "artifacts/setup-wallet-feedback/baseline/assets" : "public",
+    ),
+  );
+  if (baseline) {
+    assert.equal(
+      hash(assets.get("app.js")),
+      "3b121b188de579b418b3b7df63c0764a190dbe46d14529570d93082b6c17769f",
+    );
+    assert.equal(
+      hash(assets.get("luma-setup.js")),
+      "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    );
+  }
+  const fixture = makeLumaSetupFixture(),
+    names = new Set(assets.keys());
+  const result = {
+    status: "running",
+    baseline,
+    startedAt: new Date().toISOString(),
+    harnessSha256: hash(await fs.readFile(fileURLToPath(import.meta.url))),
+    assetSha256: Object.fromEntries(
+      [...assets].map(([name, bytes]) => [name, hash(bytes)]),
+    ),
+    checks: [],
+    requests: [],
+    blocked: [],
+    pageErrors: [],
+    providerRequests: [],
+    observations: [],
+    screenshots: [],
+    limits: [
+      "Loopback synthetic authentication/session endpoints only. No real RPC, key, signature, public request, financial endpoint, transaction, organizer creation or publication.",
+      "Fixture personal_sign returns a non-cryptographic literal and fake wallet events invoke local callbacks. Test does not prove wallet-extension behavior.",
+      "Setup/date widget remains source390aac98; Core's separate Reviewsetup504/polling work is outside this proof.",
+    ],
+  };
+  await fs.copyFile(
+    fileURLToPath(import.meta.url),
+    path.join(output, "tested-harness.mjs.txt"),
+  );
+  let phase = "initial",
+    signed = false,
+    bootstrapWalletOverride = null,
+    browser,
+    page;
+  const held = new Set(),
+    gates = new Map();
+  const waitGate = (name) =>
+    held.has(name)
+      ? new Promise((resolve) =>
+          gates.set(name, [...(gates.get(name) ?? []), resolve]),
+        )
+      : Promise.resolve();
+  const release = (name) => {
+    held.delete(name);
+    for (const resolve of gates.get(name) ?? []) resolve();
+    gates.delete(name);
+  };
+  const server = http.createServer(async (req, res) => {
+    const body = Buffer.concat(await Array.fromAsync(req)).toString();
+    const url = new URL(req.url, "http://127.0.0.1"),
+      record = { phase, method: req.method, path: url.pathname, body, signed };
+    result.requests.push(record);
+    if (
+      !allowed(
+        "http://" + req.headers.host,
+        "http://" + req.headers.host + req.url,
+        req.method,
+        body,
+        names,
+      )
+    ) {
+      result.blocked.push(record);
+      res.writeHead(405);
+      res.end();
+      return;
+    }
+    const send = (value) => {
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify(value));
+    };
+    if (url.pathname === "/api/bootstrap") {
+      const value = structuredClone(fixture.bootstrap);
+      value.session = signed
+        ? {
+            wallet: bootstrapWalletOverride ?? actor,
+            label: "Synthetic organizer",
+            mode: "wallet",
+          }
+        : null;
+      record.actor = value.session?.wallet ?? null;
+      await waitGate("bootstrap");
+      record.completed = true;
+      send(value);
+      return;
+    }
+    if (url.pathname === "/api/auth/challenge") {
+      await waitGate("challenge");
+      send({
+        nonce: "synthetic-feedback-nonce",
+        message: "Synthetic loopback ownership only",
+      });
+      return;
+    }
+    if (url.pathname === "/api/auth/verify") {
+      await waitGate("verify");
+      signed = true;
+      send({ wallet: actor, label: "Synthetic organizer", mode: "wallet" });
+      return;
+    }
+    if (url.pathname === "/api/session") {
+      signed = false;
+      send({ ok: true });
+      return;
+    }
+    if (url.pathname === "/api/public-catalog") {
+      send({
+        schemaVersion: 1,
+        kind: "public-catalog",
+        mode: "hosted-production",
+        instanceId: fixture.bootstrap.instanceId,
+        environment: fixture.bootstrap.environment,
+        chain: fixture.bootstrap.chain,
+        generatedAt: new Date().toISOString(),
+        catalog: {
+          metadataOnly: true,
+          currentFinancialState: "not-loaded",
+          source: "recorded-adoption",
+        },
+        events: [],
+      });
+      return;
+    }
+    const name = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
+    res.writeHead(200, {
+      "content-type": mime[path.extname(name)],
+      "cache-control": "no-store",
+    });
+    res.end(assets.get(name));
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const origin = "http://127.0.0.1:" + server.address().port;
+  try {
+    browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      viewport: { width: 1440, height: 900 },
+      reducedMotion: "reduce",
+      serviceWorkers: "block",
+    });
+    await context.route("**/*", (route) => {
+      const request = route.request();
+      if (
+        !allowed(
+          origin,
+          request.url(),
+          request.method(),
+          request.postData(),
+          names,
+        )
+      ) {
+        result.blocked.push({ method: request.method(), url: request.url() });
+        return route.abort("blockedbyclient");
+      }
+      return route.continue();
+    });
+    await context.routeWebSocket("**/*", (socket) => {
+      result.blocked.push({ type: "WebSocket" });
+      socket.close();
+    });
+    await context.exposeBinding("__recordFeedbackMethod", (_source, method) => {
+      result.providerRequests.push(method);
+    });
+    await context.addInitScript((wallet) => {
+      const callbacks = new Map();
+      let accept, reject;
+      window.__feedbackWallet = {
+        calls: [],
+        registrations: [],
+        accept: () => accept([wallet]),
+        cancel: () =>
+          reject(
+            Object.assign(Error("Synthetic user rejected wallet access"), {
+              code: 4001,
+            }),
+          ),
+        emit: (name, value) => {
+          for (const callback of callbacks.get(name) ?? []) callback(value);
+        },
+      };
+      window.ethereum = {
+        on(name, callback) {
+          const list = callbacks.get(name) ?? [];
+          list.push(callback);
+          callbacks.set(name, list);
+          window.__feedbackWallet.registrations.push(name);
+        },
+        async request(payload) {
+          window.__feedbackWallet.calls.push(payload.method);
+          await window.__recordFeedbackMethod(payload.method);
+          if (payload.method === "eth_requestAccounts")
+            return new Promise((resolve, fail) => {
+              accept = resolve;
+              reject = fail;
+            });
+          if (payload.method === "eth_chainId") return "0x1";
+          if (payload.method === "personal_sign") return "0x" + "7".repeat(130);
+          throw Error("Forbidden fake provider method: " + payload.method);
+        },
+      };
+    }, actor);
+    page = await context.newPage();
+    page.setDefaultTimeout(6000);
+    page.on("pageerror", (error) => result.pageErrors.push(error.message));
+    const capture = async (name) => {
+      await page.screenshot({ path: path.join(output, name + ".png") });
+      result.screenshots.push(name + ".png");
+    };
+    const hasBlankHost = () =>
+      page
+        .locator("#luma-setup")
+        .evaluate((host) => host.innerHTML.trim() === "");
+    const connect = () =>
+      page.locator("#luma-setup [data-connect-wallet]").click();
+    const waitAccounts = (count) =>
+      expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              window.__feedbackWallet.calls.filter(
+                (name) => name === "eth_requestAccounts",
+              ).length,
+          ),
+        )
+        .toBe(count);
+    await page.goto(origin + "/#setup=kickback", {
+      waitUntil: "domcontentloaded",
+    });
+    await expect(
+      page.locator("#luma-setup [data-connect-wallet]"),
+    ).toBeVisible();
+    phase = "wallet-prompt";
+    await connect();
+    await waitAccounts(1);
+    if (baseline) {
+      assert.equal(await hasBlankHost(), true);
+      await capture("desktop-wallet-blank");
+      await page.evaluate(() => window.__feedbackWallet.cancel());
+      await expect(page.locator("#toast")).toContainText(
+        "Synthetic user rejected",
+      );
+      assert.equal(await hasBlankHost(), true);
+      await capture("desktop-cancel-blank");
+      result.checks.push(
+        "Reproduced: deferred wallet request clears setup; cancellation leaves host permanently blank",
+      );
+      phase = "post-auth-bootstrap";
+      held.add("bootstrap");
+      // The reload must first obtain an anonymous bootstrap, before the signed read is held.
+      release("bootstrap");
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(
+        page.locator("#luma-setup [data-connect-wallet]"),
+      ).toBeVisible();
+      held.add("bootstrap");
+      await connect();
+      await waitAccounts(1);
+      await page.evaluate(() => window.__feedbackWallet.accept());
+      await expect
+        .poll(
+          () =>
+            result.requests.filter(
+              (record) =>
+                record.phase === phase &&
+                record.path === "/api/bootstrap" &&
+                record.signed,
+            ).length,
+        )
+        .toBe(1);
+      assert.equal(await hasBlankHost(), true);
+      await capture("desktop-auth-bootstrap-blank");
+      release("bootstrap");
+      await expect(page.locator("form[data-luma-form]")).toBeVisible();
+      result.checks.push(
+        "Reproduced: acknowledged authentication still shows blank setup while its fresh bootstrap is delayed",
+      );
+      result.status = "reproduced";
+    } else {
+      const assertBusy = async () => {
+        await expect(
+          page.locator("#loading[data-setup-loading]"),
+        ).toBeVisible();
+        await expect(page.locator("#loading-status")).toHaveAttribute(
+          "role",
+          "status",
+        );
+        await expect(page.locator("#loading-status")).toHaveAttribute(
+          "aria-live",
+          "polite",
+        );
+        await expect(page.locator("#loading-status")).not.toBeEmpty();
+        await expect(page.locator("#content")).toHaveAttribute(
+          "aria-busy",
+          "true",
+        );
+        await expect(page.locator("form[data-luma-form]")).toHaveCount(0);
+      };
+      const waitPath = (name, since, count = 1) =>
+        expect
+          .poll(
+            () =>
+              result.requests
+                .slice(since)
+                .filter((record) => record.path === name).length,
+          )
+          .toBe(count);
+      const visit = async (asSigned) => {
+        for (const name of [...held]) release(name);
+        signed = asSigned;
+        bootstrapWalletOverride = null;
+        await page.goto(origin + "/#setup=kickback", {
+          waitUntil: "domcontentloaded",
+        });
+        await expect(page.locator("#luma-setup")).toBeVisible();
+        if (asSigned)
+          await expect(page.locator("form[data-luma-form]")).toBeVisible();
+        else
+          await expect(
+            page.locator("#luma-setup [data-connect-wallet]"),
+          ).toBeVisible();
+      };
+      await assertBusy();
+      await expect(page.locator("#loading-title")).toContainText(/wallet/i);
+      await capture("desktop-wallet-pending");
+      await page.setViewportSize({ width: 390, height: 844 });
+      await capture("mobile-wallet-pending");
+      assert(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      );
+      result.checks.push(
+        "Deferred fake wallet prompt shows announced setup loading on desktop and mobile, busy content and no stale form",
+      );
+      phase = "wallet-cancelled";
+      await page.evaluate(() => window.__feedbackWallet.cancel());
+      await expect(page.locator("[data-setup-feedback-error]")).toHaveAttribute(
+        "role",
+        "alert",
+      );
+      await expect(page.locator("[data-setup-feedback-error]")).toContainText(
+        /reject|cancel/i,
+      );
+      await expect(page.locator("[data-setup-retry]")).toBeVisible();
+      await expect(
+        page.locator("#content [data-connect-wallet]"),
+      ).toBeVisible();
+      await expect(page.locator("form[data-luma-form]")).toHaveCount(0);
+      await expect(page.locator("#loading")).toBeHidden();
+      await page.waitForTimeout(150);
+      await capture("mobile-wallet-cancelled");
+      const retryStart = result.requests.length;
+      await page.locator("[data-setup-retry]").click();
+      await expect(
+        page.locator("#luma-setup [data-connect-wallet]"),
+      ).toBeVisible();
+      assert.deepEqual(
+        result.requests
+          .slice(retryStart)
+          .filter((record) => record.path.startsWith("/api/"))
+          .map((record) => [record.method, record.path]),
+        [["GET", "/api/bootstrap"]],
+      );
+      result.checks.push(
+        "4001 cancellation leaves a persistent reconnect/error view; explicit retry reads fresh bootstrap only",
+      );
+      phase = "authentication-stages";
+      held.add("challenge");
+      held.add("verify");
+      held.add("bootstrap");
+      const authStart = result.requests.length;
+      await connect();
+      await waitAccounts(2);
+      await page.evaluate(() => window.__feedbackWallet.accept());
+      await waitPath("/api/auth/challenge", authStart);
+      await assertBusy();
+      await capture("mobile-auth-challenge");
+      release("challenge");
+      await waitPath("/api/auth/verify", authStart);
+      await assertBusy();
+      release("verify");
+      await waitPath("/api/bootstrap", authStart);
+      await assertBusy();
+      await capture("mobile-auth-bootstrap");
+      release("bootstrap");
+      await expect(page.locator("form[data-luma-form]")).toBeVisible();
+      await expect(page.locator("#loading")).toBeHidden();
+      await expect(
+        page.locator('form[data-luma-form] input[name="startsAt"]'),
+      ).toBeVisible();
+      await expect(
+        page.locator('form[data-luma-form] input[name="endsAt"]'),
+      ).toBeVisible();
+      await capture("mobile-verified-form");
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await capture("desktop-verified-form");
+      result.checks.push(
+        "Delayed challenge, verify and acknowledged bootstrap each retain skeleton/status; only fresh same-actor verified read restores the unchanged date form",
+      );
+      phase = "post-auth-wrong-actor";
+      await visit(false);
+      bootstrapWalletOverride = "0x" + "9".repeat(40);
+      const wrongActorStart = result.requests.length;
+      await connect();
+      await waitAccounts(1);
+      await page.evaluate(() => window.__feedbackWallet.accept());
+      await waitPath("/api/auth/verify", wrongActorStart);
+      await expect(page.locator("[data-setup-feedback-error]")).toBeVisible();
+      await expect(page.locator("form[data-luma-form]")).toHaveCount(0);
+      await expect(page.locator("[data-setup-retry]")).toBeVisible();
+      assert.equal(
+        result.requests
+          .slice(wrongActorStart)
+          .find((record) => record.path === "/api/bootstrap").actor,
+        bootstrapWalletOverride,
+      );
+      await capture("desktop-wrong-actor-error");
+      result.checks.push(
+        "Verify acknowledgment for A followed by bootstrap B fails closed with persistent retry, never a B signing form",
+      );
+      for (const eventName of ["accountsChanged", "chainChanged"]) {
+        phase = eventName;
+        await visit(false);
+        held.add("bootstrap");
+        const authStart = result.requests.length;
+        await connect();
+        await waitAccounts(1);
+        await page.evaluate(() => window.__feedbackWallet.accept());
+        await waitPath("/api/bootstrap", authStart);
+        await assertBusy();
+        await expect
+          .poll(() =>
+            page.evaluate(() => window.__feedbackWallet.registrations),
+          )
+          .toContain(eventName);
+        const eventStart = result.requests.length;
+        await page.evaluate(
+          ([name, value]) => window.__feedbackWallet.emit(name, value),
+          [
+            eventName,
+            eventName === "accountsChanged" ? ["0x" + "9".repeat(40)] : "0x2",
+          ],
+        );
+        await waitPath("/api/bootstrap", eventStart);
+        await assertBusy();
+        release("bootstrap");
+        await expect(
+          page.locator("#luma-setup [data-connect-wallet]"),
+        ).toBeVisible();
+        await expect(page.locator("form[data-luma-form]")).toHaveCount(0);
+        assert.deepEqual(
+          result.requests
+            .slice(eventStart)
+            .filter((record) => record.path.startsWith("/api/"))
+            .map((record) => [record.method, record.path]),
+          [
+            ["DELETE", "/api/session"],
+            ["GET", "/api/bootstrap"],
+          ],
+        );
+        result.checks.push(
+          eventName +
+            " during the first post-ACK deferred bootstrap signs out and prevents the old actor form; only fresh anonymous reconnect UI returns",
+        );
+      }
+      phase = "explicit-signout";
+      await visit(true);
+      await page.locator("#top-identity").click();
+      await expect(page.locator("[data-logout]")).toBeVisible();
+      held.add("bootstrap");
+      const signoutStart = result.requests.length;
+      await page.locator("[data-logout]").click();
+      await waitPath("/api/bootstrap", signoutStart);
+      await assertBusy();
+      release("bootstrap");
+      await expect(
+        page.locator("#luma-setup [data-connect-wallet]"),
+      ).toBeVisible();
+      await expect(page.locator("form[data-luma-form]")).toHaveCount(0);
+      result.checks.push(
+        "Explicit sign-out retains setup loading during the fresh anonymous read and cannot leave the disposed old form",
+      );
+      phase = "late-auth-route-change";
+      await visit(false);
+      held.add("bootstrap");
+      const lateStart = result.requests.length;
+      await connect();
+      await waitAccounts(1);
+      await page.evaluate(() => window.__feedbackWallet.accept());
+      await waitPath("/api/bootstrap", lateStart);
+      await assertBusy();
+      await page.locator(".mobile-brand").click();
+      await expect(page.locator("[data-public-catalog-screen]")).toBeVisible();
+      release("bootstrap");
+      await page.waitForTimeout(150);
+      await expect(page.locator("[data-public-catalog-screen]")).toBeVisible();
+      await expect(page.locator("form[data-luma-form]")).toHaveCount(0);
+      await expect(page.locator("#loading[data-setup-loading]")).toBeHidden();
+      result.checks.push(
+        "A delayed authenticated setup read cannot remount after navigation to the public catalog",
+      );
+      result.status = "passed";
+    }
+
+    assert(
+      result.providerRequests.every((method) =>
+        ["eth_requestAccounts", "eth_chainId", "personal_sign"].includes(
+          method,
+        ),
+      ),
+    );
+    assert.deepEqual(result.blocked, []);
+    assert.deepEqual(result.pageErrors, []);
+    await context.close();
+  } catch (error) {
+    result.status = "failed";
+    result.failure = { message: error.message, stack: error.stack };
+    if (page && !page.isClosed())
+      await page
+        .screenshot({ path: path.join(output, "failure.png") })
+        .catch(() => {});
+    throw error;
+  } finally {
+    for (const name of [...held]) release(name);
+    if (browser) await browser.close();
+    await new Promise((resolve) => server.close(resolve));
+    result.completedAt = new Date().toISOString();
+    await fs.writeFile(
+      path.join(output, "results.json"),
+      JSON.stringify(result, null, 2) + "\n",
+    );
+    console.log(
+      JSON.stringify(
+        { status: result.status, checks: result.checks.length, output },
+        null,
+        2,
+      ),
+    );
+  }
+}
+const args = process.argv.slice(2);
+if (args.length === 1 && args[0] === "--baseline-repro") await run(true);
+else if (args.length === 1 && args[0] === "--run-loopback") await run(false);
+else if (!args.length)
+  console.log(
+    "Prepared local-only setup wallet-feedback test. --baseline-repro serves archived3b121b assets; --run-loopback requires frontend-ready.",
+  );
+else
+  throw Error(
+    "Only --baseline-repro or --run-loopback is accepted; public origin/provider input is unavailable.",
+  );

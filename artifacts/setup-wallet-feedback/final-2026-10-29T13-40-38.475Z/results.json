@@ -1,0 +1,2112 @@
+{
+  "status": "passed",
+  "baseline": false,
+  "startedAt": "2026-10-29T13:40:38.480Z",
+  "harnessSha256": "9f96605065e71a75f2a43e4bc5823a3f45b1b623be64c09dc941504f9c5a0ead",
+  "assetSha256": {
+    "app.js": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "index.html": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "luma-launch.css": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "checks": [
+    "Deferred fake wallet prompt shows announced setup loading on desktop and mobile, busy content and no stale form",
+    "4001 cancellation leaves a persistent reconnect/error view; explicit retry reads fresh bootstrap only",
+    "Delayed challenge, verify and acknowledged bootstrap each retain skeleton/status; only fresh same-actor verified read restores the unchanged date form",
+    "Verify acknowledgment for A followed by bootstrap B fails closed with persistent retry, never a B signing form",
+    "accountsChanged during the first post-ACK deferred bootstrap signs out and prevents the old actor form; only fresh anonymous reconnect UI returns",
+    "chainChanged during the first post-ACK deferred bootstrap signs out and prevents the old actor form; only fresh anonymous reconnect UI returns",
+    "Explicit sign-out retains setup loading during the fresh anonymous read and cannot leave the disposed old form",
+    "A changed server instance offers only explicit Reload setup, never auto-refreshes or renders stale form; user reload safely obtains the fresh instance",
+    "While no GET is active, wallet invalidation and held logout supersede a held old auth ACK; old ACK/finally cannot start authenticated read or clear current busy state",
+    "Away/back during a pending prompt cannot disable fresh Connect or create another prompt; rejecting the old request leaves a usable retry, and its later authenticated read cannot remount after catalog navigation"
+  ],
+  "requests": [
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "initial",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "wallet-cancelled",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "authentication-stages",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": false
+    },
+    {
+      "phase": "authentication-stages",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": false,
+      "completed": true
+    },
+    {
+      "phase": "authentication-stages",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": false
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": false,
+      "completed": true
+    },
+    {
+      "phase": "post-auth-wrong-actor",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x9999999999999999999999999999999999999999",
+      "completed": true
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": false
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": false,
+      "completed": true
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "DELETE",
+      "path": "/api/session",
+      "body": "{}",
+      "signed": true
+    },
+    {
+      "phase": "accountsChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "chainChanged",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": false
+    },
+    {
+      "phase": "chainChanged",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": false,
+      "completed": true
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "chainChanged",
+      "method": "DELETE",
+      "path": "/api/session",
+      "body": "{}",
+      "signed": true
+    },
+    {
+      "phase": "chainChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "DELETE",
+      "path": "/api/session",
+      "body": "{}",
+      "signed": true
+    },
+    {
+      "phase": "explicit-signout",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": false
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": false,
+      "completed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only-restarted",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "server-instance-change",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only-restarted",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "body": "",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": true,
+      "completed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "DELETE",
+      "path": "/api/session",
+      "body": "{}",
+      "signed": true
+    },
+    {
+      "phase": "old-verify-ack-during-logout",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/styles.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/loading.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/app.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/event-search.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/environment.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "body": "",
+      "signed": false
+    },
+    {
+      "phase": "pending-prompt-away-back",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": false,
+      "instanceId": "production-ui-loopback-only",
+      "actor": null,
+      "completed": true
+    },
+    {
+      "phase": "late-auth-route-change",
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "body": "{\"wallet\":\"0x1111111111111111111111111111111111111111\"}",
+      "signed": false
+    },
+    {
+      "phase": "late-auth-route-change",
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "body": "{\"nonce\":\"synthetic-feedback-nonce\",\"signature\":\"0x7777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777\"}",
+      "signed": false,
+      "completed": true
+    },
+    {
+      "phase": "late-auth-route-change",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "body": "",
+      "signed": true,
+      "instanceId": "production-ui-loopback-only",
+      "actor": "0x1111111111111111111111111111111111111111",
+      "completed": true
+    },
+    {
+      "phase": "late-auth-route-change",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "body": "",
+      "signed": true
+    }
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "providerRequests": [
+    "eth_requestAccounts",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign",
+    "eth_requestAccounts",
+    "eth_requestAccounts",
+    "eth_chainId",
+    "eth_chainId",
+    "personal_sign"
+  ],
+  "observations": [],
+  "screenshots": [
+    "desktop-wallet-pending.png",
+    "mobile-wallet-pending.png",
+    "mobile-wallet-cancelled.png",
+    "mobile-auth-challenge.png",
+    "mobile-auth-bootstrap.png",
+    "mobile-verified-form.png",
+    "desktop-verified-form.png",
+    "desktop-wrong-actor-error.png",
+    "desktop-server-change-reload.png"
+  ],
+  "limits": [
+    "Loopback synthetic authentication/session endpoints only. No real RPC, key, signature, public request, financial endpoint, transaction, organizer creation or publication.",
+    "Fixture personal_sign returns a non-cryptographic literal and fake wallet events invoke local callbacks. Test does not prove wallet-extension behavior.",
+    "Setup/date widget remains source390aac98; Core's separate Reviewsetup504/polling work is outside this proof."
+  ],
+  "completedAt": "2026-10-29T13:40:43.105Z"
+}

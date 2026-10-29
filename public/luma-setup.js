@@ -57,6 +57,419 @@ const completeLocalDate = (value) => {
     : null;
 };
 
+const JOB_PATH = "/api/organizer/events/jobs";
+const JOB_PROFILE = "kleros-event-v9-uups";
+const JOB_FIELDS = [
+  "title",
+  "lumaUrl",
+  "startsAt",
+  "endsAt",
+  "timezone",
+  "depositEth",
+];
+const jobFailure = (message, code, job) =>
+  Object.assign(new Error(message), {
+    code,
+    ...(job ? { organizerJob: job } : {}),
+  });
+
+/** App-only asynchronous transport. It never reads or changes a transaction journal. */
+export function createOrganizerJobClient({
+  bootstrap,
+  storage,
+  origin,
+  request,
+  isCurrent = () => true,
+  onStatus = () => {},
+  now = Date.now,
+  setTimer = setTimeout,
+  clearTimer = clearTimeout,
+  newId = () => crypto.randomUUID(),
+}) {
+  const read = factoryReadScope(bootstrap);
+  const scope = Object.freeze({
+    origin,
+    instanceId: read.instanceId,
+    mode: read.mode,
+    chainId: 1,
+    factory: read.contract.toLowerCase(),
+    wallet: read.wallet.toLowerCase(),
+    contractVersion: JOB_PROFILE,
+  });
+  const prefix =
+    "kleros-organizer-job:v1:" +
+    Object.values(scope).map(encodeURIComponent).join(":") +
+    ":";
+  const active = new Map();
+  const ready = new Map();
+  let alive = true,
+    validation = null,
+    lastTime = 0;
+  const clock = () => {
+    const value = now();
+    if (!Number.isSafeInteger(value) || value < lastTime || value < 0)
+      throw jobFailure(
+        "Check your device clock before preparing an event review.",
+        "ORGANIZER_JOB_CLOCK",
+      );
+    lastTime = value;
+    return value;
+  };
+  const current = (extra = () => true) => {
+    if (!alive || !isCurrent() || !extra())
+      throw jobFailure(
+        "The event form, wallet or environment changed. Review the current form again.",
+        "ORGANIZER_JOB_STALE",
+      );
+    clock();
+  };
+  const load = (key) => {
+    let item;
+    try {
+      const raw = storage.getItem(key);
+      if (raw === null) return null;
+      item = JSON.parse(raw);
+    } catch {}
+    if (
+      item?.version !== 1 ||
+      JSON.stringify(item.scope) !== JSON.stringify(scope) ||
+      !stableId(item.requestId) ||
+      !/^[a-f0-9]{64}$/.test(item.payloadHash) ||
+      !["prepare", "validate", "reconcile"].includes(item.operation) ||
+      !["pending", "ready", "failed", "expired"].includes(item.state)
+    )
+      throw jobFailure(
+        "The saved organizer check is unreadable. Preserve browser storage before continuing.",
+        "ORGANIZER_JOB_STORAGE",
+      );
+    return item;
+  };
+  const save = (key, item) => {
+    try {
+      const raw = JSON.stringify(item);
+      storage.setItem(key, raw);
+      if (storage.getItem(key) === raw) return;
+    } catch {}
+    throw jobFailure(
+      "The browser must retain the organizer check before it can start.",
+      "ORGANIZER_JOB_STORAGE",
+    );
+  };
+  const terminal = (key, item, message, code) => {
+    save(key, item);
+    return jobFailure(message, code, {
+      key,
+      requestId: item.requestId,
+      operation: item.operation,
+      state: item.state,
+    });
+  };
+  function payload(operation, args) {
+    if (operation === "prepare") {
+      if (
+        !args?.input ||
+        Object.keys(args.input).length !== 6 ||
+        !JOB_FIELDS.every((key) => typeof args.input[key] === "string")
+      )
+        throw jobFailure(
+          "Use the six event terms from the current form.",
+          "ORGANIZER_JOB_INPUT",
+        );
+      return {
+        operation,
+        input: Object.fromEntries(
+          JOB_FIELDS.map((key) => [key, args.input[key]]),
+        ),
+      };
+    }
+    if (
+      !["validate", "reconcile"].includes(operation) ||
+      !stableId(args?.draftId)
+    )
+      throw jobFailure(
+        "Choose the original organizer review.",
+        "ORGANIZER_JOB_INPUT",
+      );
+    if (operation === "validate") return { operation, draftId: args.draftId };
+    if (!hashPattern.test(args.hash ?? ""))
+      throw jobFailure(
+        "Use the exact original transaction ID.",
+        "ORGANIZER_JOB_INPUT",
+      );
+    return { operation, draftId: args.draftId, hash: args.hash.toLowerCase() };
+  }
+  const client = {
+    async run(operation, args, { isCurrent: extra = () => true } = {}) {
+      current(extra);
+      const body = payload(operation, args),
+        bytes = new TextEncoder().encode(JSON.stringify(body));
+      const digest = await crypto.subtle.digest("SHA-256", bytes);
+      current(extra);
+      const payloadHash = [...new Uint8Array(digest)]
+        .map((value) => value.toString(16).padStart(2, "0"))
+        .join("");
+      const key = prefix + operation + ":" + payloadHash;
+      if (active.has(key))
+        throw jobFailure(
+          "This organizer check is already running.",
+          "ORGANIZER_JOB_BUSY",
+        );
+      let item = load(key),
+        first = !item;
+      if (
+        item &&
+        (item.operation !== operation || item.payloadHash !== payloadHash)
+      )
+        throw jobFailure(
+          "The saved organizer check differs from this form.",
+          "ORGANIZER_JOB_STORAGE",
+        );
+      if (!item) {
+        item = {
+          version: 1,
+          scope,
+          requestId: newId(),
+          operation,
+          payloadHash,
+          startedAt: clock(),
+          state: "pending",
+        };
+        if (!stableId(item.requestId))
+          throw jobFailure(
+            "An organizer request ID could not be created.",
+            "ORGANIZER_JOB_STORAGE",
+          );
+        save(key, item); // No await between the durable identity and the single initial POST.
+      }
+      const controller = new AbortController(),
+        timers = new Set();
+      active.set(key, controller);
+      const later = (callback, ms) => {
+        const timer = setTimer(() => {
+          timers.delete(timer);
+          callback();
+        }, ms);
+        timers.add(timer);
+        return timer;
+      };
+      const timed = later(() => controller.abort(), 180000);
+      const waitFor = (promise) =>
+        new Promise((resolve, reject) => {
+          const aborted = () =>
+            reject(
+              jobFailure(
+                "Stopped waiting. Keep this check and use Check status; no new request will be sent.",
+                "ORGANIZER_JOB_WAIT_STOPPED",
+              ),
+            );
+          if (controller.signal.aborted) return aborted();
+          controller.signal.addEventListener("abort", aborted, { once: true });
+          Promise.resolve(promise)
+            .then(resolve, reject)
+            .finally(() =>
+              controller.signal.removeEventListener("abort", aborted),
+            );
+        });
+      try {
+        for (;;) {
+          current(extra);
+          onStatus(operation, first ? "starting" : "checking");
+          current(extra);
+          const envelope = await waitFor(
+            request(
+              first
+                ? JOB_PATH
+                : JOB_PATH + "/" + encodeURIComponent(item.requestId),
+              first
+                ? {
+                    ...post({ requestId: item.requestId, ...body }),
+                    signal: controller.signal,
+                  }
+                : { signal: controller.signal },
+            ),
+          );
+          first = false;
+          current(extra);
+          if (
+            envelope?.schemaVersion !== 1 ||
+            envelope.kind !== "organizer-job" ||
+            envelope.requestId !== item.requestId ||
+            envelope.instanceId !== scope.instanceId ||
+            envelope.operation !== operation ||
+            envelope.chainId !== 1 ||
+            !same(envelope.factory, scope.factory) ||
+            envelope.contractVersion !== JOB_PROFILE ||
+            !same(envelope.wallet, scope.wallet) ||
+            !["pending", "ready", "failed", "expired"].includes(envelope.state)
+          )
+            throw jobFailure(
+              "The organizer check belongs to another form, wallet or environment.",
+              "ORGANIZER_JOB_SCOPE",
+            );
+          item = { ...item, state: envelope.state };
+          if (envelope.state === "failed")
+            throw terminal(
+              key,
+              item,
+              typeof envelope.error?.error === "string"
+                ? envelope.error.error
+                : "The organizer check failed. Prepare a new review explicitly.",
+              typeof envelope.error?.code === "string"
+                ? envelope.error.code
+                : "ORGANIZER_JOB_FAILED",
+            );
+          if (envelope.state === "expired")
+            throw terminal(
+              key,
+              item,
+              "This organizer check expired. Choose Prepare a new review before continuing.",
+              "ORGANIZER_JOB_EXPIRED",
+            );
+          if (envelope.state === "ready") {
+            const ttl = operation === "validate" ? 5000 : 300000,
+              at = clock();
+            if (
+              !Number.isSafeInteger(envelope.expiresAt) ||
+              envelope.expiresAt <= at ||
+              envelope.expiresAt > at + ttl
+            )
+              throw terminal(
+                key,
+                { ...item, state: "expired" },
+                "The organizer review expired or your device clock differs. Prepare a new review.",
+                "ORGANIZER_JOB_EXPIRED",
+              );
+            if (!envelope.result || typeof envelope.result !== "object")
+              throw jobFailure(
+                "The completed organizer check has no valid result.",
+                "ORGANIZER_JOB_SCOPE",
+              );
+            save(key, item);
+            ready.set(operation, { key, item, hash: body.hash });
+            if (operation === "validate")
+              validation = { key, item, expiresAt: envelope.expiresAt };
+            return envelope.result;
+          }
+          save(key, item);
+          if (
+            !Number.isSafeInteger(envelope.pollAfterMs) ||
+            envelope.pollAfterMs < 1 ||
+            envelope.pollAfterMs > 10000
+          )
+            throw jobFailure(
+              "The organizer check returned an invalid polling interval.",
+              "ORGANIZER_JOB_SCOPE",
+            );
+          await waitFor(
+            new Promise((resolve) =>
+              later(
+                resolve,
+                Math.min(5000, Math.max(500, envelope.pollAfterMs)),
+              ),
+            ),
+          );
+          current(extra);
+        }
+      } catch (error) {
+        // An unknown response never licenses replay. Explicit user abandonment
+        // can discard this app-only identity, while any wallet marker still blocks it.
+        if (!error.organizerJob)
+          error.organizerJob = {
+            key,
+            requestId: item.requestId,
+            operation,
+            state: item.state,
+            abandon: true,
+            ...(body.hash ? { hash: body.hash } : {}),
+          };
+        else if (body.hash) error.organizerJob.hash = body.hash;
+        throw error;
+      } finally {
+        controller.abort();
+        clearTimer(timed);
+        for (const timer of timers) clearTimer(timer);
+        active.delete(key);
+      }
+    },
+    unusedResult(operation, error) {
+      const saved = ready.get(operation);
+      if (!error.organizerJob && saved)
+        error.organizerJob = {
+          key: saved.key,
+          requestId: saved.item.requestId,
+          operation,
+          state: "ready",
+          abandon: true,
+          ...(saved.hash ? { hash: saved.hash } : {}),
+        };
+      return error;
+    },
+    consumeValidation() {
+      if (!validation)
+        throw jobFailure(
+          "Validate this review again before opening your wallet.",
+          "ORGANIZER_JOB_EXPIRED",
+        );
+      const saved = validation;
+      if (clock() >= saved.expiresAt)
+        throw terminal(
+          saved.key,
+          { ...saved.item, state: "expired" },
+          "Validation expired before the wallet request. Prepare a new review.",
+          "ORGANIZER_JOB_EXPIRED",
+        );
+      validation = null; // The wallet can stay open beyond this deadline; submitted hashes remain recoverable.
+    },
+    clearTerminal(error, { unsigned = false } = {}) {
+      const job = error?.organizerJob;
+      if (!job || !job.key.startsWith(prefix))
+        throw jobFailure(
+          "Check the original organizer request first.",
+          "ORGANIZER_JOB_STORAGE",
+        );
+      const saved = load(job.key);
+      if (
+        !saved ||
+        saved.requestId !== job.requestId ||
+        saved.operation !== job.operation ||
+        (!job.abandon && !["failed", "expired"].includes(saved.state))
+      )
+        throw jobFailure(
+          "The organizer request has no confirmed terminal status.",
+          "ORGANIZER_JOB_STORAGE",
+        );
+      const keys = [job.key];
+      if (unsigned) {
+        if (!["prepare", "validate"].includes(saved.operation))
+          throw jobFailure(
+            "Preserve the submitted transaction check.",
+            "ORGANIZER_JOB_STORAGE",
+          );
+        for (let index = 0; index < storage.length; index++) {
+          const candidate = storage.key(index);
+          if (!candidate?.startsWith(prefix)) continue;
+          const record = load(candidate);
+          if (
+            ["prepare", "validate"].includes(record.operation) &&
+            ["ready", "failed", "expired"].includes(record.state)
+          )
+            keys.push(candidate);
+        }
+      }
+      for (const candidate of new Set(keys)) storage.removeItem(candidate);
+      validation = null;
+    },
+    stop() {
+      for (const controller of active.values()) controller.abort();
+    },
+    dispose() {
+      alive = false;
+      client.stop();
+    },
+  };
+  return client;
+}
+
 /** A compact factory workflow. Mounting reads local recovery data only, never the wallet. */
 export function mountLumaSetup(host, options) {
   const bootstrap = options.bootstrap;
@@ -65,12 +478,17 @@ export function mountLumaSetup(host, options) {
     reviewed = null,
     dialog = null,
     marker = null,
-    terminalAdopted = false;
+    terminalAdopted = false,
+    terminalJob = null,
+    preparing = false,
+    formRevision = 0,
+    reviewedForm = null;
   let scope,
     storage,
     journal,
     key,
-    storageIssue = null;
+    storageIssue = null,
+    jobs = null;
   const current = () =>
     alive && host.isConnected && options.isCurrent?.() !== false;
   const authenticated =
@@ -190,6 +608,22 @@ export function mountLumaSetup(host, options) {
       storage = host.ownerDocument.defaultView.localStorage;
       journal = createTransactionJournal(storage);
       discoverRecovery();
+      if (bootstrap.capabilities?.organizerJobs === true)
+        jobs = createOrganizerJobClient({
+          bootstrap,
+          storage,
+          origin: host.ownerDocument.location.origin,
+          request: options.request,
+          isCurrent: current,
+          onStatus: (operation) =>
+            status(
+              operation === "prepare"
+                ? "Checking your event terms in the background. You can stop waiting without losing the form."
+                : operation === "validate"
+                  ? "Rechecking the reviewed transaction before your wallet opens…"
+                  : "Checking the original transaction receipt in the background…",
+            ),
+        });
     }
   } catch (error) {
     storageIssue = error.message;
@@ -235,7 +669,17 @@ export function mountLumaSetup(host, options) {
     busy = value;
     if (!current()) return;
     for (const button of host.querySelectorAll("[data-luma-action]"))
-      button.disabled = value;
+      button.disabled =
+        button.dataset.lumaAction === "stop-waiting"
+          ? !value
+          : value ||
+            (button.dataset.lumaAction === "review" &&
+              Boolean(
+                readyIssue ||
+                  (terminalJob &&
+                    !terminalJob.organizerJob?.abandon &&
+                    terminalJob.organizerJob?.operation !== "reconcile"),
+              ));
     if (dialog)
       for (const button of dialog.querySelectorAll("button"))
         button.disabled = value;
@@ -246,6 +690,57 @@ export function mountLumaSetup(host, options) {
     dialog.remove();
     dialog = null;
   };
+  const terminalControl = (cause) => {
+    if (!current() || !cause?.organizerJob) return;
+    terminalJob = cause;
+    if (cause.organizerJob.operation === "reconcile") {
+      const check = host.querySelector('[data-luma-action="reconcile"]');
+      if (check) check.textContent = "Check transaction again";
+      return;
+    }
+    if (marker && marker.phase !== "prepared") return;
+    reviewed = null;
+    reviewedForm = null;
+    closeDialog();
+    if (!host.querySelector('[data-luma-action="reset-review"]')) {
+      const button = host.ownerDocument.createElement("button");
+      button.type = "button";
+      button.className = "button button-secondary";
+      button.dataset.lumaAction = "reset-review";
+      button.textContent = "Prepare a new review";
+      host.querySelector(".luma-setup-actions")?.append(button);
+    }
+  };
+  const runOperation = (operation, args, guard = current) =>
+    jobs
+      ? jobs.run(operation, args, { isCurrent: guard })
+      : operation === "prepare"
+        ? request("", args.input)
+        : request(
+            path(args.draftId) +
+              "/" +
+              (operation === "validate" ? "validate" : "reconcile"),
+            operation === "validate" ? {} : { hash: args.hash },
+          );
+  const jobMessage = (cause) =>
+    cause.message +
+    (cause.organizerJob?.abandon && cause.organizerJob.state !== "ready"
+      ? cause.organizerJob.operation === "reconcile"
+        ? " This check is unavailable; a previous check may still be running. Check the same transaction again explicitly."
+        : " This check is unavailable; a previous check may still be running. You can explicitly abandon this unsigned check with Prepare a new review."
+      : "");
+  const formFingerprint = (form) =>
+    JSON.stringify(
+      JOB_FIELDS.map((name) =>
+        String(form.elements.namedItem(name)?.value ?? ""),
+      ),
+    );
+  const reviewCurrent = () =>
+    current() &&
+    reviewedForm &&
+    host.contains(reviewedForm.form) &&
+    formRevision === reviewedForm.revision &&
+    formFingerprint(reviewedForm.form) === reviewedForm.fingerprint;
   const renderRecovery = () => {
     if (!current()) return;
     closeDialog();
@@ -333,28 +828,67 @@ export function mountLumaSetup(host, options) {
     dialog.querySelector("h2").focus();
   };
   const prepare = async (form) => {
-    if (busy || !current() || marker) return;
+    if (
+      busy ||
+      !current() ||
+      marker ||
+      (terminalJob && !terminalJob.organizerJob?.abandon)
+    )
+      return;
+    terminalJob = null;
+    host.querySelector('[data-luma-action="reset-review"]')?.remove();
     error("");
     lock(true);
+    preparing = true;
+    reviewed = null;
+    reviewedForm = null;
+    let stop;
     try {
       if (readyIssue) throw Error(readyIssue);
       journal.probe();
       const input = formInput(form);
+      const revision = formRevision,
+        fingerprint = formFingerprint(form);
+      const unchanged = () =>
+        current() &&
+        host.contains(form) &&
+        formRevision === revision &&
+        formFingerprint(form) === fingerprint;
+      if (jobs) {
+        stop = host.ownerDocument.createElement("button");
+        stop.type = "button";
+        stop.className = "button button-quiet";
+        stop.dataset.lumaAction = "stop-waiting";
+        stop.textContent = "Stop waiting";
+        form.querySelector(".luma-setup-actions").append(stop);
+      }
       status("Preparing your immutable event review…");
-      const draft = await request("", input);
-      if (!current()) return;
-      reviewed = assertCreationDraft(draft, bootstrap, input);
+      const draft = await runOperation("prepare", { input }, unchanged);
+      if (!unchanged())
+        throw jobFailure(
+          "The event form changed. Review the current terms again.",
+          "ORGANIZER_JOB_STALE",
+        );
+      try {
+        reviewed = assertCreationDraft(draft, bootstrap, input);
+      } catch (cause) {
+        throw jobs ? jobs.unusedResult("prepare", cause) : cause;
+      }
+      reviewedForm = { form, revision, fingerprint };
       openReview(reviewed);
       status("Review the event terms before opening your wallet.");
     } catch (cause) {
-      error(cause.message);
+      terminalControl(cause);
+      error(jobMessage(cause));
       status("Event setup has not been submitted.");
     } finally {
+      preparing = false;
+      stop?.remove();
       lock(false);
     }
   };
   const send = async () => {
-    if (busy || !reviewed || marker || !current()) return;
+    if (busy || !reviewed || marker || !reviewCurrent()) return;
     const draft = assertCreationDraft(reviewed, bootstrap),
       context = creationContext(bootstrap, draft);
     error("");
@@ -374,10 +908,11 @@ export function mountLumaSetup(host, options) {
       const provider = {
         request: async (payload) => {
           if (payload.method === "eth_sendTransaction") {
-            if (!current())
+            if (!reviewCurrent())
               throw Error(
                 "The authenticated setup context changed. No wallet request was made.",
               );
+            if (jobs) jobs.consumeValidation();
             persist({ ...marker, phase: "wallet-requested" });
           }
           return rawProvider.request(payload);
@@ -390,20 +925,26 @@ export function mountLumaSetup(host, options) {
         context,
         provider,
         journal,
-        isCurrentContext: () => current(),
-        validate: async () =>
-          assertCreationValidation(
-            await request(path(draft.id) + "/validate", {}),
-            draft,
-            bootstrap,
-          ),
+        isCurrentContext: () => reviewCurrent(),
+        validate: async () => {
+          const result = await runOperation(
+            "validate",
+            { draftId: draft.id },
+            reviewCurrent,
+          );
+          try {
+            return assertCreationValidation(result, draft, bootstrap);
+          } catch (cause) {
+            throw jobs ? jobs.unusedResult("validate", cause) : cause;
+          }
+        },
         recordSubmitted: async (_event, _id, hash) => {
           persist({ ...marker, hash, phase: "submitted" });
           await request(path(draft.id) + "/submitted", { hash });
         },
         confirm: async (_event, _id, hash) =>
           assertCreationReceipt(
-            await request(path(draft.id) + "/reconcile", { hash }),
+            await runOperation("reconcile", { draftId: draft.id, hash }),
             context,
             hash,
             host.ownerDocument.location.origin,
@@ -412,6 +953,12 @@ export function mountLumaSetup(host, options) {
       persist({ ...marker, hash: result.hash, phase: "confirmed" });
       renderShare(result);
     } catch (cause) {
+      if (
+        jobs &&
+        cause.submittedHash &&
+        cause.code === "TRANSACTION_UNCONFIRMED"
+      )
+        cause = jobs.unusedResult("reconcile", cause);
       if (cause.submittedHash) {
         if (cause.code === "TRANSACTION_REVERTED") terminalAdopted = true;
         try {
@@ -439,15 +986,18 @@ export function mountLumaSetup(host, options) {
         }
       }
       if (marker) renderRecovery();
+      terminalControl(cause);
       error(
-        cause.message +
+        jobMessage(cause) +
           (cause.submittedHash
             ? " Transaction ID: " + cause.submittedHash
             : ""),
       );
       if (!marker && current())
         status(
-          "No transaction ID was returned. Review and try again only if your wallet rejected the request.",
+          cause.organizerJob
+            ? "No wallet request was made. Choose Prepare a new review to start a new unsigned review."
+            : "No transaction ID was returned. Review and try again only if your wallet rejected the request.",
         );
     } finally {
       lock(false);
@@ -478,12 +1028,19 @@ export function mountLumaSetup(host, options) {
         });
       status("Checking the canonical event creation receipt…");
       const result = assertCreationReceipt(
-        await request(path(marker.draftId) + "/reconcile", { hash }),
+        await runOperation("reconcile", { draftId: marker.draftId, hash }),
         context,
         hash,
         host.ownerDocument.location.origin,
       );
       if (result.status === "pending") {
+        if (jobs)
+          terminalControl(
+            jobs.unusedResult(
+              "reconcile",
+              Error("Check the same transaction again for its latest receipt."),
+            ),
+          );
         if (walletReturnedHash)
           journal.update(context, hash, { status: "needs-confirmation" });
         status(
@@ -508,13 +1065,27 @@ export function mountLumaSetup(host, options) {
       if (result.status === "confirmed") renderShare(result);
       else renderRecovery();
     } catch (cause) {
-      error(cause.message);
+      terminalControl(cause);
+      error(jobMessage(cause));
     } finally {
       lock(false);
     }
   };
   const onDateInput = (event) => {
     const input = event.target;
+    const changedForm = input.closest?.("[data-luma-form]");
+    if (
+      current() &&
+      changedForm &&
+      host.contains(changedForm) &&
+      JOB_FIELDS.includes(input.name)
+    ) {
+      formRevision++;
+      reviewed = null;
+      reviewedForm = null;
+      jobs?.stop();
+      closeDialog();
+    }
     if (!current() || !input.matches?.('[name="endsAt"]')) return;
     const form = input.closest("[data-luma-form]");
     if (form && host.contains(form)) dateState(form).endEdited = true;
@@ -552,7 +1123,35 @@ export function mountLumaSetup(host, options) {
   const onClick = async (event) => {
     const action =
       event.target.closest("[data-luma-action]")?.dataset.lumaAction;
-    if (!action || busy || !current()) return;
+    if (!action || !current()) return;
+    if (action === "stop-waiting" && preparing) {
+      jobs?.stop();
+      return;
+    }
+    if (busy) return;
+    if (
+      action === "reset-review" &&
+      terminalJob &&
+      (!marker || marker.phase === "prepared")
+    ) {
+      try {
+        jobs.clearTerminal(terminalJob, { unsigned: true });
+        clearUnsigned();
+        terminalJob = null;
+        reviewed = null;
+        reviewedForm = null;
+        closeDialog();
+        host.querySelector('[data-luma-action="reset-review"]')?.remove();
+        error("");
+        status(
+          "The form is preserved. Choose Review event setup to prepare a new unsigned review.",
+        );
+        lock(false);
+      } catch (cause) {
+        error(cause.message);
+      }
+      return;
+    }
     if (action === "close") {
       closeDialog();
       return;
@@ -566,6 +1165,23 @@ export function mountLumaSetup(host, options) {
       return;
     }
     if (action === "reconcile") {
+      if (terminalJob?.organizerJob?.operation === "reconcile") {
+        try {
+          const original = terminalJob.organizerJob.hash;
+          const selected =
+            marker?.hash ||
+            host.querySelector('[name="txHash"]')?.value?.trim();
+          if (original && !same(original, selected))
+            throw Error(
+              "Check the same original transaction ID before starting a new receipt check.",
+            );
+          jobs.clearTerminal(terminalJob);
+          terminalJob = null;
+        } catch (cause) {
+          error(cause.message);
+          return;
+        }
+      }
       await reconcile();
       return;
     }
@@ -579,6 +1195,8 @@ export function mountLumaSetup(host, options) {
         marker = null;
         terminalAdopted = false;
         reviewed = null;
+        reviewedForm = null;
+        terminalJob = null;
         discoverRecovery();
         renderForm();
       } catch (cause) {
@@ -608,6 +1226,7 @@ export function mountLumaSetup(host, options) {
   return {
     dispose() {
       alive = false;
+      jobs?.dispose();
       closeDialog();
       host.removeEventListener("submit", onSubmit);
       host.removeEventListener("click", onClick);
