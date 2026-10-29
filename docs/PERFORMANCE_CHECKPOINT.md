@@ -1,52 +1,66 @@
-# Portal loading checkpoint — 29 October 2026
+# Fast public portal LIVE — 29 October 2026, Asia/Bangkok
 
-Core owns application/backend verification and final hosting integration on `codex/core-application`.
-Backend candidate: `73fb2ff09c112b40873bc9571f1ea34fb2b6e37b`.
-Date-only frontend release: `d137d100d5e97503a5de004574f412b73c3972e7`, Netlify
-`6ae34352f4042839082e7733`, actual served setup SHA256
-`390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6`.
-Stable backend remains `ae63380642173ebd92afbf76a97d827a3aaa06f3` / Railway
-`d112f94a-0027-41be-b9c4-99e81064f95a`. The human approved Restart now; backend candidate rollout
-`3ca7a15d-c52f-447f-a40c-f8b4f8979384` is building. Frontend publication/final live checks are pending.
+Live: https://kleros-luma-ethereum.netlify.app. Branch `codex/core-application`.
+Frontend source `fec62112aca1bb36cab08a02d823044646a73a6e`, accepted UI `354e045`,
+Netlify production `6ae3462bcb1e1d2301a97fb2`. Backend source `73fb2ff`, Railway
+`3ca7a15d-c52f-447f-a40c-f8b4f8979384`, SUCCESS/health200, image
+`sha256:7c7a19bff2bf571ffc0e52dc000235618f32b26914deed3de13c7dc93da1caa4`. Human explicitly approved Restart now; no user-tab reload.
+Durable drafts, event records and once-journals were preserved; in-memory wallet logins ended.
 
-## Interfaces and decisions
+Actual same-harness browser home/search readiness improved **23.5568s →3.3589s**,7.013×/85.741%.
+FCP1.860→1.284s, API duration21.1697→0.8716s. This is one controlled cold anonymous visit per
+version with routing disabling cache; no warm-cache/field/median claim or strict sub3s claim.
+After proof `artifacts/portal-performance-readonly/2026-10-29T13-13-43-310Z-catalog-a44a438d-fa3e-4b1a-8e72-d02544fcc150/proof.json`,
+SHA256 `fbfe0dad4927f55b8c14414df8ca2bfe0e36c0a0245a8ba52c2f9e4b981527a1`. Both versions passed26 source-pinned assets, one API, two
+same-page desktop/mobile captures and zero errors/forbidden/auth/wallet/financial actions.
+Both hosted after screenshots were visually inspected. Independent saved-proof audit rehashed all
+52 asset pins/four screenshots. Public count0 is a snapshot; preserve subsequent human-created events.
 
-`GET /api/public-catalog` is production-only, exact GET with no query, behind the unchanged
-Host/proxy gateway checks and before session lookup. It returns schema1/kind public-catalog,
-mode/instance, public chain metadata, generatedAt, catalog metadataOnly/not-loaded/recorded-adoption,
-and whitelisted public/published event display terms plus historical creation tx/block/hash.
-No RPC, session access, trust-map updates, current financial phase, owner/capability/recovery fields
-or signing eligibility occur. Each row requires its exact durable confirmed factory-create review,
-verified historical adoption, immutable policy/Luma/template/profile/factory/child/call/hash bindings.
-Changing publication visibility is reflected immediately; malformed/unbound/pending records are omitted.
+Production `GET /api/public-catalog` is detached display-only metadata, strictly public/published and
+exactly bound to a confirmed historical factory adoption. It makes ZERO RPC calls and neither reads
+sessions nor writes current trust/access maps. Home keeps it separate from bootstrap, labels current
+status as checked on open and performs no automatic heavy bootstrap. Only404 permits one compatibility
+fallback. Selected/setup/wallet/review/draft/validate retain full current provenance/owner/upgrade checks.
+Financial rules, source artifacts, policy and version dispatch remain authoritative and unchanged.
 
-Home UI consumes this separate display state, labels rows Check status on open, and does not start
-an automatic full bootstrap. HTTP404 alone permits one legacy/demo compatibility bootstrap fallback.
-Selected events, setup, wallet, review, drafts and validation retain existing current source/canonical/
-owner/upgrade guards. Financial economics and v7/v8/v9 dispatch are unchanged.
+Organizer dates default end to start+2h until manual edit; exact setup390aac98 is retained. Backend
+29 focused privacy/HTTP/pure checks plus one real local canonical creation/0600 disk restart passed.
+UI12 pure,8 GET browser,2 synthetic session groups, date8 browser groups and type/static build passed.
+No broad financial/fork replay was needed. Linux backend build/normal startup succeeded. Full evidence
+and interfaces: `docs/PERFORMANCE_CHECKPOINT.md`; machine release pointer:
+`artifacts/mainnet-release/mainnet-portal-release.json`. No remaining implementation/deployment
+work or approval is pending for the speed/date request. No selected-child mainnet financial or jury
+outcome is claimed. A/B/C remain retired incomplete/PAUSED, D complete, E unused; old sites/funds/
+journals stay frozen. No billing upgrade, upstream push, new policy upload or financial transaction.
 
-## Evidence and remaining work
+## Interfaces and evidence
 
-Focused backend29 HTTP/privacy/pure checks and one actual local factory-create/canonical-adoption/
-0600 disk-restart check passed; zero provider calls during catalog reads. Typecheck and static/pinned
-ABI build passed. Detailed source pins: `artifacts/mainnet-release/public-catalog-backend-checks.json`.
-Independent bounded source review found no actionable issue. Closed115-file backend package proof:
-`artifacts/mainnet-release/backend-context-catalog-clean.json`. No private/runtime/untracked source included.
+The catalog route is exact GET/no query, behind normal Host/proxy checks and before session lookup.
+Schema1/kind public-catalog includes mode/instance/public chain/generatedAt,
+catalog metadataOnly:true/currentFinancialState:not-loaded/source:recorded-adoption, and whitelisted
+event id/title/dates/timezone/deposit/chain/child/version/publication flags plus creation tx/block/hash.
+It omits owner/roles/session/recovery/capability/phase/balance/current verification fields.
+Each row binds the exact durable confirmed/used/adoption-verified factory-create draft, factory
+fingerprint/source, creator/child/key/config/call/tx/receipt anchor and immutable policy/Luma/template.
+Private/draft/unknown flags are filtered before title/index access. Visibility changes apply immediately;
+malformed/unadopted/pending records and duplicates are omitted. Historical adoption never grants
+current canonicality or signing authority.
 
-One actual before-release anonymous controlled cold browser check passed on the date release:
-FCP1860ms, usable home/search23556.8ms, API responseEnd23547.8ms. This is browser readiness, not
-checker wall time; routing disables cache, so no warm-cache or field-Web-Vitals claim is made.
-Proof: `artifacts/portal-performance-readonly/2026-10-29T13-05-55-843Z-baseline-2f1997f6-e33a-4616-97d7-58be1eb367ef/proof.json`,
-SHA256 `cdeceaa99455fa51db0b328716a2d1c6e1d712eab1a459c1ca02bbb664c4d6a5`.
-Exactly1 API,27 requests,2 same-page desktop/mobile screenshots,0 errors/auth/financial actions;
-public catalog was honestly0 at that observation. Both screenshots visually inspected.
+The UI stores displayCatalog separately, uses generation guards against late responses and preserves
+same-directory search/caret on refresh. Explicit403/500/malformed successes never become fake empty
+lists or heavy fallback. The negative-only known-wallet-session marker preserves logout on account/
+network changes without trusting metadata as authentication. No background check remounts setup.
 
-Accepted UI source `354e04562ada1e40e1f88cefcb82b70071670cd5` is integrated: four exact product
-assets, source-bound8 GET-only browser groups,2 synthetic wallet-change invalidation groups and
-independent source review passed. Root repeated12 pure UI checks, typecheck/static build and an actual
-backend-to-frontend empty-catalog round trip, which granted no current verification or financial authority.
-Remaining: ordinary backend build/health completion, frontend publication and exactly one matching
-after-release browser check. The brief volume-backed backend restart ends in-memory
-wallet sessions; an open form must not be forcibly refreshed and durable journals remain untouched.
-The human explicitly answered Restart now before the backend deployment began. A/B/C stay retired incomplete/PAUSED,
-D complete, E unused. No new financial transactions, Court test, policy upload, billing or upstream push.
+Backend checks: `artifacts/mainnet-release/public-catalog-backend-checks.json`.
+Combined source pins: `artifacts/mainnet-release/public-catalog-integration-checks.json`.
+UI exact-source evidence: `artifacts/portal-loading/ui-candidate-proof.json`.
+Date proof: `artifacts/mainnet-release/organizer-date-release.json`.
+Closed packages: backend-context-catalog-clean.json115 files, frontend-context-fast-clean.json38
+tracked files plus exact generated headers, both under artifacts/mainnet-release. No private/runtime/
+untracked files, iCloud duplicate files or signers were uploaded. Deployment health/publication pointers
+are recorded in public-catalog-backend-{health,final}.json and public-catalog-netlify-ready.json.
+
+Comparison proof: `artifacts/mainnet-release/portal-performance-comparison.json`. The old24.843s
+checker wall time was not a browser-load measurement; use the23.5568→3.3589s evidence above.
+No follow-up operator or automation was created. Future real selected-child/Court testing requires its
+own actual event/funding/evidence and is outside this completed performance release.

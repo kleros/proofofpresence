@@ -1,3 +1,34 @@
+# Fast portal and date release verification — 29 October 2026
+
+LIVE frontendfec6211 / Netlify6ae3462bcb1e1d2301a97fb2; backend73fb2ff / Railway
+3ca7a15d-c52f-447f-a40c-f8b4f8979384 SUCCESS/health200. Human approved the backend restart;
+no forced refresh, mainnet financial action, billing or old rehearsal mutation occurred.
+
+Commands actually run by Core:29/29 public-catalog +production-HTTP tests, one exact local factory
+creation/canonical adoption/real0600 store restart test (zero catalog provider reads),12/12 UI projection/
+search tests, typecheck and static pinned ABI/build checks. Initial local HTTP test attempt hit sandbox
+EPERM; the authorized ephemeral-listener rerun passed. Independent source review found no issue.
+UI exact source354e045 adds8 GET-only browser groups and2 separate synthetic wallet-session invalidation
+groups; date source d137d10 adds8 actual local browser groups. Their immutable proofs/harness pins are
+retained. No redundant broad contract/fork/mainnet-financial suite was run. Railway Linux image build
+and normal startup succeeded with the original full source/Court/factory/governance verification.
+
+Core executed exactly one controlled cold anonymous before visit and one after using the SAME archived
+harnessdd6adae2: baseline source d137d10, catalog sourcefec6211. Home/search usable23.5568→3.3589s
+(7.013×/85.741% reduction); FCP1.860→1.284s; API duration21.1697→0.8716s. Each visit:26exact
+source-verified assets,1API/1document,27requests,2same-page desktop/mobile captures,0errors/forbidden/
+auth/wallet/financial operations; local search/clear0additionalrequests. All4screenshots visually
+inspected; independent saved-proof review rehashed all52assets/fourimages. Routing disables cache;
+this is neither a warm-cache/field/median measurement nor a strict sub3s result. Both catalogs held0
+public events at observation; no real selected-child speed or mainnet financial/jury result is claimed.
+
+Before proof SHA256cdeceaa99455fa51db0b328716a2d1c6e1d712eab1a459c1ca02bbb664c4d6a5.
+After proof SHA256fbfe0dad4927f55b8c14414df8ca2bfe0e36c0a0245a8ba52c2f9e4b981527a1.
+Paths and exact metrics: `artifacts/mainnet-release/portal-performance-comparison.json`.
+Current source/deployment/assets/infrastructure/limits: `artifacts/mainnet-release/mainnet-portal-release.json`.
+Authoritative interfaces and package/guard evidence: `docs/PERFORMANCE_CHECKPOINT.md`.
+Earlier reports below remain historical evidence.
+
 # Verification report
 
 ## Final public catalog release — 29 October 2026

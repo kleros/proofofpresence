@@ -1,28 +1,37 @@
-# Active loading-speed update — 29 October 2026
+# Fast public portal LIVE — 29 October 2026, Asia/Bangkok
 
-Branch `codex/core-application`; organizer date fix source `d137d10` is LIVE on Netlify
-`6ae34352f4042839082e7733`. Actual served setup SHA256
-`390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6`; eight focused browser
-groups passed. End defaults to start+2h and follows until manually edited. No backend restart or
-user-tab reload. Proof: `artifacts/mainnet-release/organizer-date-release.json`.
+Live: https://kleros-luma-ethereum.netlify.app. Branch `codex/core-application`.
+Frontend source `fec62112aca1bb36cab08a02d823044646a73a6e`, accepted UI `354e045`,
+Netlify production `6ae3462bcb1e1d2301a97fb2`. Backend source `73fb2ff`, Railway
+`3ca7a15d-c52f-447f-a40c-f8b4f8979384`, SUCCESS/health200, image
+`sha256:7c7a19bff2bf571ffc0e52dc000235618f32b26914deed3de13c7dc93da1caa4`. Human explicitly approved Restart now; no user-tab reload.
+Durable drafts, event records and once-journals were preserved; in-memory wallet logins ended.
 
-The human requested faster usable portal loading in the coordinated UI chat. The new production-only
-`GET /api/public-catalog` provides detached, strictly public/published, locally bound recorded-adoption
-metadata with ZERO RPC calls, session access or current trust/permission flags. It is separate from
-bootstrap. Exact confirmed factory draft, child, transaction/block, factory/profile, policy and immutable
-Luma/template bindings are required; pending, unavailable, malformed/private/draft records are omitted.
-Current selected/setup/bootstrap and fresh financial draft/validate verification are unchanged.
-Focused29 HTTP/privacy checks plus one actual local canonical adoption/disk-restart check, typecheck
-and static/pinned build passed. Proof: `artifacts/mainnet-release/public-catalog-backend-checks.json`.
+Actual same-harness browser home/search readiness improved **23.5568s →3.3589s**,7.013×/85.741%.
+FCP1.860→1.284s, API duration21.1697→0.8716s. This is one controlled cold anonymous visit per
+version with routing disabling cache; no warm-cache/field/median claim or strict sub3s claim.
+After proof `artifacts/portal-performance-readonly/2026-10-29T13-13-43-310Z-catalog-a44a438d-fa3e-4b1a-8e72-d02544fcc150/proof.json`,
+SHA256 `fbfe0dad4927f55b8c14414df8ca2bfe0e36c0a0245a8ba52c2f9e4b981527a1`. Both versions passed26 source-pinned assets, one API, two
+same-page desktop/mobile captures and zero errors/forbidden/auth/wallet/financial actions.
+Both hosted after screenshots were visually inspected. Independent saved-proof audit rehashed all
+52 asset pins/four screenshots. Public count0 is a snapshot; preserve subsequent human-created events.
 
-Performance code is integrated and publication is in progress. Accepted UI source354e045 includes
-the reviewed wallet-session invalidation fix, four exact product assets and source-bound8 browser plus
-2 synthetic session groups; root repeated12 pure checks, typecheck/build and a zero-authority DTO round trip. Core remains sole live
-profiler/deployment operator. Full old bootstrap is approximately21s; old24.843s was complete checker
-wall time, not browser load time. A new measured comparison is pending. Preserve the human’s background
-organizer form and all durable drafts/journals; never force refresh. The human answered “Restart now”; backend73fb2ff rollout3ca7a15d-c52f-447f-a40c-f8b4f8979384
-is building. Frontend publication and the same one-visit after timing remain pending. A/B/C remain retired incomplete/PAUSED, D complete, E unused.
-No new financial action, mainnet deployment, IPFS publication, billing change or upstream push.
+Production `GET /api/public-catalog` is detached display-only metadata, strictly public/published and
+exactly bound to a confirmed historical factory adoption. It makes ZERO RPC calls and neither reads
+sessions nor writes current trust/access maps. Home keeps it separate from bootstrap, labels current
+status as checked on open and performs no automatic heavy bootstrap. Only404 permits one compatibility
+fallback. Selected/setup/wallet/review/draft/validate retain full current provenance/owner/upgrade checks.
+Financial rules, source artifacts, policy and version dispatch remain authoritative and unchanged.
+
+Organizer dates default end to start+2h until manual edit; exact setup390aac98 is retained. Backend
+29 focused privacy/HTTP/pure checks plus one real local canonical creation/0600 disk restart passed.
+UI12 pure,8 GET browser,2 synthetic session groups, date8 browser groups and type/static build passed.
+No broad financial/fork replay was needed. Linux backend build/normal startup succeeded. Full evidence
+and interfaces: `docs/PERFORMANCE_CHECKPOINT.md`; machine release pointer:
+`artifacts/mainnet-release/mainnet-portal-release.json`. No remaining implementation/deployment
+work or approval is pending for the speed/date request. No selected-child mainnet financial or jury
+outcome is claimed. A/B/C remain retired incomplete/PAUSED, D complete, E unused; old sites/funds/
+journals stay frozen. No billing upgrade, upstream push, new policy upload or financial transaction.
 
 # Current implementation — 29 October2026, Asia/Bangkok
 

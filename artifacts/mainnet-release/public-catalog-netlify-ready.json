@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "checkedAt": "2026-10-29T13:13:17.907Z",
+  "sourceCommit": "fec62112aca1bb36cab08a02d823044646a73a6e",
+  "siteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
+  "deployId": "6ae3462bcb1e1d2301a97fb2",
+  "publishedDeployId": "6ae3462bcb1e1d2301a97fb2",
+  "state": "ready",
+  "context": "production",
+  "forcedTabRefresh": false,
+  "billingChanges": 0,
+  "financialActions": 0
+}

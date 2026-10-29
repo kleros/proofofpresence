@@ -1,3 +1,40 @@
+# Fast public portal LIVE — 29 October 2026, Asia/Bangkok
+
+Live: https://kleros-luma-ethereum.netlify.app. Branch `codex/core-application`.
+Frontend source `fec62112aca1bb36cab08a02d823044646a73a6e`, accepted UI `354e045`,
+Netlify production `6ae3462bcb1e1d2301a97fb2`. Backend source `73fb2ff`, Railway
+`3ca7a15d-c52f-447f-a40c-f8b4f8979384`, SUCCESS/health200, image
+`sha256:7c7a19bff2bf571ffc0e52dc000235618f32b26914deed3de13c7dc93da1caa4`. Human explicitly approved Restart now; no user-tab reload.
+Durable drafts, event records and once-journals were preserved; in-memory wallet logins ended.
+
+Actual same-harness browser home/search readiness improved **23.5568s →3.3589s**,7.013×/85.741%.
+FCP1.860→1.284s, API duration21.1697→0.8716s. This is one controlled cold anonymous visit per
+version with routing disabling cache; no warm-cache/field/median claim or strict sub3s claim.
+After proof `artifacts/portal-performance-readonly/2026-10-29T13-13-43-310Z-catalog-a44a438d-fa3e-4b1a-8e72-d02544fcc150/proof.json`,
+SHA256 `fbfe0dad4927f55b8c14414df8ca2bfe0e36c0a0245a8ba52c2f9e4b981527a1`. Both versions passed26 source-pinned assets, one API, two
+same-page desktop/mobile captures and zero errors/forbidden/auth/wallet/financial actions.
+Both hosted after screenshots were visually inspected. Independent saved-proof audit rehashed all
+52 asset pins/four screenshots. Public count0 is a snapshot; preserve subsequent human-created events.
+
+Production `GET /api/public-catalog` is detached display-only metadata, strictly public/published and
+exactly bound to a confirmed historical factory adoption. It makes ZERO RPC calls and neither reads
+sessions nor writes current trust/access maps. Home keeps it separate from bootstrap, labels current
+status as checked on open and performs no automatic heavy bootstrap. Only404 permits one compatibility
+fallback. Selected/setup/wallet/review/draft/validate retain full current provenance/owner/upgrade checks.
+Financial rules, source artifacts, policy and version dispatch remain authoritative and unchanged.
+
+Organizer dates default end to start+2h until manual edit; exact setup390aac98 is retained. Backend
+29 focused privacy/HTTP/pure checks plus one real local canonical creation/0600 disk restart passed.
+UI12 pure,8 GET browser,2 synthetic session groups, date8 browser groups and type/static build passed.
+No broad financial/fork replay was needed. Linux backend build/normal startup succeeded. Full evidence
+and interfaces: `docs/PERFORMANCE_CHECKPOINT.md`; machine release pointer:
+`artifacts/mainnet-release/mainnet-portal-release.json`. No remaining implementation/deployment
+work or approval is pending for the speed/date request. No selected-child mainnet financial or jury
+outcome is claimed. A/B/C remain retired incomplete/PAUSED, D complete, E unused; old sites/funds/
+journals stay frozen. No billing upgrade, upstream push, new policy upload or financial transaction.
+
+The following records retain earlier deployment chronology and are superseded by this checkpoint.
+
 # Mainnet hosting checkpoint — 29 October 2026
 
 ## Final live release
