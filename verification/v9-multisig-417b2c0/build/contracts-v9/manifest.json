@@ -1,0 +1,158 @@
+{
+  "profile": "kleros-event-v9-uups",
+  "version": 9,
+  "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+  "openzeppelin": "5.7.0",
+  "minimumUpgradeDelay": 172800,
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "viaIR": true,
+    "evmVersion": "paris",
+    "outputSelection": {
+      "*": {
+        "": [
+          "ast"
+        ],
+        "*": [
+          "abi",
+          "storageLayout",
+          "evm.bytecode.object",
+          "evm.bytecode.linkReferences",
+          "evm.deployedBytecode.object",
+          "evm.deployedBytecode.immutableReferences"
+        ]
+      }
+    }
+  },
+  "sources": {
+    "contracts/v9/KlerosEventV9.sol": "e3d9f947537165d885878c89e86114e6901d0665f4d4b00bf20b9da227a9e11b",
+    "contracts/v9/KlerosUpgradeGateV9.sol": "0197602754ac7296f01b645f4331d3b6f09faf2c78181df4ed702ba1a24bd365",
+    "@openzeppelin/contracts/proxy/utils/Initializable.sol": "f527a063813c2bf60c153fb08e38539578935402894fcc36fac42324ca325d3b",
+    "@openzeppelin/contracts/proxy/utils/UUPSUpgradeable.sol": "b5af3bfd79a32c6da2d09b0be38d9b63dcd0d159a1a4a0198431fd00acc1fd52",
+    "@openzeppelin/contracts/interfaces/draft-IERC1822.sol": "73653312bc2eda0ec231553a5295242eaef2d4f46a023532d45fe76cbd0f565f",
+    "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol": "a89ba2032ab25959c6fde1e508ebf8f966ff632703d3ef79684f578a8fa8033f",
+    "@openzeppelin/contracts/proxy/beacon/IBeacon.sol": "c1c9726bbb0ec4c540c7c98059dcded69a8586b46c168036672381033ee76239",
+    "@openzeppelin/contracts/interfaces/IERC1967.sol": "c4e901318ab6d4963582c62c62ce988a34c68dbae71846b67decacde79e9a317",
+    "@openzeppelin/contracts/utils/Address.sol": "73e54e15285455f0e01e136c3663732641537614723ae5dbd820eb3cb036b1fd",
+    "@openzeppelin/contracts/utils/Errors.sol": "0704b9d6c032cca8512a3bc3f30f49f86f1f03102d2896a3d23e794b82efea66",
+    "@openzeppelin/contracts/utils/LowLevelCall.sol": "e128cbe9c6c406d5a42c26e4079c0a95b369ce552f2d0c3dfd2fcb836c5708f2",
+    "@openzeppelin/contracts/utils/StorageSlot.sol": "75704538dcb223239280c6726d9a31cf769a7816718517c997fc7d63bdb70778",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol": "2a63bed6424b5f846c04dacd5d83a1a03c8bd0f5d362e0bdbe74f8c24f27966e",
+    "@openzeppelin/contracts/governance/TimelockController.sol": "50265193f9ded275033a7b87cd4f6d883f77154b000bf1c5ca7b805052b855c4",
+    "@openzeppelin/contracts/access/AccessControl.sol": "a6893a46a6270c2016db590e3e597c32b004052dad63ccc929ad23ee2ec85473",
+    "@openzeppelin/contracts/access/IAccessControl.sol": "140304b7e99d517c57a13f391dfd3b550ca633a507f7b2af130f391b6cd89cc5",
+    "@openzeppelin/contracts/utils/Context.sol": "847fda5460fee70f56f4200f59b82ae622bb03c79c77e67af010e31b7e2cc5b6",
+    "@openzeppelin/contracts/utils/introspection/ERC165.sol": "61a2b12c96857aaa35f48aeda67a4281637a42494c0b3795be0ae976aa7b3793",
+    "@openzeppelin/contracts/utils/introspection/IERC165.sol": "9055c2994b37dea1a41b7b7926dcb510f05dbe2540b0aafc5fbee9558fffd0ca",
+    "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol": "2d50f70b857cae57572c0139e3d9d84cbe3edcc18492581af36befa15c36cb3f",
+    "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol": "eafee3ffdc7cb2fba4bf6bd16fb28f8e5b4679742e81c2ad42a1b1df5c179feb",
+    "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol": "ee184c9620ae770a9ccf9d21d1e6fd1177eed668f4e92707b51e9ef36d7c9469",
+    "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol": "3df310870e0187a59020ea48e910ed2693778b1f758b57b97a47365d74b92af5",
+    "contracts/v9/KlerosEventFactoryV9.sol": "4ce1c30a8ebf383c41718ac2b48bda03ffc719d718447cdd3678e9c067fedbe9",
+    "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol": "41a3040398d53999dea3251ff8906e11ec1a699362a1d8f4a55bfc7709cc00f3",
+    "@openzeppelin/contracts/proxy/Proxy.sol": "fa8aae37b2939371fcbce48b814c0d5c7e57e3e267f348459f29941937746c98"
+  },
+  "contracts": {
+    "KlerosEventV9": {
+      "creationBytes": 26961,
+      "runtimeBytes": 21028,
+      "creationCodeHash": "0x4c3fb9c656024f605578b29430e386ea8dfccea2cf948ab7177ddac9f53768e1",
+      "abiSha256": "3c071c5ff9be2fd578971c844312ccc82f162772bb8bab1a391b84727ba9c4c3",
+      "unpatchedRuntimeCodeHash": "0x877eb582934f631c3993fb51479e56042f4e3ba987209b37021e62998dad1450",
+      "immutableReferences": {
+        "2116": [
+          {
+            "length": 32,
+            "start": 10939
+          },
+          {
+            "length": 32,
+            "start": 11110
+          }
+        ],
+        "7926": [
+          {
+            "length": 32,
+            "start": 10110
+          }
+        ]
+      },
+      "immutableValues": {
+        "2116": {
+          "name": "__self",
+          "type": "address",
+          "value": "implementation-address"
+        },
+        "7926": {
+          "name": "_timelockCodeHash",
+          "type": "bytes32",
+          "value": "0x9691b7584dc7b3887f5be389a818b874cc03ce1acf4fe9f8c9ec4d74cf1d5af5"
+        }
+      },
+      "storageLayoutSha256": "e75a206e07bdc43b433ed3ee1cb5391a7e438370541abfc61278fd43261ca650"
+    },
+    "KlerosEventFactoryV9": {
+      "creationBytes": 13146,
+      "runtimeBytes": 7213,
+      "creationCodeHash": "0x1cfd0c3a4983be716d1cf551611592a5b49c44240fd58ce5af4459213f833f04",
+      "abiSha256": "dd40cdba58e67b3402592586401aa9b955397038069e72ad4767dad058f60143",
+      "unpatchedRuntimeCodeHash": "0xa7da34a056274d04c1ea06dac685ad70c9061cfc6108e404a4786c6de93659d5",
+      "immutableReferences": {
+        "2116": [
+          {
+            "length": 32,
+            "start": 2727
+          },
+          {
+            "length": 32,
+            "start": 2956
+          }
+        ],
+        "7926": [
+          {
+            "length": 32,
+            "start": 5414
+          }
+        ]
+      },
+      "immutableValues": {
+        "2116": {
+          "name": "__self",
+          "type": "address",
+          "value": "implementation-address"
+        },
+        "7926": {
+          "name": "_timelockCodeHash",
+          "type": "bytes32",
+          "value": "0x9691b7584dc7b3887f5be389a818b874cc03ce1acf4fe9f8c9ec4d74cf1d5af5"
+        }
+      },
+      "storageLayoutSha256": "a8ce27974a3796bbe1dd9c342c1f1ce116f2b43b76fbebde0110241a3b3d13a0"
+    },
+    "KlerosUpgradeTimelockV9": {
+      "creationBytes": 6834,
+      "runtimeBytes": 5609,
+      "creationCodeHash": "0x6a0cee594a5c167e4554293562a9804f29ccfeeed3dbf187c5c22a0fc7f418bf",
+      "abiSha256": "cecb4bfc830a9247a8dfb7107814ad57d5766376ee8220c0feba3b0ec369c98f",
+      "unpatchedRuntimeCodeHash": "0x9691b7584dc7b3887f5be389a818b874cc03ce1acf4fe9f8c9ec4d74cf1d5af5",
+      "deployedCodeHash": "0x9691b7584dc7b3887f5be389a818b874cc03ce1acf4fe9f8c9ec4d74cf1d5af5",
+      "immutableReferences": {},
+      "immutableValues": {},
+      "storageLayoutSha256": "7d8b01bc9d0019f5a4940d8537dec8f141f91812940e913bd34ae5f202240e28"
+    },
+    "ERC1967Proxy": {
+      "creationBytes": 720,
+      "runtimeBytes": 134,
+      "creationCodeHash": "0x413fce2dea3301af87ab6146cfdabcc1b9ee8b9f4b59a931b0becb5078cd40e4",
+      "abiSha256": "8a48f95275182ef0c8725e0c248340f1230646318c0831a73b1c566af8cf614e",
+      "unpatchedRuntimeCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+      "deployedCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+      "immutableReferences": {},
+      "immutableValues": {},
+      "storageLayoutSha256": "f846b023549275be2e0c1636ca4bec256cd67a0365c39781e76ec879398473a8"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+✔ V9 unsigned requests bind deterministic nonces, project timelock and atomic factory initialization (4.5115ms)
+✔ production inputs reject wrong networks, short delays, hidden signing fields and missing budgets (0.701041ms)
+✔ preflight rejects modified calldata or claimed build before public network access (4.249125ms)
+✔ preflight rejects pending deployment nonce conflicts before Court reads (3.641833ms)
+✔ preflight captures plan identity before asynchronous RPC can mutate its caller (1.870959ms)
+✔ artifact gate rejects changed code, ABI, layouts and immutable locations (0.353958ms)
+✔ runtime materialization distinguishes implementation address and timelock hash immutables (0.517291ms)
+✔ default review and forbidden deployment options never access configuration or RPC (1043.765417ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_darwin_arm64_141.node'
+Require stack:
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+{"localUnsignedDeploymentRehearsal":"passed","ownershipTransfer":"two-step-passed","gasUsed":{"KlerosUpgradeTimelockV9":"1699095","KlerosEventV9":"4733953","KlerosEventFactoryV9":"1748004","ERC1967Proxy":"234485"},"mainnetBroadcasts":0}
+✔ unsigned V9 deployment sequence rehearses all four CREATE requests and exact runtime hashes locally (6984.525416ms)
+✔ real solc graph comparison ignores AST/type IDs and permits packed tail plus aggregate appends (46.942834ms)
+✔ empty compiler layouts and custom base slots remain valid without claiming namespace safety (3.2635ms)
+✔ field removal, rename, reorder, insertion and slot/packing shifts fail closed (5.519125ms)
+✔ same-size signedness, mapping-key nominal types, bytes/string and array-base retypes are rejected (10.052833ms)
+✔ struct members preserve names, order, recursive types and layout even when size is unchanged (3.899916ms)
+✔ fixed-array length and upgrade gaps cannot change even when the byte extent matches (2.751083ms)
+✔ valid mapping and dynamic-array recursion is bounded and compared structurally (3.431208ms)
+✔ unrooted supplied type descriptors are preserved, but unknown namespace/root metadata is rejected (0.888833ms)
+✔ malformed references, encodings, widths, offsets, decimal slots and unknown fields fail closed (1.399417ms)
+✔ mapping/array descriptors cannot lie about their referenced canonical types or extents (2.112834ms)
+✔ by-value struct/array cycles and unsupported opaque representations are rejected (2.355125ms)
+✔ deep recursive graphs and large inputs have deterministic traversal bounds (5.672791ms)
+✔ actual v9 Event and Factory accept real compiler-generated derived tail appends (119.377792ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7396.653

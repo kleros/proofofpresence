@@ -1,0 +1,437 @@
+{
+  "storage": [
+    {
+      "astId": 4104,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "depositAmount",
+      "offset": 0,
+      "slot": "0",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4107,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "eventStart",
+      "offset": 0,
+      "slot": "1",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4110,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "claimDeadline",
+      "offset": 0,
+      "slot": "2",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4114,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "disputeResolver",
+      "offset": 0,
+      "slot": "3",
+      "type": "t_contract(IArbitrableProxy)3686"
+    },
+    {
+      "astId": 4118,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "arbitrator",
+      "offset": 0,
+      "slot": "4",
+      "type": "t_contract(IKlerosLiquid)3636"
+    },
+    {
+      "astId": 4120,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "arbitratorExtraData",
+      "offset": 0,
+      "slot": "5",
+      "type": "t_bytes_storage"
+    },
+    {
+      "astId": 4123,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "metaEvidenceStore",
+      "offset": 0,
+      "slot": "6",
+      "type": "t_address"
+    },
+    {
+      "astId": 4125,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "policyURI",
+      "offset": 0,
+      "slot": "7",
+      "type": "t_string_storage"
+    },
+    {
+      "astId": 4127,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "eventName",
+      "offset": 0,
+      "slot": "8",
+      "type": "t_string_storage"
+    },
+    {
+      "astId": 4129,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "owner",
+      "offset": 0,
+      "slot": "9",
+      "type": "t_address"
+    },
+    {
+      "astId": 4131,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "pendingOwner",
+      "offset": 0,
+      "slot": "10",
+      "type": "t_address"
+    },
+    {
+      "astId": 4134,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "phase",
+      "offset": 20,
+      "slot": "10",
+      "type": "t_enum(Phase)3991"
+    },
+    {
+      "astId": 4139,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "status",
+      "offset": 0,
+      "slot": "11",
+      "type": "t_mapping(t_address,t_enum(Status)3996)"
+    },
+    {
+      "astId": 4142,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "_stakers",
+      "offset": 0,
+      "slot": "12",
+      "type": "t_array(t_address)dyn_storage"
+    },
+    {
+      "astId": 4144,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "stakerCount",
+      "offset": 0,
+      "slot": "13",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4148,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "_everAdmitted",
+      "offset": 0,
+      "slot": "14",
+      "type": "t_mapping(t_address,t_bool)"
+    },
+    {
+      "astId": 4153,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "pendingDeposits",
+      "offset": 0,
+      "slot": "15",
+      "type": "t_mapping(t_address,t_uint256)"
+    },
+    {
+      "astId": 4155,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "pendingTotal",
+      "offset": 0,
+      "slot": "16",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4159,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "attended",
+      "offset": 0,
+      "slot": "17",
+      "type": "t_mapping(t_address,t_bool)"
+    },
+    {
+      "astId": 4162,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "_attendees",
+      "offset": 0,
+      "slot": "18",
+      "type": "t_array(t_address)dyn_storage"
+    },
+    {
+      "astId": 4164,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "attendeeCount",
+      "offset": 0,
+      "slot": "19",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4166,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "challengeEndsAt",
+      "offset": 0,
+      "slot": "20",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4171,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "challenges",
+      "offset": 0,
+      "slot": "21",
+      "type": "t_mapping(t_address,t_struct(Challenge)4019_storage)"
+    },
+    {
+      "astId": 4176,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "caseOrganizer",
+      "offset": 0,
+      "slot": "22",
+      "type": "t_mapping(t_address,t_address)"
+    },
+    {
+      "astId": 4179,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "_challengers",
+      "offset": 0,
+      "slot": "23",
+      "type": "t_array(t_address)dyn_storage"
+    },
+    {
+      "astId": 4181,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "pendingChallenges",
+      "offset": 0,
+      "slot": "24",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4184,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "challengeEscrow",
+      "offset": 0,
+      "slot": "25",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4187,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "payoutShare",
+      "offset": 0,
+      "slot": "26",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4190,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "heldBack",
+      "offset": 0,
+      "slot": "27",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4195,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "owed",
+      "offset": 0,
+      "slot": "28",
+      "type": "t_mapping(t_address,t_uint256)"
+    },
+    {
+      "astId": 4197,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "owedTotal",
+      "offset": 0,
+      "slot": "29",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 4199,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "originatingFactory",
+      "offset": 0,
+      "slot": "30",
+      "type": "t_address"
+    },
+    {
+      "astId": 4201,
+      "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+      "label": "_locked",
+      "offset": 0,
+      "slot": "31",
+      "type": "t_uint256"
+    }
+  ],
+  "types": {
+    "t_address": {
+      "encoding": "inplace",
+      "label": "address",
+      "numberOfBytes": "20"
+    },
+    "t_array(t_address)dyn_storage": {
+      "base": "t_address",
+      "encoding": "dynamic_array",
+      "label": "address[]",
+      "numberOfBytes": "32"
+    },
+    "t_bool": {
+      "encoding": "inplace",
+      "label": "bool",
+      "numberOfBytes": "1"
+    },
+    "t_bytes_storage": {
+      "encoding": "bytes",
+      "label": "bytes",
+      "numberOfBytes": "32"
+    },
+    "t_contract(IArbitrableProxy)3686": {
+      "encoding": "inplace",
+      "label": "contract IArbitrableProxy",
+      "numberOfBytes": "20"
+    },
+    "t_contract(IKlerosLiquid)3636": {
+      "encoding": "inplace",
+      "label": "contract IKlerosLiquid",
+      "numberOfBytes": "20"
+    },
+    "t_enum(ChallengeState)4001": {
+      "encoding": "inplace",
+      "label": "enum KlerosEventV9.ChallengeState",
+      "numberOfBytes": "1"
+    },
+    "t_enum(Phase)3991": {
+      "encoding": "inplace",
+      "label": "enum KlerosEventV9.Phase",
+      "numberOfBytes": "1"
+    },
+    "t_enum(Status)3996": {
+      "encoding": "inplace",
+      "label": "enum KlerosEventV9.Status",
+      "numberOfBytes": "1"
+    },
+    "t_mapping(t_address,t_address)": {
+      "encoding": "mapping",
+      "key": "t_address",
+      "label": "mapping(address => address)",
+      "numberOfBytes": "32",
+      "value": "t_address"
+    },
+    "t_mapping(t_address,t_bool)": {
+      "encoding": "mapping",
+      "key": "t_address",
+      "label": "mapping(address => bool)",
+      "numberOfBytes": "32",
+      "value": "t_bool"
+    },
+    "t_mapping(t_address,t_enum(Status)3996)": {
+      "encoding": "mapping",
+      "key": "t_address",
+      "label": "mapping(address => enum KlerosEventV9.Status)",
+      "numberOfBytes": "32",
+      "value": "t_enum(Status)3996"
+    },
+    "t_mapping(t_address,t_struct(Challenge)4019_storage)": {
+      "encoding": "mapping",
+      "key": "t_address",
+      "label": "mapping(address => struct KlerosEventV9.Challenge)",
+      "numberOfBytes": "32",
+      "value": "t_struct(Challenge)4019_storage"
+    },
+    "t_mapping(t_address,t_uint256)": {
+      "encoding": "mapping",
+      "key": "t_address",
+      "label": "mapping(address => uint256)",
+      "numberOfBytes": "32",
+      "value": "t_uint256"
+    },
+    "t_string_storage": {
+      "encoding": "bytes",
+      "label": "string",
+      "numberOfBytes": "32"
+    },
+    "t_struct(Challenge)4019_storage": {
+      "encoding": "inplace",
+      "label": "struct KlerosEventV9.Challenge",
+      "members": [
+        {
+          "astId": 4004,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "state",
+          "offset": 0,
+          "slot": "0",
+          "type": "t_enum(ChallengeState)4001"
+        },
+        {
+          "astId": 4006,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "matcher",
+          "offset": 1,
+          "slot": "0",
+          "type": "t_address"
+        },
+        {
+          "astId": 4008,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "matchEndsAt",
+          "offset": 21,
+          "slot": "0",
+          "type": "t_uint64"
+        },
+        {
+          "astId": 4010,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "deposit",
+          "offset": 0,
+          "slot": "1",
+          "type": "t_uint256"
+        },
+        {
+          "astId": 4012,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "arbitratorDisputeID",
+          "offset": 0,
+          "slot": "2",
+          "type": "t_uint256"
+        },
+        {
+          "astId": 4014,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "localDisputeID",
+          "offset": 0,
+          "slot": "3",
+          "type": "t_uint256"
+        },
+        {
+          "astId": 4016,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "arbitrationPaid",
+          "offset": 0,
+          "slot": "4",
+          "type": "t_uint256"
+        },
+        {
+          "astId": 4018,
+          "contract": "contracts/v9/KlerosEventV9.sol:KlerosEventV9",
+          "label": "heldShare",
+          "offset": 0,
+          "slot": "5",
+          "type": "t_uint256"
+        }
+      ],
+      "numberOfBytes": "192"
+    },
+    "t_uint256": {
+      "encoding": "inplace",
+      "label": "uint256",
+      "numberOfBytes": "32"
+    },
+    "t_uint64": {
+      "encoding": "inplace",
+      "label": "uint64",
+      "numberOfBytes": "8"
+    }
+  }
+}

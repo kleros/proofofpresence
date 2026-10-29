@@ -413,7 +413,9 @@ test("implementation locks, atomic child initialization and timelock provenance 
       .initialize.staticCall(s.eventImpl.target, s.timelock.target),
   );
   await assert.rejects(deploy("ERC1967Proxy", [s.factoryImpl.target, "0x"]));
-  await assert.rejects(deploy("KlerosUpgradeTimelockV9", [governor.address]));
+  const eoaClock = await deploy("KlerosUpgradeTimelockV9", [governor.address]);
+  assert.equal(await eoaClock.owner(), governor.address);
+  await assert.rejects(deploy("KlerosUpgradeTimelockV9", [ethers.ZeroAddress]));
   const fake = await deploy("SecurityFakeDelayAuthority");
   for (const authority of [attacker.address, fake.target]) {
     const data = s.factoryImpl.interface.encodeFunctionData("initialize", [

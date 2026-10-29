@@ -1,0 +1,80 @@
+{
+  "storage": [
+    {
+      "astId": 3236,
+      "contract": "contracts/v9/KlerosEventFactoryV9.sol:KlerosEventFactoryV9",
+      "label": "eventImplementation",
+      "offset": 0,
+      "slot": "0",
+      "type": "t_address"
+    },
+    {
+      "astId": 3240,
+      "contract": "contracts/v9/KlerosEventFactoryV9.sol:KlerosEventFactoryV9",
+      "label": "eventsById",
+      "offset": 0,
+      "slot": "1",
+      "type": "t_mapping(t_bytes32,t_address)"
+    },
+    {
+      "astId": 3244,
+      "contract": "contracts/v9/KlerosEventFactoryV9.sol:KlerosEventFactoryV9",
+      "label": "isEvent",
+      "offset": 0,
+      "slot": "2",
+      "type": "t_mapping(t_address,t_bool)"
+    },
+    {
+      "astId": 3246,
+      "contract": "contracts/v9/KlerosEventFactoryV9.sol:KlerosEventFactoryV9",
+      "label": "eventCount",
+      "offset": 0,
+      "slot": "3",
+      "type": "t_uint256"
+    },
+    {
+      "astId": 3248,
+      "contract": "contracts/v9/KlerosEventFactoryV9.sol:KlerosEventFactoryV9",
+      "label": "_locked",
+      "offset": 0,
+      "slot": "4",
+      "type": "t_uint256"
+    }
+  ],
+  "types": {
+    "t_address": {
+      "encoding": "inplace",
+      "label": "address",
+      "numberOfBytes": "20"
+    },
+    "t_bool": {
+      "encoding": "inplace",
+      "label": "bool",
+      "numberOfBytes": "1"
+    },
+    "t_bytes32": {
+      "encoding": "inplace",
+      "label": "bytes32",
+      "numberOfBytes": "32"
+    },
+    "t_mapping(t_address,t_bool)": {
+      "encoding": "mapping",
+      "key": "t_address",
+      "label": "mapping(address => bool)",
+      "numberOfBytes": "32",
+      "value": "t_bool"
+    },
+    "t_mapping(t_bytes32,t_address)": {
+      "encoding": "mapping",
+      "key": "t_bytes32",
+      "label": "mapping(bytes32 => address)",
+      "numberOfBytes": "32",
+      "value": "t_address"
+    },
+    "t_uint256": {
+      "encoding": "inplace",
+      "label": "uint256",
+      "numberOfBytes": "32"
+    }
+  }
+}

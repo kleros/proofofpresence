@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "417b2c075f5129ecf0cf61dc6f1ca3d9f87857a9",
+  "status": "historical-multisig-candidate-preserved",
+  "files": {
+    "contracts/v9/KlerosUpgradeGateV9.sol": "0197602754ac7296f01b645f4331d3b6f09faf2c78181df4ed702ba1a24bd365",
+    "contracts/v9/KlerosEventV9.sol": "e3d9f947537165d885878c89e86114e6901d0665f4d4b00bf20b9da227a9e11b",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol": "2a63bed6424b5f846c04dacd5d83a1a03c8bd0f5d362e0bdbe74f8c24f27966e",
+    "contracts/v9/KlerosEventFactoryV9.sol": "4ce1c30a8ebf383c41718ac2b48bda03ffc719d718447cdd3678e9c067fedbe9",
+    "build/contracts-v9/KlerosEventV9.storage-layout.json": "e4046a96fe3155d2b1e6d240d10bcca726501381908ed83d154055caabfe8211",
+    "build/contracts-v9/KlerosEventFactoryV9.storage-layout.json": "24317f26b2b10a239e26f236e1a70daf18781957776118659e12ef568481caa6",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.storage-layout.json": "dc60ddcfdbe3e65b7670a4f9f6a37558147244ca4610a57ce2d7b28824068c30",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.json": "143790a5945a25c42c2aaa0c9d1af955179bd16bbe4ca1f2f3006f294cc6ff31",
+    "build/contracts-v9/ERC1967Proxy.storage-layout.json": "e7ad284d2288f5904ee11f44c0fe63736f5f5caca0faf21a1e52a5717df21149",
+    "build/contracts-v9/KlerosEventV9.json": "ee351ab3588e6a0bda232c81c2f7a83a636dae331f3adc0d4ae119ddfc115c22",
+    "build/contracts-v9/ERC1967Proxy.json": "3881c645e1e9621f2fdebc38dfb41d55cd62d28ab63ca0e612e40ae30039483a",
+    "build/contracts-v9/standard-input.json": "2c55d38089fd239bbf2cfad744cf96233d5509ec67a7b3aaf70192a1cd244571",
+    "build/contracts-v9/manifest.json": "a37e2928406bdcba65707447db30888342db5a30c91c585ee1dddfce7a4383ef",
+    "build/contracts-v9/KlerosEventFactoryV9.json": "07e43939a582de7fe25abbd03437f1bdf67906ae44eb830b386920c9b94fbc41"
+  }
+}

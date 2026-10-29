@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "profile": "kleros-event-v9-uups",
+  "maximumAdmissions": 150,
+  "capGas": "16777216",
+  "testedGasAllowancePercent": 30,
+  "cancellation150HostileGas": "12609857",
+  "payout150HostileGas": "12591247",
+  "owedRecipients": 150,
+  "publicTransactions": 0,
+  "environment": "in-process Ganache Shanghai; explicit gas cap; synthetic account-code replacement"
+}

@@ -1,108 +1,78 @@
-# V9 contract release inputs
+# Current single-owner V9 contract release inputs
 
-The human selected a project multisig and a minimum48-hour timelock. This implementation is a new
-`kleros-event-v9-uups` family, VERSION9. Existing immutable v8 and test15m deployments are unchanged.
-No production broadcast is implemented by the contract compiler or tests.
+Updated29October2026. The human changed upgrade control to one transferable wallet, retaining48hours.
+This supersedes the multisig release at417b2c0; its source/build snapshot and proofs remain preserved.
+Production profile/ABI is `kleros-event-v9-uups`, VERSION9, Ethereum1/native ETH. Mainnet execution
+belongs to core's reviewed user-wallet flow; this contract lane has no signer or broadcast capability.
 
-## Contracts and ABI
+## ABI and ownership
 
-- `KlerosUpgradeTimelockV9(address projectMultisig)`: non-upgradeable; fixed initial172800-second
-  delay; self administrator; supplied contract proposes/cancels; execution is permissionless after
-  readiness. Both construction and `updateDelay` enforce the48-hour floor. There is no deployer admin.
-- `KlerosEventFactoryV9.initialize(address eventImplementation_, address upgradeAuthority_)`:
-  passed atomically to `ERC1967Proxy` construction. The authority must have the exact reviewed
-  timelock runtime. The factory is independently UUPS upgradeable.
-- `KlerosEventV9.initialize(uint256 depositAmount_, string eventName_, address owner_,
-  uint256 eventStart_, uint256 claimDeadline_, Arbitration arbitration_, address originatingFactory_)`:
-  called atomically by factory proxy creation. The organizer is the authenticated creator; the
-  project authority comes from the factory and cannot be selected by that organizer.
+- `KlerosUpgradeTimelockV9(address initialOwner)` is non-upgradeable. It provides `owner`,
+  `pendingOwner`, `transferOwnership`, `cancelOwnershipTransfer`, `acceptOwnership`,
+  `pendingOperationCount`, `executingOperationCount`, and the standard timelock API.
+- The current owner is the only proposer. Owner and pending owner can cancel. Acceptance requires an
+  empty, idle queue and removes the old roles atomically. Role changes, ownership/role renunciation,
+  invalid recipients and empty batches reject. Executor is open; default admin is the timelock itself.
+  Every scheduled action waits at least172800seconds. There is no fast upgrade or deployer-admin bypass.
+- Factory `initialize(address eventImplementation_, address upgradeAuthority_)` is atomically passed
+  to ERC1967Proxy construction. Event `initialize` retains the six financial constructor arguments
+  plus `originatingFactory`; creator becomes financial owner, while upgrade authority comes from the
+  factory. Financial event/factory/gate source remains unchanged by this ownership update.
 
-The child retains every v8 financial ABI entry and the entire financial-method source body. Six
-per-event immutables become proxy storage; initialization sets the financial guard busy before
-external calls and ready afterward. Pending credits, held shares, refusal economics, owed claims,
-150-wallet lifetime capacity and86400-second challenge/match periods are preserved.
+The exact organizer createEvent ABI, receipt, metadata/time bounds and owner semantics are recorded
+in [LM_CONTRACT_HANDOFF](LM_CONTRACT_HANDOFF.md). Existing pending-credit, held-share, ruling0,
+failed-recipient owed recovery,150-wallet capacity and one-day windows are unchanged. A factory
+upgrade/default selection does not automatically upgrade existing child proxies.
 
-Additional getters: `UPGRADE_FAMILY()`, `storageSchema()`, `implementationRevision()`,
-`upgradeAuthority()`; events also expose `originatingFactory()`. Factory creation retains the v8
-`EventParameters` tuple and `EventCreated` event with version9. Its `eventImplementation()` default
-changes only through the timelock and affects future children. Each existing event has an independent
-ERC1967 implementation slot; there is no shared beacon.
+## Build and current pins
 
-Families are `keccak256("kleros.event.v9.uups")` and `keccak256("kleros.factory.v9.uups")`.
-Schemas are `keccak256("kleros.event.v9.storage.1")` and the factory equivalent. Replacement code
-must be VERSION9, the same family/schema, a higher revision and UUPS compatible. These metadata
-checks prevent mistakes; authorized governance can still change custody logic. The48-hour review
-period is not a guarantee that admitted or disputed principal can immediately exit. Financial
-operations are not frozen during the delay.
-
-## Build and runtime provenance
-
-`node scripts/compile-contracts-v9.mjs` uses exact OpenZeppelin Contracts5.7.0,
-solc0.8.38, optimizer200runs, viaIR and Paris. It writes only `build/contracts-v9/`, including the
-complete inline compiler input, ABI, bytecode, compiler storage layouts, reference maps and manifest.
-V7/v8 output directories are not overwritten.
+Exact compiler: solc0.8.38+commit.1835d247, OpenZeppelin Contracts5.7.0, viaIR, optimizer200, Paris.
+Ownable and Ownable2Step add two sources:28inline sources total. The event/factory storage layouts
+retain their financial structure; compiler type IDs can change when imports change.
 
 | Artifact | Creation bytes | Runtime bytes |
 | --- | ---: | ---: |
-| KlerosEventV9 |26961|21028|
-| KlerosEventFactoryV9 |13146|7213|
-| KlerosUpgradeTimelockV9 |6834|5609|
+| KlerosEventV9 |28188|21028|
+| KlerosEventFactoryV9 |14373|7213|
+| KlerosUpgradeTimelockV9 |8170|6836|
 | ERC1967Proxy |720|134|
 
-The event has3548bytes remaining below EIP170. Every artifact is below the initcode/runtime limits.
-No financial-code extraction was necessary.
+Current controller source SHA256:
+`bd0c37a72bbfb0341530768896035046dab67e01870fadd03e406a618c04926e`.
+Controller runtime hash:
+`0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220`.
+Canonical build/input and creation/ABI/layout hashes are in
+`artifacts/mainnet-kleros/current-owner-pins.json`; do not use old417b2c0 pins.
 
-Implementation runtimes contain two immutable values. Read their compiler-produced IDs and offsets;
-never hardcode the IDs:
-
-- `__self`: the deployed implementation address padded to32bytes.
-- `_timelockCodeHash`: the exact32-byte reviewed timelock runtime hash,
-  `0x9691b7584dc7b3887f5be389a818b874cc03ce1acf4fe9f8c9ec4d74cf1d5af5`.
-
-Artifacts expose `immutableReferences`, `immutableValues`, `linkReferences` and `storageLayout`.
-The raw `deployedBytecode` is unpatched; its hash is not the actual implementation runtime hash.
-The timelock and proxy have no immutables. Their runtime hashes can be checked directly. The project
-authority is proxy state in the fixed ERC7201 namespace
+Implementation runtime immutables remain compiler-declared `__self` (deployed implementation address)
+and `_timelockCodeHash` (the exact current controller hash). The unpatched deployedBytecode hash is
+not the final runtime hash. Read `immutableReferences`/`immutableValues` by names, not numeric IDs.
+The timelock/proxy have no immutables. Fixed authority storage uses the preserved ERC7201 root
 `0xe52709d5d2584d7781be7bdd5de93156c9489d44a4f5977e28a0120cffd25300`.
-Future revisions must separately preserve this namespace and the ordinary compiler storage layout.
 
-## Verification evidence
+## Fresh executed checks
 
-Basic local tests prove the retained ABI/body, actual timelocked event/factory migrations, exact
-liability snapshots, registry preservation and independently upgraded children. The independent
-[upgrade-security suite](V9_UPGRADE_SECURITY.md) covers initialization and authority attacks,
-family/schema/UUID rejection, exact ETA, rollback/replay, owed/pending/disputed balances and payment
-callbacks attempting a ready upgrade.
+- `test/event-v9-owner.test.mjs`:5/5passed, including same-EOA setup,48-hour upgrade, handover,
+  role/floor protection, cancellation, queue/depth rollback and empty-batch rejection.
+- `test/event-v9.test.mjs` + `test/event-v9-capacity.test.mjs`:3/3passed on current artifacts.
+  Financial source/ABI pins and funded event/factory isolation remain valid.150hostile recipients used
+  12609857gas for cancellation and12591247for payout; each measured value×1.30 remains below16777216.
+- `test/event-v9-owner-handover-security.test.mjs`:7/7passed; existing
+  `test/event-v9-upgrade-security.test.mjs`:9/9passed against the fresh guarded controller.
+- Release planner/rehearsal/storage combined command:22/22passed. The same wallet deployed all four
+  exact unsigned requests and completed a two-step ownership transfer locally.
+- Explicit current owner real-Kleros fork:1/1passed in58.51seconds, five children, held-case48-hour
+  upgrade, actual appeal/passPeriod/executeRuling/refund/reward logic and delivered rulings1/0/2.
+  There were264upstream read-only requests, zero upstream signatures/broadcasts/private signing files.
+  Jury state/final Court callbacks were simulated locally; no independent jury vote is claimed.
 
-The maximum-capacity test creates a real proxy with150admissions, then gives all recipients hostile
-gas-consuming code on the isolated chain. Cancellation used12,609,857gas and payout12,591,247gas,
-both below16,777,216 even after adding30%to measured consumption. This means30%additional gas
-allowance, not30%of the transaction cap unused. Failed sends become protected owed balances;
-unadmitted credits remain recoverable separately. The test simulates the cap explicitly on Ganache
-Shanghai and does not claim that Ganache itself enforces newer mainnet fork rules.
+The first owner-fork attempt found a fixture's incorrect nonce0 assumption; it was corrected to the
+actual fork account nonce. A later run stopped on HTTP429 before producing a complete proof. They
+are not passes. The final run uses the existing bounded verification runtime and serialized reads,
+without replaying a public transaction or duplicating retry policy.
 
-The actual real-Kleros V9 fork passed with five proxy children, exact compiler/artifact equality,
-immutable-patched implementation runtime checks, nativeETH custody, evidence, rulings0/1/2 and
-positive appeals/refunds/rewards. One held dispute was upgraded through the48-hour timelock before
-continuing through the actual resolver/Liquid code. Only jury adjudication is simulated locally;
-all external Ethereum RPC requests are read-only. The original publicnode endpoint returned403
-before fork execution; the completed run explicitly used `https://eth.drpc.org` after chain1 and
-code verification.
-
-Command:
-
-```sh
-MAINNET_KLEROS_V9_FORK=1 MAINNET_FORK_RPC=https://eth.drpc.org \
-  MAINNET_V9_FORK_REPORT=artifacts/mainnet-kleros/v9-fork-ethereum-final.json \
-  node --test --test-concurrency=1 test/mainnet-kleros-v9-fork.test.mjs
-```
-
-Result: passed1/1 in100.9seconds;322upstream reads, zero upstream signatures/broadcasts.
-[V9 fork proof](../artifacts/mainnet-kleros/v9-fork-ethereum-final.json) SHA256:
-`39aa37425abb95b8bda9075e07fb98d968e39347abdcc1df58330363ec9fa8d0`.
-The exact selected real-Kleros pair, EOA payment limitation and public verification are documented
-in [Ethereum Kleros verification](ETHEREUM_KLEROS_VERIFICATION.md).
-
-Mainnet release preparation must bind the actual multisig, threshold, timelock roles, proxy slots,
-implementation runtime hashes, layouts, dependencies, Court pair and current fee budget. The
-contract-side tests do not replace that application/release acceptance or authorize deployment.
+Current proof: `artifacts/mainnet-kleros/v9-owner-fork-ethereum-runtime-final.json`, SHA256
+`05835760838dd1877dc74ba92d9f3001beebf189397ae27b1dee9415a25f00be`.
+Parent independently rehashed seven source pins, canonical compiler input and four creation hashes;
+all match the current candidate. App/provenance/organizer workflow and live release checks are core's
+separate acceptance, not inferred from these contract tests.

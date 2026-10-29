@@ -5,16 +5,16 @@ import { ethers } from "ethers";
 import { validateReleaseConfig, prepareRelease, preflightRelease, assertV9Artifact, V9_PROFILE } from "../scripts/mainnet/prepare-release.mjs";
 import { v9RuntimeCode } from "../scripts/mainnet/runtime-code.mjs";
 
-const multisig = "0x0000000000000000000000000000000000000012";
+const otherWallet = "0x0000000000000000000000000000000000000012";
 const deployer = "0x0000000000000000000000000000000000000011";
 const names = ["KlerosUpgradeTimelockV9", "KlerosEventV9", "KlerosEventFactoryV9", "ERC1967Proxy"];
 const config = () => ({ schemaVersion: 1, chainId: 1, contractVersion: V9_PROFILE, deployer, deployerNonce: 7,
-  governance: { kind: "project-multisig", multisig, expectedCodeHash: "0x" + "ab".repeat(32), minimumDelaySeconds: 172800 },
+  governance: { kind: "single-owner-timelock", initialOwner: deployer, minimumDelaySeconds: 172800 },
   fees: { maxFeePerGasWei: "20000000000", maxPriorityFeePerGasWei: "1000000000" },
   gasLimits: Object.fromEntries(names.map(name => [name, "9000000"])), maxTotalGasCostWei: "1000000000000000000" });
 // Tiny ABI fixture tests planning identity; real bytecode equality is tested by verifyV9Build.
 const build = { compiler: "fixture", standardInputSha256: "fixture", sourceHashes: {}, contracts: {
-  KlerosUpgradeTimelockV9: { abi: ["constructor(address projectMultisig)"], bytecode: "0x60006000" },
+  KlerosUpgradeTimelockV9: { abi: ["constructor(address initialOwner)"], bytecode: "0x60006000" },
   KlerosEventV9: { abi: [], bytecode: "0x60006000" },
   KlerosEventFactoryV9: { abi: ["function initialize(address eventImplementation_,address upgradeAuthority_)"], bytecode: "0x60006000" },
   ERC1967Proxy: { abi: ["constructor(address implementation,bytes data)"], bytecode: "0x60006000" },
@@ -31,7 +31,9 @@ test("V9 unsigned requests bind deterministic nonces, project timelock and atomi
   for (const tx of plan.transactions)
     assert.equal(tx.predictedAddress, ethers.getCreateAddress({ from: deployer, nonce: tx.nonce }));
   const timelockArgs = ethers.AbiCoder.defaultAbiCoder().decode(["address"], "0x" + plan.transactions[0].data.slice(10));
-  assert.equal(timelockArgs[0], multisig);
+  assert.equal(timelockArgs[0], deployer);
+  assert.equal(plan.governance.initialOwner, plan.deployer);
+  assert.equal(plan.ownershipTransfer.zeroQueuedAndExecutingOperationsRequired, true);
   const proxyArgs = ethers.AbiCoder.defaultAbiCoder().decode(["address", "bytes"], "0x" + plan.transactions[3].data.slice(10));
   assert.equal(proxyArgs[0], plan.addresses.KlerosEventFactoryV9);
   const initialization = new ethers.Interface(build.contracts.KlerosEventFactoryV9.abi).decodeFunctionData("initialize", proxyArgs[1]);
@@ -44,8 +46,8 @@ test("production inputs reject wrong networks, short delays, hidden signing fiel
   const mutate = [
     c => c.chainId = 10200, c => c.contractVersion = "kleros-event-v8-test15m",
     c => c.governance.minimumDelaySeconds = 900, c => c.governance.kind = "organizer-eoa",
-    c => c.privateKey = "NEVER-A-REAL-KEY", c => c.governance.multisig = deployer,
-    c => c.governance.multisig = ethers.ZeroAddress, c => c.deployerNonce = -1,
+    c => c.privateKey = "NEVER-A-REAL-KEY", c => c.governance.initialOwner = otherWallet,
+    c => c.governance.initialOwner = ethers.ZeroAddress, c => c.deployerNonce = -1,
     c => c.governance.expectedCodeHash = ethers.ZeroHash, c => c.fees.maxPriorityFeePerGasWei = "30000000000",
     c => c.maxTotalGasCostWei = "1", c => c.gasLimits.KlerosEventV9 = "0",
     c => c.gasLimits.KlerosEventV9 = "16777217", c => delete c.maxTotalGasCostWei,
@@ -53,12 +55,12 @@ test("production inputs reject wrong networks, short delays, hidden signing fiel
   ];
   for (const change of mutate) { const c = config(); change(c); assert.throws(() => validateReleaseConfig(c)); }
   const original = config(), validated = validateReleaseConfig(original);
-  original.governance.multisig = ethers.ZeroAddress;
-  assert.equal(validated.governance.multisig, multisig);
+  original.governance.initialOwner = ethers.ZeroAddress;
+  assert.equal(validated.governance.initialOwner, deployer);
 });
 
 test("preflight rejects modified calldata or claimed build before public network access", async () => {
-  for (const change of [p => p.transactions[1].data = "0xdeadbeef", p => p.addresses.ERC1967Proxy = multisig,
+  for (const change of [p => p.transactions[1].data = "0xdeadbeef", p => p.addresses.ERC1967Proxy = otherWallet,
     p => p.transactions[0].maxFeePerGasWei = "1", p => p.startingNonce = 8]) {
     const plan = prepareRelease(config(), build); change(plan);
     let requests = 0;
@@ -85,7 +87,7 @@ test("preflight captures plan identity before asynchronous RPC can mutate its ca
   const plan = prepareRelease(config(), build);
   const transport = { request: async (method, params) => {
     if (method === "eth_chainId") {
-      plan.deployer = multisig; plan.startingNonce = 8; plan.transactions[0].data = "0xdeadbeef";
+      plan.deployer = otherWallet; plan.startingNonce = 8; plan.transactions[0].data = "0xdeadbeef";
       return "0x1";
     }
     assert.equal(method, "eth_getTransactionCount");

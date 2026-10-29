@@ -1,6 +1,33 @@
 # Verification report
 
-## Ethereum upgradeable v9 candidate — 29October2026
+## Current single-owner contract delta — 29 October 2026
+
+The human selected one wallet to deploy and initially control upgrades, with two-step transferable
+ownership and the permanent172800-second minimum. The prior417b2c0 multisig candidate below is
+historical. Its broad app, browser and Linux results do not verify the new owner controller or the
+new narrow Luma workflow. Core/UI own current application acceptance separately.
+
+| Actual current-source command/check | Result |
+| --- | --- |
+| `node --test test/event-v9-owner.test.mjs` |5/5passed: same-wallet setup, timelocked upgrade, role/queue protections and two-step handover. |
+| `node --test test/event-v9.test.mjs test/event-v9-capacity.test.mjs` |3/3passed: financial source/ABI retention, funded isolation and150-hostile-recipient gas. [Capacity record](../artifacts/mainnet-kleros/v9-owner-capacity-reviewed.json). |
+| `node --test test/event-v9-owner-handover-security.test.mjs` |7/7passed: loaded queue, stale nominees, callback/execution guards and empty batches. |
+| `node --test test/event-v9-upgrade-security.test.mjs` |9/9passed against the fresh controller, including funded upgrade and event isolation. |
+| `node --test test/mainnet-release-plan.test.mjs test/mainnet-release-rehearsal.test.mjs test/mainnet-storage-layout.test.mjs` |22/22passed in7396.653ms, including the exact same-wallet four-CREATE sequence and two-step handover. [Log](../artifacts/mainnet-release/single-owner-release-final.log). |
+| Explicit opted-in `test/mainnet-kleros-v9-fork.test.mjs` current-owner run |1/1passed in58.51seconds. Five event proxies, held-case48-hour upgrade, real resolver/Court appeal/refund/reward code, rulings1/0/2;264upstream read-only calls, no upstream signatures/broadcasts/private signing files. [Source-bound proof](../artifacts/mainnet-kleros/v9-owner-fork-ethereum-runtime-final.json). |
+| Independent current proof/build pin rehash |Seven fork source files,28inline compiler sources, canonical build/input and four creation hashes match. [Public pins](../artifacts/mainnet-kleros/current-owner-pins.json). |
+
+The first new fork attempt found a fixture's nonce0 assumption; a later attempt stopped onHTTP429.
+They are not counted as passes. The final complete run uses the existing bounded read-only runtime.
+Jury adjudication/final Court callbacks are simulated locally; no independent jury vote is claimed.
+Financial event/factory/gate source remains unchanged. Owner-controller source and exact unsigned
+release proposal are frozen for core's user-wallet review. This contract lane has made no mainnet
+transaction, policy publication or hosting change. See [handoff](LM_CONTRACT_HANDOFF.md) and
+[release preparation](ETHEREUM_V9_RELEASE.md). Tests are not a guarantee against all defects or
+malicious authorized replacement code.
+
+
+## Historical417b2c0 multisig candidate — 29October2026
 
 Production source is `kleros-event-v9-uups`, VERSION9, Ethereum1/native ETH, with one-day windows.
 The project multisig controls separate event/factory UUPS proxies through a non-upgradeable timelock

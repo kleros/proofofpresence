@@ -1,0 +1,25 @@
+{
+  "status": "proposed-read-only-quote",
+  "checkedAt": "2026-10-29T07:47:53.146Z",
+  "chainId": 1,
+  "rpcOrigin": "https://eth.drpc.org",
+  "deployer": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "block": {
+    "number": 26296998,
+    "hash": "0xae4118b412db41d62d052d114e664cd9dd010de2894fec48d7679218d0c90d0d",
+    "timestamp": 1793260067
+  },
+  "latestNonce": 0,
+  "pendingNonce": 0,
+  "balanceWei": "9850000000000000",
+  "code": "0x",
+  "baseFeePerGasWei": "40710532",
+  "rpcPriorityFeePerGasWei": "96",
+  "proposedMaxPriorityFeePerGasWei": "96",
+  "proposedMaxFeePerGasWei": "81421160",
+  "diagnostics": [],
+  "upstreamRequests": 14,
+  "spendingApproved": false,
+  "signatures": 0,
+  "broadcasts": 0
+}

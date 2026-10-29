@@ -52,11 +52,10 @@ export function validateReleaseConfig(raw) {
   check(raw.schemaVersion === 1 && raw.chainId === 1 && raw.contractVersion === V9_PROFILE, "Only Ethereum mainnet V9 release plans are supported");
   check(Number.isSafeInteger(raw.deployerNonce) && raw.deployerNonce >= 0 && raw.deployerNonce <= Number.MAX_SAFE_INTEGER - 4, "Invalid deployment nonce");
   const deployer = publicAddress(raw.deployer, "deployer");
-  record(raw.governance, ["kind", "multisig", "expectedCodeHash", "minimumDelaySeconds"], "governance");
-  check(raw.governance.kind === "project-multisig" && raw.governance.minimumDelaySeconds === MIN_UPGRADE_DELAY, "Project multisig with the fixed 48-hour floor is required");
-  const multisig = publicAddress(raw.governance.multisig, "project multisig");
-  check(!same(multisig, deployer), "Deployer and project multisig must be distinct");
-  check(/^0x[0-9a-f]{64}$/i.test(raw.governance.expectedCodeHash) && !/^0x0{64}$/i.test(raw.governance.expectedCodeHash), "Review the multisig runtime code hash first");
+  record(raw.governance, ["kind", "initialOwner", "minimumDelaySeconds"], "governance");
+  check(raw.governance.kind === "single-owner-timelock" && raw.governance.minimumDelaySeconds === MIN_UPGRADE_DELAY, "Single-owner governance with the fixed 48-hour floor is required");
+  const initialOwner = publicAddress(raw.governance.initialOwner, "initial upgrade owner");
+  check(same(initialOwner, deployer), "The one deployment wallet must be the initial upgrade owner");
   record(raw.fees, ["maxFeePerGasWei", "maxPriorityFeePerGasWei"], "fee budget");
   const maxFee = positiveWei(raw.fees.maxFeePerGasWei, "maximum fee"), tip = positiveWei(raw.fees.maxPriorityFeePerGasWei, "priority fee");
   check(tip <= maxFee, "Priority fee exceeds maximum fee");
@@ -69,7 +68,7 @@ export function validateReleaseConfig(raw) {
   }
   const maxCost = positiveWei(raw.maxTotalGasCostWei, "total gas cost budget");
   check(totalGas * maxFee <= maxCost, "Deployment gas limits exceed the explicit ETH budget");
-  return structuredClone({ ...raw, deployer, governance: { ...raw.governance, multisig } });
+  return structuredClone({ ...raw, deployer, governance: { ...raw.governance, initialOwner } });
 }
 
 /** Recompile saved inputs and compare every emitted artifact to the current pinned sources. */
@@ -146,7 +145,7 @@ export function prepareRelease(raw, build) {
   const addresses = Object.fromEntries(names.map((name, index) => [name, ethers.getCreateAddress({ from: config.deployer, nonce: config.deployerNonce + index })]));
   const factoryInit = new ethers.Interface(build.contracts.KlerosEventFactoryV9.abi).encodeFunctionData("initialize", [addresses.KlerosEventV9, addresses.KlerosUpgradeTimelockV9]);
   const argumentsByName = {
-    KlerosUpgradeTimelockV9: [config.governance.multisig], KlerosEventV9: [], KlerosEventFactoryV9: [],
+    KlerosUpgradeTimelockV9: [config.governance.initialOwner], KlerosEventV9: [], KlerosEventFactoryV9: [],
     ERC1967Proxy: [addresses.KlerosEventFactoryV9, factoryInit],
   };
   const transactions = names.map((name, index) => {
@@ -168,7 +167,8 @@ export function prepareRelease(raw, build) {
     provenance: { v9BuildManifestSha256: build.buildManifestSha256, v9StandardInputSha256: build.standardInputSha256 },
     compilation: { compiler: build.compiler, standardInputSha256: build.standardInputSha256,
       ...(build.standardInputFileSha256 ? { standardInputFileSha256: build.standardInputFileSha256 } : {}), sourceHashes: build.sourceHashes },
-    limitations: ["Gas limits require a complete local-fork deployment rehearsal", "Multisig membership, threshold and module configuration require governance review", "Policy publication and production hosting are separate reviewed actions"],
+    ownershipTransfer: { target: addresses.KlerosUpgradeTimelockV9, steps: ["Current owner calls transferOwnership(newOwner)", "Clear all queued operations; the proposed owner may cancel them", "Proposed owner calls acceptOwnership()"], zeroQueuedAndExecutingOperationsRequired: true },
+    limitations: ["Gas limits require a complete local-fork deployment rehearsal", "One wallet controls upgrades until a two-step ownership transfer completes", "Policy publication and production hosting are separate reviewed actions"],
     signatures: 0, broadcasts: 0 };
 }
 
@@ -185,15 +185,14 @@ export async function preflightRelease(plan, { transport, rpcUrl = "https://ethe
   await checkPendingNonce();
   const court = await verifyKleros({ transport: { ...rpc, request: (method, params = []) => verifier.request(method, params, { phase: "court" }) } });
   const snapshot = await verifier.canonicalSnapshot("preflight", async (block, { request }) => {
-    const [nonce, deployerCode, balance, multisigCode, header, courtHeader] = await Promise.all([
+    const [nonce, deployerCode, balance, header, courtHeader] = await Promise.all([
       request("eth_getTransactionCount", [plan.deployer]), request("eth_getCode", [plan.deployer]), request("eth_getBalance", [plan.deployer]),
-      request("eth_getCode", [plan.governance.multisig]), request("eth_getBlockByNumber", [block.number, false]),
+      request("eth_getBlockByNumber", [block.number, false]),
       request("eth_getBlockByNumber", [court.block.number, false]),
     ]);
     check(same(courtHeader.hash, court.block.hash), "Court verification block is no longer canonical; repeat preflight");
     check(BigInt(nonce) === BigInt(plan.startingNonce), "Deployment nonce changed; rebuild the entire unsigned plan");
     check(deployerCode === "0x", "Deployment account must be a supported EOA");
-    check(multisigCode !== "0x" && same(ethers.keccak256(multisigCode), plan.governance.expectedCodeHash), "Project multisig code differs from the reviewed configuration");
     const base = BigInt(header.baseFeePerGas ?? 0);
     check(base > 0n, "Ethereum base fee unavailable");
     check(plan.transactions.every(tx => BigInt(tx.maxFeePerGasWei) >= base + BigInt(tx.maxPriorityFeePerGasWei)), "Fee budget is below the current base fee plus priority fee");
@@ -201,7 +200,7 @@ export async function preflightRelease(plan, { transport, rpcUrl = "https://ethe
     check(BigInt(balance) >= worstCost, "Deployment account cannot cover the worst-case explicit gas budget");
     for (const address of Object.values(plan.addresses))
       check(await request("eth_getCode", [address]) === "0x" && BigInt(await request("eth_getTransactionCount", [address])) === 0n, "A predicted deployment address is already occupied");
-    return { nonce: Number(BigInt(nonce)), balanceWei: String(BigInt(balance)), baseFeePerGasWei: String(base), worstCaseGasCostWei: String(worstCost), multisigCodeHash: ethers.keccak256(multisigCode) };
+    return { nonce: Number(BigInt(nonce)), balanceWei: String(BigInt(balance)), baseFeePerGasWei: String(base), worstCaseGasCostWei: String(worstCost), initialUpgradeOwner: plan.governance.initialOwner, initialOwnerCodeHash: ethers.keccak256(deployerCode) };
   });
   await checkPendingNonce();
   return { ...plan, preflight: { status: "passed-read-only", checkedAt: new Date().toISOString(), repeatBeforeSigning: true, block: snapshot.block, ...snapshot.result, court, diagnostics: verifier.diagnostics },

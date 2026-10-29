@@ -1,123 +1,95 @@
-# Ethereum V9 release preparation
+# Ethereum V9 single-wallet release preparation
 
-The production candidate uses `kleros-event-v9-uups`, VERSION9, chain1 and native ETH. The human
-selected a **project multisig with a minimum48-hour timelock** on29October2026. Existing v7, v8 and
-Chiado80015 deployments remain separate. No mainnet deployment, hosting change or policy publication
-is authorized by this document.
+Updated29October2026. This supersedes the multisig instructions at417b2c0. The human selected one
+wallet to deploy and initially control upgrades, with transferable ownership and the permanent48-hour
+minimum. Historical source/build inputs and proofs remain preserved under
+`verification/v9-multisig-417b2c0/` and Git417b2c0; they do not verify the changed controller.
 
-Each event has an independent UUPS/ERC1967 proxy. A separate factory proxy creates events; changing
-its default implementation affects future events. The project multisig proposes/cancels timelock
-operations. Anyone may execute a ready operation after its delay. The timelock is not upgradeable,
-has no residual deployer admin and cannot reduce its delay below172800seconds. Authorized upgrades
-can change custody logic; the delay does not guarantee participants can withdraw committed deposits.
-See [upgrade security](V9_UPGRADE_SECURITY.md) for the acceptance evidence and trust boundary.
+## One wallet, four setup transactions
 
-## Unsigned deployment preparation
+The same EOA submits four consecutive CREATE requests: `KlerosUpgradeTimelockV9(initialOwner)`,
+`KlerosEventV9`, `KlerosEventFactoryV9`, then the atomically initialized `ERC1967Proxy` factory.
+The initialOwner must equal that deployer. No multisig setup or private-key export is required.
+The factory and each event remain independently upgradeable through the timelock; selecting a new
+factory default affects future events. Actual implementation upgrades still require172800seconds.
 
-`node scripts/mainnet/prepare-release.mjs` displays instructions with zero network requests,
-signatures or broadcasts. There is deliberately no deployment or signing option. Public configuration
-must be an explicit `registry/ethereum-v9-*.json` file; private wallet/journal paths are rejected.
-
-The required public configuration is:
+`node scripts/mainnet/prepare-release.mjs` is review-only by default. It has no signer, broadcast or
+deployment option. Its public input is an explicit `registry/ethereum-v9-*.json` file:
 
 ```json
 {
   "schemaVersion": 1,
   "chainId": 1,
   "contractVersion": "kleros-event-v9-uups",
-  "deployer": "REVIEWED_EOA_ADDRESS",
+  "deployer": "REVIEWED_PUBLIC_WALLET",
   "deployerNonce": 0,
   "governance": {
-    "kind": "project-multisig",
-    "multisig": "REVIEWED_PROJECT_MULTISIG_ADDRESS",
-    "expectedCodeHash": "REVIEWED_MULTISIG_RUNTIME_HASH",
+    "kind": "single-owner-timelock",
+    "initialOwner": "SAME_PUBLIC_WALLET",
     "minimumDelaySeconds": 172800
   },
   "fees": {
-    "maxFeePerGasWei": "EXPLICIT_CURRENT_FEE_CEILING",
-    "maxPriorityFeePerGasWei": "EXPLICIT_CURRENT_PRIORITY_FEE"
+    "maxFeePerGasWei": "REVIEWED_CURRENT_CEILING",
+    "maxPriorityFeePerGasWei": "REVIEWED_CURRENT_PRIORITY_FEE"
   },
   "gasLimits": {
-    "KlerosUpgradeTimelockV9": "REHEARSED_GAS_LIMIT",
-    "KlerosEventV9": "REHEARSED_GAS_LIMIT",
-    "KlerosEventFactoryV9": "REHEARSED_GAS_LIMIT",
-    "ERC1967Proxy": "REHEARSED_GAS_LIMIT"
+    "KlerosUpgradeTimelockV9": "REHEARSED_LIMIT",
+    "KlerosEventV9": "REHEARSED_LIMIT",
+    "KlerosEventFactoryV9": "REHEARSED_LIMIT",
+    "ERC1967Proxy": "REHEARSED_LIMIT"
   },
-  "maxTotalGasCostWei": "EXPLICIT_TOTAL_ETH_BUDGET_IN_WEI"
+  "maxTotalGasCostWei": "EXPLICIT_TOTAL_WEI_BUDGET"
 }
 ```
 
-Placeholders deliberately fail validation. No production address or budget is inferred from old test
-wallets, operator names or historical configurations. The multisig address, signers, threshold,
-modules and recovery process still need review when concrete deployment inputs are supplied.
+Placeholders fail validation. `--plan registry/ethereum-v9-public-plan.json` independently recompiles
+current inline sources and verifies ABI, bytecode, layouts, immutable maps and manifest hashes before
+encoding all four requests. Gas limits cannot exceed16777216, the
+[EIP-7825 cap](https://eips.ethereum.org/EIPS/eip-7825). Optional `--preflight` performs bounded,
+allowlisted read-only checks of chain, Court code/fees, canonical headers, EOA code, latest/pending
+nonce, balance, fee coverage and unoccupied predicted addresses. It copies the plan before awaits.
+A nonce change requires a complete new plan. No signing or replacement transaction can occur here.
 
-After compiling V9, `--plan registry/ethereum-v9-public-plan.json` independently recompiles the
-saved Solidity input, compares its sources and artifacts, checks code limits and encodes four unsigned
-CREATE requests: timelock, event implementation, factory implementation, atomically initialized factory
-proxy. All nonces, predicted addresses, constructor data, chain and explicit gas/fee ceilings are bound
-to the plan. Deployer nonce changes require rebuilding the complete plan.
-Individual gas limits cannot exceed16777216, the [EIP-7825 cap](https://eips.ethereum.org/EIPS/eip-7825).
+The proposed user-specific config and exact unsigned bundle are
+`registry/ethereum-v9-user-2bb03593-proposed.json` and
+`artifacts/mainnet-release/user-2bb03593-four-create-proposed.json`.
+The separate budget record is `artifacts/mainnet-release/user-2bb03593-budget-proposed.json`.
+Its fee quote was read at29October14:47Bangkok; it is a proposal, not spending approval or a perpetual
+fee guarantee. All four native values are0. First-event creation and policy publication are separate.
+Core owns fresh checks, the exact user review and user-wallet execution. Never substitute a historical
+Chiado wallet or request a private key.
 
-Optional `--preflight` uses an allowlisted read-only transport with bounded retries and canonical
-snapshots. It refreshes the reviewed real Kleros pair/ABI/fees, verifies deployer nonce/account code,
-multisig runtime hash, balance, current base-fee coverage and unoccupied predicted addresses. Pending
-nonce checks before and after the snapshot reject known competing transactions. The plan is copied
-before asynchronous reads so caller mutation cannot replace its reviewed requests. It does
-not verify multisig governance quality or estimate the complete dependent deployment sequence.
-Gas limits must be validated by a complete local-fork deployment rehearsal before deployment approval.
-`--output artifacts/mainnet-release/name.json` writes a new public file without replacing evidence.
+## Transfer upgrade ownership later
 
-This tool cannot broadcast. The future deployment requires a concrete reviewed plan, current
-governance and funding inputs, successful application/contract acceptance checks and separate human
-authorization. Production event policy and evidence publication are also separate actions.
+Call `transferOwnership(newOwner)` on the timelock, then have that recipient call `acceptOwnership()`.
+Only the current owner can nominate or cancel; only the nominated recipient can accept. The proposed
+owner can cancel queued operations but cannot propose them. Acceptance requires both pending and
+executing operation counts to be0, then atomically removes the old owner's roles. Empty batches,
+zero/self/current-owner targets, renunciation and external role changes reject. No old queued upgrade
+can survive an accepted handover. The48-hour floor remains afterward.
 
-## Verified release-tool checks
+The timelock address remains each proxy's upgrade authority. This transfer affects shared project
+upgrade control; it does not transfer financial ownership of individual events or alter case-organizer
+snapshots. Each event retains its separate existing two-step organizer ownership transfer.
+Authorized upgrade ownership can change custody logic. The delay is review notice, not a guaranteed
+withdrawal window for admitted principal or disputed shares.
 
-The focused command below passed49/49 tests on29October2026. It covers the read-only real-Court
-verifier, bounded retry/reorg/receipt handling, ordinary Solidity storage compatibility and unsigned
-request validation. Independent review found pending-nonce and asynchronous caller-mutation gaps;
-both were fixed and regression-tested. Storage compatibility does not automatically validate hidden
-ERC7201 roots or prove benevolent replacement code.
+## Current verification
 
-```sh
-node --test test/mainnet-release-plan.test.mjs test/mainnet-storage-layout.test.mjs \
-  test/mainnet-verification-runtime.test.mjs test/mainnet-kleros-verifier.test.mjs
-```
+Current artifacts use28inline sources with exact OpenZeppelin5.7.0, solc0.8.38, viaIR/optimizer200 and
+Paris. Pins and sizes are in `artifacts/mainnet-kleros/current-owner-pins.json`. The plan's
+`provenance.v9BuildManifestSha256` and `v9StandardInputSha256` use canonical JSON hashes; a separate
+`standardInputFileSha256` records formatting-sensitive raw input bytes. Every manifest contract entry
+also pins `abiSha256`. Immutable IDs/offsets are compiler-produced, never hardcoded.
 
-`node --test test/mainnet-release-rehearsal.test.mjs` separately passed1/1. It independently recompiles
-the26source input and executes all four unsigned requests on an isolated in-process chain1. Each
-predicted address and immutable-patched runtime hash matched. Factory initialization was atomic,
-reinitialization failed, and timelock proposer/canceller/executor/self-admin roles matched the design.
-The permissionless test helper is explicitly synthetic, not a production multisig candidate.
+Fresh checks: ownership5/5; base/capacity3/3; independent handover7/7 and security9/9; real-Kleros
+owner fork1/1; release-planner guards, exact four-CREATE/two-step-handover rehearsal and ordinary
+storage gate22/22. The fork retains actual deployed Court/resolver code, with jury adjudication
+simulated locally, and makes no upstream write. See [contract evidence](V9_CONTRACT_RELEASE.md),
+[upgrade security](V9_UPGRADE_SECURITY.md) and [launch handoff](LM_CONTRACT_HANDOFF.md).
 
-| Local deployment | Gas used |
-| --- | ---: |
-| Timelock |1409070|
-| Event implementation |4714045|
-| Factory implementation |1728158|
-| Factory proxy and initialization |234173|
-
-These are local execution measurements, not a current mainnet fee quotation or an approved budget.
-Plans retain `gasEstimatesVerified:false` until their concrete deployment inputs and rehearsal are
-reviewed. Compiler evidence uses `standardInputSha256` for compact `JSON.stringify(parsedInput)`;
-`standardInputFileSha256` separately identifies the raw saved file, including formatting.
-The plan's `provenance.v9BuildManifestSha256` and `provenance.v9StandardInputSha256` bind the
-reviewed canonical manifest and compiler input for production runtime checks. Each contract manifest
-entry also pins `abiSha256`; bytecode-compatible source is insufficient if its supplied ABI changes.
-
-The [contract release record](V9_CONTRACT_RELEASE.md) contains the separate12/12 contract/security/
-capacity tests and1/1 real-Kleros V9 fork. Root independently rehashed the fork proof's six source pins,
-canonical compiler input and four creation-code hashes; all matched, with322allowlisted upstream
-reads and zero upstream signatures/broadcasts. Only jury adjudication was simulated locally.
-Application/runtime/browser acceptance is recorded separately by the core and UI lanes.
-
-## Future upgrades
-
-Archive the previous revision's complete compiler input, ABI, storage layout, immutable maps and
-approved runtime hashes before preparing a replacement. Keep the original factory/child creation
-evidence separately from the current implementation evidence. Validate ordinary layouts and the
-explicit namespace roots/structs, rehearse funded-state migration and failure rollback, and review
-the exact timelock target/calldata. Record each event's operation separately. The app must receive
-the reviewed implementation evidence and manifest pins; it must not automatically trust arbitrary
-replacement code merely because the timelock executed it. Unknown upgrades block new financial
-actions while submitted transaction receipts remain available for reconciliation.
+Future upgrades must preserve old compiler inputs, ABI, storage layouts, immutable maps and historical
+creation anchors, then validate ordinary and explicit namespace layouts, funded-state migration and
+rollback. New approved implementation evidence must be reviewed before updating app trust. Unknown
+code blocks new financial actions while known submitted receipts remain recoverable. No unchanged
+historical broad-test count is claimed as current-owner verification.

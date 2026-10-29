@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1,
+  "contractVersion": "kleros-event-v9-uups",
+  "deployer": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "deployerNonce": 0,
+  "governance": {
+    "kind": "single-owner-timelock",
+    "initialOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+    "minimumDelaySeconds": 172800
+  },
+  "fees": {
+    "maxFeePerGasWei": "81421160",
+    "maxPriorityFeePerGasWei": "96"
+  },
+  "gasLimits": {
+    "KlerosUpgradeTimelockV9": "2250000",
+    "KlerosEventV9": "6200000",
+    "KlerosEventFactoryV9": "2300000",
+    "ERC1967Proxy": "350000"
+  },
+  "maxTotalGasCostWei": "903774876000000"
+}

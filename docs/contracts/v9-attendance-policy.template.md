@@ -7,14 +7,18 @@ Event: {{eventName}}. Venue: {{venue}}. Attendance interval/timezone: {{attendan
 Deposit: {{depositAmount}} native ETH. Chain/factory/creator/stable event key: {{deploymentIdentity}}.
 Evidence requirements and any organizer-approved ticket transfers: {{attendanceEvidenceRules}}.
 Initial implementation/revision and reviewed runtime hash: {{implementationIdentity}}.
-Project multisig, signers/threshold and non-upgradeable timelock: {{upgradeGovernance}}.
+Current upgrade owner, historical initial owner and non-upgradeable timelock: {{upgradeGovernance}}.
+Organizer's Luma event page and return link: {{lumaEventURL}}.
 
 ## Upgrade authority and trust
 
 This event has its own UUPS/ERC1967 proxy. The financial organizer cannot upgrade it merely by owning
-the event. The project multisig controls upgrades through the disclosed timelock, whose minimum delay
+the event. One upgrade-owner wallet controls proposals through the disclosed timelock, whose minimum delay
 is48hours. Each event requires its own targeted upgrade operation; selecting a new factory default
 affects future events. An upgrade of the factory does not automatically upgrade existing children.
+Upgrade ownership can move through a two-step nomination/acceptance. The proposed recipient can cancel
+old proposals; acceptance requires no queued or executing operation and removes the old owner's roles.
+This does not transfer financial ownership of the event or change the organizer recorded for a case.
 
 Authorized replacement code can change custody logic, financial rules or stored configuration.
 The48-hour delay provides review time; it does not guarantee an exit for admitted attendees or wallets
@@ -23,6 +27,9 @@ rules, while registered deposits follow the lifecycle below. Review the verified
 governance and pending operations before depositing. The application must stop financial actions when
 its expected implementation or governance cannot be verified. This policy describes the initially
 reviewed financial implementation; an authorized upgrade remains a material trust assumption.
+One key initially controls this authority. Review the current owner and any pending ownership transfer.
+The Luma page, RSVP, return link or personal check-in alone does not establish on-chain attendance,
+admission, payout or a final dispute ruling. The financial rules below remain authoritative.
 
 The actual child contract address is filled by the contract into each case description and can be
 verified against the factory's event mapping. Do not guess a future ordinary-CREATE child address

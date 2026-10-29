@@ -7,6 +7,7 @@ import ganache from "ganache";
 import { ethers } from "ethers";
 import solc from "solc-hardened";
 import { MAINNET_KLEROS, MAINNET_EXTRA_DATA, readOnlyMainnetRpc, verifyKleros, sha256 } from "../scripts/mainnet/verify-kleros.mjs";
+import { createVerificationRuntime } from "../scripts/mainnet/verification-runtime.mjs";
 
 const enabled = process.env.MAINNET_KLEROS_V9_FORK === "1";
 const D = ethers.parseEther("0.01"), DAY = 86_400;
@@ -18,7 +19,7 @@ const send = async promise => (await promise).wait();
 test("real Ethereum Kleros V1 with V9 UUPS proxies: factory isolation, ETH custody, evidence, final delivery, ruling1/0/2 and array rewards ABI", {
   skip: !enabled, timeout: 240_000,
 }, async () => {
-  const sourceFiles = ["test/mainnet-kleros-v9-fork.test.mjs", "scripts/mainnet/verify-kleros.mjs",
+  const sourceFiles = ["test/mainnet-kleros-v9-fork.test.mjs", "scripts/mainnet/verify-kleros.mjs", "scripts/mainnet/verification-runtime.mjs",
     "contracts/v9/KlerosEventV9.sol", "contracts/v9/KlerosEventFactoryV9.sol",
     "contracts/v9/KlerosUpgradeGateV9.sol", "contracts/v9/KlerosUpgradeTimelockV9.sol"];
   const sourcePins = Object.fromEntries(sourceFiles.map(filename =>
@@ -49,7 +50,19 @@ test("real Ethereum Kleros V1 with V9 UUPS proxies: factory isolation, ETH custo
   assert.equal((migrationOutput.errors ?? []).filter(error => error.severity === "error").length, 0);
   const revision2 = migrationOutput.contracts["test/V9ForkUpgrade.sol"].V9ForkRevision2;
   const upstream = readOnlyMainnetRpc(process.env.MAINNET_FORK_RPC ?? "https://ethereum-rpc.publicnode.com");
-  const proof = await verifyKleros({ block: process.env.MAINNET_FORK_BLOCK ?? MAINNET_KLEROS.baselineBlock, transport: upstream });
+  // Serialize public historical reads to avoid bursts. The reviewed verification
+  // runtime retries allowlisted reads only; Ganache transactions are never retried.
+  const verification = createVerificationRuntime({ send: (method, params) => upstream.request(method, params),
+    expectedChainId: 1, maxAttempts: 3, timeoutMs: 10_000 });
+  let readTail = Promise.resolve();
+  const readUpstream = (method, params = []) => {
+    const task = readTail.then(() => verification.request(method, params));
+    readTail = task.catch(() => {});
+    return task;
+  };
+  const proof = await verifyKleros({ block: process.env.MAINNET_FORK_BLOCK ?? MAINNET_KLEROS.baselineBlock,
+    transport: { request: readUpstream, endpoint: upstream.endpoint,
+      get methods() { return upstream.methods; }, get counts() { return upstream.counts; } } });
   const rejected = [];
   const bridge = http.createServer(async (req, res) => {
     try {
@@ -58,7 +71,7 @@ test("real Ethereum Kleros V1 with V9 UUPS proxies: factory isolation, ETH custo
       for await (const chunk of req) { raw += chunk; assert.ok(raw.length < 2_000_000); }
       const input = JSON.parse(raw);
       const serve = async item => {
-        try { return { jsonrpc: "2.0", id: item.id, result: await upstream.request(item.method, item.params ?? []) }; }
+        try { return { jsonrpc: "2.0", id: item.id, result: await readUpstream(item.method, item.params ?? []) }; }
         catch (error) { rejected.push({ method: item.method, message: error.message }); return { jsonrpc: "2.0", id: item.id, error: { code: -32000, message: error.message } }; }
       };
       const result = Array.isArray(input) ? await Promise.all(input.map(serve)) : await serve(input);
@@ -95,15 +108,21 @@ test("real Ethereum Kleros V1 with V9 UUPS proxies: factory isolation, ETH custo
       const a = testedArtifacts[name], c = await new ethers.ContractFactory(a.abi, a.bytecode, owner).deploy(...args, { gasLimit: 16_000_000 });
       await c.waitForDeployment(); return c;
     };
-    const govArtifact = json("references/kickback/build/TestWallet.json");
-    const governance = await new ethers.ContractFactory(govArtifact.abi, govArtifact.bytecode, owner).deploy(); await governance.waitForDeployment();
-    const timelock = await deploy("KlerosUpgradeTimelockV9", governance.target);
+    const startingNonce = await provider.getTransactionCount(owner.address);
+    const timelock = await deploy("KlerosUpgradeTimelockV9", owner.address);
     const eventImpl = await deploy("KlerosEventV9"), factoryImpl = await deploy("KlerosEventFactoryV9");
     const proxy = await deploy("ERC1967Proxy", factoryImpl.target,
       factoryImpl.interface.encodeFunctionData("initialize", [eventImpl.target, timelock.target]));
     const factory = new ethers.Contract(proxy.target, testedArtifacts.KlerosEventFactoryV9.abi, owner);
     assert.equal(await factory.VERSION(), 9n); assert.equal(await factory.eventImplementation(), eventImpl.target);
     assert.equal(await factory.upgradeAuthority(), timelock.target);
+    assert.equal(await timelock.owner(), owner.address);
+    assert.equal(await timelock.pendingOwner(), ethers.ZeroAddress);
+    for (const [i, deployed] of [timelock, eventImpl, factoryImpl, proxy].entries()) {
+      assert.equal(deployed.deploymentTransaction().from, owner.address);
+      assert.equal(deployed.deploymentTransaction().nonce, startingNonce + i, "one EOA deploys all four contracts without a governance helper");
+      assert.equal(deployed.target, ethers.getCreateAddress({ from: owner.address, nonce: startingNonce + i }));
+    }
     const patchedRuntime = (a, implementation) => {
       const bytes = Buffer.from(a.deployedBytecode.slice(2), "hex");
       for (const [id, references] of Object.entries(a.immutableReferences)) {
@@ -207,11 +226,11 @@ test("real Ethereum Kleros V1 with V9 UUPS proxies: factory isolation, ETH custo
         const nextImplementation = await new ethers.ContractFactory(revision2.abi, "0x" + revision2.evm.bytecode.object, owner)
           .deploy({ gasLimit: 16_000_000 }); await nextImplementation.waitForDeployment();
         const upgradeData = c.interface.encodeFunctionData("upgradeToAndCall", [nextImplementation.target, "0x"]), salt = ethers.id("real-kleros-v9-held-upgrade");
-        await send(governance.exec(timelock.target, timelock.interface.encodeFunctionData("schedule",
-          [c.target, 0, upgradeData, ethers.ZeroHash, salt, 172800]), GAS));
+        await send(timelock.connect(owner).schedule(c.target, 0, upgradeData, ethers.ZeroHash, salt, 172800, GAS));
         const operation = await timelock.hashOperation(c.target, 0, upgradeData, ethers.ZeroHash, salt);
         await advance(Number(await timelock.getTimestamp(operation)));
         await send(timelock.connect(owner).execute(c.target, 0, upgradeData, ethers.ZeroHash, salt, GAS));
+        assert.equal(await timelock.pendingOperationCount(), 0n); assert.equal(await timelock.executingOperationCount(), 0n);
         assert.equal(await c.implementationRevision(), 2n); assert.equal(await c.heldBack(), D);
         assert.equal(await c.pendingTotal(), D); assert.equal(await provider.getBalance(c.target), eventBalance);
         assert.equal(await control.implementationRevision(), 1n); assert.equal(await factory.eventImplementation(), eventImpl.target);
@@ -293,10 +312,11 @@ test("real Ethereum Kleros V1 with V9 UUPS proxies: factory isolation, ETH custo
     assert.equal(rejected.length, 0, JSON.stringify(rejected));
     for (const filename of sourceFiles)
       assert.equal(sha256(fs.readFileSync(new URL(`../${filename}`, import.meta.url))), sourcePins[filename], "Fork verification source changed during the run");
-    const report = { result: "PASS", profile: "kleros-event-v9-uups", environment: "LOCAL GANACHE MAINNET FORK", canonicalSourceBlock: proof.block,
+    const report = { result: "PASS", profile: "kleros-event-v9-uups", governance: "single-owner-timelock", environment: "LOCAL GANACHE MAINNET FORK", canonicalSourceBlock: proof.block,
       resolver: proof.resolver, arbitrator: proof.arbitrator, cases,
       localFactoryChildren: children.length, adjudication: "Only jury state/final Court callbacks simulated locally; actual code retained; no actual jury vote",
       upstreamReadMethods: upstream.methods, upstreamRequests: upstream.counts.requests,
+      upstreamReadDiagnostics: verification.diagnostics,
       upstreamSignatures: 0, upstreamBroadcasts: 0, privateSigningFilesRead: 0,
       sources: sourcePins, compiledProduction: { compiler: solc.version(), standardInputSha256: sha256(JSON.stringify(input)),
         creationCodeHashes: Object.fromEntries(Object.entries(testedArtifacts).map(([name, a]) => [name, ethers.keccak256(a.bytecode)])) } };

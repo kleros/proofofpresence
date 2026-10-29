@@ -1,0 +1,104 @@
+{
+  "result": "PASS",
+  "profile": "kleros-event-v9-uups",
+  "governance": "single-owner-timelock",
+  "environment": "LOCAL GANACHE MAINNET FORK",
+  "canonicalSourceBlock": {
+    "number": 26296250,
+    "hash": "0x8ae4a00aba84e5d2234a6e5a6940d2c22c3ba798a488980858771a8b33f7f4d6",
+    "timestamp": 1793251043,
+    "baseFeePerGas": "46179558"
+  },
+  "resolver": {
+    "address": "0x4B89e798B10478A839Ea0Abcf86C4B94A3C782A4",
+    "codeHash": "0x9cd25def8eb247416e5321f7166d37c035b10574c41226cd78a33d8bdde3d09e",
+    "codeBytes": 9272
+  },
+  "arbitrator": {
+    "address": "0x988b3A538b618C7A603e1c11Ab82Cd16dbE28069",
+    "codeHash": "0x20af43c09a24b7f13078a892878a463db494585f1dfbcd9ce89376b356d1f4fe",
+    "codeBytes": 23206
+  },
+  "cases": [
+    {
+      "ruling": 1,
+      "localId": "2",
+      "arbitratorId": "1686",
+      "feeWei": "16200000000000000",
+      "settlementGas": "146729",
+      "settlementHash": "0x770569b15bdc06cb8a78fd31139173cba9309f1537d054c99adfffaa2b9e9a89",
+      "appeal": {
+        "realLiquidAppeal": true,
+        "realPassPeriodAndExecuteRuling": true,
+        "heldCaseUpgradedThrough48hTimelock": true,
+        "originalAppealCostWei": "37800000000000000",
+        "nextAppealCostWei": "81000000000000000",
+        "surplusRefundWei": "7",
+        "bobRewardsWei": "394200000000000000",
+        "matcherIncompleteContributionRefundWei": "81000000000000000",
+        "jurySimulation": "Local Ganache storage only; verified Liquid code unchanged"
+      }
+    },
+    {
+      "ruling": 1,
+      "localId": "3",
+      "arbitratorId": "1687",
+      "feeWei": "16200000000000000",
+      "settlementGas": "146729",
+      "settlementHash": "0x8fdbaaa8300733c871c7124771460fe05ba6e22be69167ee063556c75cadc647"
+    },
+    {
+      "ruling": 0,
+      "localId": "4",
+      "arbitratorId": "1688",
+      "feeWei": "16200000000000000",
+      "settlementGas": "102268",
+      "settlementHash": "0xc7c8c4c8cd4db6446f4b67fcc78b93150c86098547de5270e1d3d9d0dfc1377b"
+    },
+    {
+      "ruling": 2,
+      "localId": "5",
+      "arbitratorId": "1689",
+      "feeWei": "16200000000000000",
+      "settlementGas": "92795",
+      "settlementHash": "0x2ba819aa7c0267452559411df5d358dead8892b1dcf9ac042ac681b7a175dbd2"
+    }
+  ],
+  "localFactoryChildren": 5,
+  "adjudication": "Only jury state/final Court callbacks simulated locally; actual code retained; no actual jury vote",
+  "upstreamReadMethods": {
+    "eth_chainId": 133,
+    "eth_getBlockByNumber": 5,
+    "eth_getCode": 5,
+    "eth_call": 3,
+    "eth_blockNumber": 1,
+    "net_version": 1,
+    "eth_getTransactionCount": 11,
+    "eth_getStorageAt": 102,
+    "eth_getBalance": 3
+  },
+  "upstreamRequests": 264,
+  "upstreamReadDiagnostics": [],
+  "upstreamSignatures": 0,
+  "upstreamBroadcasts": 0,
+  "privateSigningFilesRead": 0,
+  "sources": {
+    "test/mainnet-kleros-v9-fork.test.mjs": "e5ba87900b494931cb297f5f9b9490196a318f5d3659b298e0167478120a55d6",
+    "scripts/mainnet/verify-kleros.mjs": "7bf4c2711cd531102ca02478e170e4aef0913442096b588b57616d62bda64105",
+    "scripts/mainnet/verification-runtime.mjs": "1f6f02ee3d2374d29973255717131eb1b2bf70d47a7d107bb76ee8fba39d9a3d",
+    "contracts/v9/KlerosEventV9.sol": "e3d9f947537165d885878c89e86114e6901d0665f4d4b00bf20b9da227a9e11b",
+    "contracts/v9/KlerosEventFactoryV9.sol": "4ce1c30a8ebf383c41718ac2b48bda03ffc719d718447cdd3678e9c067fedbe9",
+    "contracts/v9/KlerosUpgradeGateV9.sol": "0197602754ac7296f01b645f4331d3b6f09faf2c78181df4ed702ba1a24bd365",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol": "bd0c37a72bbfb0341530768896035046dab67e01870fadd03e406a618c04926e"
+  },
+  "compiledProduction": {
+    "compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+    "standardInputSha256": "559709d4b23f5d8b2396eaa72017c85dbc7ebc2a5df30625dec267c05600a073",
+    "creationCodeHashes": {
+      "KlerosEventV9": "0xa526b98529a1889b18fa3eaec14104de3af050438aede8c89afecfdab150bdfc",
+      "KlerosEventFactoryV9": "0x582f12e69a0e39d389d9a39352068d0efa0f9a01925a0714c23d5c858ace37c0",
+      "KlerosUpgradeTimelockV9": "0xf947e8520a8b899f959fdeaca5c4a41425118d6fec8b25e0c7428e5a2a3c6212",
+      "ERC1967Proxy": "0x413fce2dea3301af87ab6146cfdabcc1b9ee8b9f4b59a931b0becb5078cd40e4"
+    }
+  }
+}
