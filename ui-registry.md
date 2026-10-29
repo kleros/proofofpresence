@@ -289,3 +289,11 @@ The generic root page gives guests plain guidance to follow the event-specific d
 Luma; it has no manual paste-link opener or popup. Organizer setup stays directly reachable.
 After confirmed event creation, preserve canonical Copy deposit link and Open deposit page actions.
 Keep direct participant URLs, wallet review/receipt recovery, Return to Luma and the existing palette.
+
+## Superseding public-event search — 29 October 2026
+
+The later explicit human request replaces the generic guest guidance with a title-searchable public
+event catalog. Filter explicit public+published records before indexing, counts or rendering; never
+default unknown flags to public. Keep search and clear local, use native participant links, preserve
+organizer setup and generated share links, and show truthful empty/no-match states. Reuse the current
+palette,44px controls and responsive wrapping. Private/draft/owner-only events never enter the list.

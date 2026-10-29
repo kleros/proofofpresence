@@ -1,0 +1,92 @@
+{
+  "status": "passed",
+  "scope": "Synthetic loopback UI event-search regression; no public service or on-chain execution",
+  "browserGroups": 29,
+  "existingLaunchGroups": 26,
+  "newSearchGroups": 3,
+  "pureHelperTests": 6,
+  "offlineFixtureCases": 14,
+  "sourceSha256": {
+    "public/app.js": "152b30c36ab6ac96577869ee2c4b62183b349ea407b30edb75fd28b4e912cf51",
+    "public/event-search.js": "bf5ac5f365f81ca477d0cf4904bdd64d51108efd96dfa4f96e9ed66923decc9e",
+    "public/luma-launch.css": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
+    "test/luma-launch.e2e.mjs": "d70bdfece0c73a01bc2a464b445ed9685056bafc37ea9ca609ca9ea3909fa5fe",
+    "test/event-search.test.mjs": "85259ce6615e78566f66e1cd654397a0edc9aebc2a9a1e5158179be3c58a8244",
+    "test/fixtures/public-event-search-fixture.mjs": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884"
+  },
+  "capturedAssetSha256": {
+    "index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "luma-launch.css": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
+    "loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "app.js": "152b30c36ab6ac96577869ee2c4b62183b349ea407b30edb75fd28b4e912cf51",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "event-search.js": "bf5ac5f365f81ca477d0cf4904bdd64d51108efd96dfa4f96e9ed66923decc9e",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0"
+  },
+  "commands": [
+    "node --test test/event-search.test.mjs",
+    "LUMA_LAUNCH_ARTIFACT_DIR=artifacts/luma-event-search node test/luma-launch.e2e.mjs --self-test",
+    "LUMA_LAUNCH_ARTIFACT_DIR=artifacts/luma-event-search node test/luma-launch.e2e.mjs --run-loopback"
+  ],
+  "finalBrowserLog": "final-component-capture-run.log",
+  "finalResults": "results.json",
+  "pureLog": "final-unit-tests.log",
+  "offlineLog": "self-test.log",
+  "walletBoundary": {
+    "syntheticWalletAttempts": 2,
+    "syntheticSubmittedHashes": 1,
+    "realFinancialSends": 0,
+    "publicRequests": 0,
+    "externalRequests": 0,
+    "forbiddenRequests": 0
+  },
+  "evidence": {
+    "desktop": "public-search-desktop.png",
+    "mobile390": "public-search-mobile.png",
+    "mobile200PercentText": "public-search-mobile-200-component.png",
+    "viewport200PercentText": "public-search-mobile-200-text.png"
+  },
+  "visualInspection": "Desktop and390px inspected. Each computed text size doubled; settled full-component screenshot shows both rows, complete escaped long titles, dates, amount/status and44px Open event buttons. Earlier immediate viewport capture had incomplete paint; settled component image resolves it. No WCAG conformance claim.",
+  "assertedBehavior": [
+    "Only explicit public+published valid production event summaries render, including for authenticated owner",
+    "Private/draft/missing flags/malformed scope excluded from DOM/search/counts",
+    "Safe projection excludes contact metadata and title markup remains literal",
+    "Case-insensitive title filtering, distinct no-events/no-results, clear and aria-live status",
+    "Typing and clear preserve input/focus with no API reads",
+    "Same-title events retain distinct stable ID/date and native participant links",
+    "Empty bootstrap has no invented events",
+    "Existing direct participant deposit/setup/recovery/canonical share behavior preserved"
+  ],
+  "limitations": [
+    "Local synthetic API mocks authorization/eligibility/financial projections. These tests do not prove real backend policy, Luma API, Court, blockchain execution, publication or deployment.",
+    "Only the approved fake provider attempts are exercised. No real keys, RPC, signing or broadcast."
+  ],
+  "preservedProofs": {
+    "initialSupersededHelper": "prior-helper-pass29-results.json",
+    "finalSourceBeforeScreenshotScroll": "before-feature-scroll-pass29-results.json",
+    "testedHarnessBeforeScreenshotScrollSha256": "468b209686c2895c610f7c8a63abb18a527d435b767ec6c940ae6a010539ab7c",
+    "testedHarnessBeforeScreenshotScroll": "before-feature-scroll-tested-harness.mjs.txt",
+    "beforeFullComponentCapture": "before-full-component-capture-pass29-results.json",
+    "historicalDirectoriesUntouched": [
+      "artifacts/luma-launch",
+      "artifacts/luma-link-entry-removal"
+    ]
+  }
+}

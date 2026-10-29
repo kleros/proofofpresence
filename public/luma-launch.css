@@ -406,3 +406,85 @@ body.launch-mode {
   padding-block: 8px;
   overflow-wrap: anywhere;
 }
+
+.launch-mode .public-event-search label {
+  display: block;
+  margin-bottom: 8px;
+}
+.launch-mode .public-event-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.launch-mode .public-event-controls input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+}
+.launch-mode .public-event-controls .button,
+.launch-mode .public-event-row .button {
+  min-height: 44px;
+  flex: 0 0 auto;
+}
+.launch-mode .public-event-status {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+.launch-mode .public-event-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.launch-mode .public-event-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.launch-mode .public-event-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.launch-mode .public-event-copy,
+.launch-mode .public-event-copy > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.launch-mode .public-event-copy h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+.launch-mode .public-event-date {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+.launch-mode .public-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  font-size: 14px;
+}
+.launch-mode .public-event-empty {
+  margin: 20px 0 0;
+}
+@media (max-width: 600px) {
+  .launch-mode .public-event-controls {
+    flex-wrap: wrap;
+  }
+  .launch-mode .public-event-controls input {
+    flex-basis: 100%;
+    font-size: 16px;
+  }
+  .launch-mode .public-event-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .launch-mode .public-event-row .button {
+    justify-self: start;
+    max-width: 100%;
+    white-space: normal;
+  }
+}

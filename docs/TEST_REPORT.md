@@ -1,5 +1,27 @@
 # Verification report
 
+## Public-event search frontend integration — 29 October 2026
+
+The latest human request replaces generic guest-link guidance with a searchable PUBLIC event list.
+The exact reviewed UI source930fdf25/proof04bf04ba is integrated in only `public/app.js`,
+`public/event-search.js` and `public/luma-launch.css`: app152b30c3/helperbf5ac5f3/CSS47e0874c.
+The UI owner actually passed29 browser groups,6 pure tests,14 offline fixture cases, v7 compatibility13,
+v8 compatibility18, typecheck/build and enlarged-text checks on those exact files. Root reviewed the
+public/published filter before indexing, six-field projection, escaped query/title rendering, same-origin
+participant links and honest empty state. No new API or financial behavior was introduced.
+
+Root `node --test test/event-search.test.mjs` passed6/6 after copying its new synthetic fixture;
+the initial invocation stopped because that fixture had not yet been copied. Root typecheck passed.
+The sole server source change is adding the new public module to the local/static allowlist. The
+deployed backend remains the healthy `ae63380`/`d112f94a` instance; it is not restarted during the
+human's active organizer form. Netlify serves the new module directly as a static asset.
+
+The B2 public release separately passed9 groups/four screenshots and two concurrent verified bootstraps
+in21.053/21.046seconds. Its archived source/proof is under `artifacts/mainnet-hosting-readonly/2026-10-29T12-08-18-360Z-ee530ef0-37c2-48b2-a9f7-3eb22589d6ee/`.
+The frontend search release needs only its final source/public home check; completed financial,
+contract and fork suites are not repeated. Use the actual dynamic public-event count rather than
+assuming the static registry's empty array means no real event was subsequently created.
+
 ## Combined homepage cleanup and overlapping bootstrap reads — 29 October 2026
 
 The human separately requested removing the generic manual deposit-link popup, preserving the

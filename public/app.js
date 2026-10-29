@@ -7,6 +7,10 @@ import { mountContractInbox } from "./contract-inbox.js";
 import { mountBatchActions } from "./batch-actions.js";
 import { createBatchPendingJournal } from "./batch-pending.js";
 import {
+  publicEventSearchEntries,
+  searchPublicEvents,
+} from "./event-search.js";
+import {
   lumaReturnUrl,
   launchWei,
   participantDeposit,
@@ -561,6 +565,7 @@ function mountOwnerContractInbox() {
   });
 }
 let toastTimer;
+const publicSearch = { scope: "", query: "", entries: Object.freeze([]) };
 let caseArtifactReview = null;
 let caseArtifactGeneration = 0;
 const caseUploadAttempts = new Set();
@@ -1419,6 +1424,12 @@ async function loadView(record, silent) {
     if (generation !== app.generation) return;
     record.readBootstrap = bootstrap;
     app.bootstrap = bootstrap;
+    const searchScope = JSON.stringify([bootstrap.mode, bootstrap.instanceId]);
+    if (publicSearch.scope !== searchScope) {
+      publicSearch.scope = searchScope;
+      publicSearch.query = "";
+      publicSearch.entries = Object.freeze([]);
+    }
     if (!isSandbox() && !isTestnet() && !isGuardedV9()) {
       updateHostedDemoNotice();
       throw new Error(
@@ -1589,7 +1600,39 @@ function renderHome() {
 function renderLaunchHome() {
   if (app.route.setup)
     return '<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"></div></section>';
-  return `<section class="luma-launch" data-launch-root><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Keep registration on Luma. Use this page for the event deposit and kickback.</p></div><div class="luma-launch-choices"><section class="luma-launch-card"><h2>Deposit for your event</h2><p>Open the event-specific deposit link from your Luma registration. It takes you straight to your event.</p></section><section class="luma-launch-card"><h2>Set up kickback</h2><p>Organizers can connect a Luma event to its own reviewed contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></div></section>`;
+  publicSearch.entries = publicEventSearchEntries(app.bootstrap?.events);
+  const matches = searchPublicEvents(publicSearch.entries, publicSearch.query);
+  return `<section class="luma-launch" data-launch-root><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Find your event, review its deposit and return to Luma.</p></div><section class="luma-launch-card public-event-search"><h2>Find your event</h2><label for="public-event-search">Search by event name</label><div class="public-event-controls"><input id="public-event-search" type="search" data-public-event-search maxlength="120" autocomplete="off" placeholder="Event name" value="${escape(publicSearch.query)}" aria-controls="public-event-results"><button class="button button-secondary" type="button" data-public-event-clear ${publicSearch.query ? "" : "hidden"}>Clear search</button></div><p class="public-event-status" data-public-event-status role="status" aria-live="polite" aria-atomic="true">${escape(publicSearchStatus(matches.length))}</p><div id="public-event-results" data-public-event-results>${renderPublicEventResults(matches)}</div></section><section class="luma-launch-card"><h2>Organizing an event?</h2><p>Connect your Luma event to its own reviewed kickback contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></section>`;
+}
+function publicSearchStatus(count) {
+  if (!publicSearch.entries.length) return "No public events yet.";
+  return publicSearch.query.trim()
+    ? `${count} matching public ${count === 1 ? "event" : "events"}.`
+    : `${count} public ${count === 1 ? "event" : "events"}.`;
+}
+function renderPublicEventResults(entries) {
+  if (!publicSearch.entries.length)
+    return '<p class="public-event-empty">No public events yet.</p>';
+  if (!entries.length)
+    return `<p class="public-event-empty">No events match “${escape(publicSearch.query)}”. Try another name or clear your search.</p>`;
+  return `<ul class="public-event-list">${entries.map((event) => `<li class="public-event-row" data-public-event-row><div class="public-event-copy"><h3>${escape(event.title)}</h3><p class="public-event-date">${event.startsAt && event.timezone ? escape(formatTime(event.startsAt, event.timezone)) : "Date unavailable"}</p><div class="public-event-meta"><span>${event.depositWei === null ? "Deposit unavailable" : `Event deposit: ${eth(event.depositWei)} ETH`}</span><span class="badge">${escape(event.statusLabel)}</span></div></div><a class="button button-secondary" data-public-event-open href="#${new URLSearchParams({ event: event.id, view: "participant" })}" aria-label="Open event: ${escape(event.title)}">Open event</a></li>`).join("")}</ul>`;
+}
+function updatePublicEventResults() {
+  if (
+    !isProduction() ||
+    app.route.eventId ||
+    app.route.setup ||
+    publicSearch.scope !==
+      JSON.stringify([app.bootstrap?.mode, app.bootstrap?.instanceId])
+  )
+    return;
+  const results = $("[data-public-event-results]"),
+    status = $("[data-public-event-status]");
+  if (!results || !status) return;
+  const entries = searchPublicEvents(publicSearch.entries, publicSearch.query);
+  results.innerHTML = renderPublicEventResults(entries);
+  status.textContent = publicSearchStatus(entries.length);
+  $("[data-public-event-clear]").hidden = !publicSearch.query;
 }
 function mountLaunchSetup() {
   const host = $("#luma-setup");
@@ -3507,6 +3550,16 @@ document.addEventListener("click", async (event) => {
   if (!button || button.disabled) return;
   const data = button.dataset;
   try {
+    if ("publicEventClear" in data) {
+      const field = $("[data-public-event-search]");
+      if (isProduction() && field) {
+        publicSearch.query = "";
+        field.value = "";
+        updatePublicEventResults();
+        field.focus();
+      }
+      return;
+    }
     if ("caseArtifact" in data) {
       button.disabled = true;
       try {
@@ -3722,6 +3775,16 @@ document.addEventListener("click", async (event) => {
 });
 
 document.addEventListener("input", (event) => {
+  if (
+    event.target instanceof HTMLInputElement &&
+    event.target.matches("[data-public-event-search]") &&
+    event.target === $("[data-public-event-search]") &&
+    isProduction()
+  ) {
+    publicSearch.query = event.target.value.slice(0, 120);
+    updatePublicEventResults();
+    return;
+  }
   if (
     event.target instanceof Element &&
     event.target.closest('[data-form="import"]')
