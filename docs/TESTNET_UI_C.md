@@ -131,5 +131,11 @@ ruled-before-settlement and settled plus the C observer gate every next financia
 attendance payment and separate unlogged collateral delivery require final independent verification.
 [Continuation record](../artifacts/ui-c-continuation.json) records exact scope, timing and preservation
 of A/B's job. The read-only auditor source0b62229/18accepted117rejected guards is unchanged.
-Delete only the C follow-up after verified C completion under current heartbeat cleanup rules;
-preserve the independent A/B job. Local scheduling needs this computer awake with Codex running.
+After verified C completion, read A/B's final public proofs and canonical payment/held/owed facts
+without operating A/B. The human requested one combined completion notice. If A/B is unfinished,
+retain the completed C proofs and reuse this SAME C follow-up for a bounded read-only check;
+never repeat completed C stages. Delete only C after verified combined completion, preserving
+A/B's independent job and status. A/B has failure-only notifications; C uses normal notifications.
+Both schedules and all financial guards are unchanged. Local scheduling needs this computer awake
+with Codex running. The [29October07:49Bangkok eligibility snapshot](../artifacts/testnet-eligibility-20261029T0047.json)
+confirmed canonical block23738775 and no eligible payout, with zero signing-file reads/signatures/broadcasts.

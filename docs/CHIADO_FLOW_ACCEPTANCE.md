@@ -74,8 +74,19 @@ Remaining stages are fresh matched readiness, ordinary UI payout with Alice D/Bo
 controlled attended ruling1, then UI settlement and actual SAME Bob D attendance payment plus separate
 collateral verification. Ordinary, ruled-before-settlement and settled states each require current
 role UI and scoped C observer proofs before the next financial action. Real public time stays unchanged.
-The full C dispute/kickback sequence is **not complete**. Delete only the C automation after verified
-completion under heartbeat cleanup instructions; local scheduling needs the machine awake/Codex running.
+The full C dispute/kickback sequence is **not complete**. After C finishes, its existing follow-up
+checks A/B final public proofs/canonical payments read-only before the human-requested combined
+completion notice. If A/B is unfinished, retain C proofs and reuse the same job for a bounded read-only
+check; never repeat C financial stages or operate A/B from C. Delete only C after verified combined
+completion, preserving A/B's independent status. Local scheduling needs the machine awake/Codex running.
+
+A fresh read-only eligibility diagnostic at29October07:49Bangkok confirmed block23738775:
+A/B/C Listed, neither matched dispute ruled, and every payout ineligible. C retains2.03e12wei,
+held/owed/payoutShare0 and correct dynamic1/1001 IDs. No signing files, signatures or broadcasts
+were used. [Snapshot](../artifacts/testnet-eligibility-20261029T0047.json).
+Both jobs remain ACTIVE at their existing times; A/B uses failure-only notifications and C normal
+notifications. An independent read-only audit confirmed the added completion barrier preserves scopes,
+once-only journals and ordinary→ruled→settled gates.
 
 The independent A/B heartbeat stays ACTIVE at **30October00:20Bangkok**. C never
 appends to or resets A/B's whole-manifest state. The current A/B observer passed209

@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-29T00:53:36.860Z",
+  "status": "passed-read-only",
+  "branch": "codex/core-application",
+  "implementationCheckpoint": "96c9944441c3e2523c0c6ec02648977f53593420",
+  "eligibility": {
+    "path": "artifacts/testnet-eligibility-20261029T0047.json",
+    "sha256": "66cfe8715864cac79e9a0077ded7b26c2dead922d4c8aac5e42e19736dbc886a",
+    "block": {
+      "number": 23738775,
+      "hash": "0xb8e7a7a17643149febbb341df0fe5432984b311de92a286ef7625dbe46f3a9ca",
+      "timestamp": 1793234940,
+      "utc": "2026-10-29T00:49:00.000Z"
+    }
+  },
+  "jobs": [
+    {
+      "id": "finish-kleros-testnet-kickbacks",
+      "status": "ACTIVE",
+      "targetThreadId": "01a1824b-b97c-7a33-9b33-efc4def6b1db",
+      "nextBangkok": "2026-10-30 00:20",
+      "nextUTC": "2026-10-29T17:20:00Z",
+      "notificationPolicy": "failed_runs_only",
+      "promptSHA256": "853d10693608c925767eccf8d65ec14ce39230fe5f094cdc1ece0836318e6b94",
+      "automationFileSHA256": "ade979d38b046eb028498318d5167b2d8b0817c7c1a74d3a0b5028355f383f85"
+    },
+    {
+      "id": "finish-kleros-ui-testnet-flow-c",
+      "status": "ACTIVE",
+      "targetThreadId": "01a1824b-b97c-7a33-9b33-efc4def6b1db",
+      "nextBangkok": "2026-10-30 05:02",
+      "nextUTC": "2026-10-29T22:02:00Z",
+      "notificationPolicy": null,
+      "promptSHA256": "db42e6a79dc2fb8495a2499cc8ee8e355dee2330cd446e6bfedbb2447c1890bb",
+      "automationFileSHA256": "2aa81492c867600af6a2d4584c588508973778e276f38ccb9e7658e8be0aeddd"
+    }
+  ],
+  "independentReview": "testnet_readiness independently read both existing automation files; exactly two matching jobs, preserved scopes, stage ordering, once-only guards and safe read-only combined-completion barrier; no issues",
+  "financialActions": 0,
+  "signatures": 0,
+  "signingFilesRead": 0,
+  "automationMutationsByThisAudit": 0,
+  "limitations": "Read-only status/automation checkpoint only. No payout, ruling, settlement, new UI audit or full regression was executed."
+}

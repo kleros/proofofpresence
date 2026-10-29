@@ -17,5 +17,19 @@
   "separateABJobPreserved": true,
   "abNextBangkok": "2026-10-30 00:20",
   "abAutomationFileUnchanged": true,
-  "completionCleanup": "Delete only C automation after verified C completion; preserve A/B job."
+  "completionCleanup": "After verified C completion, verify A/B final public proofs/canonical payment and remaining obligations read-only. If A/B is unfinished preserve C proofs and reuse the SAME C job for a bounded read-only completion check. Never repeat completed C stages or operate A/B. Delete only C after verified combined completion; preserve A/B independent state/job.",
+  "abAutomationFileUnchangedScope": "Historical comparison at the C matched-deadline reschedule. Subsequent human-authorized notification-only adjustment sets A/B failed_runs_only; its financial instructions, target and schedule are unchanged.",
+  "latestReadOnlyCheckpoint": {
+    "path": "artifacts/testnet-continuation-checkpoint-20261029T0054.json",
+    "status": "passed-read-only",
+    "eligibilityPath": "artifacts/testnet-eligibility-20261029T0047.json",
+    "checkedAt": "2026-10-29T00:53:36.860Z",
+    "bothJobsActive": true,
+    "financialInstructionsAndSchedulesUnchanged": true,
+    "abNotificationPolicy": "failed_runs_only",
+    "cNotificationPolicy": null,
+    "combinedCompletionNoticeRequested": true,
+    "cCombinedCheckReadOnly": true,
+    "financialActions": 0
+  }
 }

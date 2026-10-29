@@ -29,6 +29,16 @@ heartbeat00:20Bangkok must capture UI-versus-chain snapshots after ordinary payo
 settlement, and settlement/top-ups. Controlled mocks do not prove an independent jury process;
 real Court is a separate phase. No mainnet, real guest data or upstream push occurred.
 
+Fresh read-only eligibility checkpoint at29October07:49Bangkok:
+[canonical snapshot](../artifacts/testnet-eligibility-20261029T0047.json), block23738775,
+timestamp2026-10-29T00:49:00Z. A/B/C are Listed and not yet eligible; both matched cases remain
+unruled, C IDs1/1001, C balance2.03e12wei and held/owed/payoutShare0. Zero signing-file reads,
+signatures or broadcasts. The initial diagnostic stopped on a positional ABI decoding assumption;
+the corrected successful diagnostic used the existing named-field case guard. This is not a new
+UI/financial-stage proof or full regression run. Independent read-only automation audit passed:
+exactly two ACTIVE jobs, unchanged root target/times, A/B failure-only notifications, C normal
+notifications and a read-only combined-completion barrier that prohibits replay or A/B operation.
+
 ## Contract inbox and separate batch actions — combined local verification
 
 The portable UI source is `1b0ea0e1f6c3638e848ba6c2c59494dc3ab1ecb0`. Its five assets were
@@ -50,7 +60,8 @@ hashes are recorded in `artifacts/portable-batch-assets-sha.json`.
 
 The final full Node221-test run includes the status retirement/race, browser journal, selected
 registration and C tooling/resumed-funding changes. Final typecheck also passed. Public C UI
-execution remains pending canonical browser-origin receipts. The first A/B deposits
+execution was pending at that foundation checkpoint; the later C sections record actual canonical
+browser-origin deposits, registration and matched dispute. The first A/B deposits
 were CLI-origin; their browser receipt linkage is not labeled UI initiation. Luma remains deferred.
 
 ## Simplified v8 application and testnet integration — latest phase

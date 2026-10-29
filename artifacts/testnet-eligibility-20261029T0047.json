@@ -1,0 +1,95 @@
+{
+  "status": "verified-not-yet-eligible",
+  "checkedAt": "2026-10-29T00:49:09.498Z",
+  "chainId": 10200,
+  "block": {
+    "number": 23738775,
+    "hash": "0xb8e7a7a17643149febbb341df0fe5432984b311de92a286ef7625dbe46f3a9ca",
+    "timestamp": 1793234940,
+    "utc": "2026-10-29T00:49:00.000Z"
+  },
+  "events": [
+    {
+      "event": "A",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-a",
+      "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+      "phase": "Listed",
+      "challengeEndsAt": 1793294280,
+      "deadlineUTC": "2026-10-29T17:18:00.000Z",
+      "deadlineBangkok": "30 Oct 2026, 00:18:00",
+      "pendingChallenges": "1",
+      "heldWei": "0",
+      "owedWei": "0",
+      "payoutShareWei": "0",
+      "stakers": 3,
+      "attendees": 2,
+      "balanceWei": "3030000000000",
+      "cases": [
+        {
+          "wallet": "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+          "state": "Disputed",
+          "matched": true,
+          "localDisputeID": "0",
+          "arbitratorDisputeID": "1000",
+          "finalRuling": null,
+          "matchEndsAt": 1793295040
+        }
+      ],
+      "releaseEligible": false,
+      "secondsUntilChallengeDeadline": 59340
+    },
+    {
+      "event": "B",
+      "eventId": "chiado-9fe71683-1e9b-48a0-94bd-274da4cf3029-b",
+      "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+      "phase": "Listed",
+      "challengeEndsAt": 1793294295,
+      "deadlineUTC": "2026-10-29T17:18:15.000Z",
+      "deadlineBangkok": "30 Oct 2026, 00:18:15",
+      "pendingChallenges": "0",
+      "heldWei": "0",
+      "owedWei": "0",
+      "payoutShareWei": "0",
+      "stakers": 1,
+      "attendees": 1,
+      "balanceWei": "2000000000000",
+      "cases": [],
+      "releaseEligible": false,
+      "secondsUntilChallengeDeadline": 59355
+    },
+    {
+      "event": "C",
+      "eventId": "chiado-ui-cb5736f0-f41d-470c-b491-c0c384695281-c",
+      "contract": "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
+      "phase": "Listed",
+      "challengeEndsAt": 1793311190,
+      "deadlineUTC": "2026-10-29T21:59:50.000Z",
+      "deadlineBangkok": "30 Oct 2026, 04:59:50",
+      "pendingChallenges": "1",
+      "heldWei": "0",
+      "owedWei": "0",
+      "payoutShareWei": "0",
+      "stakers": 2,
+      "attendees": 1,
+      "balanceWei": "2030000000000",
+      "cases": [
+        {
+          "wallet": "0x5191694FE0F9ac45b8CE8722D9e0e897BcEbf10d",
+          "state": "Disputed",
+          "matched": true,
+          "localDisputeID": "1",
+          "arbitratorDisputeID": "1001",
+          "finalRuling": null,
+          "matchEndsAt": 1793311675
+        }
+      ],
+      "releaseEligible": false,
+      "secondsUntilChallengeDeadline": 76250
+    }
+  ],
+  "signingFilesRead": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "readHelperNote": "The initial read-only probe stopped on a positional ABI decoding assumption. This successful probe uses the existing reviewed named-field assertCasePair guard; no financial action occurred."
+}
+

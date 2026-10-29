@@ -112,9 +112,33 @@ The ACTUAL posted attendance challenge deadline is1793311190 =2026-10-29T21:59:5
 before ordinary UI payout. Bob's match deadline1793311675 is no longer a Waiting gate because he is
 canonically matched; always re-read actual cases. Ordinary Alice D/Bob held D must pass audits before
 controlled ruling1; final-delivered/unsettled must pass before UI settlement and actual same-Bob D plus
-separate collateral proof. No payout, ruling or settlement has occurred yet. Delete only the completed
-C follow-up after full verification under heartbeat cleanup rules. A/B's independent ACTIVE00:20Bangkok
-30October job/configuration is unchanged. See `artifacts/ui-c-continuation.json` and the C runbook.
+separate collateral proof. No payout, ruling or settlement has occurred yet. After C is fully verified,
+its follow-up checks A/B completion read-only before the consolidated completion notice and C cleanup.
+Never repeat completed C stages or operate A/B from C. A/B's independent ACTIVE00:20Bangkok
+30October schedule and financial instructions are unchanged. See `artifacts/ui-c-continuation.json`
+and the C runbook.
+
+### Fresh eligibility and completion-notice checkpoint — 29October07:49Bangkok
+
+Read-only canonical block23738775 (`2026-10-29T00:49:00Z`) confirmed A/B/C all Listed and
+not yet payout-eligible. C remains Disputed/unruled at dynamic IDs1/1001, balance2.03e12wei,
+held/owed/payoutShare0. A is unruled at0/1000; B has no cases. This check signed and broadcast
+nothing. [Eligibility snapshot](artifacts/testnet-eligibility-20261029T0047.json) records the exact
+block, states and deadlines; it is a read-only diagnostic, not a new financial-stage/UI proof.
+The first probe stopped on an ABI positional-decoding assumption; the successful probe used the
+existing named-field `assertCasePair` guard. No signing files were read by either probe.
+
+The human reconfirmed automatic continuation and requested one consolidated notice after all
+required payouts, planned controlled rulings and settlements finish. The coordinated UI chat changed
+only notification/completion-check instructions: A/B uses failure-only notices; C uses normal notices
+and a read-only combined-completion barrier. Both existing jobs remain ACTIVE with the same root
+target and times: A/B **30October00:20Bangkok**, C **30October05:02Bangkok**. An independent
+read-only audit verified exactly these two jobs and the preserved financial stage guards. If A/B is
+not yet verified complete after C finishes, retain C proofs and reuse the SAME C job for a bounded
+read-only check. Delete only C after verified combined completion; preserve A/B's independent state.
+Source/hosting remains f4643f8, operator66715b4 and role auditor0b62229; no application code changed.
+[Continuation audit](artifacts/testnet-continuation-checkpoint-20261029T0054.json) binds the exact
+eligibility snapshot and current job prompt/file hashes without exporting their full contents.
 
 ## Additional human requests under active integration
 
