@@ -1,6 +1,6 @@
 import {
-  isVerifiedProductionEvent,
-  PRODUCTION_CONTRACT_VERSION,
+  isVerifiedSupportedProductionEvent,
+  isSupportedProductionVersion,
 } from "./contract-profiles.js";
 
 const stableId = (value) =>
@@ -88,8 +88,8 @@ export function validatePublicCatalog(value) {
       !stableId(event.id) ||
       counts.get(event.id) !== 1 ||
       event.chainId !== 1 ||
-      event.contractVersion !== PRODUCTION_CONTRACT_VERSION ||
-      event.abiVersion !== PRODUCTION_CONTRACT_VERSION ||
+      !isSupportedProductionVersion(event.contractVersion) ||
+      event.abiVersion !== event.contractVersion ||
       !address(event.contract) ||
       typeof event.title !== "string" ||
       !event.title.trim() ||
@@ -143,7 +143,7 @@ export function publicEventSearchEntries(events) {
       if (
         !stableId(event.id) ||
         counts.get(event.id) !== 1 ||
-        !isVerifiedProductionEvent(event) ||
+        !isVerifiedSupportedProductionEvent(event) ||
         !address(event.contract) ||
         typeof event.title !== "string" ||
         !event.title.trim() ||

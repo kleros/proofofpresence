@@ -1,0 +1,526 @@
+{
+  "status": "passed",
+  "label": "v10-projection-v9-regression",
+  "harnessSha256": "1aaae2dd6613e8da707ccfc7f6806acdbffea92f4e037ae5f598508366532160",
+  "assetSha256": {
+    "app.js": "89e320901b964d7585427b10a45bdbd27607e73dc6e7c646c7818b5c69c87cf6",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-profiles.js": "221b48d6118dc77f73b66113f103859e267b956f7c307984af26493bef05bb7c",
+    "entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "event-search.js": "d856002a8c0c6da6ebee0c54a2646550b9fd6fe773d0d80f892466a755185f29",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "luma-launch.css": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509",
+    "owned-events.js": "2f5a85d1b481f7f5127328daee898b415ccd12ab4c1fa6ab7612624007b4f410",
+    "public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "setup-progress.js": "ada969fc9d86c145fd01e87cfd453cbf165797c500f7c505714c869962b01209",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "checks": [
+    "accountsChanged: known signed bootstrap then catalog retains invalidation duty; one acknowledged signout precedes anonymous fresh setup, with no provider request or repeated logout",
+    "chainChanged: known signed bootstrap then catalog retains invalidation duty; one acknowledged signout precedes anonymous fresh setup, with no provider request or repeated logout"
+  ],
+  "requests": [
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "actor": "0x1111111111111111111111111111111111111111"
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "DELETE",
+      "path": "/api/session",
+      "query": "",
+      "body": "{}",
+      "ack": {
+        "ok": true
+      }
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "accountsChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "actor": null
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "actor": "0x1111111111111111111111111111111111111111"
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "DELETE",
+      "path": "/api/session",
+      "query": "",
+      "body": "{}",
+      "ack": {
+        "ok": true
+      }
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": ""
+    },
+    {
+      "caseName": "chainChanged",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "actor": null
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "providerRequests": [],
+  "limits": [
+    "Synthetic bootstrap sessions are fixture state; no authentication or real cookie is used.",
+    "Only exact loopback fake DELETE /api/session is allowed; no external HTTP, auth POST, financial endpoint, provider request, RPC, key, signing or transaction.",
+    "These two groups are separate from the GET-only loading/performance proof."
+  ]
+}

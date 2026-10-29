@@ -1,7 +1,8 @@
 import {
-  PRODUCTION_CONTRACT_VERSION,
-  isVerifiedProductionEvent,
-  isVerifiedProductionProfile,
+  V10_PRODUCTION_CONTRACT_VERSION,
+  isVerifiedSupportedProductionEvent,
+  isSupportedProductionVersion,
+  isVerifiedSupportedProductionProfile,
 } from "./contract-profiles.js";
 
 const address = (value) =>
@@ -62,10 +63,15 @@ export function projectOwnedEvents(bootstrap, expectedScope) {
     bootstrap.environment?.production !== true ||
     bootstrap.environment?.network !== "ethereum-mainnet" ||
     bootstrap.environment?.chainId !== 1 ||
-    bootstrap.contractVersion !== PRODUCTION_CONTRACT_VERSION ||
-    (bootstrap.abiVersion !== undefined &&
-      bootstrap.abiVersion !== PRODUCTION_CONTRACT_VERSION) ||
-    !isVerifiedProductionProfile(bootstrap.contractProfile) ||
+    !isSupportedProductionVersion(bootstrap.contractVersion) ||
+    (bootstrap.contractVersion === V10_PRODUCTION_CONTRACT_VERSION
+      ? bootstrap.abiVersion !== bootstrap.contractVersion
+      : bootstrap.abiVersion !== undefined &&
+        bootstrap.abiVersion !== bootstrap.contractVersion) ||
+    !isVerifiedSupportedProductionProfile(
+      bootstrap.contractProfile,
+      bootstrap.contractVersion,
+    ) ||
     !Array.isArray(bootstrap.events)
   )
     return null;
@@ -81,7 +87,8 @@ export function projectOwnedEvents(bootstrap, expectedScope) {
       if (
         !stableId(event.id) ||
         counts.get(event.id) !== 1 ||
-        !isVerifiedProductionEvent(event) ||
+        event.contractVersion !== bootstrap.contractVersion ||
+        !isVerifiedSupportedProductionEvent(event) ||
         !address(event.contract) ||
         typeof event.title !== "string" ||
         !event.title.trim() ||

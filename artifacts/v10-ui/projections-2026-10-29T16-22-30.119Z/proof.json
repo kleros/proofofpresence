@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "kind": "pure-v10-ui-projection-and-v9-regression",
+  "command": "node --test --test-concurrency=1 --test-reporter=tap test/v10-ui-projections.test.mjs test/owned-events.test.mjs test/public-catalog-ui.test.mjs",
+  "exitCode": 0,
+  "elapsedSeconds": 0.265,
+  "sourceSha256": {
+    "public/contract-profiles.js": "221b48d6118dc77f73b66113f103859e267b956f7c307984af26493bef05bb7c",
+    "public/event-search.js": "d856002a8c0c6da6ebee0c54a2646550b9fd6fe773d0d80f892466a755185f29",
+    "public/owned-events.js": "2f5a85d1b481f7f5127328daee898b415ccd12ab4c1fa6ab7612624007b4f410",
+    "test/v10-ui-projections.test.mjs": "7f2c306fa4ced08cdee08f56d81663afeeb4f63cf3274533c970dee27467c09a",
+    "test/owned-events.test.mjs": "136a0e1adab7efba15a5a5b8eb5c30a5d75a7163e7838e07a2287a6aff7078e0",
+    "test/public-catalog-ui.test.mjs": "3924394efbd5c74ec1148d5c83fca2e91a773bc7013c22bede012f1c8e29cabc",
+    "test/fixtures/public-event-search-fixture.mjs": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+    "test/fixtures/production-ui-fixture.mjs": "69cf2f4fd7e664a6bd0c61b89a5f61ecdb784adbc33cb7b35b4e3d895a654fce"
+  },
+  "sourcesUnchangedDuringRun": true,
+  "newV10Groups": 8,
+  "existingOwnedGroups": 4,
+  "existingCatalogGroups": 6,
+  "effectGuards": {
+    "request": "zero asserted",
+    "provider": "zero asserted",
+    "storage": "zero asserted",
+    "dom": "zero asserted"
+  },
+  "limits": [
+    "Synthetic display DTOs only; no backend, chain, wallet extension, controller, financial permission or production readiness proof.",
+    "Recorded catalog rows omit current contractProfile and never establish current financial state.",
+    "Existing V9 predicate metadata compatibility is preserved; V10 owned rows require exact active bootstrap family.",
+    "No full-app creation/adoption/inventory refresh, EIP7702 acceptance, RPC, live authentication, deployment or publication is tested."
+  ]
+}

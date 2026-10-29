@@ -1,6 +1,7 @@
 // Exact known interfaces only. A version prefix never grants financial support.
 export const TEST15M_CONTRACT_VERSION = "kleros-event-v8-test15m";
 export const PRODUCTION_CONTRACT_VERSION = "kleros-event-v9-uups";
+export const V10_PRODUCTION_CONTRACT_VERSION = "kleros-event-v10-uups";
 export const V9_TESTNET_CONTRACT_VERSION = "kleros-event-v9-uups-chiado";
 const v9Facts = Object.freeze({
   version: 9,
@@ -37,6 +38,48 @@ export const isVerifiedV9TestnetEvent = (event) =>
   event.abiVersion === V9_TESTNET_CONTRACT_VERSION &&
   event.chainId === 10200 &&
   isVerifiedV9TestnetProfile(event.contractProfile);
+// V10 production is an explicit family. Existing V9 predicates above retain
+// their historical compatibility rules; these stricter facts cannot relabel V9.
+const v10Facts = Object.freeze({
+  version: 10,
+  financialModel: "v8",
+  upgradeable: true,
+  verified: true,
+  challengeWindowSeconds: 86400,
+  matchWindowSeconds: 86400,
+});
+export const isVerifiedV10ProductionProfile = (metadata) =>
+  !!metadata &&
+  typeof metadata === "object" &&
+  !Array.isArray(metadata) &&
+  Object.entries(v10Facts).every(([key, value]) => metadata[key] === value) &&
+  metadata.contractVersion === V10_PRODUCTION_CONTRACT_VERSION &&
+  metadata.abiVersion === V10_PRODUCTION_CONTRACT_VERSION &&
+  metadata.testOnly === false &&
+  metadata.chainId === 1;
+export const isVerifiedV10ProductionEvent = (event) =>
+  event?.contractVersion === V10_PRODUCTION_CONTRACT_VERSION &&
+  event.abiVersion === V10_PRODUCTION_CONTRACT_VERSION &&
+  event.chainId === 1 &&
+  isVerifiedV10ProductionProfile(event.contractProfile);
+export const isSupportedProductionVersion = (version) =>
+  version === PRODUCTION_CONTRACT_VERSION ||
+  version === V10_PRODUCTION_CONTRACT_VERSION;
+export const isVerifiedSupportedProductionProfile = (
+  metadata,
+  explicitVersion,
+) =>
+  explicitVersion === PRODUCTION_CONTRACT_VERSION
+    ? isVerifiedProductionProfile(metadata)
+    : explicitVersion === V10_PRODUCTION_CONTRACT_VERSION
+      ? isVerifiedV10ProductionProfile(metadata)
+      : false;
+export const isVerifiedSupportedProductionEvent = (event) =>
+  event?.contractVersion === PRODUCTION_CONTRACT_VERSION
+    ? isVerifiedProductionEvent(event)
+    : event?.contractVersion === V10_PRODUCTION_CONTRACT_VERSION
+      ? isVerifiedV10ProductionEvent(event)
+      : false;
 const profiles = Object.freeze({
   [PRODUCTION_CONTRACT_VERSION]: Object.freeze({
     contractVersion: PRODUCTION_CONTRACT_VERSION,

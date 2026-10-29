@@ -1,0 +1,43 @@
+{
+  "status": "passed-bounded-display-only",
+  "startingCommit": "1878acae9492bbeb58f4b7b852832c1730336955",
+  "sourceSha256": {
+    "public/contract-profiles.js": "221b48d6118dc77f73b66113f103859e267b956f7c307984af26493bef05bb7c",
+    "public/event-search.js": "d856002a8c0c6da6ebee0c54a2646550b9fd6fe773d0d80f892466a755185f29",
+    "public/owned-events.js": "2f5a85d1b481f7f5127328daee898b415ccd12ab4c1fa6ab7612624007b4f410"
+  },
+  "pureProof": "artifacts/v10-ui/projections-2026-10-29T16-22-30.119Z/proof.json",
+  "pureTests": 18,
+  "pureNewV10Groups": 8,
+  "browserProof": "artifacts/catalog-session/v10-projection-v9-regression-2026-10-29T16-21-59.983Z/results.json",
+  "browserGroups": 2,
+  "browserProviderRequests": 0,
+  "browserFakeSessionDeletes": 2,
+  "additionalChecks": [
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "node scripts/build.mjs",
+      "exitCode": 0,
+      "scope": "Existing isolated static app and pinned historical ABI; no V10 contract compilation claim."
+    },
+    {
+      "command": "node test/catalog-session.e2e.mjs --self-test",
+      "status": "passed",
+      "offlineGuards": 8,
+      "requests": 0,
+      "browserLaunches": 0
+    }
+  ],
+  "independentReadOnlyReview": "PASS on exact three hashes",
+  "coreScopeAck": "Owned rows match active bootstrap family; generic financial/batch dispatch remains Core-owned.",
+  "limits": [
+    "Display helpers only; existing V9 constants and predicate semantics preserved.",
+    "Browser regression covers synthetic V9 account/chain invalidation on this isolated older full app, not current Core V10/controller integration.",
+    "No actual creation/adoption/onComplete refresh, EIP7702 wallet protocol, financial authority, live owner inventory or publication proof.",
+    "Core must complete its actual local V10 create/adopt/owned/public flow and privacy cases before publication.",
+    "No RPC, real authentication, signing, financial send, mainnet deployment or Netlify mutation from this worktree."
+  ]
+}
