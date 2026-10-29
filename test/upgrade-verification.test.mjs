@@ -200,6 +200,47 @@ after(async () => {
   await rpc?.disconnect();
 });
 
+test("request-local template reuse reads once per pinned verification and preserves independent configuration checks", async () => {
+  const snapshot = await rpc.request({ method: "evm_snapshot", params: [] });
+  try {
+  const selector = event.interface.getFunction("metaEvidenceTemplate").selector;
+  const phases = [];
+  for (let invocation = 0; invocation < 2; invocation++) {
+    if (invocation) await rpc.request({ method: "evm_mine", params: [] });
+    const reads = { templates: [], heads: [], chains: 0, slots: [], births: [] };
+    const result = await verifyUpgradeableDeployment(context({
+      call: async (tx) => {
+        if (tx.to === d.contract && tx.data.startsWith(selector)) reads.templates.push(tx.blockTag);
+        return provider.call(tx);
+      },
+      getBlock: async (tag) => { reads.heads.push(tag); return provider.getBlock(tag); },
+      send: async (method, args) => {
+        if (method === "eth_chainId") reads.chains++;
+        if (method === "eth_getStorageAt") reads.slots.push(args[0]);
+        return provider.send(method, args);
+      },
+      getTransaction: async (txHash) => { reads.births.push(txHash); return provider.getTransaction(txHash); },
+    }), d);
+    assert.equal(reads.templates.length, 1, "One template eth_call supplies both creation and current-term validations");
+    assert.equal(Number(reads.templates[0]), result.anchor.number, "The reused value remains pinned to this invocation's snapshot");
+    assert.equal(reads.heads.filter((tag) => tag === "latest").length, 1);
+    assert.ok(reads.heads.includes(result.anchor.number), "Final canonical-head check still executes");
+    assert.equal(reads.chains, 2, "Opening and closing chain checks remain fresh");
+    assert.ok(reads.slots.includes(d.contract) && reads.slots.includes(d.factory));
+    assert.deepEqual(new Set(reads.births), new Set([d.timelockDeploymentTxHash, d.factoryDeploymentTxHash, d.deploymentTxHash]));
+    phases.push(result.anchor.number);
+  }
+  assert.ok(phases[1] > phases[0], "A subsequent phase reads a new snapshot and template rather than reusing a previous result");
+  await assert.rejects(verifyUpgradeableDeployment(context({ call: async (tx) =>
+    tx.to === d.contract && tx.data.startsWith(selector)
+      ? event.interface.encodeFunctionResult("metaEvidenceTemplate", [["altered", '"}'], "0x01"])
+      : provider.call(tx) }), d));
+  await assert.rejects(verifyUpgradeableDeployment(context(), { ...d, configurationHash: h(151) }));
+  await assert.rejects(verifyUpgradeableDeployment(context(), { ...d, templateHash: "f".repeat(64) }),
+    /Current event terms or factory membership differs/);
+  } finally { await rpc.request({ method: "evm_revert", params: [snapshot] }); }
+});
+
 test("real synthetic chain1 proxies prove source, constructors, init, family, governance and stable metadata", async () => {
   calls.length = 0;
   const result = await verifyUpgradeableDeployment(context(), d);

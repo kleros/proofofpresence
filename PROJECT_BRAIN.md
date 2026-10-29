@@ -1,3 +1,41 @@
+# Active next optimization phase — 29 October2026
+
+Direct human authorization independently read in UI chat turn01a187e9-f8f2-7eb3-a3cb-c5ada8012f6d
+(userMessage01a187e9-f916-7ef1-8766-22ce559f67f3): frontend and duplicate-RPC optimization, free
+plans and transaction checks intact; coordinate withCore and updateNetlify aftertests.
+
+Current LIVE baseline remains frontend9cac8df / Netlify6ae34f33c420d0953a515606, backend4028e8c /
+Railway30d0d598-a118-46c3-b523-0f9858e7a8e6. Organizer504+walletfeedback repair is COMPLETE.
+Widget829d8c stays frozen. New optimization is NOT deployed yet.
+
+One NEW actual controlled-cold anonymous BEFORE check of9cac8df passed: homeusable2.6021s, FCP1.172s,
+catalogAPI responseEnd2.5913s,1API,2samepage screenshots,0errors/auth/wallet/financial. Baseline:
+artifacts/portal-performance-readonly/2026-10-29T13-58-54-125Z-catalog-3bdd87f8-feea-4217-ad06-f4e63cbbb10b/proof.json,
+SHA2563ce977ca2d017a485ca1b7b3695e2f978b3fece95ec607d764afb009cfafeab2. Compare after ONLY against this sample;3.3589s belongs to an earlier release.
+Updated archived performance harness supports source-required entry/public-home assets, preserving
+all read-only/source/timing guards. Before and after must use the exact same new harness.
+
+UI isolated work owns app/index/newentry.js/public-home.js: begin display-only catalog GET before
+loading owner/wallet modules; idempotent startApp({legacyCatalogMissing,publicSearch}) owns journals/
+listeners only once;404 permits one initial full bootstrap, other errors fail closed. Query transfer
+is mode/instance-bound display state only. Full app permanently owns navigation after first handoff;
+latest route wins, no stale home response or signer/capability transfer. Preserve all current setup
+epoch/error/skeleton guards and widget829d8c. Core added local static allowlist paths for the2modules.
+
+Only2 tiny backend reuses are implemented locally: pinned template reused within one verification
+(2→1read), first canonical receipt header reused for timestamp (3→2service reads). Final/current/
+closing/EOA/chain/owner/slots/history/birth checks and initial/final proofs remain fresh. No generic
+provider cache, mutable trustTTL or crossphase sharing.5 focused actual-local mismatch/reorg/race
+tests +typecheck/diff passed; source pins/command in request-local-reuse-checks.json.
+No guaranteed factory-only duplicate scan can safely be removed; do not claim large RPC savings.
+
+Remaining: UI frozenhandoff/localchecks, combined integration with118-ish-file sourcepackage,
+appropriate legacy startup verification, ordinary rollout coordination preserving real user state,
+Netlify production publication and ONE matching public AFTER check. Rootsolepublic/RPCoperator;
+never localfullverify concurrently with live dedicatedInfura key. No paidplan/rate-budget change.
+Preserve all active jobs/reviews/sessions/journals; avoid backend cutover during a human wallet flow.
+A/B/C retired incomplete/PAUSED, D complete, E unused. No mainnet financial or user-form action.
+
 # Organizer timeout + wallet feedback repair LIVE — 29 October 2026
 
 The human’s Review event setup request was cut off after29942ms (Railway origin499; browser504).

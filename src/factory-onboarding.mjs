@@ -250,9 +250,10 @@ export function createFactoryOnboardingService({ chain, factoryDeployment, event
     draft.submittedHash = txHash; if (!draft.used) draft.status = "pending"; await persist();
     const receipt = await chain.provider.getTransactionReceipt(txHash);
     if (!receipt) return { status: "pending", hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1 };
+    const receiptHeader = await chain.provider.getBlock(receipt.blockNumber);
     check(same(tx.hash, txHash) && same(receipt.hash ?? receipt.transactionHash, txHash) &&
       receipt.blockNumber === tx.blockNumber && receipt.blockHash === tx.blockHash && receipt.blockNumber > draft.reviewBlock &&
-      (await chain.provider.getBlock(receipt.blockNumber))?.hash === receipt.blockHash,
+      receiptHeader?.hash === receipt.blockHash,
     "Creation receipt predates the review or is noncanonical", "TX_REORG", 409);
     check(!draft.used || (draft.blockNumber === receipt.blockNumber && draft.blockHash === receipt.blockHash),
       "A terminal creation receipt changed; preserve the original record", "TX_REORG", 409);
@@ -274,7 +275,7 @@ export function createFactoryOnboardingService({ chain, factoryDeployment, event
     const contract = ethers.getAddress(logs[0].args.eventContract), f = draft.factorySource, terms = draft.terms;
     const deployment = { ...f, eventId: draft.eventId, contract, deploymentTxHash: txHash, deploymentBlock: receipt.blockNumber,
       owner: draft.wallet, creator: draft.wallet, eventName: terms.title, depositWei: terms.depositWei, eventStart: terms.eventStart,
-      claimDeadline: terms.claimDeadline, depositOpensAt: (await chain.provider.getBlock(receipt.blockNumber)).timestamp,
+      claimDeadline: terms.claimDeadline, depositOpensAt: receiptHeader.timestamp,
       depositDeadline: terms.eventStart, resolver: draft.config.arbitration.disputeResolver,
       arbitrator: factoryDeployment.arbitrator ?? chain.liquid?.target, arbitratorExtraData: draft.config.arbitration.extraData,
       policyURI: terms.policyURI, templateHash: hash([draft.template.pieces, draft.template.slots]),

@@ -1116,7 +1116,7 @@ export async function verifyV9Deployment(
     event.arbitrator(at),
     event.policyURI(at),
     event.arbitratorExtraData(at),
-    event.metaEvidenceTemplate(at),
+    template,
     event.CHALLENGE_PERIOD(at),
     event.MATCH_PERIOD(at),
     event.MAX_STAKERS(at),

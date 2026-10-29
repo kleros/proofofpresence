@@ -159,6 +159,9 @@ async function run(source, phase) {
       .filter((name) => name.startsWith("public/"))
       .map((name) => [name.slice(7), git("show", `${source}:${name}`)]),
   );
+  const requiredObservedAssets = files.has("entry.js") && files.has("public-home.js")
+    ? ["index.html", "entry.js", "public-home.js", "event-search.js"]
+    : ["index.html", "app.js", "event-search.js"];
   check(
     ["index.html", "app.js", "event-search.js"].every((name) =>
       files.has(name),
@@ -195,6 +198,7 @@ async function run(source, phase) {
     checkerSha256: sha(checker),
     comparisonSha256: sha(sharedChecker),
     apiPath,
+    requiredObservedAssets,
     assets: [],
     screenshots: [],
     errors: [],
@@ -655,7 +659,7 @@ async function run(source, phase) {
       "NO_FORBIDDEN_ACTIVITY",
     );
     check(
-      ["index.html", "app.js", "event-search.js"].every((name) =>
+      requiredObservedAssets.every((name) =>
         proof.assets.some((asset) => asset.path === name && asset.matches),
       ),
       "REQUIRED_ACTUAL_ASSETS_OBSERVED",

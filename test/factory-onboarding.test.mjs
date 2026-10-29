@@ -338,3 +338,51 @@ test("concurrent submitted/reconcile calls preserve the first draft hash across 
     assert.equal(stateStore.load().drafts.find(([key]) => key === draft.id)[1].submittedHash, firstHash);
   } finally { faults.transactionGate = null; }
 });
+
+test("request-local receipt header reuse keeps two service reads and the post-provenance reorg guard", { timeout: 60000 }, async () => {
+  const localEvents = new Map(), localDrafts = new Map();
+  const measurement = { enabled: false, reorgFinal: false, reads: [] };
+  const measuredProvider = new Proxy(chain.provider, { get(target, key) {
+    if (key === "getBlock") return async (tag) => {
+      const directCaller = new Error().stack?.split("\n")[2] ?? "";
+      const block = await target.getBlock(tag);
+      // Count this service's two direct calls, excluding the verifier's independent anchor reads.
+      if (measurement.enabled && directCaller.includes("reconcileFact")) {
+        measurement.reads.push({ tag, hash: block?.hash, timestamp: block?.timestamp });
+        if (measurement.reorgFinal && measurement.reads.length === 2)
+          return { ...block, hash: ethers.id("synthetic-post-provenance-reorg") };
+      }
+      return block;
+    };
+    const value = target[key]; return typeof value === "function" ? value.bind(target) : value;
+  } });
+  let walletChecks = 0;
+  const scoped = createFactoryOnboardingService({ chain: { ...chain, provider: measuredProvider }, factoryDeployment: f,
+    events: localEvents, drafts: localDrafts, instanceId: "request-local-header-instance", store: { save() {} },
+    assertWallet: async (wallet) => { walletChecks++; return assertProductionEOAWallet(measuredProvider, wallet); } });
+  const create = async () => {
+    measurement.enabled = false;
+    const draft = await scoped.createDraft(session, await freshTerms());
+    const tx = await organizer.sendTransaction(draft.transaction), receipt = await tx.wait();
+    measurement.reads = []; measurement.enabled = true;
+    return { draft, tx, receipt };
+  };
+  const first = await create(), signingChecks = walletChecks;
+  const adopted = await scoped.reconcile(session, first.draft.id, first.tx.hash);
+  assert.equal(measurement.reads.length, 2, "One initial canonical header plus a separate fresh post-provenance header");
+  assert.ok(measurement.reads.every((read) => read.tag === first.receipt.blockNumber && read.hash === first.receipt.blockHash));
+  assert.equal(localEvents.get(adopted.eventId).deployment.depositOpensAt, measurement.reads[0].timestamp);
+  assert.equal(walletChecks, signingChecks, "Known-hash reconciliation never invokes the EOA signing guard");
+  measurement.reads = [];
+  await scoped.reconcile({ ...session, id: "later-receipt-only-session" }, first.draft.id, first.tx.hash);
+  assert.equal(measurement.reads.length, 2, "A subsequent reconciliation phase makes both reads again");
+  const second = await create(), before = localEvents.size, secondSigningChecks = walletChecks;
+  measurement.reorgFinal = true;
+  await assert.rejects(scoped.reconcile(session, second.draft.id, second.tx.hash), (error) => error.code === "TX_REORG");
+  assert.equal(measurement.reads.length, 2);
+  assert.equal(localEvents.size, before, "A late reorg cannot adopt the second child");
+  assert.equal(localDrafts.get(second.draft.id).submittedHash, second.tx.hash, "The known hash remains available for read-only recovery");
+  measurement.reorgFinal = false; measurement.reads = [];
+  assert.equal((await scoped.reconcile(session, second.draft.id, second.tx.hash)).status, "confirmed");
+  assert.equal(measurement.reads.length, 2); assert.equal(walletChecks, secondSigningChecks);
+});

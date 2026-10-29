@@ -1,0 +1,36 @@
+{
+  "status": "passed-local-source-reuse-checks",
+  "checkedAt": "2026-10-29T14:05:57.897Z",
+  "sourceSha256": {
+    "src/upgrade-verification.mjs": "a8e009654315d7c7234bd605b8873169c119f295f30c03a77323f5d6059d6851",
+    "src/factory-onboarding.mjs": "90416e797c0c55770dacbb4dae8814509e71c6619314b6e3049be4c9660b7be4",
+    "test/upgrade-verification.test.mjs": "238bba58c9119175d796c03f96f97d176151e7026dafd2028335d98bdd668c5a",
+    "test/factory-onboarding.test.mjs": "df05ff1d0197b04ed96833d342f96d74ed48bb0a5a6607b6fc0b7db86275d4ab"
+  },
+  "command": "node --test --test-concurrency=1 --test-name-pattern='request-local|source-matching proxy birth|late verification-head reorg|governance changed during the final EOA' test/upgrade-verification.test.mjs test/factory-onboarding.test.mjs",
+  "result": {
+    "passed": 5,
+    "failed": 0,
+    "durationMs": 8864.617625,
+    "executedBy": "testnet_readiness worker; retained tool output, no log file"
+  },
+  "additionalChecks": [
+    "typecheck passed",
+    "git diff --check passed",
+    "Independent UI/source read-only review passed"
+  ],
+  "changes": [
+    "Existing pinned metadata template reused within one child-verification invocation:2→1reads.",
+    "First verified receipt header reused for its timestamp:3→2service reads; final canonical reread retained."
+  ],
+  "unchanged": [
+    "All latest/head/chain/EOA/owner/slot and closing guards",
+    "Every history/logrange/birthcheck; initial/final proofs remain separate",
+    "Free400credits/1100ms pacing",
+    "All financial economics and submitted-hash journals"
+  ],
+  "limits": [
+    "Small selected-child/reconciliation savings only. No guaranteed factory-only duplicates were found to remove.",
+    "No mainnet RPC probe/transaction or new timing measurement establishes a backend speedup."
+  ]
+}
