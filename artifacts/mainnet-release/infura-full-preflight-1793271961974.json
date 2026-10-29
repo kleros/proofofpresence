@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "provider": "Infura",
+  "providerHost": "mainnet.infura.io",
+  "status": "verification-stopped",
+  "code": "RPC_NETWORK",
+  "elapsedMs": 6052,
+  "httpStatuses": {
+    "200": 50,
+    "429": 1
+  },
+  "failures": [
+    {
+      "method": "eth_call",
+      "httpStatus": 429,
+      "rateLimited": true,
+      "archiveRequired": false,
+      "authenticationRequired": false
+    }
+  ],
+  "credentialsRecorded": false,
+  "signatures": 0,
+  "broadcasts": 0
+}

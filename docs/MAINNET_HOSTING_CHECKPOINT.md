@@ -1,5 +1,27 @@
 # Mainnet hosting checkpoint — 29 October 2026
 
+## Current update: authenticated RPC and pacing
+
+The human approved free Infura access and confirmed the endpoint is configured. Management submitted
+and applied exactly one `MAINNET_RPC_URL` change through native UI; root privately confirmed the
+approved provider host, without printing the full URL/key. Public handoff proof:
+`artifacts/mainnet-release/infura-free-rpc-ui-handoff.json`. The automatic deployment is
+`80628000-8d64-4d60-ba91-33ffb76581bf`, with reviewed normal startup/health settings and the same
+source2f59766 image. That unpaced runtime still fails closed; the full diagnostic recorded50 successful
+reads then actual HTTP429. No remaining human RPC configuration action or paid plan is required.
+
+The narrow transport delta uses a single provider-local FIFO for the exact Infura host:400 credits
+per1100ms, documented explicit read costs,64 waiting jobs, timeout before admission, no late expired
+dispatch, and queue/active-fetch cancellation on provider destruction. It preserves all requests,
+parameters, historical pages, canonical anchors and financial behavior; no extra retry is added.
+Keep one backend replica and an exclusive app key. A separate local full verifier must not run
+concurrently with a live backend using the same key. This is not a global multi-process rate limiter.
+The53 focused scheduler/HTTP/runtime/verification checks and typecheck passed. Paced provider/cloud
+acceptance and frontend publication are next; the public portal is still not launched.
+
+The earlier configuration blocker below is retained as historical diagnosis and is superseded by
+this update. Credentials remain only in the provider and Railway, with transient approved memory use.
+
 ## Release state
 
 Branch `codex/core-application`; application/image source

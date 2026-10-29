@@ -1,5 +1,27 @@
 # Verification report
 
+## Authenticated RPC throughput correction — 29 October 2026
+
+The human approved free Infura activation and its endpoint was configured only in the exact new
+Railway backend. The unpaced read-only full preflight recorded50HTTP200 and one actual `eth_call`
+HTTP429; no credential, upstream message, signature or broadcast was recorded. This establishes
+the throughput failure separately from the earlier public-provider archive restrictions.
+
+The transport now recognizes only `mainnet.infura.io` for a provider-local FIFO gate of400 documented
+credits per1100ms, with64 waiting jobs, pre-admission expiry and close/active-fetch cancellation.
+Chain probes and existing explicit retries share admission. No request, block range, parameter,
+source/history/canonical check, economic behavior or UI asset was removed/changed. Other endpoints
+retain their throughput behavior. One replica/exclusive app key is required; this is not a
+cross-process quota coordinator. Public availability still needs the actual paced cloud check.
+
+Command actually run:
+`node --test --test-concurrency=1 test/rpc-read-scheduler.test.mjs test/mainnet-rpc-pacing.test.mjs test/mainnet-runtime.test.mjs test/mainnet-verification-runtime.test.mjs`
+passed53/53, including queue capacity/recovery, unchanged HTTP payloads, delayed credit admission,
+expired/closed work never dispatching, actual in-process factory/proxies and canonical recovery.
+`npm run typecheck` passed. Log: `artifacts/mainnet-release/rpc-pacing-checks-20261029.log`.
+The original complete financial/browser proof remains the economic acceptance; this transport-only
+delta does not claim a new mainnet financial rehearsal. No additional wallet approvals are needed.
+
 ## Mainnet hosting activation — 29 October 2026, 17:49 Bangkok
 
 The four separately approved human-signed infrastructure CREATEs and the one approved policy upload

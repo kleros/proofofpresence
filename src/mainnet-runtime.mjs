@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { ethers } from "ethers";
 import { hash, lower, requireThat } from "./utils.mjs";
 import { verifyV9ArtifactSources } from "./upgrade-artifacts.mjs";
+import { createRpcReadScheduler } from "./rpc-read-scheduler.mjs";
 import {
   eventV9LumaTemplate,
   V9_LUMA_ATTENDANCE_STANDARD,
@@ -568,6 +569,14 @@ function defaultProvider(
   endpoint,
   { fetcher = fetch, timeoutMs = 20000 } = {},
 ) {
+  // The approved Infura Core endpoint has a credit throughput limit, including
+  // chain probes and retries. Pace actual HTTP admission rather than changing
+  // verification concurrency or dropping historical reads. Other providers keep
+  // their existing transport behavior.
+  const scheduler = new URL(endpoint).hostname === "mainnet.infura.io"
+    ? createRpcReadScheduler({ budget: 400, windowMs: 1100 })
+    : null;
+  const activeControllers = new Set();
   const connection = new ethers.FetchRequest(endpoint);
   connection.timeout = timeoutMs;
   connection.setThrottleParams({ maxAttempts: 1 });
@@ -579,19 +588,33 @@ function defaultProvider(
       throw RPC_ERROR();
     }
     assertReadPayload(payload);
+    if (scheduler && Array.isArray(payload)) {
+      // Ethers is configured below to emit individual requests. Do not admit an
+      // unbudgeted private _send batch through this provider's paced transport.
+      requireThat(payload.length === 1, "Paced RPC requires individual reads", "INVALID_INPUT");
+    }
+    const controller = new AbortController();
+    activeControllers.add(controller);
+    // Start the timeout before queueing, so expired queued work cannot fetch.
+    const signal = AbortSignal.any([AbortSignal.timeout(timeoutMs), controller.signal]);
     let response, body;
     try {
-      response = await fetcher(endpoint, {
+      const send = () => fetcher(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
         redirect: "error",
-        signal: AbortSignal.timeout(timeoutMs),
+        signal,
       });
+      response = scheduler
+        ? await scheduler.schedule({ method: (Array.isArray(payload) ? payload[0] : payload).method, signal }, send)
+        : await send();
       if (response.status !== 200) throw RPC_ERROR();
       body = await response.json();
     } catch {
       throw RPC_ERROR();
+    } finally {
+      activeControllers.delete(controller);
     }
     const sanitize = (item) =>
       item?.error
@@ -615,10 +638,18 @@ function defaultProvider(
       ),
     };
   };
-  return new ethers.JsonRpcProvider(connection, undefined, {
+  const provider = new ethers.JsonRpcProvider(connection, undefined, {
     cacheTimeout: -1,
     batchMaxCount: 1,
   });
+  const destroy = provider.destroy.bind(provider);
+  provider.destroy = () => {
+    scheduler?.close();
+    for (const controller of activeControllers) controller.abort();
+    activeControllers.clear();
+    return destroy();
+  };
+  return provider;
 }
 
 // Shared transport only. Chain-specific verification stays in each explicit runtime.

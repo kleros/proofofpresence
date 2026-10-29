@@ -1,5 +1,23 @@
 # Current implementation — 29 October2026, Asia/Bangkok
 
+## Free authenticated RPC configured; pacing verified locally — 29 October 2026
+
+The human approved free Infura activation in the management chat and confirmed "RPC configured"
+in core. The endpoint was entered only into the new Railway service's `MAINNET_RPC_URL`, never
+printed or saved in public/local credential files. A single reviewed variable change started
+deployment `80628000-8d64-4d60-ba91-33ffb76581bf`, using normal startup and `/healthz`300s. No
+paid plan or further human action is needed. The unpaced runtime correctly stopped:50 reads
+succeeded before actual `eth_call` HTTP429. Public proof `infura-full-preflight-1793271961974.json`.
+
+A narrow transport change now admits this exact Infura host's reads at400 credits per1100ms,
+using documented method costs, a64-job waiting limit, expiry before admission and cancellation
+on close. It preserves every method/parameter/history/canonical check and adds no retry or signer.
+The gate belongs to one provider/process; keep one backend replica and this app's dedicated key.
+Never run a second local full verifier concurrently with the live backend using that same key.
+Combined scheduler/actual-HTTP/runtime/canonical-verification tests passed53/53; typecheck passed.
+The source is being frozen for paced provider/cloud verification and final Netlify publication.
+The portal is still not live; prior paragraphs requiring RPC configuration are superseded.
+
 ## Hosting checkpoint — 29 October 2026, 17:49 Bangkok
 
 Application/image source is `2f597662f846fb816a77bc6b2ea7ac003f25bcb9` on

@@ -1,0 +1,71 @@
+✔ Infura transport budgets concurrent actual HTTP reads without changing payloads (1106.682417ms)
+✔ timed-out queued transport reads never dispatch later (1211.608458ms)
+✔ provider destroy closes queued admission and aborts active transport signals (1186.954209ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_darwin_arm64_141.node'
+Require stack:
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+✔ production manifest rejects wrong environment, profiles, duplicate custody, Court and governance before provider creation (21.762208ms)
+✔ keyless mainnet runtime invokes both verifiers and uses the reviewed actual array resolver ABI (9.752709ms)
+✔ all signing, account enumeration, raw batch bypasses and chain drift are blocked before unsafe upstream access (5.257167ms)
+✔ private HTTPS overrides stay out of public metadata and error diagnostics, with failed startup cleanup (10.631334ms)
+✔ default HTTP transport rejects redirects and remote error disclosure without public requests (18.698834ms)
+✔ wrong network or invalid court evidence cannot reach deployment verification, and skip flags are unsupported (8.238542ms)
+✔ one unavailable event preserves verified B and keyless read-only recovery without softening global gates (3.767458ms)
+✔ all unavailable events still permit only keyless recovery and retry each deployment on the next runtime (6.57025ms)
+✔ source approval, unknown verifier errors and chain drift always abort the whole runtime (11.416625ms)
+✔ production state is atomic, owner-only, restart-stable and bound to every reviewed manifest field (16.4545ms)
+✔ factory-only chain1 startup verifies the reviewed empty factory without child identities or server signers (6.760584ms)
+✔ factory-only startup cannot soften unverified factory results, source gates or wrong-chain failures (10.96625ms)
+✔ dynamic events persist full immutable records only within the reviewed chain1 factory and survive restart (37.328875ms)
+✔ pending factory drafts retain reserved IDs and exact submitted requests without admitting an event early (38.987ms)
+✔ static manifest records remain authoritative beside durable dynamic events and immutable factory reviews (42.096125ms)
+✔ factory-only runtime invokes the real factory verifier against actual in-process chain1 proxies (381.272458ms)
+✔ durable production case exports cannot be erased or replaced before their first upload intent (19.643708ms)
+✔ own null or unfamiliar consumed production case intents cannot be removed, replaced or reset (84.726166ms)
+✔ durable publication intent survives restart, forbids immutable replacement/deletion and permits verified status (17.952375ms)
+✔ independently loaded stale state cannot erase or replace a newer case upload intent (16.231208ms)
+✔ simultaneous separate state writers commit at most one competing immutable publication intent (86.020541ms)
+✔ transient timeout,429,5xx and network reads retry within a fixed budget without exposing payloads (1.9465ms)
+✔ hung transport attempts time out and stop at maxAttempts (6.284542ms)
+✔ actual ethers HTTP error objects retain retryable429/503 classifications (0.426875ms)
+✔ mainnet single-attempt HTTP adapter preserves retry classifications without public network access (0.399208ms)
+✔ business reverts and ambiguous execution errors never retry even with a server status (0.289125ms)
+✔ mutable/private RPC methods are rejected before any transport access (0.726ms)
+✔ wrong chain stops before the requested read; gas quotes and estimation remain read-only capabilities (0.123125ms)
+✔ a provider chain change during a transient failure stops before the retry read (0.101625ms)
+✔ snapshot pins state and log reads to one canonical block without mutating caller parameters (0.403416ms)
+✔ a reorg discards the entire group and only returns a new stable snapshot (0.268375ms)
+✔ snapshot header mutation cannot relabel already pinned reads (0.151458ms)
+✔ caller and transport mutation cannot change parameters between read retries (0.089667ms)
+✔ repeated reorgs exhaust the group budget; incompatible selectors never run or restart (0.261958ms)
+✔ known receipt verifies exact request, chain, canonical block and observed confirmations (0.270375ms)
+✔ missing, unconfirmed and reverted receipts never prepare, poll or broadcast a replacement (0.269875ms)
+✔ receipt recovery rejects foreign calldata, sender, recipient, value, nonce and chain (0.371792ms)
+✔ receipt request identity is captured before asynchronous verification (0.102042ms)
+✔ receipt canonicality mismatch restarts read verification and cannot reuse the old branch (0.201583ms)
+✔ cleanup failure or timeout has its own result and cannot overwrite confirmed financial evidence (3.403666ms)
+✔ diagnostics contain only finite classifications and safe phase/method names (0.171625ms)
+✔ invalid retry and timeout budgets cannot enable unbounded verification (0.086458ms)
+✔ reviewed credit table covers only the application's exact read methods (1.103083ms)
+✔ parallel reads obey the rolling credit budget and FIFO without altering work or block tags (0.564ms)
+✔ aborting a queued head removes it without charging credits or allowing a late dispatch (0.2075ms)
+✔ the original timeout signal expires while queued and prevents HTTP work (16.059584ms)
+✔ close cancels queued and future reads while leaving already-dispatched work caller-owned (0.202542ms)
+✔ waiting capacity excludes active work, fails closed on overflow and recovers after abort (0.156833ms)
+✔ failed reads consume credits once and explicit retries share the same gate (0.103875ms)
+✔ invalid bounds, write methods, missing signals and pre-aborted work cannot dispatch or leak diagnostics (0.279458ms)
+ℹ tests 53
+ℹ suites 0
+ℹ pass 53
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5020.380167
