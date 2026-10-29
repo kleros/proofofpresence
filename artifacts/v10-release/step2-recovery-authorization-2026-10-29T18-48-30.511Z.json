@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "bounded-recovery-authorization-source-rebind",
+  "recordedAt": "2026-10-29T18:49:14.133Z",
+  "authorization": {
+    "originalGasCapApproval": "artifacts/v10-release/human-gas-cap-approval-20261030.json",
+    "originalApprovalHash": "93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0",
+    "recoveryHumanMessageId": "01a188f7-12e9-7630-9ff6-010a07536f69",
+    "recoveryHumanMessage": "Yes, I refreshed because it was taking too long. Please recover Step 2 so I can finish the remaining deployments without redeploying Step 1.",
+    "basis": "Original exact plan and cap plus explicit human request to repair and recover Step 2; human has not supplied the new source hash. Root reviewed the bounded source rebind. No new transaction terms, cap or authority."
+  },
+  "grantFile": "artifacts/v10-release/step2-recovery-grant-2026-10-29T18-48-30.511Z.json",
+  "grantSha256": "3825b118e3295735cc78ff2190a1d62d9859194a9848471736e4c83549a13284",
+  "reviewFile": "artifacts/v10-release/step2-recovery-review-2026-10-29T18-48-30.511Z.json",
+  "reviewSha256": "ea10ef3aaf84fb52d2da667d54b3d7ea426bf819186184c957d0e3a2960f6a0b",
+  "newApprovalHash": "12b705596a91a9263736ad6965171b99c326858b021c6a029870d1bbb59fab7a",
+  "bridgeSources": {
+    "src/v10-wallet-deployment.mjs": "10f79f91ffde81b88356164c3e055a75b6a68706367d2fe8c2ce41116f9ebafd",
+    "scripts/serve-v10-deployment.mjs": "8c0e9068cc61c91a1d830aef7f32a97a7bd679c8e815a6801d13dad7fec5102a",
+    "tools/v10-wallet/index.html": "065a050c791ee50ce95e55bfa66a99ca93143690d93fb646894a17f34f905a49",
+    "tools/v10-wallet/deploy.js": "8e24a3638564225d2325038ce13753fbebdc8d5fecb4f22a15287065521d01f7",
+    "tools/v10-wallet/style.css": "8cf758583a95e2368ac137ecaf667862e3fdc0ca0192dd2484d7f2cfbebe418a",
+    "scripts/mainnet/prepare-v10-release.mjs": "d9c0ec01c208134bc8daa4406bf1d0b41f6449f12c363529a69216c7fd11de1b",
+    "scripts/mainnet/preflight-v10-release.mjs": "b609546aebf5f85cfc52daaecf9a0ea3959c5faefe87d0933633e29884c00e52",
+    "src/v10-upgrade-verification.mjs": "a45d90ad3b89becc4b532957ecde859e2ba929c370a0b1134acf78dbf5259b61",
+    "src/v10-upgrade-artifacts.mjs": "c260b855e3b0e5f2d33b3436ba196764d623ec803d3e8efb61063230554a2e25"
+  },
+  "planSha256": "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+  "maxTotalGasCostWei": "6562500000000000",
+  "tests": {
+    "command": "node --test --test-concurrency=1 test/v10-wallet-deployment.test.mjs",
+    "passed": 18,
+    "failed": 0,
+    "log": "artifacts/v10-release/lost-page-recovery-tests-20261030-agent-01.log",
+    "logSha256": "c02a476ea096adc02d5845d56e91927e97f4fd078390cf97e5ec3b191a40d727",
+    "browserProof": "artifacts/v10-wallet-recovery-browser/2026-10-29T18-47-16-222Z-7dd0d82d-b99e-448e-bb70-c59a3ad49fa7/proof.json",
+    "browserChecks": 4,
+    "typecheck": "passed",
+    "syntax": "passed",
+    "diffCheck": "passed"
+  },
+  "originalJournalStillUnchanged": true,
+  "step1Hash": "0xebfc83d4a2a2421447a19ba341beb26ef24f07482beab81da71f01f6a097c91b",
+  "backendSigningCapability": false,
+  "backendBroadcastCapability": false,
+  "financialRequestsByAgent": 0
+}

@@ -1,0 +1,59 @@
+{
+  "status": "read-only-step2-diagnostic",
+  "observedAt": "2026-10-29T18:38:31.945Z",
+  "chainId": 1,
+  "blockNumber": 26300242,
+  "blockHash": "0x6ce5e1d1acccb5baa2342eef615cb1c22db85f723189415aa955d76657eae44b",
+  "wallet": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "latestNonce": 7,
+  "pendingNonce": 7,
+  "target": "0x411ADfb7490C664362D7F933f693B41eE4E997c3",
+  "targetCode": "0x",
+  "targetNonce": 0,
+  "walletCode": "0xef010063c0c19a282a1b52b07dd5a65b58948a07dae32b",
+  "reads": [
+    {
+      "method": "eth_chainId",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getBlockByNumber",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getTransactionCount",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getTransactionCount",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getCode",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getTransactionCount",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getCode",
+      "status": 200,
+      "errorCode": null
+    },
+    {
+      "method": "eth_getBlockByNumber",
+      "status": 200,
+      "errorCode": null
+    }
+  ],
+  "financialRequests": 0,
+  "broadcasts": 0,
+  "retries": 0
+}

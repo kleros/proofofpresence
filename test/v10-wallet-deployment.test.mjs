@@ -8,6 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { ethers } from "ethers";
 import ganache from "ganache";
 import {
@@ -84,6 +85,7 @@ function fakeProvider({ delegated = false } = {}) {
   const f = {
     calls,
     nonce: 0,
+    pendingNonce: null,
     balance: 10n ** 20n,
     walletCode: delegated
       ? "0xef010063c0c19a282a1b52b07dd5a65b58948a07dae32b"
@@ -111,7 +113,11 @@ function fakeProvider({ delegated = false } = {}) {
           : (codes.get(params[0].toLowerCase()) ?? "0x");
       if (method === "eth_getTransactionCount")
         return ethers.toQuantity(
-          params[0].toLowerCase() === addr.toLowerCase() ? f.nonce : 0,
+          params[0].toLowerCase() === addr.toLowerCase()
+            ? params[1] === "pending"
+              ? (f.pendingNonce ?? f.nonce)
+              : f.nonce
+            : 0,
         );
       if (method === "eth_getBalance") return ethers.toQuantity(f.balance);
       throw Error("Unexpected synthetic read " + method);
@@ -172,6 +178,439 @@ function fixture({
     },
   };
 }
+
+const LOST_PAGE_ACK = "refreshed-before-wallet-confirmation-no-submission";
+const jsonSha = (value) =>
+  createHash("sha256").update(JSON.stringify(value)).digest("hex");
+async function preparedRecoveryFixture() {
+  const f = fixture({ delegated: true });
+  try {
+    const first = await f.service.prepareStep({
+      step: 1,
+      wallet: addr,
+      chainId: 1,
+    });
+    await f.service.recordSubmitted({
+      step: 1,
+      capability: first.capability,
+      hash,
+    });
+    const tx = f.plan.transactions[0];
+    f.fake.actual = {
+      hash,
+      from: addr,
+      to: null,
+      nonce: tx.nonce,
+      chainId: 1n,
+      type: 2,
+      value: 0n,
+      data: tx.data,
+      gasLimit: BigInt(tx.gasLimit),
+      maxFeePerGas: 1000001n,
+      maxPriorityFeePerGas: 1000000n,
+      blockNumber: 49,
+      blockHash: headHash,
+    };
+    f.fake.receipt = {
+      hash,
+      status: 1,
+      blockNumber: 49,
+      blockHash: headHash,
+      contractAddress: tx.predictedAddress,
+      gasUsed: 669197n,
+      gasPrice: 1000001n,
+    };
+    f.fake.codes.set(
+      tx.predictedAddress.toLowerCase(),
+      build.contracts.KlerosUpgradeControllerV10.deployedBytecode,
+    );
+    f.fake.nonce = 1;
+    assert.equal((await f.service.reconcile(1)).status, "confirmed");
+    f.originalPrepared = await f.service.prepareStep({
+      step: 2,
+      wallet: addr,
+      chainId: 1,
+    });
+    const journal = JSON.parse(fs.readFileSync(f.journalFile));
+    f.originalFirst = JSON.stringify(
+      journal.steps.find((row) => row.step === 1),
+    );
+    f.originalSecond = structuredClone(
+      journal.steps.find((row) => row.step === 2),
+    );
+    f.grant = {
+      schemaVersion: 1,
+      kind: "v10-step2-lost-page-recovery",
+      planSha256: f.binding.planSha256,
+      wallet: addr,
+      step: 2,
+      nonce: 1,
+      originalAttempt: 1,
+      originalPreparedAt: f.originalSecond.preparedAt,
+      originalPreparedSha256: jsonSha(f.originalSecond),
+      originalApprovalHash: journal.approvalHash,
+      expiresAt: f.originalSecond.preparedAt + 900000,
+    };
+    f.recoveryCommon = { ...f.common, lostPageRecoveryGrant: f.grant };
+    const review = createV10WalletDeployment(f.recoveryCommon);
+    f.recoveryBinding = review.plan();
+    await review.close();
+    f.recoveryService = createV10WalletDeployment({
+      ...f.recoveryCommon,
+      enableWalletSigning: true,
+      approvalHash: f.recoveryBinding.approvalHash,
+    });
+    f.recoveryRequest = {
+      step: 2,
+      wallet: addr,
+      chainId: 1,
+      acknowledgement: LOST_PAGE_ACK,
+    };
+    const close = f.close;
+    f.close = async () => {
+      await f.recoveryService.close();
+      await close();
+    };
+    return f;
+  } catch (error) {
+    await f.close();
+    throw error;
+  }
+}
+async function recoveryClock(f, work) {
+  const old = Date.now;
+  Date.now = () => f.originalSecond.preparedAt + 61000;
+  try {
+    return await work();
+  } finally {
+    Date.now = old;
+  }
+}
+
+test("lost-page recovery preserves Step1 and every original Step2 field, revokes the original capability and survives restart", async () => {
+  const f = await preparedRecoveryFixture();
+  try {
+    await recoveryClock(f, async () => {
+      const beforeReads = f.fake.calls.length;
+      const recovered = await f.recoveryService.recoverPreparedStep(
+        f.recoveryRequest,
+      );
+      assert.deepEqual(recovered.transaction, f.plan.transactions[1]);
+      assert.equal(recovered.approvalHash, f.recoveryBinding.approvalHash);
+      assert.notEqual(recovered.capability, f.originalPrepared.capability);
+      assert.ok(f.fake.calls.length > beforeReads);
+      const saved = JSON.parse(fs.readFileSync(f.journalFile));
+      assert.equal(
+        JSON.stringify(saved.steps.find((row) => row.step === 1)),
+        f.originalFirst,
+      );
+      const row = saved.steps.find((row) => row.step === 2),
+        { recovery, ...original } = row;
+      assert.deepEqual(original, f.originalSecond);
+      assert.equal(recovery.kind, "human-requested-lost-page");
+      assert.equal(recovery.acknowledgement, LOST_PAGE_ACK);
+      assert.equal(
+        recovery.originalPreparedSha256,
+        f.grant.originalPreparedSha256,
+      );
+      assert.equal(recovery.approvalHash, f.recoveryBinding.approvalHash);
+      assert.equal(
+        recovery.bridgeSourceSha256,
+        f.recoveryBinding.bridgeSourceSha256,
+      );
+      assert.equal(
+        recovery.capabilityHash,
+        createHash("sha256").update(recovered.capability).digest("hex"),
+      );
+      const unchanged = fs.readFileSync(f.journalFile, "utf8"),
+        reads = f.fake.calls.length;
+      for (const action of [
+        () =>
+          f.recoveryService.noteWalletError({
+            step: 2,
+            capability: f.originalPrepared.capability,
+            code: null,
+          }),
+        () =>
+          f.recoveryService.walletRequestStarted({
+            step: 2,
+            capability: f.originalPrepared.capability,
+          }),
+        () => f.recoveryService.recoverPreparedStep(f.recoveryRequest),
+      ]) {
+        await assert.rejects(action);
+        assert.equal(fs.readFileSync(f.journalFile, "utf8"), unchanged);
+        assert.equal(f.fake.calls.length, reads);
+      }
+      const restarted = createV10WalletDeployment({
+        ...f.recoveryCommon,
+        enableWalletSigning: true,
+        approvalHash: recovered.approvalHash,
+      });
+      try {
+        await assert.rejects(() =>
+          restarted.recoverPreparedStep(f.recoveryRequest),
+        );
+        assert.equal(fs.readFileSync(f.journalFile, "utf8"), unchanged);
+        assert.deepEqual(
+          await restarted.walletRequestStarted({
+            step: 2,
+            capability: recovered.capability,
+          }),
+          { step: 2, recorded: true },
+        );
+        const started = fs.readFileSync(f.journalFile, "utf8");
+        await assert.rejects(() =>
+          restarted.walletRequestStarted({
+            step: 2,
+            capability: recovered.capability,
+          }),
+        );
+        assert.equal(fs.readFileSync(f.journalFile, "utf8"), started);
+        const beforeRecord = f.fake.calls.length,
+          step2Hash = ethers.id("known-recovered-step2");
+        await restarted.recordSubmitted({
+          step: 2,
+          capability: recovered.capability,
+          hash: step2Hash,
+        });
+        assert.equal(f.fake.calls.length, beforeRecord);
+        const final = JSON.parse(fs.readFileSync(f.journalFile));
+        assert.equal(final.steps.find((row) => row.step === 2).hash, step2Hash);
+        assert.equal(
+          JSON.stringify(final.steps.find((row) => row.step === 1)),
+          f.originalFirst,
+        );
+      } finally {
+        await restarted.close();
+      }
+    });
+  } finally {
+    await f.close();
+  }
+});
+
+test("lost-page recovery rejects missing grant, wrong acknowledgement/wallet/step and consumed/started histories before RPC or journal mutation", async () => {
+  const f = await preparedRecoveryFixture();
+  try {
+    await recoveryClock(f, async () => {
+      const originalRaw = fs.readFileSync(f.journalFile, "utf8");
+      const noGrant = createV10WalletDeployment({
+        ...f.common,
+        enableWalletSigning: true,
+        approvalHash: f.binding.approvalHash,
+      });
+      const readOnly = createV10WalletDeployment(f.recoveryCommon);
+      try {
+        for (const action of [
+          () => noGrant.recoverPreparedStep(f.recoveryRequest),
+          () => readOnly.recoverPreparedStep(f.recoveryRequest),
+          ...[
+            { acknowledgement: undefined },
+            { acknowledgement: "wrong" },
+            { step: 1 },
+            { step: 3 },
+            { wallet: targetWallet() },
+            { chainId: 10200 },
+          ].map(
+            (change) => () =>
+              f.recoveryService.recoverPreparedStep({
+                ...f.recoveryRequest,
+                ...change,
+              }),
+          ),
+        ]) {
+          const reads = f.fake.calls.length;
+          await assert.rejects(action);
+          assert.equal(f.fake.calls.length, reads);
+          assert.equal(fs.readFileSync(f.journalFile, "utf8"), originalRaw);
+        }
+        for (const mutate of [
+          (row) => (row.hash = hash),
+          (row) => (row.pendingHash = hash),
+          (row) => (row.confirmedHash = hash),
+          (row) => (row.candidates = [{ hash, state: "known" }]),
+          (row) => (row.state = "uncertain"),
+          (row) => (row.attempt = 2),
+          (row) => (row.walletRequestStartedAt = Date.now()),
+          (row) => (row.recovery = { kind: "already-recovered" }),
+        ]) {
+          const saved = JSON.parse(originalRaw);
+          mutate(saved.steps.find((row) => row.step === 2));
+          fs.writeFileSync(f.journalFile, JSON.stringify(saved));
+          const raw = fs.readFileSync(f.journalFile, "utf8"),
+            reads = f.fake.calls.length;
+          await assert.rejects(() =>
+            f.recoveryService.recoverPreparedStep(f.recoveryRequest),
+          );
+          assert.equal(f.fake.calls.length, reads);
+          assert.equal(fs.readFileSync(f.journalFile, "utf8"), raw);
+        }
+        const saved = JSON.parse(originalRaw);
+        saved.steps.push({ step: 3, state: "prepared", attempt: 1 });
+        fs.writeFileSync(f.journalFile, JSON.stringify(saved));
+        const raw = fs.readFileSync(f.journalFile, "utf8"),
+          reads = f.fake.calls.length;
+        await assert.rejects(() =>
+          f.recoveryService.recoverPreparedStep(f.recoveryRequest),
+        );
+        assert.equal(f.fake.calls.length, reads);
+        assert.equal(fs.readFileSync(f.journalFile, "utf8"), raw);
+      } finally {
+        await noGrant.close();
+        await readOnly.close();
+      }
+    });
+  } finally {
+    await f.close();
+  }
+});
+function targetWallet() {
+  return "0x0000000000000000000000000000000000000099";
+}
+
+test("lost-page recovery reruns canonical predecessor, fresh nonces/framework/address/budget checks without mutating failed grants", async () => {
+  for (const fault of [
+    "nonce",
+    "pending-nonce",
+    "occupied",
+    "balance",
+    "framework",
+    "receipt-reorg",
+    "gas",
+  ]) {
+    const f = await preparedRecoveryFixture();
+    try {
+      await recoveryClock(f, async () => {
+        if (fault === "nonce") f.fake.nonce = 2;
+        if (fault === "pending-nonce") f.fake.pendingNonce = 2;
+        if (fault === "occupied")
+          f.fake.codes.set(
+            f.plan.transactions[1].predictedAddress.toLowerCase(),
+            "0x6000",
+          );
+        if (fault === "balance") f.fake.balance = 0n;
+        if (fault === "framework")
+          f.fake.codes.set(
+            observed.contracts[0].address.toLowerCase(),
+            "0x6000",
+          );
+        if (fault === "receipt-reorg")
+          f.fake.receipt.blockHash = ethers.id("replaced-synthetic-receipt");
+        if (fault === "gas") f.fake.p.estimateGas = async () => 99999999n;
+        const raw = fs.readFileSync(f.journalFile, "utf8"),
+          reads = f.fake.calls.length;
+        await assert.rejects(() =>
+          f.recoveryService.recoverPreparedStep(f.recoveryRequest),
+        );
+        assert.ok(f.fake.calls.length > reads);
+        assert.equal(fs.readFileSync(f.journalFile, "utf8"), raw);
+      });
+    } finally {
+      await f.close();
+    }
+  }
+});
+
+test("lost-page recovery keeps late original-capability hashes even after handoff expiry without reviving a wallet request", async () => {
+  const f = await preparedRecoveryFixture();
+  try {
+    await recoveryClock(f, async () => {
+      await f.recoveryService.recoverPreparedStep(f.recoveryRequest);
+      const old = Date.now;
+      Date.now = () => f.grant.expiresAt + 1;
+      try {
+        const reads = f.fake.calls.length;
+        await assert.rejects(() =>
+          f.recoveryService.walletRequestStarted({
+            step: 2,
+            capability: f.originalPrepared.capability,
+          }),
+        );
+        await assert.rejects(() =>
+          f.recoveryService.noteWalletError({
+            step: 2,
+            capability: f.originalPrepared.capability,
+            code: 4001,
+          }),
+        );
+        const lateHash = ethers.id("late-original-step2-wallet-hash");
+        await f.recoveryService.recordSubmitted({
+          step: 2,
+          capability: f.originalPrepared.capability,
+          hash: lateHash,
+        });
+        assert.equal(f.fake.calls.length, reads);
+        const saved = JSON.parse(fs.readFileSync(f.journalFile));
+        assert.equal(saved.steps.find((row) => row.step === 2).hash, lateHash);
+        assert.equal(
+          JSON.stringify(saved.steps.find((row) => row.step === 1)),
+          f.originalFirst,
+        );
+        await assert.rejects(() =>
+          f.recoveryService.recoverPreparedStep(f.recoveryRequest),
+        );
+      } finally {
+        Date.now = old;
+      }
+    });
+  } finally {
+    await f.close();
+  }
+});
+
+test("lost-page recovery exact grant and age/expiry boundaries fail before RPC or mutation", async () => {
+  const f = await preparedRecoveryFixture();
+  try {
+    const old = Date.now,
+      raw = fs.readFileSync(f.journalFile, "utf8"),
+      reads = f.fake.calls.length;
+    try {
+      for (const time of [
+        f.originalSecond.preparedAt + 59999,
+        f.grant.expiresAt,
+      ]) {
+        Date.now = () => time;
+        await assert.rejects(
+          () => f.recoveryService.recoverPreparedStep(f.recoveryRequest),
+          errorCode("RECOVERY_GRANT_REQUIRED"),
+        );
+        assert.equal(f.fake.calls.length, reads);
+        assert.equal(fs.readFileSync(f.journalFile, "utf8"), raw);
+      }
+      Date.now = () => f.originalSecond.preparedAt + 61000;
+      const common = {
+        ...f.recoveryCommon,
+        lostPageRecoveryGrant: {
+          ...f.grant,
+          originalPreparedSha256: "0".repeat(64),
+        },
+      };
+      const review = createV10WalletDeployment(common),
+        approvalHash = review.plan().approvalHash;
+      await review.close();
+      const wrongGrant = createV10WalletDeployment({
+        ...common,
+        enableWalletSigning: true,
+        approvalHash,
+      });
+      try {
+        await assert.rejects(
+          () => wrongGrant.recoverPreparedStep(f.recoveryRequest),
+          errorCode("RECOVERY_GRANT_REQUIRED"),
+        );
+      } finally {
+        await wrongGrant.close();
+      }
+      assert.equal(f.fake.calls.length, reads);
+      assert.equal(fs.readFileSync(f.journalFile, "utf8"), raw);
+    } finally {
+      Date.now = old;
+    }
+  } finally {
+    await f.close();
+  }
+});
 
 test("sealed V10 source reproduces all four direct CREATEs and rejects V9/governance/fee/calldata/source mutation", () => {
   const p = planFor();
@@ -532,6 +971,7 @@ function walletFixture({ delegated = true } = {}) {
   };
   const api = {
     prepare: async () => prepared,
+    walletRequestStarted: async ({ step }) => ({ recorded: true, step }),
     submitted: async () => {
       events.push("server-hash");
     },
@@ -636,6 +1076,74 @@ test("client code/context/expiry faults cause zero wallet sends and retain uncer
   }
 });
 
+test("client recovery uses only the explicit recover API and awaits durable started ACK before one wallet call", async () => {
+  const f = walletFixture(),
+    phases = [];
+  f.prepared.step = 2;
+  f.prepared.transaction = f.review.plan.transactions[1];
+  f.api.prepare = async () =>
+    assert.fail("Recovery must not prepare a second attempt");
+  f.api.recoverPrepared = async (input) => {
+    f.events.push("recover");
+    assert.deepEqual(input, {
+      step: 2,
+      wallet: USER_DEPLOYER,
+      chainId: 1,
+      planSha256: f.review.planSha256,
+      approvalHash: f.review.approvalHash,
+      acknowledgement: LOST_PAGE_ACK,
+    });
+    return f.prepared;
+  };
+  f.api.walletRequestStarted = async (input) => {
+    assert.deepEqual(input, { step: 2, capability: f.prepared.capability });
+    assert.equal(
+      f.calls.filter((call) => call.method === "eth_sendTransaction").length,
+      0,
+    );
+    f.events.push("started");
+    return { step: 2, recorded: true };
+  };
+  f.setMutation((p) =>
+    p.method === "eth_getTransactionCount" &&
+    p.params[0].toLowerCase() === USER_DEPLOYER.toLowerCase()
+      ? "0x1"
+      : undefined,
+  );
+  const result = await handoffOne({
+    ...f,
+    step: 2,
+    recoveryAcknowledgement: LOST_PAGE_ACK,
+    onPhase: (phase) => phases.push(phase),
+    saveHash: () => f.events.push("local-hash"),
+  });
+  assert.equal(result.hash, hash);
+  assert.deepEqual(f.events, [
+    "recover",
+    "started",
+    "wallet",
+    "local-hash",
+    "server-hash",
+  ]);
+  assert.equal(
+    f.calls.filter((call) => call.method === "eth_sendTransaction").length,
+    1,
+  );
+  assert.ok(
+    phases.indexOf("wallet-read-checks") <
+      phases.indexOf("wallet-confirmation"),
+  );
+  const stopped = walletFixture();
+  stopped.api.walletRequestStarted = async () => ({ recorded: false, step: 1 });
+  await assert.rejects(() => handoffOne({ ...stopped, step: 1 }));
+  assert.equal(
+    stopped.calls.filter((call) => call.method === "eth_sendTransaction")
+      .length,
+    0,
+  );
+  assert.deepEqual(stopped.events, ["uncertain"]);
+});
+
 test("actual local four-CREATE receipts verify V10 immediate owner/controller/factory with two confirmations; no Court attestation", async () => {
   const rpc = ganache.provider({
       logging: { quiet: true },
@@ -720,7 +1228,13 @@ test("loopback HTTP serves only isolated V10 assets and default review routes ca
     const response = await fetch(app.origin + "/api/prepare-step", {
       method: "POST",
       headers: { origin: app.origin, "content-type": "application/json" },
-      body: JSON.stringify({ step: 1, wallet: addr, chainId: 1 }),
+      body: JSON.stringify({
+        step: 1,
+        wallet: addr,
+        chainId: 1,
+        planSha256: review.planSha256,
+        approvalHash: review.approvalHash,
+      }),
     });
     assert.equal(response.status, 409);
     assert.equal((await response.json()).code, "APPROVAL_REQUIRED");
@@ -733,6 +1247,43 @@ test("loopback HTTP serves only isolated V10 assets and default review routes ca
       body: "{}",
     });
     assert.equal((await foreign.json()).code, "ORIGIN_REQUIRED");
+    for (const headers of [
+      { "content-type": "application/json" },
+      { "content-type": "application/json", origin: "https://foreign.invalid" },
+    ]) {
+      const result = await fetch(app.origin + "/api/recover-prepared-step", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          step: 2,
+          wallet: addr,
+          chainId: 1,
+          acknowledgement: LOST_PAGE_ACK,
+          planSha256: review.planSha256,
+          approvalHash: review.approvalHash,
+        }),
+      });
+      assert.equal((await result.json()).code, "ORIGIN_REQUIRED");
+    }
+    for (const approvalHash of [
+      undefined,
+      "0".repeat(64),
+      review.approvalHash,
+    ]) {
+      const result = await fetch(app.origin + "/api/recover-prepared-step", {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: app.origin },
+        body: JSON.stringify({
+          step: 2,
+          wallet: addr,
+          chainId: 1,
+          acknowledgement: LOST_PAGE_ACK,
+          planSha256: review.planSha256,
+          approvalHash,
+        }),
+      });
+      assert.equal((await result.json()).code, "APPROVAL_REQUIRED");
+    }
     const host = await new Promise((resolve, reject) => {
       const req = http.get(
         app.origin + "/api/plan",

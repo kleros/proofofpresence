@@ -1,3 +1,71 @@
+# Amended V10 Step 2 recovery handoff running — 30 October 2026, 01:50 Bangkok
+
+Supersedes the preceding bridge/session/source status below. Old session 83412 is stopped.
+Root's amended local bridge is running at `http://127.0.0.1:8788/`, session 84970, signing enabled,
+with current approval hash `12b705596a91a9263736ad6965171b99c326858b021c6a029870d1bbb59fab7a`.
+The old `93ad…` hash is historical, not approval for this amended source. Current source hashes:
+backend `10f79f91ffde81b88356164c3e055a75b6a68706367d2fe8c2ce41116f9ebafd`, CLI
+`8c0e9068cc61c91a1d830aef7f32a97a7bd679c8e815a6801d13dad7fec5102a`, client
+`8e24a3638564225d2325038ce13753fbebdc8d5fecb4f22a15287065521d01f7`.
+
+The original exact plan `2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37`
+and 0.0065625 ETH cap are unchanged. Root independently read the human's explicit Step 2 recovery
+request, message `01a188f7-12e9-7630-9ff6-010a07536f69`, and recorded the bounded source rebind;
+no new cap or duplicate approval question. Authorization record
+`artifacts/v10-release/step2-recovery-authorization-2026-10-29T18-48-30.511Z.json`, SHA256
+`3c39ac9b5c13dc24b8d1fea41fb6ea59c3b48a2b64eff019ba0d1aa898925502`.
+Same-basename grant SHA256 `3825b118e3295735cc78ff2190a1d62d9859194a9848471736e4c83549a13284`
+expires at 19:18:30 UTC / 02:18:30 Bangkok; review SHA256
+`ea10ef3aaf84fb52d2da667d54b3d7ea426bf819186184c957d0e3a2960f6a0b`.
+
+Root's last GET around 18:50 UTC: Step 1 confirmed; original Step 2 prepared/hash null,
+recoveryPrepared false and walletRequestStarted false. No recovery prepare/send by Root, no Step 1
+replay. The 18:38 read-only chain proof at block 26300242 found nonce 7 latest=pending and the
+Step 2 target empty. Human next: refresh Brave, reconnect, review the amended handoff, acknowledge
+the Step 2 no-sign/no-submit checkbox, manually Resume, keep open during 1–2 minute checks, then
+confirm in the wallet. A resumed wallet prompt or Step 2 transaction is not yet established.
+
+Recovery checks passed 18/18, four browser groups with no RPC/wallet/journal mutation, plus
+type/syntax/diff checks. Exact proofs are in `docs/TEST_REPORT.md`; no current full-app pass implied.
+The local V10 production-wallet policy is now an authorization-enabled exact-MetaMask candidate
+(source `11ad0223d3bb6a2c8f5732bdf99a0707aeb74380ef18c9fe8c9fa47ec0f2cad9`), UNPUBLISHED;
+caller wiring and full app/MetaMask acceptance remain pending. Do not describe this candidate as OFF
+or as deployed. V10 policy publication and hosting remain pending; live V9 stays09ac3a9, A/B/C paused.
+
+# V10 Step 1 confirmed; Step 2 wallet handoff pending — 30 October 2026, 01:37 Bangkok
+
+This checkpoint supersedes the approval-pending/signing-disabled statements below; historical
+records are preserved. On `codex/core-application`, the human approved the four direct Ethereum
+type-2 CREATEs, nonces 6–9, total gas cap **0.0065625 ETH**, for exact approval
+`93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0` and plan
+`2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37`.
+Public approval record: `artifacts/v10-release/human-gas-cap-approval-20261030.json`.
+This approval excludes event creation, policy upload, renunciation, V9 migration, app financial
+activation and hosting. Each request still needs the human's wallet confirmation; no backend signer.
+
+Mainnet Step 1 is CONFIRMED: controller `0x8819994609eC122AaC2B4CC2200e694C6b039Cd2`, transaction
+`0xebfc83d4a2a2421447a19ba341beb26ef24f07482beab81da71f01f6a097c91b`, block 26300136.
+The existing-receipt check at 18:23:08 UTC reported 26 confirmations, gas 669197 and cost
+0.000114110225056792 ETH. Proof `artifacts/v10-release/step1-receipt-2026-10-29T18-23-08.939Z.json`,
+SHA256 `9cda462ea20d0180b309b1ff96ae9dcc9d99463ce2176d2fff85ce39c8c23fd5`.
+The read-only check itself signed/broadcast nothing. Step 1 must never be replayed.
+
+Root's 18:37 UTC local state read: Step 2 PREPARED, attempt 1, hash null, no candidates;
+Steps 3–4 not prepared. The human reports no MetaMask popup. Root is diagnosing the original
+handoff without a second prepare, reset or replay. Local server `http://127.0.0.1:8788/`, session
+83412, has signing enabled for the unchanged exact approved handoff; this is not setup completion.
+Only Root operates the live diagnostic. Do not operate old V9 port 8787 or retired A/B/C.
+
+V10 app work remains local/unpublished and delegated financial activation OFF. Earlier actual
+synthetic-EOA creation passed 13 checks and context browser checks passed 4; both predate the latest
+caller-helper wiring and are not a full combined-current pass. Latest bounded evidence: frontend
+26 pure checks plus 2 mounted ordering checks, private receipt adapter 12 and wallet policy 9.
+The ordering proof is under `artifacts/v10-wallet-callers/2026-10-29T18-23-10.024Z-2d1c2dab-2e64-42b5-a01e-4658e0989a93/`.
+Final combined app/MetaMask checks, remaining mainnet births, verified factory setup, V10 policy
+publication and hosting are pending. Policy remains UNPUBLISHED, URI null, SHA256
+`525453aee59b7d3f48e96f6ad5ea6aa9807fc6cfef8a495f5f645e3e3ca231a4`.
+Existing live V9 and its data remain separate; A/B/C stay paused and untouched.
+
 # V10 final deployment budget review — 30 October 2026, Bangkok
 
 FINALfrozen Core source `df75dfab9cbc604e20b040abc7a5be4abcfe0ccf` on `codex/core-application`.

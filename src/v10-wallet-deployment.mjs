@@ -24,6 +24,8 @@ import {
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 export const USER_DEPLOYER = "0x2bb03593892724d225071068E59ab1E48aF05b55";
+export const V10_LOST_PAGE_ACK =
+  "refreshed-before-wallet-confirmation-no-submission";
 const NAMES = [
   "KlerosUpgradeControllerV10",
   "KlerosEventV10",
@@ -141,6 +143,7 @@ export function createV10PacedFetcher({
 export function v10WalletDeploymentApproval(
   plan,
   delegatedCreateReview = null,
+  lostPageRecoveryGrant = null,
 ) {
   const planSha256 = sha(canonical(plan));
   const bridgeSources = bridgeSourceHashes(),
@@ -150,6 +153,7 @@ export function v10WalletDeploymentApproval(
     bridgeSourceSha256,
     bridgeSources,
     delegatedCreateReview,
+    lostPageRecoveryGrant,
     approvalHash: sha(
       canonical({
         purpose: "v10-four-direct-type2-create-mainnet-setup-only",
@@ -159,6 +163,7 @@ export function v10WalletDeploymentApproval(
         deployer: plan.deployer,
         maxTotalGasCostWei: plan.maxTotalGasCostWei,
         delegatedCreateReview,
+        lostPageRecoveryGrant,
       }),
     ),
   };
@@ -365,6 +370,7 @@ export function createV10WalletDeployment({
   verifySources = verifyV10WalletDeploymentPlan,
   verifyFactory = verifyV10FactoryDeployment,
   delegatedCreateReview = null,
+  lostPageRecoveryGrant = null,
   loadDelegatedReview = loadDelegatedCreateReview,
   rpcUrl = "https://eth.drpc.org/",
   confirmations = 2,
@@ -416,8 +422,45 @@ export function createV10WalletDeployment({
     };
   };
   const pinnedReview = freeze(reviewPin(initialVerification.build));
+  const recoveryGrant =
+    lostPageRecoveryGrant === null
+      ? null
+      : freeze(structuredClone(lostPageRecoveryGrant));
+  if (recoveryGrant !== null) {
+    const keys = [
+      "schemaVersion",
+      "kind",
+      "planSha256",
+      "wallet",
+      "step",
+      "nonce",
+      "originalAttempt",
+      "originalPreparedAt",
+      "originalPreparedSha256",
+      "originalApprovalHash",
+      "expiresAt",
+    ];
+    check(
+      Object.keys(recoveryGrant).sort().join() === keys.sort().join() &&
+        recoveryGrant.schemaVersion === 1 &&
+        recoveryGrant.kind === "v10-step2-lost-page-recovery" &&
+        recoveryGrant.planSha256 === sha(canonical(plan)) &&
+        same(recoveryGrant.wallet, plan.deployer) &&
+        recoveryGrant.step === 2 &&
+        recoveryGrant.nonce === plan.transactions[1].nonce &&
+        recoveryGrant.originalAttempt === 1 &&
+        Number.isSafeInteger(recoveryGrant.originalPreparedAt) &&
+        recoveryGrant.originalPreparedAt > 0 &&
+        /^[a-f0-9]{64}$/.test(recoveryGrant.originalPreparedSha256) &&
+        /^[a-f0-9]{64}$/.test(recoveryGrant.originalApprovalHash) &&
+        Number.isSafeInteger(recoveryGrant.expiresAt) &&
+        recoveryGrant.expiresAt > recoveryGrant.originalPreparedAt,
+      "RECOVERY_GRANT_REQUIRED",
+      "Use the exact reviewed Step 2 recovery grant.",
+    );
+  }
   const binding = {
-    ...v10WalletDeploymentApproval(plan, pinnedReview),
+    ...v10WalletDeploymentApproval(plan, pinnedReview, recoveryGrant),
     deployer: plan.deployer,
   };
   check(
@@ -535,6 +578,10 @@ export function createV10WalletDeployment({
         })),
         receipt: row?.receipt ?? null,
         attempt: row?.attempt ?? 0,
+        recoveryPrepared: !!row?.recovery,
+        walletRequestStarted: !!(
+          row?.walletRequestStartedAt || row?.recovery?.walletRequestStartedAt
+        ),
       };
     }),
     setup: journal.setup ?? { status: "not-verified" },
@@ -860,8 +907,8 @@ export function createV10WalletDeployment({
   async function checkedStep(journal, step) {
     assertPlan();
     check(
-      v10WalletDeploymentApproval(plan, pinnedReview).bridgeSourceSha256 ===
-        binding.bridgeSourceSha256,
+      v10WalletDeploymentApproval(plan, pinnedReview, recoveryGrant)
+        .bridgeSourceSha256 === binding.bridgeSourceSha256,
       "SOURCE_CHANGED",
       "The reviewed wallet-bridge source changed; obtain a new explicit review.",
     );
@@ -1021,10 +1068,133 @@ export function createV10WalletDeployment({
         courtVerified: false,
         rpcMinimumAdmissionIntervalMs: 1500,
         rpcRetries: 0,
+        lostPageRecovery: recoveryGrant
+          ? { step: 2, expiresAt: recoveryGrant.expiresAt }
+          : null,
       },
     }),
     state: () => publicState(store.read()),
     checkStep: async (step) => checkedStep(store.read(), step),
+    recoverPreparedStep: async ({ step, wallet, chainId, acknowledgement }) => {
+      check(
+        signingEnabled,
+        "APPROVAL_REQUIRED",
+        "Approve the exact amended handoff first.",
+      );
+      return store.locked(async (journal, write) => {
+        check(
+          recoveryGrant !== null,
+          "RECOVERY_GRANT_REQUIRED",
+          "A separately approved recovery grant is required.",
+        );
+        check(
+          step === 2 &&
+            chainId === 1 &&
+            same(wallet, plan.deployer) &&
+            acknowledgement === V10_LOST_PAGE_ACK,
+          "RECOVERY_ACK_REQUIRED",
+          "Only the explicitly reviewed lost-page Step 2 recovery is supported.",
+        );
+        const row = journal.steps.find((r) => r.step === 2);
+        check(
+          row?.state === "prepared" &&
+            row.attempt === 1 &&
+            !row.hash &&
+            !row.confirmedHash &&
+            !row.pendingHash &&
+            !row.candidates?.length &&
+            !row.recovery &&
+            !row.walletRequestStartedAt &&
+            !journal.steps.some((r) => r.step > 2),
+          "RECOVERY_UNAVAILABLE",
+          "Preserve the original handoff or hash; this state cannot be resumed.",
+        );
+        const originalHash = sha(canonical(row));
+        const grantCurrent = () =>
+          check(
+            recoveryGrant.originalPreparedSha256 === originalHash &&
+              recoveryGrant.originalApprovalHash === journal.approvalHash &&
+              recoveryGrant.originalPreparedAt === row.preparedAt &&
+              recoveryGrant.originalAttempt === row.attempt &&
+              Date.now() >= row.preparedAt + 60000 &&
+              Date.now() < recoveryGrant.expiresAt &&
+              recoveryGrant.expiresAt <= Date.now() + 30 * 60000,
+            "RECOVERY_GRANT_REQUIRED",
+            "The one-use original-attempt recovery grant is unavailable or expired.",
+          );
+        grantCurrent();
+        // Re-check the confirmed predecessor, exact unused nonce/address, all source
+        // and account pins, remaining total budget and gas. No transaction is sent.
+        const proof = await checkedStep(journal, step),
+          capability = randomBytes(32).toString("hex");
+        grantCurrent();
+        check(
+          sha(canonical(store.read().steps.find((r) => r.step === 2))) ===
+            originalHash,
+          "JOURNAL_SCOPE",
+          "The original handoff changed during recovery checks.",
+        );
+        // Original preparedAt, proof, capabilityHash, attempt and history stay intact.
+        row.recovery = {
+          kind: "human-requested-lost-page",
+          acknowledgement,
+          preparedAt: Date.now(),
+          approvalHash: binding.approvalHash,
+          bridgeSourceSha256: binding.bridgeSourceSha256,
+          originalPreparedSha256: originalHash,
+          capabilityHash: sha(capability),
+          proof,
+        };
+        write(journal);
+        return {
+          step,
+          capability,
+          planSha256: binding.planSha256,
+          approvalHash: binding.approvalHash,
+          validUntil: Date.now() + 60000,
+          transaction: structuredClone(txFor(step)),
+          proof: structuredClone(proof),
+        };
+      });
+    },
+    walletRequestStarted: async ({ step, capability }) =>
+      store.locked((journal, write) => {
+        check(signingEnabled, "APPROVAL_REQUIRED", "Signing is disabled.");
+        const row = journal.steps.find((r) => r.step === step),
+          handoff = row?.recovery ?? row;
+        check(
+          v10WalletDeploymentApproval(plan, pinnedReview, recoveryGrant)
+            .bridgeSourceSha256 === binding.bridgeSourceSha256,
+          "SOURCE_CHANGED",
+          "The reviewed bridge source changed.",
+        );
+        check(
+          row?.state === "prepared" &&
+            !row.hash &&
+            typeof capability === "string" &&
+            sha(capability) === handoff?.capabilityHash &&
+            handoff.approvalHash === binding.approvalHash &&
+            Date.now() < handoff.preparedAt + 60000 &&
+            !handoff.walletRequestStartedAt,
+          "CAPABILITY_REQUIRED",
+          "The original active handoff is required, without replay.",
+        );
+        if (row.recovery) {
+          const { recovery, ...original } = row;
+          check(
+            recoveryGrant &&
+              Date.now() < recoveryGrant.expiresAt &&
+              recovery.originalPreparedSha256 ===
+                recoveryGrant.originalPreparedSha256 &&
+              sha(canonical(original)) === recoveryGrant.originalPreparedSha256,
+            "RECOVERY_GRANT_REQUIRED",
+            "The original-attempt recovery grant changed or expired.",
+          );
+        }
+        handoff.walletRequestStartedAt = Date.now();
+        write(journal);
+        return { step, recorded: true };
+      }),
     prepareStep: async ({ step, wallet, chainId }) => {
       check(
         signingEnabled,
@@ -1050,16 +1220,18 @@ export function createV10WalletDeployment({
           state: "prepared",
           capabilityHash: sha(capability),
           preparedAt: Date.now(),
+          approvalHash: binding.approvalHash,
+          bridgeSourceSha256: binding.bridgeSourceSha256,
           attempt: (old?.attempt ?? 0) + 1,
           proof,
           history: old
             ? [
                 ...(old.history ?? []),
-                {
-                  state: old.state,
-                  preparedAt: old.preparedAt,
-                  attempt: old.attempt,
-                },
+                Object.fromEntries(
+                  Object.entries(structuredClone(old)).filter(
+                    ([key]) => key !== "history",
+                  ),
+                ),
               ]
             : [],
         };
@@ -1103,7 +1275,9 @@ export function createV10WalletDeployment({
           row.hash ||
             recovery ||
             (typeof capability === "string" &&
-              sha(capability) === row.capabilityHash),
+              [row.capabilityHash, row.recovery?.capabilityHash].includes(
+                sha(capability),
+              )),
           "CAPABILITY_REQUIRED",
           "The original handoff capability or explicit hash recovery is required.",
         );
@@ -1126,7 +1300,7 @@ export function createV10WalletDeployment({
             !row.hash &&
             row.state === "prepared" &&
             typeof capability === "string" &&
-            sha(capability) === row.capabilityHash,
+            sha(capability) === (row.recovery ?? row).capabilityHash,
           "CAPABILITY_REQUIRED",
           "The original prepared wallet handoff is required.",
         );
@@ -1221,8 +1395,23 @@ export async function startV10WalletDeploymentServer(options) {
           check(body.length <= 4096, "INVALID_INPUT", "Request is too large.");
         }
         const value = JSON.parse(body);
+        if (
+          ["/api/prepare-step", "/api/recover-prepared-step"].includes(
+            url.pathname,
+          )
+        )
+          check(
+            value.planSha256 === service.plan().planSha256 &&
+              value.approvalHash === service.plan().approvalHash,
+            "APPROVAL_REQUIRED",
+            "Refresh the exact amended review before preparing a wallet request.",
+          );
         if (url.pathname === "/api/prepare-step")
           return send(res, 200, await service.prepareStep(value));
+        if (url.pathname === "/api/recover-prepared-step")
+          return send(res, 200, await service.recoverPreparedStep(value));
+        if (url.pathname === "/api/wallet-request-started")
+          return send(res, 200, await service.walletRequestStarted(value));
         if (url.pathname === "/api/record-submitted")
           return send(res, 200, await service.recordSubmitted(value));
         if (url.pathname === "/api/wallet-error")

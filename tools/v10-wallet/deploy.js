@@ -112,6 +112,8 @@ export async function handoffOne({
   step,
   saveHash = () => {},
   isCurrent = () => true,
+  recoveryAcknowledgement = null,
+  onPhase = () => {},
 }) {
   check(
     review.signingEnabled === true &&
@@ -132,9 +134,31 @@ export async function handoffOne({
       same(accounts[0], review.plan.deployer),
     "Select the approved wallet on Ethereum mainnet.",
   );
-  const prepared = await api.prepare({ step, wallet: accounts[0], chainId: 1 });
+  check(
+    recoveryAcknowledgement === null ||
+      (step === 2 &&
+        recoveryAcknowledgement ===
+          "refreshed-before-wallet-confirmation-no-submission"),
+    "Only the separately reviewed lost-page Step 2 recovery is supported.",
+  );
+  onPhase("server-preflight");
+  const input = {
+    step,
+    wallet: accounts[0],
+    chainId: 1,
+    planSha256: review.planSha256,
+    approvalHash: review.approvalHash,
+  };
+  const prepared =
+    recoveryAcknowledgement === null
+      ? await api.prepare(input)
+      : await api.recoverPrepared({
+          ...input,
+          acknowledgement: recoveryAcknowledgement,
+        });
   let hash;
   try {
+    onPhase("wallet-read-checks");
     const tx = assertPrepared(review, step, prepared);
     check(isCurrent(), "The selected wallet context changed.");
     const block = await provider.request({
@@ -220,6 +244,18 @@ export async function handoffOne({
       prepared.validUntil > Date.now(),
       "The prepared review expired before wallet handoff.",
     );
+    const started = await api.walletRequestStarted({
+      step,
+      capability: prepared.capability,
+    });
+    check(
+      started?.recorded === true &&
+        started.step === step &&
+        isCurrent() &&
+        prepared.validUntil > Date.now(),
+      "The durable wallet handoff was not acknowledged. Preserve this attempt; do not resend.",
+    );
+    onPhase("wallet-confirmation");
     hash = await provider.request({
       method: "eth_sendTransaction",
       params: [
@@ -325,6 +361,8 @@ async function boot() {
   );
   const api = {
     prepare: (v) => request("/api/prepare-step", v),
+    recoverPrepared: (v) => request("/api/recover-prepared-step", v),
+    walletRequestStarted: (v) => request("/api/wallet-request-started", v),
     submitted: (v) => request("/api/record-submitted", v),
     walletError: (v) => request("/api/wallet-error", v),
   };
@@ -507,11 +545,11 @@ async function boot() {
         !$("consent").checked ||
         !["not-prepared", "rejected"].includes(row.state) ||
         state.steps.some((r) => r.step < tx.step && r.state !== "confirmed");
-      send.onclick = async () => {
+      const runHandoff = async (recoveryAcknowledgement = null) => {
         busy = true;
         render();
         message(
-          "Preparing one request; confirm its exact details in your wallet.",
+          "Checking Ethereum; this can take 1–2 minutes. Keep this page open. MetaMask opens after the checks.",
         );
         try {
           const handoffProvider = selectedProvider;
@@ -520,6 +558,15 @@ async function boot() {
             provider: selectedProvider,
             review,
             step: tx.step,
+            recoveryAcknowledgement,
+            onPhase: (phase) =>
+              message(
+                phase === "server-preflight"
+                  ? "Checking Ethereum; this can take 1–2 minutes. Keep this page open. MetaMask opens after the checks."
+                  : phase === "wallet-read-checks"
+                    ? "Ethereum checks passed. Checking the connected wallet before opening its confirmation. Keep this page open."
+                    : "Wallet request recorded. Review and confirm this one CREATE in MetaMask. Keep its original hash.",
+              ),
             isCurrent: () =>
               connected &&
               selectedProvider === handoffProvider &&
@@ -545,7 +592,53 @@ async function boot() {
           await refresh();
         }
       };
+      send.onclick = () => runHandoff();
       section.append(send);
+      if (
+        tx.step === 2 &&
+        row.state === "prepared" &&
+        !row.hash &&
+        !row.recoveryPrepared &&
+        !row.walletRequestStarted &&
+        review.terms.lostPageRecovery
+      ) {
+        const label = document.createElement("label"),
+          acknowledgement = document.createElement("input"),
+          resume = document.createElement("button"),
+          explanation = document.createElement("p");
+        label.className = "consent";
+        acknowledgement.type = "checkbox";
+        acknowledgement.disabled = busy;
+        label.append(
+          acknowledgement,
+          document.createTextNode(
+            " I refreshed before MetaMask opened Step 2. I have not signed or submitted Step 2 in any window, and I have no transaction hash for it.",
+          ),
+        );
+        explanation.textContent =
+          "This one-use recovery preserves Step 1 and the original Step 2 record. If you have a hash or a pending wallet request, use receipt recovery instead. Recheck the review box above before each wallet request.";
+        resume.textContent = "Resume Step 2 wallet review";
+        resume.className = "send";
+        const allowed = () =>
+          !busy &&
+          !conflict &&
+          !saved &&
+          connected &&
+          review.signingEnabled &&
+          $("consent").checked &&
+          Date.now() < review.terms.lostPageRecovery.expiresAt;
+        resume.disabled = true;
+        acknowledgement.onchange = () => {
+          resume.disabled = !acknowledgement.checked || !allowed();
+        };
+        resume.onclick = () => {
+          if (acknowledgement.checked && allowed())
+            return runHandoff(
+              "refreshed-before-wallet-confirmation-no-submission",
+            );
+        };
+        section.append(explanation, label, resume);
+      }
       if (
         [
           "prepared",

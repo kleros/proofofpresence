@@ -1,0 +1,34 @@
+{
+  "kind": "explicit-human-v10-four-create-gas-approval",
+  "recordedAt": "2026-10-29T17:39:24.422Z",
+  "sourceThread": "01a182fd-e2f8-79e1-9fb7-634588716fa1",
+  "humanMessageId": "01a188bb-24ed-7e70-9738-d95cbc57f196",
+  "questionId": "call_b0a818a4682d40e1bfa385daacd025b9",
+  "answer": "Approve 0.0065625 ETH cap",
+  "approvalHash": "93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0",
+  "planSha256": "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+  "bridgeSourceSha256": "67fcc7a43a1872cb6f50c957dc0edb099c1c0041fd805ea6dea227d00f9a8a4e",
+  "scope": "four-direct-type2-create-infrastructure-only",
+  "chainId": 1,
+  "deployer": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "nonces": [
+    6,
+    7,
+    8,
+    9
+  ],
+  "maximumTotalGasCostWei": "6562500000000000",
+  "transactionsETHValueWei": "0",
+  "immediateUpgradeOwnershipRetained": true,
+  "eachTransactionRequiresHumanWalletConfirmation": true,
+  "excluded": [
+    "event creation",
+    "policy upload",
+    "renunciation",
+    "V9 migration",
+    "application financial activation",
+    "hosting"
+  ],
+  "agentSignatures": 0,
+  "agentBroadcasts": 0
+}

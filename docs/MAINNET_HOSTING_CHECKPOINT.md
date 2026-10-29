@@ -1,3 +1,51 @@
+# Amended V10 localhost recovery running; app not released — 30 October 2026, 01:50 Bangkok
+
+Old bridge session83412 is stopped. The amended localhost8788 bridge runs in Root session84970,
+signing enabled, exact approval `12b705596a91a9263736ad6965171b99c326858b021c6a029870d1bbb59fab7a`.
+This supersedes old93ad source claims below. Backend/CLI/client are pinned to
+`10f79f91ffde81b88356164c3e055a75b6a68706367d2fe8c2ce41116f9ebafd`,
+`8c0e9068cc61c91a1d830aef7f32a97a7bd679c8e815a6801d13dad7fec5102a` and
+`8e24a3638564225d2325038ce13753fbebdc8d5fecb4f22a15287065521d01f7`.
+Human's explicit refreshed-page recovery request plus the original exact plan/cap authorizes this
+bounded repair; no new cap/duplicate approval question. Grant and source-rebind records are
+`artifacts/v10-release/step2-recovery-{grant,review,authorization}-2026-10-29T18-48-30.511Z.json`.
+Grant expiry is19:18:30 UTC /02:18:30 Bangkok. This remains a local human-wallet handoff, not hosting.
+
+Latest Root GET around18:50 UTC retained Step1 confirmed and Step2 original prepared/hashnull;
+recoveryPrepared=false/walletRequestStarted=false. No Root recovery prepare/send or Step1 replay.
+Manual human refresh/reconnect/review/no-sign checkbox/Resume/wallet confirmation is pending;
+keep open during1–2 minute checks. Recovery18tests/browser4groups passed without real wallet work.
+
+V10 production-wallet policy is now an authorization-enabled exact-MetaMask LOCAL candidate
+(source11ad0223…), unpublished, caller wiring/full combined app acceptance pending. Prior OFF
+statements below are historical; neither candidate authorization nor recovery tests establish a live
+V10 financial app. Remaining mainnet births/factory verification, V10 policy publication and hosting
+release are pending. Existing liveV9 remains09ac3a9; no hosting migration or retired A/B/C operation.
+
+# V10 controller confirmed; application release pending — 30 October 2026, 01:37 Bangkok
+
+The isolated V10 infrastructure handoff has human approval for exact source/plan approval
+`93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0`, plan
+`2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37`, four direct type-2
+CREATEs/nonces 6–9 and **0.0065625 ETH** maximum total gas. The localhost 8788 handoff is enabled
+(Root session 83412); only the human's wallet signs. This is separate from application hosting.
+
+Step 1 deployed controller `0x8819994609eC122AaC2B4CC2200e694C6b039Cd2`, canonical transaction
+`0xebfc83d4a2a2421447a19ba341beb26ef24f07482beab81da71f01f6a097c91b`, block 26300136.
+Existing-hash proof: `artifacts/v10-release/step1-receipt-2026-10-29T18-23-08.939Z.json`.
+At 18:37 UTC, Root reported Step 2 PREPARED/attempt 1/hash null/no candidates, Steps 3–4 not
+prepared. Human reports no MetaMask popup; Root is diagnosing the original handoff without another
+prepare, reset or replay. Step 1 stays confirmed and is never replayed. Full setup is not verified.
+
+No V10 app has been published or enabled for delegated finance. Its latest frontend 26 pure + 2
+mounted ordering checks and backend receipt 12/policy 9 are bounded evidence, not a full combined
+current acceptance. Earlier real-local EOA creation 13 and browser context 4 predate caller wiring.
+Final app/MetaMask validation, remaining births/factory verification, V10 policy publication and
+hosting approval/release remain pending. The 9906-byte policy stays UNPUBLISHED with URI null.
+The approved gas scope excludes hosting, policy upload and app financial activation. Public V9
+continues separately at source09ac3a9; no V9 hosting/data migration or A/B/C operation occurred here.
+Historical review-only/signing-disabled entries below are superseded by this dated checkpoint.
+
 # Isolated V10 deployment review only — 30 October 2026
 
 Core source `df75dfab9cbc604e20b040abc7a5be4abcfe0ccf`, branch `codex/core-application`, freezes

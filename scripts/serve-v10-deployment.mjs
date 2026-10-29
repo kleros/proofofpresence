@@ -1,6 +1,7 @@
 // Dedicated public-plan V10 review bridge. Only explicit --serve permits a loopback listener/read RPC.
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
   createV10WalletDeployment,
@@ -21,6 +22,8 @@ for (let i = 2; i < process.argv.length; i++) {
       "--rpc",
       "--delegated-review",
       "--delegated-review-sha256",
+      "--recovery-grant",
+      "--recovery-grant-sha256",
     ].includes(key) ||
     Object.hasOwn(flags, key)
   )
@@ -57,6 +60,11 @@ if (
   Boolean(flags["--delegated-review-sha256"])
 )
   throw Error("Supply both delegated review file and exact hash");
+if (
+  Boolean(flags["--recovery-grant"]) !==
+  Boolean(flags["--recovery-grant-sha256"])
+)
+  throw Error("Supply both public recovery grant and exact SHA-256");
 const filename = path.resolve(
   ROOT,
   flags["--plan"] ??
@@ -84,6 +92,27 @@ const options = {
       }
     : {}),
 };
+if (flags["--recovery-grant"]) {
+  const target = path.resolve(ROOT, flags["--recovery-grant"]),
+    stat = fs.lstatSync(target);
+  if (
+    !target.startsWith(release) ||
+    !target.endsWith(".json") ||
+    !stat.isFile() ||
+    stat.isSymbolicLink() ||
+    stat.size > 16384 ||
+    fs.realpathSync(target) !== target ||
+    !/^[a-f0-9]{64}$/.test(flags["--recovery-grant-sha256"])
+  )
+    throw Error("Use the exact bounded public recovery grant");
+  const bytes = fs.readFileSync(target);
+  if (
+    createHash("sha256").update(bytes).digest("hex") !==
+    flags["--recovery-grant-sha256"]
+  )
+    throw Error("The reviewed recovery grant changed");
+  options.lostPageRecoveryGrant = JSON.parse(bytes);
+}
 if (!flags["--serve"]) {
   const service = createV10WalletDeployment(options),
     review = service.plan();

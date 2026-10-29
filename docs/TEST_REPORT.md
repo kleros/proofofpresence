@@ -1,3 +1,82 @@
+## V10 one-use recovery verification — 30 October 2026, 01:50 Bangkok
+
+Amended source approval is `12b705596a91a9263736ad6965171b99c326858b021c6a029870d1bbb59fab7a`.
+The older93ad binding is historical. Tested current backend/CLI/client SHA256s:
+`10f79f91ffde81b88356164c3e055a75b6a68706367d2fe8c2ce41116f9ebafd`,
+`8c0e9068cc61c91a1d830aef7f32a97a7bd679c8e815a6801d13dad7fec5102a`,
+`8e24a3638564225d2325038ce13753fbebdc8d5fecb4f22a15287065521d01f7`.
+
+`node --test --test-concurrency=1 test/v10-wallet-deployment.test.mjs` passed **18/18** in29.868s:
+all12 legacy plus6 new recovery groups. Synthetic temporary journals/providers prove exact Step1/
+originalStep2 preservation; one grant/restart; no-RPC/no-mutation invalid scope/state/grant/age/expiry;
+fresh predecessor, nonce/pending, framework, target, balance/gas failures; old capability cannot start
+a wallet request or change wallet-error state, but still preserves a late known hash; durable start
+ACK precedes one fake client wallet call, missing ACK stops it; exact local four-CREATE source proof;
+and actual ephemeral-loopback origin/current-approval/default-readonly HTTP boundaries.
+No public RPC or real wallet was used. Immutable log
+`artifacts/v10-release/lost-page-recovery-tests-20261030-agent-01.log`, SHA256
+`c02a476ea096adc02d5845d56e91927e97f4fd078390cf97e5ec3b191a40d727`.
+
+Independent recovery browser proof passed4 groups:
+`artifacts/v10-wallet-recovery-browser/2026-10-29T18-47-16-222Z-7dd0d82d-b99e-448e-bb70-c59a3ad49fa7/proof.json`,
+SHA256 `f1d1de85694476f185ed7db060b03af5d508371ef18c032b6d5d46893ca1b533`.
+It covered explicit one-use acknowledgement/unsendable confirmedStep1, exact review terms, responsive
+desktop/mobile and GET-only behavior: no provider initialization, RPC, wallet, journal mutation,
+signature or broadcast. Root inspected both captures. Typecheck/syntax/diff checks passed separately.
+This is not a real MetaMask popup or a full combined-current app financial pass.
+
+Root independently read human recovery message01a188f7-12e9-7630-9ff6-010a07536f69. The unchanged
+plan/cap and that explicit request underpin authorization/source-rebind record
+`artifacts/v10-release/step2-recovery-authorization-2026-10-29T18-48-30.511Z.json`, SHA256
+`3c39ac9b5c13dc24b8d1fea41fb6ea59c3b48a2b64eff019ba0d1aa898925502`; no duplicate cap approval.
+Grant SHA3825b118… expires19:18:30 UTC. Session83412 stopped; amended84970/local8788 signingtrue.
+Root's last GET about18:50 UTC: Step1confirmed, Step2originalprepared/hashnull, recoveryPreparedfalse,
+walletRequestStartedfalse. No Root reprepare/send/replay. Earlier read-only proof at26300242 found
+nonce7 latest=pending/targetempty, without a financial request. The human recovery workflow remains
+pending. Local exact-MetaMask production-wallet policy is now authorization-enabled/unpublished,
+not OFF; full app wiring/acceptance, remaining births, policy publication and hosting remain pending.
+This docs-only update reran nothing and changed no product, server, journal or hosting state.
+
+## V10 current bounded evidence and partial mainnet deployment — 30 October 2026, 01:37 Bangkok
+
+The human approved the exact four-CREATE handoff hash
+`93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0`, plan
+`2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37`, nonces 6–9,
+maximum total gas **0.0065625 ETH**. This is infrastructure-only approval, not an app/policy/hosting
+release. `artifacts/v10-release/human-gas-cap-approval-20261030.json` preserves its scope.
+
+Actual mainnet Step 1 is confirmed: transaction
+`0xebfc83d4a2a2421447a19ba341beb26ef24f07482beab81da71f01f6a097c91b`, block 26300136,
+controller `0x8819994609eC122AaC2B4CC2200e694C6b039Cd2`. The existing-receipt proof at
+18:23:08 UTC found 26 confirmations/gas 669197/cost 0.000114110225056792 ETH and signed or
+broadcast nothing itself. Proof `artifacts/v10-release/step1-receipt-2026-10-29T18-23-08.939Z.json`,
+SHA256 `9cda462ea20d0180b309b1ff96ae9dcc9d99463ce2176d2fff85ce39c8c23fd5`.
+Root's 18:37 UTC state read showed Step 2 PREPARED/attempt 1/hash null/no candidates and Steps
+3–4 not prepared. Human reports no MetaMask popup. The original handoff is under diagnosis;
+there has been no second prepare/reset/replay and Step 1 is not replayed. Full setup is unverified.
+
+Separate local evidence, at distinct source checkpoints:
+
+- `node test/v10-app-creation.e2e.mjs --run-loopback`: 13 checks passed with one actual synthetic-EOA
+  local CREATE, source-verified adoption, retained receipt/Your events and public catalog after a real
+  backend restart. Proof `artifacts/v10-app-creation/2026-10-29T17-29-48-650Z-20de4a8e-0e19-4dff-a5ef-5ff8dff37c3c/proof.json`,
+  SHA256 `a072de7f88ace6ebfbac1460a500776c752c97a31cc543a39303095e006bb24e`.
+  The prior stopped attempt had no auth/signature/CREATE; Root fixed the V10 ABI DTO before the pass.
+- Earlier V10 context browser proof passed 4 checks. That and the 13-check creation proof predate
+  the latest caller-helper wiring; neither establishes a current combined MetaMask/app pass.
+- Latest frontend evidence: Root-reported 26 pure checks and 2 mounted ordering checks. The latter
+  proves validation expiry and revoked context stop before wallet marker/send; synthetic provider/DTO
+  only, no signature/send/receipt. Proof `artifacts/v10-wallet-callers/2026-10-29T18-23-10.024Z-2d1c2dab-2e64-42b5-a01e-4658e0989a93/proof.json`,
+  SHA256 `f9df25b980763891971276715430156dde361013a2a28cf7626543bcc886a8b9`.
+- `node --test --test-concurrency=1 test/v10-receipt-context.test.mjs`: 12/12 passed, including
+  duplicate-hash rejection before policy and a collision added during an awaited read. Wallet policy
+  has separate 9-test evidence; delegated app activation remains OFF.
+
+This documentation update ran no tests, RPC, browser/server, signing, send or hosting operation.
+Final combined app/MetaMask validation, remaining mainnet births, full factory setup verification,
+V10 policy publication and hosting remain pending. The policy is UNPUBLISHED/URI null; the offline
+CID proposal is not publication evidence. Historical approval-pending entries below remain unchanged.
+
 ## V10 final deployment review checks — 30 October 2026, Bangkok
 
 Complete committed-source dRPC preflight PASSED35pacedreads/0blockers; canonicalblock26299743,
