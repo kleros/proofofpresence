@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "checks": 26,
+  "scope": "fixture shape and pending-contract guard only",
+  "coreContractConfirmed": true,
+  "browserRuns": 0,
+  "networkRequests": 0,
+  "walletCalls": 0,
+  "financialActions": 0
+}

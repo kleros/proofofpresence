@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { chromium, expect } from "@playwright/test";
 import { startServer } from "../src/server.mjs";
 
-// An older detail response must not corrupt the current event's global state,
-// even when its DOM was already rendered by a later successful request.
+// Superseded GETs are canceled without corrupting the current event. The GET-only
+// ui-ux-fixes harness separately covers a transport that deliberately ignores abort.
 const app = await startServer({ port: 0, rpcPort: 0 });
 let browser, releaseA;
 const delayedA = new Promise(resolve => { releaseA = resolve; });
@@ -14,28 +14,38 @@ try {
   const login = await context.request.post(app.url + "/api/session", { data: { identity: "organizer-b" }, headers: { Origin: app.url } });
   assert.equal(login.status(), 200);
   let heldA = false;
+  const isEventARead = request => {
+    const url = new URL(request.url());
+    return request.method() === "GET" && url.origin === app.url &&
+      ((url.pathname === "/api/bootstrap" && url.searchParams.get("selectedEventId") === "event-a") ||
+        url.pathname === "/api/events/event-a");
+  };
   await context.route("**/*", async route => {
     const url = new URL(route.request().url());
     if (url.origin !== app.url) { external.push(url.href); return route.abort("blockedbyclient"); }
-    if (url.pathname === "/api/events/event-a" && !heldA) { heldA = true; await delayedA; }
+    if (isEventARead(route.request()) && !heldA) { heldA = true; await delayedA; }
     return route.continue();
   });
   const page = await context.newPage();
+  const canceled = [];
+  page.on("requestfailed", request => {
+    if (isEventARead(request)) canceled.push(request.failure()?.errorText);
+  });
   page.on("pageerror", error => failures.push(error.message));
   await page.goto(app.url + "/#event=event-a&view=organizer");
   await expect.poll(() => heldA).toBe(true);
   await page.evaluate(() => { location.hash = "event=event-b&view=organizer"; });
   await expect(page.locator("h1")).toHaveText("Open Justice Workshop");
-  const finishedA = page.waitForResponse(response => response.url() === app.url + "/api/events/event-a");
+  await expect.poll(() => canceled.length).toBe(1);
+  assert.match(canceled[0], /ABORTED|CANCELLED|CANCELED/i);
   releaseA();
-  await finishedA;
   await page.waitForTimeout(100);
   await expect(page.locator("h1")).toHaveText("Open Justice Workshop");
   await expect(page.locator("#event-switch")).toHaveValue("event-b");
   await page.locator("[data-edit-event]").click();
   const description = await page.locator("#settings-description").inputValue();
   assert.match(description, /hands-on workshop/, "B's settings must not read delayed A data");
-  checks.push("Delayed Event A detail cannot overwrite B's settings/context");
+  checks.push("Canceled Event A read cannot overwrite B's settings/context");
   await page.keyboard.press("Escape");
   await page.locator('[data-tx="cancel"]').click();
   await expect(page.locator("#review-dialog")).toBeVisible();

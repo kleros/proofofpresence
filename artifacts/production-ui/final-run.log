@@ -1,0 +1,6 @@
+{
+  "status": "passed",
+  "checks": 19,
+  "scope": "loopback mocks only",
+  "financialActions": 0
+}

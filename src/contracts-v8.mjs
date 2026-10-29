@@ -5,9 +5,25 @@ import { ethers } from "ethers";
 
 export const EVENT_V8_VERSION = "kleros-event-v8";
 export const EVENT_V8_TEST15M_VERSION = "kleros-event-v8-test15m";
+export const EVENT_V9_VERSION = "kleros-event-v9-uups";
 export const EVENT_V8_CAPACITY = 150;
 
 const profiles = Object.freeze({
+  [EVENT_V9_VERSION]: Object.freeze({
+    contractVersion: EVENT_V9_VERSION,
+    abiVersion: EVENT_V9_VERSION,
+    contractName: "KlerosEventV9",
+    factoryName: "KlerosEventFactoryV9",
+    artifactDirectory: "contracts-v9",
+    sourceDirectory: "contracts/v9",
+    version: 9,
+    financialModel: "v8",
+    upgradeable: true,
+    challengeWindowSeconds: 86400,
+    matchWindowSeconds: 86400,
+    chainId: 1,
+    testOnly: false,
+  }),
   [EVENT_V8_VERSION]: Object.freeze({
     contractVersion: EVENT_V8_VERSION,
     contractName: "KlerosEventV8",

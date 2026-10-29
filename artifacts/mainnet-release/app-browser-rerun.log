@@ -1,0 +1,16 @@
+
+> kleros-event-workbench@1.0.0 test:browser
+> node test/app.e2e.mjs
+
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_darwin_arm64_141.node'
+Require stack:
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+Browser checks passed: 39 assertions plus UI wait/interaction checks. Real local v7 deposits, independent event state, source review, staff authorization, personal-history isolation, and mobile layout verified.
+Screenshots: artifacts/demo-desktop.png, artifacts/demo-mobile.png

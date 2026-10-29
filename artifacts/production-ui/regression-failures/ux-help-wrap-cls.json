@@ -1,0 +1,1159 @@
+{
+  "baselineCommit": "99ffe139193edc8f372f7527f7f94dc3f830ab46",
+  "mode": "current-regression",
+  "checks": [
+    "Loading phases remain announced outside busy content while refresh is locked"
+  ],
+  "measurements": [
+    {
+      "baseline": true,
+      "run": 1,
+      "viewport": "390x844",
+      "bootstrapDelayMs": 800,
+      "eventDelayMs": 900,
+      "initialTopbar": {
+        "x": 0,
+        "y": 224.171875,
+        "width": 390,
+        "height": 135.390625
+      },
+      "finalTopbar": {
+        "x": 0,
+        "y": 157.5,
+        "width": 390,
+        "height": 77
+      },
+      "cls": 0.37188043804882626,
+      "sum": 0.37188043804882626,
+      "shifts": [
+        {
+          "value": 0.09634182464454977,
+          "time": 975,
+          "sources": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "app-shell",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 844,
+                "top": 0,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              },
+              "current": {
+                "x": 0,
+                "y": 81.3125,
+                "width": 390,
+                "height": 762.6875,
+                "top": 81.3125,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              }
+            }
+          ]
+        },
+        {
+          "value": 0.2755386134042765,
+          "time": 1899.7999999821186,
+          "sources": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "main-shell",
+              "previous": {
+                "x": 0,
+                "y": 285.09375,
+                "width": 390,
+                "height": 558.90625,
+                "top": 285.09375,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              },
+              "current": {
+                "x": 0,
+                "y": 157.5,
+                "width": 390,
+                "height": 686.5,
+                "top": 157.5,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              }
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "sidebar-foot",
+              "previous": {
+                "x": 16,
+                "y": 190.703125,
+                "width": 358,
+                "height": 77.390625,
+                "top": 190.703125,
+                "right": 374,
+                "bottom": 268.09375,
+                "left": 16
+              },
+              "current": {
+                "x": 258.125,
+                "y": 96.90625,
+                "width": 115.875,
+                "height": 44,
+                "top": 96.90625,
+                "right": 374,
+                "bottom": 140.90625,
+                "left": 258.125
+              }
+            },
+            {
+              "tag": "A",
+              "id": "all-events-link",
+              "cls": "nav-link",
+              "previous": {
+                "x": 227.46875,
+                "y": 99.90625,
+                "width": 146.53125,
+                "height": 55.1875,
+                "top": 99.90625,
+                "right": 374,
+                "bottom": 155.09375,
+                "left": 227.46875
+              },
+              "current": {
+                "x": 127.5,
+                "y": 93.3125,
+                "width": 122.625,
+                "height": 51.1875,
+                "top": 93.3125,
+                "right": 250.125,
+                "bottom": 144.5,
+                "left": 127.5
+              }
+            },
+            {
+              "tag": "A",
+              "id": "",
+              "cls": "brand",
+              "previous": {
+                "x": 16,
+                "y": 97.3125,
+                "width": 133.515625,
+                "height": 60.390625,
+                "top": 97.3125,
+                "right": 149.515625,
+                "bottom": 157.703125,
+                "left": 16
+              },
+              "current": {
+                "x": 16,
+                "y": 103.90625,
+                "width": 80,
+                "height": 30,
+                "top": 103.90625,
+                "right": 96,
+                "bottom": 133.90625,
+                "left": 16
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "baseline": true,
+      "run": 2,
+      "viewport": "390x844",
+      "bootstrapDelayMs": 800,
+      "eventDelayMs": 900,
+      "initialTopbar": {
+        "x": 0,
+        "y": 224.171875,
+        "width": 390,
+        "height": 135.390625
+      },
+      "finalTopbar": {
+        "x": 0,
+        "y": 157.5,
+        "width": 390,
+        "height": 77
+      },
+      "cls": 0.37188043804882626,
+      "sum": 0.37188043804882626,
+      "shifts": [
+        {
+          "value": 0.09634182464454977,
+          "time": 834,
+          "sources": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "app-shell",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 844,
+                "top": 0,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              },
+              "current": {
+                "x": 0,
+                "y": 81.3125,
+                "width": 390,
+                "height": 762.6875,
+                "top": 81.3125,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              }
+            }
+          ]
+        },
+        {
+          "value": 0.2755386134042765,
+          "time": 1761.4000000059605,
+          "sources": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "main-shell",
+              "previous": {
+                "x": 0,
+                "y": 285.09375,
+                "width": 390,
+                "height": 558.90625,
+                "top": 285.09375,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              },
+              "current": {
+                "x": 0,
+                "y": 157.5,
+                "width": 390,
+                "height": 686.5,
+                "top": 157.5,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              }
+            },
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "sidebar-foot",
+              "previous": {
+                "x": 16,
+                "y": 190.703125,
+                "width": 358,
+                "height": 77.390625,
+                "top": 190.703125,
+                "right": 374,
+                "bottom": 268.09375,
+                "left": 16
+              },
+              "current": {
+                "x": 258.125,
+                "y": 96.90625,
+                "width": 115.875,
+                "height": 44,
+                "top": 96.90625,
+                "right": 374,
+                "bottom": 140.90625,
+                "left": 258.125
+              }
+            },
+            {
+              "tag": "A",
+              "id": "all-events-link",
+              "cls": "nav-link",
+              "previous": {
+                "x": 227.46875,
+                "y": 99.90625,
+                "width": 146.53125,
+                "height": 55.1875,
+                "top": 99.90625,
+                "right": 374,
+                "bottom": 155.09375,
+                "left": 227.46875
+              },
+              "current": {
+                "x": 127.5,
+                "y": 93.3125,
+                "width": 122.625,
+                "height": 51.1875,
+                "top": 93.3125,
+                "right": 250.125,
+                "bottom": 144.5,
+                "left": 127.5
+              }
+            },
+            {
+              "tag": "A",
+              "id": "",
+              "cls": "brand",
+              "previous": {
+                "x": 16,
+                "y": 97.3125,
+                "width": 133.515625,
+                "height": 60.390625,
+                "top": 97.3125,
+                "right": 149.515625,
+                "bottom": 157.703125,
+                "left": 16
+              },
+              "current": {
+                "x": 16,
+                "y": 103.90625,
+                "width": 80,
+                "height": 30,
+                "top": 103.90625,
+                "right": 96,
+                "bottom": 133.90625,
+                "left": 16
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "baseline": false,
+      "run": 1,
+      "viewport": "390x844",
+      "bootstrapDelayMs": 800,
+      "eventDelayMs": 900,
+      "initialTopbar": {
+        "x": 0,
+        "y": 128.1875,
+        "width": 390,
+        "height": 77
+      },
+      "finalTopbar": {
+        "x": 0,
+        "y": 157.5,
+        "width": 390,
+        "height": 77
+      },
+      "cls": 0.2868779620853081,
+      "sum": 0.2868779620853081,
+      "shifts": [
+        {
+          "value": 0.2868779620853081,
+          "time": 843,
+          "sources": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "app-shell",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 844,
+                "top": 0,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              },
+              "current": {
+                "x": 0,
+                "y": 81.3125,
+                "width": 390,
+                "height": 762.6875,
+                "top": 81.3125,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "baseline": false,
+      "run": 2,
+      "viewport": "390x844",
+      "bootstrapDelayMs": 800,
+      "eventDelayMs": 900,
+      "initialTopbar": {
+        "x": 0,
+        "y": 128.1875,
+        "width": 390,
+        "height": 77
+      },
+      "finalTopbar": {
+        "x": 0,
+        "y": 157.5,
+        "width": 390,
+        "height": 77
+      },
+      "cls": 0.2868779620853081,
+      "sum": 0.2868779620853081,
+      "shifts": [
+        {
+          "value": 0.2868779620853081,
+          "time": 833.0999999940395,
+          "sources": [
+            {
+              "tag": "DIV",
+              "id": "",
+              "cls": "app-shell",
+              "previous": {
+                "x": 0,
+                "y": 0,
+                "width": 390,
+                "height": 844,
+                "top": 0,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              },
+              "current": {
+                "x": 0,
+                "y": 81.3125,
+                "width": 390,
+                "height": 762.6875,
+                "top": 81.3125,
+                "right": 390,
+                "bottom": 844,
+                "left": 0
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "id": 1,
+      "method": "GET",
+      "path": "/",
+      "baseline": true,
+      "startedAt": 1793254183050,
+      "closedEarly": false
+    },
+    {
+      "id": 2,
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "baseline": true,
+      "startedAt": 1793254183067,
+      "closedEarly": false
+    },
+    {
+      "id": 3,
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "baseline": true,
+      "startedAt": 1793254183077,
+      "closedEarly": false
+    },
+    {
+      "id": 4,
+      "method": "GET",
+      "path": "/styles.css",
+      "baseline": true,
+      "startedAt": 1793254183086,
+      "closedEarly": false
+    },
+    {
+      "id": 5,
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "baseline": true,
+      "startedAt": 1793254183100,
+      "closedEarly": false
+    },
+    {
+      "id": 6,
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "baseline": true,
+      "startedAt": 1793254183110,
+      "closedEarly": false
+    },
+    {
+      "id": 7,
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "baseline": true,
+      "startedAt": 1793254183119,
+      "closedEarly": false
+    },
+    {
+      "id": 8,
+      "method": "GET",
+      "path": "/app.js",
+      "baseline": true,
+      "startedAt": 1793254183129,
+      "closedEarly": false
+    },
+    {
+      "id": 9,
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "baseline": true,
+      "startedAt": 1793254183142,
+      "closedEarly": false
+    },
+    {
+      "id": 10,
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "baseline": true,
+      "startedAt": 1793254183152,
+      "closedEarly": false
+    },
+    {
+      "id": 11,
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "baseline": true,
+      "startedAt": 1793254183161,
+      "closedEarly": false
+    },
+    {
+      "id": 12,
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "baseline": true,
+      "startedAt": 1793254183170,
+      "closedEarly": false
+    },
+    {
+      "id": 13,
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "baseline": true,
+      "startedAt": 1793254183178,
+      "closedEarly": false
+    },
+    {
+      "id": 14,
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "baseline": true,
+      "startedAt": 1793254183186,
+      "closedEarly": false
+    },
+    {
+      "id": 15,
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "baseline": true,
+      "startedAt": 1793254183194,
+      "closedEarly": false
+    },
+    {
+      "id": 16,
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "baseline": true,
+      "startedAt": 1793254183204,
+      "closedEarly": false
+    },
+    {
+      "id": 17,
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "baseline": true,
+      "startedAt": 1793254183216,
+      "closedEarly": false,
+      "respondedAt": 1793254184017
+    },
+    {
+      "id": 18,
+      "method": "GET",
+      "path": "/api/events/event-b",
+      "baseline": true,
+      "startedAt": 1793254184022,
+      "closedEarly": false,
+      "respondedAt": 1793254184923
+    },
+    {
+      "id": 19,
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "baseline": true,
+      "startedAt": 1793254184948,
+      "closedEarly": false
+    },
+    {
+      "id": 20,
+      "method": "GET",
+      "path": "/",
+      "baseline": true,
+      "startedAt": 1793254185793,
+      "closedEarly": false
+    },
+    {
+      "id": 21,
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "baseline": true,
+      "startedAt": 1793254185797,
+      "closedEarly": false
+    },
+    {
+      "id": 22,
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "baseline": true,
+      "startedAt": 1793254185798,
+      "closedEarly": false
+    },
+    {
+      "id": 23,
+      "method": "GET",
+      "path": "/styles.css",
+      "baseline": true,
+      "startedAt": 1793254185798,
+      "closedEarly": false
+    },
+    {
+      "id": 24,
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "baseline": true,
+      "startedAt": 1793254185798,
+      "closedEarly": false
+    },
+    {
+      "id": 25,
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "baseline": true,
+      "startedAt": 1793254185799,
+      "closedEarly": false
+    },
+    {
+      "id": 26,
+      "method": "GET",
+      "path": "/app.js",
+      "baseline": true,
+      "startedAt": 1793254185799,
+      "closedEarly": false
+    },
+    {
+      "id": 27,
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "baseline": true,
+      "startedAt": 1793254185800,
+      "closedEarly": false
+    },
+    {
+      "id": 28,
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "baseline": true,
+      "startedAt": 1793254185811,
+      "closedEarly": false
+    },
+    {
+      "id": 29,
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "baseline": true,
+      "startedAt": 1793254185811,
+      "closedEarly": false
+    },
+    {
+      "id": 30,
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "baseline": true,
+      "startedAt": 1793254185811,
+      "closedEarly": false
+    },
+    {
+      "id": 31,
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "baseline": true,
+      "startedAt": 1793254185811,
+      "closedEarly": false
+    },
+    {
+      "id": 32,
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "baseline": true,
+      "startedAt": 1793254185811,
+      "closedEarly": false
+    },
+    {
+      "id": 33,
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "baseline": true,
+      "startedAt": 1793254185811,
+      "closedEarly": false
+    },
+    {
+      "id": 34,
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "baseline": true,
+      "startedAt": 1793254185812,
+      "closedEarly": false
+    },
+    {
+      "id": 35,
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "baseline": true,
+      "startedAt": 1793254185813,
+      "closedEarly": false
+    },
+    {
+      "id": 36,
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "baseline": true,
+      "startedAt": 1793254185815,
+      "closedEarly": false,
+      "respondedAt": 1793254186617
+    },
+    {
+      "id": 37,
+      "method": "GET",
+      "path": "/api/events/event-b",
+      "baseline": true,
+      "startedAt": 1793254186627,
+      "closedEarly": false,
+      "respondedAt": 1793254187527
+    },
+    {
+      "id": 38,
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "baseline": true,
+      "startedAt": 1793254187557,
+      "closedEarly": false
+    },
+    {
+      "id": 39,
+      "method": "GET",
+      "path": "/",
+      "baseline": false,
+      "startedAt": 1793254188356,
+      "closedEarly": false
+    },
+    {
+      "id": 40,
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "baseline": false,
+      "startedAt": 1793254188361,
+      "closedEarly": false
+    },
+    {
+      "id": 41,
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "baseline": false,
+      "startedAt": 1793254188362,
+      "closedEarly": false
+    },
+    {
+      "id": 42,
+      "method": "GET",
+      "path": "/styles.css",
+      "baseline": false,
+      "startedAt": 1793254188362,
+      "closedEarly": false
+    },
+    {
+      "id": 43,
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "baseline": false,
+      "startedAt": 1793254188363,
+      "closedEarly": false
+    },
+    {
+      "id": 44,
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "baseline": false,
+      "startedAt": 1793254188363,
+      "closedEarly": false
+    },
+    {
+      "id": 45,
+      "method": "GET",
+      "path": "/app.js",
+      "baseline": false,
+      "startedAt": 1793254188363,
+      "closedEarly": false
+    },
+    {
+      "id": 46,
+      "method": "GET",
+      "path": "/loading.css",
+      "baseline": false,
+      "startedAt": 1793254188363,
+      "closedEarly": false
+    },
+    {
+      "id": 47,
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "baseline": false,
+      "startedAt": 1793254188364,
+      "closedEarly": false
+    },
+    {
+      "id": 48,
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "baseline": false,
+      "startedAt": 1793254188380,
+      "closedEarly": false
+    },
+    {
+      "id": 49,
+      "method": "GET",
+      "path": "/selected-event.js",
+      "baseline": false,
+      "startedAt": 1793254188380,
+      "closedEarly": false
+    },
+    {
+      "id": 50,
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "baseline": false,
+      "startedAt": 1793254188380,
+      "closedEarly": false
+    },
+    {
+      "id": 51,
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "baseline": false,
+      "startedAt": 1793254188380,
+      "closedEarly": false
+    },
+    {
+      "id": 52,
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "baseline": false,
+      "startedAt": 1793254188380,
+      "closedEarly": false
+    },
+    {
+      "id": 53,
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "baseline": false,
+      "startedAt": 1793254188380,
+      "closedEarly": false
+    },
+    {
+      "id": 54,
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "baseline": false,
+      "startedAt": 1793254188382,
+      "closedEarly": false
+    },
+    {
+      "id": 55,
+      "method": "GET",
+      "path": "/environment.js",
+      "baseline": false,
+      "startedAt": 1793254188382,
+      "closedEarly": false
+    },
+    {
+      "id": 56,
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "baseline": false,
+      "startedAt": 1793254188382,
+      "closedEarly": false
+    },
+    {
+      "id": 57,
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "baseline": false,
+      "startedAt": 1793254188382,
+      "closedEarly": false
+    },
+    {
+      "id": 58,
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "baseline": false,
+      "startedAt": 1793254188384,
+      "closedEarly": false
+    },
+    {
+      "id": 59,
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "baseline": false,
+      "startedAt": 1793254188388,
+      "closedEarly": false,
+      "respondedAt": 1793254189189
+    },
+    {
+      "id": 60,
+      "method": "GET",
+      "path": "/api/events/event-b",
+      "baseline": false,
+      "startedAt": 1793254189197,
+      "closedEarly": false,
+      "respondedAt": 1793254190098
+    },
+    {
+      "id": 61,
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "baseline": false,
+      "startedAt": 1793254190123,
+      "closedEarly": false
+    },
+    {
+      "id": 62,
+      "method": "GET",
+      "path": "/",
+      "baseline": false,
+      "startedAt": 1793254190838,
+      "closedEarly": false
+    },
+    {
+      "id": 63,
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "baseline": false,
+      "startedAt": 1793254190842,
+      "closedEarly": false
+    },
+    {
+      "id": 64,
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "baseline": false,
+      "startedAt": 1793254190843,
+      "closedEarly": false
+    },
+    {
+      "id": 65,
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "baseline": false,
+      "startedAt": 1793254190843,
+      "closedEarly": false
+    },
+    {
+      "id": 66,
+      "method": "GET",
+      "path": "/styles.css",
+      "baseline": false,
+      "startedAt": 1793254190843,
+      "closedEarly": false
+    },
+    {
+      "id": 67,
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "baseline": false,
+      "startedAt": 1793254190844,
+      "closedEarly": false
+    },
+    {
+      "id": 68,
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "baseline": false,
+      "startedAt": 1793254190844,
+      "closedEarly": false
+    },
+    {
+      "id": 69,
+      "method": "GET",
+      "path": "/loading.css",
+      "baseline": false,
+      "startedAt": 1793254190844,
+      "closedEarly": false
+    },
+    {
+      "id": 70,
+      "method": "GET",
+      "path": "/app.js",
+      "baseline": false,
+      "startedAt": 1793254190844,
+      "closedEarly": false
+    },
+    {
+      "id": 71,
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "baseline": false,
+      "startedAt": 1793254190856,
+      "closedEarly": false
+    },
+    {
+      "id": 72,
+      "method": "GET",
+      "path": "/selected-event.js",
+      "baseline": false,
+      "startedAt": 1793254190857,
+      "closedEarly": false
+    },
+    {
+      "id": 73,
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "baseline": false,
+      "startedAt": 1793254190858,
+      "closedEarly": false
+    },
+    {
+      "id": 74,
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "baseline": false,
+      "startedAt": 1793254190858,
+      "closedEarly": false
+    },
+    {
+      "id": 75,
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "baseline": false,
+      "startedAt": 1793254190858,
+      "closedEarly": false
+    },
+    {
+      "id": 76,
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "baseline": false,
+      "startedAt": 1793254190858,
+      "closedEarly": false
+    },
+    {
+      "id": 77,
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "baseline": false,
+      "startedAt": 1793254190858,
+      "closedEarly": false
+    },
+    {
+      "id": 78,
+      "method": "GET",
+      "path": "/environment.js",
+      "baseline": false,
+      "startedAt": 1793254190859,
+      "closedEarly": false
+    },
+    {
+      "id": 79,
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "baseline": false,
+      "startedAt": 1793254190859,
+      "closedEarly": false
+    },
+    {
+      "id": 80,
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "baseline": false,
+      "startedAt": 1793254190859,
+      "closedEarly": false
+    },
+    {
+      "id": 81,
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "baseline": false,
+      "startedAt": 1793254190860,
+      "closedEarly": false
+    },
+    {
+      "id": 82,
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "baseline": false,
+      "startedAt": 1793254190863,
+      "closedEarly": false,
+      "respondedAt": 1793254191663
+    },
+    {
+      "id": 83,
+      "method": "GET",
+      "path": "/api/events/event-b",
+      "baseline": false,
+      "startedAt": 1793254191670,
+      "closedEarly": false,
+      "respondedAt": 1793254192572
+    },
+    {
+      "id": 84,
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "baseline": false,
+      "startedAt": 1793254192605,
+      "closedEarly": false
+    }
+  ],
+  "writes": [],
+  "external": [],
+  "errors": [],
+  "walletCalls": [],
+  "screenshots": [
+    "baseline-mobile-loading.png",
+    "baseline-mobile-ready.png",
+    "fixed-mobile-loading.png",
+    "fixed-mobile-ready.png"
+  ],
+  "limitations": [
+    "Synthetic historical snapshot adapted for presentation; no financial or authorization assertions.",
+    "Chromium loopback with deterministic delayed GETs; CLS is not a field measurement.",
+    "Doubled computed text tests text enlargement, not browser zoom.",
+    "One transport deliberately ignores abort to test stale-response defense separately from real network cancellation."
+  ],
+  "status": "failed",
+  "failure": {
+    "message": "Two cold mobile loads remain below 0.1 real measured CLS under delayed reads",
+    "stack": "AssertionError [ERR_ASSERTION]: Two cold mobile loads remain below 0.1 real measured CLS under delayed reads\n    at check (file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/ui-ux-fixes.e2e.mjs:216:10)\n    at file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/ui-ux-fixes.e2e.mjs:409:5"
+  },
+  "assetSha256": {
+    "index.html": "2e0cff01bb64c63c4d99365fb49d3750b439fac54bc6952a8f68c9d75af0d6bb",
+    "styles.css": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "app.js": "99404d407bdcd5b70138f2a63f890ae7b283a70fef9206a2fd8cb7bb5b701888",
+    "loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "batch-actions.js": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+    "batch-pending.js": "73e7b7c1afa0833ba8484c233024b4e2078eb4260a98c7eac4cb666da805f572",
+    "contract-profiles.js": "5db2791a83d10434ecc5aacb96eee1c97888613d6686e86d747654892ef0abe9",
+    "environment.js": "9cd70c87c1bbc071fd1fc48cf2aae6632968f1f27d3319949b5166aaa3928102",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+  }
+}

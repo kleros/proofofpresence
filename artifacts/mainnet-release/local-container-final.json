@@ -1,0 +1,453 @@
+{
+  "status": "passed-local-container-verification",
+  "checkedAt": "2026-10-29T06:47:33.754801+00:00",
+  "image": "kleros-v9-local-check:20261029",
+  "imageId": "sha256:b7c66c31907eba13e2f1193f6dae4b9b2cd3372caf21d6ec0d5dec54fa37d99d",
+  "baseImageDigest": "sha256:4b150b48b4116e2a22f2c39cc27025fbf4f153e2078fd3b14d159fdb5c7279da",
+  "platform": "linux/arm64",
+  "node": "v22.23.4",
+  "uid": 1000,
+  "context": {
+    "files": {
+      "Dockerfile": {
+        "bytes": 2304,
+        "sha256": "a30700a682afa75a1408a424c3a9109e02c6d60fdef6a03530e14490bbbb59eb"
+      },
+      ".dockerignore": {
+        "bytes": 925,
+        "sha256": "c1490c85babb8e1a42050a6c8e4804b125d04b287c0bf6473fb5e46c012011db"
+      },
+      "package.json": {
+        "bytes": 2730,
+        "sha256": "25d57f490c0509e0f094eabc404de2cd8e083948cb3d0c48bbfb728e19f9cf33"
+      },
+      "package-lock.json": {
+        "bytes": 168988,
+        "sha256": "c622f472674738eb5228015a11dcb3cb75aa075dd529a8f6c4f31c57aa261758"
+      },
+      "scripts/build.mjs": {
+        "bytes": 1613,
+        "sha256": "28f2676a3c1f5aa5fabade0fcca8555271fbb5b902397213e6829d67c94b7b29"
+      },
+      "scripts/compile-contracts.mjs": {
+        "bytes": 2635,
+        "sha256": "ae92ee53c251c8423834e9c5a6b6451c198e4730722bd11a3e86a552537d008a"
+      },
+      "scripts/compile-contracts-v9.mjs": {
+        "bytes": 5256,
+        "sha256": "12805d8e44e43374663069c0c85ae54aa566259e62610fa6b3e764d3ad222cfd"
+      },
+      "scripts/compile-contracts-test15m.mjs": {
+        "bytes": 2975,
+        "sha256": "0f323bcfc7289c89cd7eb26c8aafa5e74c03dccfdad75c5faf8bb515c55ed710"
+      },
+      "scripts/generate-contracts-test15m.mjs": {
+        "bytes": 5244,
+        "sha256": "45736d171e134aa8fb4d3ab9a2c15e83a13468f0993de37144d3d490e1c9c190"
+      },
+      "src/production-wallets.mjs": {
+        "bytes": 3641,
+        "sha256": "d8f8946df88d33eb8c26ab4fc4bc65451d51ba32acf064421834f3eca02ced12"
+      },
+      "src/workbench.mjs": {
+        "bytes": 78161,
+        "sha256": "47d14f9016e7a661a9f3e39fa7921cfb01dce7d276bdc72fd1759f03c5026d36"
+      },
+      "src/payments.mjs": {
+        "bytes": 10235,
+        "sha256": "8f66d6f4eb1f0f2f5cc43f696c1399881712ed7e214be4f988a97a0ca913f2f4"
+      },
+      "src/testnet-config.mjs": {
+        "bytes": 17647,
+        "sha256": "b090d2735f796b1d386c874d009a10349513e66eb4ad5e1081fdc14151be6cd3"
+      },
+      "src/mainnet-runtime.mjs": {
+        "bytes": 21000,
+        "sha256": "029bc873daab9f6058180705f8243c4ac2687fdf5a629f952381252d651dc6db"
+      },
+      "src/upgrade-artifacts.mjs": {
+        "bytes": 5816,
+        "sha256": "7e27aab19f43de485bbffde0edafd656ef56531c79a9092041479b646474413c"
+      },
+      "src/utils.mjs": {
+        "bytes": 2533,
+        "sha256": "4bc9f2512e348748ccbfe11e0adef9f5ef64f49fbc5ef4a934ebd950e72fc4b9"
+      },
+      "src/contracts-v8.mjs": {
+        "bytes": 5252,
+        "sha256": "1ef26947344fca57d485602074ca21bcb3ae602c8a120b9ca108ad7741507918"
+      },
+      "src/v8-deposits.mjs": {
+        "bytes": 3163,
+        "sha256": "b5071e8f39e9c1d90615363c8867116190fc83e460fa566d8a7f5d178a74bd82"
+      },
+      "src/runtime-volume.mjs": {
+        "bytes": 2471,
+        "sha256": "59b61453b612ce1ddbf99e2b82fa69defc9d87172f4969980bcd1cf825fcafa7"
+      },
+      "src/container.mjs": {
+        "bytes": 631,
+        "sha256": "43d68e440211c1bc7ec8a41e86feff1ccbdca3da344e2635e6a5532c00891101"
+      },
+      "src/batches.mjs": {
+        "bytes": 19196,
+        "sha256": "e4fba3181e2aa50d127d19aec8ad1210d69db567ac6eca7627c0b30752798b3b"
+      },
+      "src/deposit-inbox.mjs": {
+        "bytes": 19491,
+        "sha256": "7fe268d600baa3481a5632d9faf4141d15c7cb3655be1e7430dec46440924c58"
+      },
+      "src/upgrade-verification.mjs": {
+        "bytes": 25291,
+        "sha256": "a2fd09570c557608bd2304d2dfdc086a1c8036718922af05d244f6f3bd4a4511"
+      },
+      "src/server.mjs": {
+        "bytes": 42622,
+        "sha256": "97a27c391bc56457aa072200f76795140276a788663fa4a35321e4fb1514a911"
+      },
+      "src/domain.ts": {
+        "bytes": 1631,
+        "sha256": "575afced46760624ed0dc33d716650a5207180aa710b90f91e7185eb59faf9b9"
+      },
+      "src/production-errors.mjs": {
+        "bytes": 9818,
+        "sha256": "03cc89b18d2f83b973da9cb167b16ef149585148b2be7bcafa32be02b916cac7"
+      },
+      "src/imports.mjs": {
+        "bytes": 11776,
+        "sha256": "d5e89682a576aa63399e61c36d8596f17f0cdc64424a598e2f70d79b647f3219"
+      },
+      "src/chain.mjs": {
+        "bytes": 31016,
+        "sha256": "78a747805fe185b43746a3add84ae27b3e3680379e2ccfd777c5e622bf84ac54"
+      },
+      "src/import-preview.mjs": {
+        "bytes": 5216,
+        "sha256": "c0f95bf5d674afdb2db75778831f5fd42877d44eda7ade529c85b03bb1f6581c"
+      },
+      "src/testnet-runtime.mjs": {
+        "bytes": 6512,
+        "sha256": "9046a3c31fcbe3420775af513bdac43ba2bc5fe5d1ad7baa8c81e47bbffcdf02"
+      },
+      "public/ui-keyboard.js": {
+        "bytes": 3793,
+        "sha256": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+      },
+      "public/contract-inbox.js": {
+        "bytes": 28916,
+        "sha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a"
+      },
+      "public/index.html": {
+        "bytes": 5280,
+        "sha256": "175904510f9a36bab8fab33302516d2c851679023d11c294b37b447c542353b7"
+      },
+      "public/batch-selection.js": {
+        "bytes": 8665,
+        "sha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+      },
+      "public/styles.css": {
+        "bytes": 46364,
+        "sha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5"
+      },
+      "public/batch-actions.css": {
+        "bytes": 8893,
+        "sha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc"
+      },
+      "public/reconciliation.js": {
+        "bytes": 11027,
+        "sha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402"
+      },
+      "public/hosted-wallet.js": {
+        "bytes": 856,
+        "sha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015"
+      },
+      "public/selected-event.js": {
+        "bytes": 4773,
+        "sha256": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18"
+      },
+      "public/batch-pending.js": {
+        "bytes": 5030,
+        "sha256": "73e7b7c1afa0833ba8484c233024b4e2078eb4260a98c7eac4cb666da805f572"
+      },
+      "public/batch-actions.js": {
+        "bytes": 49005,
+        "sha256": "90d582fd8a73b994757e6bca1777dd2304eb59322b7c777572aa3be2a8ee2978"
+      },
+      "public/loading.css": {
+        "bytes": 5144,
+        "sha256": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7"
+      },
+      "public/contract-inbox.css": {
+        "bytes": 11506,
+        "sha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe"
+      },
+      "public/contract-profiles.js": {
+        "bytes": 3446,
+        "sha256": "7c7afbfde0135c61cc317724e5f99e43b20fbcf66eb5233c22edeaeeb60745e5"
+      },
+      "public/transaction-context.js": {
+        "bytes": 16447,
+        "sha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af"
+      },
+      "public/app.js": {
+        "bytes": 181739,
+        "sha256": "2ef0636c194650777d15bad481945766b64da78bc466df4cd2444724cc135736"
+      },
+      "public/environment.js": {
+        "bytes": 6618,
+        "sha256": "42fa171cdb998b202c00e7aef54b19deac0eddb7f24a54ada1be8ad451bf3633"
+      },
+      "public/policies/v8-testnet.md": {
+        "bytes": 2693,
+        "sha256": "e9e36be8e8bb1741bda4413820d0c4691cc31df0767d41ca269200424b5ea542"
+      },
+      "public/policies/v8-test15m.md": {
+        "bytes": 2656,
+        "sha256": "d8df68ee6438a490569a6391a205913107d24beb90e4f5b4b3278cf92acb7e09"
+      },
+      "public/assets/geist-mono-latin.woff2": {
+        "bytes": 23108,
+        "sha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b"
+      },
+      "public/assets/instrument-serif-regular.woff2": {
+        "bytes": 15040,
+        "sha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d"
+      },
+      "public/assets/INSTRUMENT_SERIF_OFL.txt": {
+        "bytes": 4404,
+        "sha256": "b6b2292aa580937fb63796878d65a027a27f8c3db2d97601d0c34d9031f4ca17"
+      },
+      "public/assets/GEIST_OFL.txt": {
+        "bytes": 4387,
+        "sha256": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691"
+      },
+      "public/assets/ASSET_PROVENANCE.md": {
+        "bytes": 2111,
+        "sha256": "fe03990a05ef0350c12b6b904d3ca2eb27f43d4eaf228ea9c7e10399feaf8ee3"
+      },
+      "public/assets/FONT_PROVENANCE.json": {
+        "bytes": 977,
+        "sha256": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a"
+      },
+      "public/assets/instrument-serif-italic.woff2": {
+        "bytes": 15684,
+        "sha256": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702"
+      },
+      "public/assets/kleros-logo.svg": {
+        "bytes": 4891,
+        "sha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a"
+      },
+      "public/assets/geist-latin.woff2": {
+        "bytes": 29288,
+        "sha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608"
+      },
+      "public/assets/kleros-symbol.svg": {
+        "bytes": 1664,
+        "sha256": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86"
+      },
+      "public/assets/GEIST_MONO_OFL.txt": {
+        "bytes": 4387,
+        "sha256": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691"
+      },
+      "contracts/KlerosEventV8.sol": {
+        "bytes": 50462,
+        "sha256": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769"
+      },
+      "contracts/KlerosEventFactoryV8.sol": {
+        "bytes": 5184,
+        "sha256": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505"
+      },
+      "contracts/v9/KlerosUpgradeGateV9.sol": {
+        "bytes": 4968,
+        "sha256": "0197602754ac7296f01b645f4331d3b6f09faf2c78181df4ed702ba1a24bd365"
+      },
+      "contracts/v9/KlerosEventV9.sol": {
+        "bytes": 51443,
+        "sha256": "e3d9f947537165d885878c89e86114e6901d0665f4d4b00bf20b9da227a9e11b"
+      },
+      "contracts/v9/KlerosUpgradeTimelockV9.sol": {
+        "bytes": 1012,
+        "sha256": "2a63bed6424b5f846c04dacd5d83a1a03c8bd0f5d362e0bdbe74f8c24f27966e"
+      },
+      "contracts/v9/KlerosEventFactoryV9.sol": {
+        "bytes": 4182,
+        "sha256": "4ce1c30a8ebf383c41718ac2b48bda03ffc719d718447cdd3678e9c067fedbe9"
+      },
+      "contracts/test/KlerosEventV8Test15m.sol": {
+        "bytes": 50901,
+        "sha256": "46530aaf048f6a2026cdfd8e7e4cc820acce7da6a55472c10448dd7b32f638e7"
+      },
+      "contracts/test/KlerosEventFactoryV8Test15m.sol": {
+        "bytes": 5610,
+        "sha256": "8ee8382bf9a1dd3e8997a63cf51950ae10cdcbbf41c92c96895195e10e9a2e90"
+      },
+      "scripts/mainnet/verify-kleros.mjs": {
+        "bytes": 11317,
+        "sha256": "7bf4c2711cd531102ca02478e170e4aef0913442096b588b57616d62bda64105"
+      },
+      "scripts/mainnet/ethereum-arbitrator.abi.json": {
+        "bytes": 24148,
+        "sha256": "e740ee0e07c8de454cf2047d9d60eb4d94d562f053caedf0f2b173284e8f1bfb"
+      },
+      "scripts/mainnet/verification-runtime.mjs": {
+        "bytes": 17866,
+        "sha256": "1f6f02ee3d2374d29973255717131eb1b2bf70d47a7d107bb76ee8fba39d9a3d"
+      },
+      "scripts/mainnet/runtime-code.mjs": {
+        "bytes": 1742,
+        "sha256": "6c936a71235c24febba876e9135e48c7b24f0ceb7122ba684a9f50944e5989e3"
+      },
+      "scripts/mainnet/ethereum-resolver.abi.json": {
+        "bytes": 13667,
+        "sha256": "ee57521e94061f74613bf0d394f7c3970fd6d4e0ffec47e69e68c7cb9828f440"
+      },
+      "scripts/mainnet/prepare-release.mjs": {
+        "bytes": 20076,
+        "sha256": "6189bb24adb2a60d09de193c9a97d6051732f4bb084af9a338ec7ff1a74491d6"
+      },
+      "scripts/mainnet/storage-layout.mjs": {
+        "bytes": 21423,
+        "sha256": "8ea1c101a07b5db43520ecd290a86a87838ac03706081be297f00d91cce37622"
+      },
+      "scripts/mainnet/verified/KlerosLiquid.sol": {
+        "bytes": 97894,
+        "sha256": "4cbc179cdf8cda02d13f6c25861ac015173d11392cbb9b290646e11cc7f27b3b"
+      },
+      "scripts/mainnet/verified/ArbitrableProxy.sol": {
+        "bytes": 21511,
+        "sha256": "dbeb627adc2cf7e5ab3ffee077f20f6e49a735f79a2e61a667fab26b9e2e172c"
+      },
+      "references/kickback/scripts/console.mjs": {
+        "bytes": 4138,
+        "sha256": "0fa994d0d99c3bba0f4844bb266854006e1263240c6e632705354177c28bcff6"
+      },
+      "references/kickback/scripts/lib.mjs": {
+        "bytes": 50238,
+        "sha256": "349a1fc85e72e7d2b076d9251683aac6a6a4e2f358c673cae4e9ea0f0d800c45"
+      },
+      "references/kickback/scripts/provenance.mjs": {
+        "bytes": 5631,
+        "sha256": "a1ca0b2c14cfd5759d935166f2ac4568cfabdeffa4711e014e482b59e2b3618f"
+      },
+      "references/kickback/scripts/owner.mjs": {
+        "bytes": 14760,
+        "sha256": "127e4aef183e21d6166b6e22a29c74586a8aa4b6fff9f64e7d184952ed3886f3"
+      },
+      "references/kickback/scripts/review-import.mjs": {
+        "bytes": 1296,
+        "sha256": "175689ca6785a369621b709bfcfb9a9f1f138125a0efb7dcfd1b61760caf004b"
+      },
+      "references/kickback/scripts/build-site.mjs": {
+        "bytes": 5241,
+        "sha256": "46964c78d0e6fe37b58ba5a96219fcfe3ae162fe7c0389089ef311de96a79209"
+      },
+      "references/kickback/scripts/console-support.mjs": {
+        "bytes": 1699,
+        "sha256": "c08958c7c8e5f43eceb0c914c2f2371852e2e2df1fdc82cf0dc3378eec31d74f"
+      },
+      "references/kickback/scripts/build-payout.mjs": {
+        "bytes": 10958,
+        "sha256": "7bc1ca8e46de757be98ca743435a18cec752e0bb0c9690ae03b4f691116c1418"
+      },
+      "references/kickback/scripts/deploy.mjs": {
+        "bytes": 2944,
+        "sha256": "9aa0b5a8d8f5ceef4ef014d02d6fb39badccddae4c0df1d4cbf4b3a26fce82d5"
+      },
+      "references/kickback/scripts/compile.mjs": {
+        "bytes": 2322,
+        "sha256": "8d085a4b3a6382d7e6954ebee49e3ffaf1fa916f755e83ed310cde35c0abd13a"
+      },
+      "references/kickback/scripts/verify-deposits.mjs": {
+        "bytes": 23724,
+        "sha256": "b94da0b5934d75b1e7098cebe21135573d4ca38a98137c432a92ff9cef829c7f"
+      },
+      "references/kickback/contracts/TruthPaysKickback.sol": {
+        "bytes": 53567,
+        "sha256": "7d9a7854c43826453f7a3ac610d2350b48626cf6e18ee2c44530081af8f80a51"
+      },
+      "references/kickback/abi/v7/manifest.json": {
+        "bytes": 353,
+        "sha256": "1e7f3d14e9cc42b69f81f9a403eda381a94db983a04c994beb836b974618e332"
+      },
+      "references/kickback/abi/v7/TruthPaysKickback.json": {
+        "bytes": 79244,
+        "sha256": "8ebc16a95f07f2b59e1dd182853fbfabb71933fc0d3078524b429e730729b1ec"
+      },
+      "references/kickback/test/MockKleros.sol": {
+        "bytes": 23424,
+        "sha256": "beae9a66702d986159e2d06f0d5dfe4cd18df95906a56f7a2e1117c808884136"
+      },
+      "references/kickback/test/TestWallet.sol": {
+        "bytes": 3878,
+        "sha256": "56746a564149d3b71508090cbe317c3dab70bcd22cf50334bd3967a54d1671e2"
+      },
+      "references/kickback/test/TestToken.sol": {
+        "bytes": 1284,
+        "sha256": "1a8c622fdf4ca408d04bcf28063060cca930e1847aaec98d3bf871acecc0a4c6"
+      },
+      "registry/chiado-v8-controlled.json": {
+        "bytes": 16065,
+        "sha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d"
+      },
+      "registry/chiado-v8-ui-c.json": {
+        "bytes": 9342,
+        "sha256": "282e7326548e5a06dda7616fe530afeb31a420b87defc25184f83d1b94d22ab3"
+      },
+      "registry/chiado-v8-ui-d.json": {
+        "bytes": 10889,
+        "sha256": "56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd"
+      },
+      "references/kickback/site/index.html": {
+        "bytes": 99621,
+        "sha256": "9e2ae192fa1db7e5df3645b4c7628d9d806663886b60f490edfce19af933d08f"
+      },
+      "references/kickback/console/index.html": {
+        "bytes": 103376,
+        "sha256": "bf5f063c820673889d82a63cb4d2eb0612d621fd5df397008899bdf04e85df84"
+      },
+      "references/kickback/docs/metaevidence.event-v1.template.json": {
+        "bytes": 2385,
+        "sha256": "d8058d7ce12245bed4c60379029189dc3ba996f0e7cb2ea13222f1a8d65953fd"
+      }
+    },
+    "bytes": 1954366
+  },
+  "buildSteps": 41,
+  "buildPassed": true,
+  "artifactSmoke": {
+    "passed": true,
+    "sourceFiles": 26,
+    "artifacts": [
+      "event",
+      "factory",
+      "timelock",
+      "proxy"
+    ],
+    "devCompilerAbsent": true,
+    "network": "none"
+  },
+  "loopbackSmoke": {
+    "passed": true,
+    "mode": "local-demo",
+    "events": 2,
+    "staticModules": 5,
+    "network": "none"
+  },
+  "unconfiguredProduction": {
+    "expectedExitCode": 1,
+    "actualExitCode": 1,
+    "code": "INVALID_INPUT",
+    "reason": "PUBLIC_ORIGIN must be an exact HTTPS origin without a path"
+  },
+  "initialFailures": [
+    "First Linux install rejected fsevents after npm removed its pre-existing optional:true flag; restored the flag without changing versions/integrity.",
+    "First loopback harness used the default hosted-demo environment and correctly failed its origin requirement; rerun used explicit MODE=local-demo."
+  ],
+  "mainnetTransactions": 0,
+  "hostingDeployments": 0,
+  "limitations": [
+    "Local image only; not pushed or deployed.",
+    "No configured production mainnet service or real wallet was started.",
+    "Native Ganache uWS binding unavailable on ARM64; verified pure-JavaScript fallback."
+  ]
+}

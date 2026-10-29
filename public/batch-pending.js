@@ -20,7 +20,8 @@ function scopeOf(scope) {
       address(scope.contract),
   );
   valid(
-    [1337, 10200].includes(scope.chainId) && supportsBatchJournalProfile(scope),
+    [1337, 10200, 1].includes(scope.chainId) &&
+      supportsBatchJournalProfile(scope),
   );
   valid(["approve-admission", "check-in"].includes(scope.action));
   return {
@@ -31,6 +32,7 @@ function scopeOf(scope) {
     contract: scope.contract.toLowerCase(),
     contractVersion: scope.contractVersion,
     action: scope.action,
+    ...(scope.chainId === 1 ? { mode: scope.mode } : {}),
   };
 }
 function identity(scope) {
@@ -44,6 +46,8 @@ function identity(scope) {
     // Chain1337 is a new ephemeral world on every server restart. External
     // Chiado keeps its contract and persisted batch receipts across restarts.
     scope.chainId === 1337 ? scope.instanceId : null,
+    // Production off-chain receipts are bound to this exact backend world.
+    ...(scope.chainId === 1 ? [scope.mode, scope.instanceId] : []),
   ];
 }
 function markerOf(marker, current) {

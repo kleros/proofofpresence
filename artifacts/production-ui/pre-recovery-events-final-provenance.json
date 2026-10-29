@@ -1,0 +1,57 @@
+{
+  "status": "passed",
+  "branch": "codex/kleros-ui-ux-speed-audit",
+  "worktree": "/Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros projects",
+  "baseCommit": "e6377816f21ab91ab57b0e3ce2f8260a4a2db1d4",
+  "commands": [
+    "node test/production-ui.e2e.mjs --self-test",
+    "node test/production-ui.e2e.mjs --run-loopback"
+  ],
+  "offlineChecks": 24,
+  "browserGroups": 19,
+  "testSha256": "2f8e421495c1d4523e2a2b1e3ad5e0f2da7829f338b5e0181357941f62b93198",
+  "fixtureSha256": "6a2f93ad94c20513e1c0aeb74fdfae5738afc585186c59cc6676a124d77a7257",
+  "frontendAssetSha256": {
+    "index.html": "175904510f9a36bab8fab33302516d2c851679023d11c294b37b447c542353b7",
+    "styles.css": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "app.js": "adf5c86cb9f8df3f77d9cc8abbba636e4cc754e62f563be974500651c5e335e6",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "batch-actions.js": "90d582fd8a73b994757e6bca1777dd2304eb59322b7c777572aa3be2a8ee2978",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "batch-pending.js": "73e7b7c1afa0833ba8484c233024b4e2078eb4260a98c7eac4cb666da805f572",
+    "contract-profiles.js": "7c7afbfde0135c61cc317724e5f99e43b20fbcf66eb5233c22edeaeeb60745e5",
+    "environment.js": "42fa171cdb998b202c00e7aef54b19deac0eddb7f24a54ada1be8ad451bf3633",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+  },
+  "sourceChangedAfterRun": [],
+  "forbiddenRequests": 0,
+  "externalRequests": 0,
+  "pageErrors": 0,
+  "visualInspection": [
+    "1440px desktop final/unsettled presentation",
+    "1440px submitted transaction recovery",
+    "390px mobile owed payment status",
+    "390px mobile preserved full hash",
+    "390px actual doubled computed text recovery control"
+  ],
+  "preservedEarlierEvidence": [
+    "first-partial-results.json",
+    "hardened-results.json",
+    "first-recovery-navigation-failure.json",
+    "guards-recovery-18-results.json"
+  ],
+  "limits": [
+    "Loopback synthetic projections only; no production economics, ABI, governance, deployment or EOA policy is proved by mocked data.",
+    "Auth challenge/verify and fresh-EOA denial are local typed mocks. personal_sign returns a non-cryptographic literal.",
+    "All financial endpoints, wallet transaction methods, RPC, external requests and WebSockets are blocked. The explicit submission-reconciliation POST is an isolated read-only receipt mock.",
+    "Contradictory-mode clicks prove prepare-time denial; no prepared financial draft or send-time contract interaction is exercised."
+  ],
+  "scope": "Synthetic presentation, prepare guard and scoped manual receipt recovery only. No financial draft, wallet transaction, actual mainnet, live API, ABI/economics/governance execution, or send-time guarantee."
+}

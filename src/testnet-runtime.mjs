@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { ethers } from "ethers";
 import { loadArtifact, verifyDeployment } from "./chain.mjs";
 import { hash, requireThat, lower } from "./utils.mjs";
-import { isV8Version } from "./contracts-v8.mjs";
+import { isV8Version, eventV8Profile } from "./contracts-v8.mjs";
 
 // External testnet runtime has no unlocked accounts, automatic deployments or EVM time controls.
 export async function testnetChain(manifest, rpcUrl) {
@@ -53,7 +53,9 @@ export async function testnetChain(manifest, rpcUrl) {
   );
   requireThat(
     new Set(manifest.events.map((record) => record.deployment.contractVersion))
-      .size === 1,
+      .size === 1 && manifest.events.every(record =>
+        isV8Version(record.deployment.contractVersion) &&
+        !eventV8Profile(record.deployment.contractVersion).upgradeable),
     "Testnet manifests must select one exact contract profile",
     "MIXED_PROFILES",
     409,

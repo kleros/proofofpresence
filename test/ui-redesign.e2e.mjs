@@ -59,11 +59,12 @@ try {
     (await page.request.get(`${server.url}/api/events/${event}`)).json();
   const navigate = async (event = "event-a", view = "participant") => {
     const destination = `${server.url}/#${new URLSearchParams({ event, view })}`;
-    const freshDetail = page.waitForResponse(
-      (response) =>
-        response.url() === `${server.url}/api/events/${event}` &&
-        response.request().method() === "GET",
-    );
+    const freshDetail = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return response.request().method() === "GET" && url.origin === server.url &&
+        ((url.pathname === "/api/bootstrap" && url.searchParams.get("selectedEventId") === event) ||
+          url.pathname === `/api/events/${event}`);
+    });
     if (page.url() === destination) await page.reload();
     else await page.goto(destination);
     await freshDetail;
@@ -382,16 +383,18 @@ try {
   await screenshot("desktop-obligations");
 
   // A failed authoritative read removes dependent financial actions until retry.
-  const eventRead = `${server.url}/api/events/event-a`;
+  const eventRead = (url) => url.origin === server.url &&
+    ((url.pathname === "/api/bootstrap" && url.searchParams.get("selectedEventId") === "event-a") ||
+      url.pathname === "/api/events/event-a");
   await page.route(eventRead, (route) =>
-    route.fulfill({
+    route.request().method() === "GET" ? route.fulfill({
       status: 503,
       contentType: "application/json",
       body: JSON.stringify({
         error: "Synthetic local read unavailable",
         code: "TEST_UNAVAILABLE",
       }),
-    }),
+    }) : route.continue(),
   );
   await page.locator("#refresh").click();
   await expect(page.locator("#content")).toContainText(

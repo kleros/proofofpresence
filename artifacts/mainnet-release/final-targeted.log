@@ -1,0 +1,69 @@
+✔ production manifest rejects wrong environment, profiles, duplicate custody, Court and governance before provider creation (20.063ms)
+✔ keyless mainnet runtime invokes both verifiers and uses the reviewed actual array resolver ABI (5.726333ms)
+✔ all signing, account enumeration, raw batch bypasses and chain drift are blocked before unsafe upstream access (3.963834ms)
+✔ private HTTPS overrides stay out of public metadata and error diagnostics, with failed startup cleanup (10.401334ms)
+✔ default HTTP transport rejects redirects and remote error disclosure without public requests (18.470083ms)
+✔ wrong network or invalid court evidence cannot reach deployment verification, and skip flags are unsupported (7.211292ms)
+✔ one unavailable event preserves verified B and keyless read-only recovery without softening global gates (3.169625ms)
+✔ all unavailable events still permit only keyless recovery and retry each deployment on the next runtime (5.7395ms)
+✔ source approval, unknown verifier errors and chain drift always abort the whole runtime (10.589708ms)
+✔ production state is atomic, owner-only, restart-stable and bound to every reviewed manifest field (3.159583ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_darwin_arm64_141.node'
+Require stack:
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+✔ production HTTP bootstrap preserves the explicit mainnet profile and keyless capability boundary (12.298542ms)
+✔ production startup rejects the wrong chain, unverified mode and any server signer before listening (0.407625ms)
+✔ production auth checks fresh EOA code at challenge and verification, then binds a secure signed session (22.067125ms)
+✔ production HTTP rejects a contract/ERC1271 account before issuing a nonce (3.661042ms)
+✔ production HTTP rejects a EIP7702 account before issuing a nonce (3.184417ms)
+✔ code added after nonce issuance is rejected at verify and the used nonce cannot be replayed (5.868792ms)
+✔ wrong signatures and foreign mutation origins cannot create a production wallet session (7.669583ms)
+✔ demo identities and explicit time, faucet, mock arbitration and reset routes stop before workbench mutation (1.941875ms)
+✔ production local file and legacy finance routes cannot reach preview, owner or chain helpers (1.574958ms)
+✔ production event creation and server execution are rejected before their injected workbench handlers (1.015917ms)
+✔ production RPC rejects the entire mixed batch without forwarding even its allowed reads (4.2555ms)
+✔ known-hash reconciliation and status remain available after the authenticated wallet gains code (5.155458ms)
+✔ production recovery survives an upgrade trust mismatch while new signing stays gated and private scope remains enforced (12.194542ms)
+✔ production HTTP errors redact provider signatures, URL credentials and calldata (1.7325ms)
+✔ production HTTP enforces gateway Host, credential and mutation content-type before fake calls (1.456125ms)
+✔ approved canonical build/input pins verify exactly26 current V9/OZ sources without a compiler (13.642625ms)
+✔ missing or malformed trusted release pins fail before filesystem access (0.447375ms)
+✔ input/artifact-manifest replacement cannot replace approved release hashes (25.209083ms)
+✔ repository, dependency and exact installed OZ package changes fail without recompilation (24.980625ms)
+✔ even newly approved pins cannot widen the exact profile compiler/settings/source boundary (61.654083ms)
+✔ missing or malformed public build inputs fail with bounded non-path diagnostics (7.754875ms)
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_darwin_arm64_141.node'
+Require stack:
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+✔ real synthetic chain1 proxies prove source, constructors, init, family, governance and stable metadata (533.890125ms)
+✔ profile, explicit initial identities and immutable metadata reject before provider access (22.602875ms)
+✔ fresh code, implementation slot, delay, family and revision changes fail closed (206.791334ms)
+✔ source-matching proxy birth still requires exact reviewed initialization and canonical receipt (277.627791ms)
+✔ extra governance authority is rejected by full canonical role history (51.162ms)
+✔ late verification-head reorg fails even while historical birth anchors remain canonical (140.319542ms)
+✔ existing child never depends on factory default implementation for future events (147.134125ms)
+✔ fresh scheduled upgrade notice is verified, canceled operations disappear, and history failure is never false absence (517.24875ms)
+✔ production binds the exact manifest multisig runtime and stricter reviewed delay floor (243.0795ms)
+✔ unreviewed upgrade-and-return history rejects even when current source, slots and state still match (138.051208ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3208.522042

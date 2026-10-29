@@ -1,0 +1,3009 @@
+{
+  "status": "passed",
+  "checks": [
+    "hosted-production: v9 deployment/governance metadata and the upgrade custody warning stay explicit",
+    "hosted-production: confirmed deposit stays distinct from admission and contract registration",
+    "hosted-production: independent unused credit is available while committed principal remains registered",
+    "hosted-production: registration, staff observation, financial attendance and delivered payment remain separate",
+    "hosted-production: waiting and matched-unruled cases have distinct IDs, finality and held shares",
+    "hosted-production: production evidence keeps the URI review and removes unsupported local file uploads",
+    "hosted-production: a delivered final1 remains unsettled/held and is never called a delivered participant payment",
+    "hosted-production: resolved appeal-null readiness comes from the case, while an unquoted amount stays unavailable",
+    "hosted-production: explicit actor reward quotes distinguish real zero/nonzero values from an unavailable amount",
+    "hosted-production: conflicting or malformed readiness never authorizes an appeal reward claim",
+    "hosted-production: a failed payment stays owed and offers an alternate claim destination without submitting anything",
+    "hosted-production: malformed/unverified core context withholds financial signing actions",
+    "hosted-production: authenticated chain1/v9 contexts in testnet, local-demo and unknown modes reject even tampered prepare controls without a draft or wallet call",
+    "hosted-production: UPGRADE_TRUST_MISMATCH preserves the real scoped journal; only explicit reconciliation accepts an exact terminal receipt and rejects foreign/malformed responses",
+    "hosted-production: SELECTED_EVENT_UNAVAILABLE preserves the real scoped journal; only explicit reconciliation accepts an exact terminal receipt and rejects foreign/malformed responses",
+    "hosted-production: production identity dialog retains keyboard focus and restores its trigger on Escape",
+    "hosted-production: the authoritative fresh EOA denial is surfaced before any signature",
+    "hosted-production: chain1 wallet authentication uses a fake personal-sign reply and never a transaction request"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-UPGRADE_TRUST_MISMATCH",
+        "hash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-UPGRADE_TRUST_MISMATCH",
+        "hash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-UPGRADE_TRUST_MISMATCH",
+        "hash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-UPGRADE_TRUST_MISMATCH",
+        "hash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-UPGRADE_TRUST_MISMATCH",
+        "hash": "0x9999999999999999999999999999999999999999999999999999999999999999"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-SELECTED_EVENT_UNAVAILABLE",
+        "hash": "0x8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-SELECTED_EVENT_UNAVAILABLE",
+        "hash": "0x8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-SELECTED_EVENT_UNAVAILABLE",
+        "hash": "0x8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-SELECTED_EVENT_UNAVAILABLE",
+        "hash": "0x8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/production-ui-synthetic-event/submissions/reconcile",
+      "body": {
+        "draftId": "synthetic-original-SELECTED_EVENT_UNAVAILABLE",
+        "hash": "0x8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/styles.css"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.css"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.css"
+    },
+    {
+      "method": "GET",
+      "path": "/loading.css"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2"
+    },
+    {
+      "method": "GET",
+      "path": "/app.js"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg"
+    },
+    {
+      "method": "GET",
+      "path": "/ui-keyboard.js"
+    },
+    {
+      "method": "GET",
+      "path": "/selected-event.js"
+    },
+    {
+      "method": "GET",
+      "path": "/reconciliation.js"
+    },
+    {
+      "method": "GET",
+      "path": "/hosted-wallet.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-inbox.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-actions.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-pending.js"
+    },
+    {
+      "method": "GET",
+      "path": "/environment.js"
+    },
+    {
+      "method": "GET",
+      "path": "/contract-profiles.js"
+    },
+    {
+      "method": "GET",
+      "path": "/transaction-context.js"
+    },
+    {
+      "method": "GET",
+      "path": "/batch-selection.js"
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap"
+    },
+    {
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2"
+    }
+  ],
+  "forbidden": [],
+  "external": [],
+  "walletCalls": [
+    {
+      "method": "eth_requestAccounts",
+      "params": []
+    },
+    {
+      "method": "eth_chainId",
+      "params": []
+    },
+    {
+      "method": "eth_chainId",
+      "params": []
+    },
+    {
+      "method": "eth_requestAccounts",
+      "params": []
+    },
+    {
+      "method": "eth_chainId",
+      "params": []
+    },
+    {
+      "method": "eth_chainId",
+      "params": []
+    },
+    {
+      "method": "personal_sign",
+      "params": [
+        "0x53594e544845544943204c4f4f504241434b2041555448204f4e4c593b204e4f205245414c205349474e4154555245",
+        "0x1111111111111111111111111111111111111111"
+      ]
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "hosted-production-deposit-pending.png",
+    "hosted-production-final-unsettled.png",
+    "hosted-production-owed.png",
+    "hosted-production-submitted-recovery.png",
+    "hosted-production-mobile-owed.png"
+  ],
+  "limitations": [
+    "Loopback synthetic projections only; no production economics, ABI, governance, deployment or EOA policy is proved by mocked data.",
+    "Auth challenge/verify and fresh-EOA denial are local typed mocks. personal_sign returns a non-cryptographic literal.",
+    "All financial endpoints, wallet transaction methods, RPC, external requests and WebSockets are blocked. The explicit submission-reconciliation POST is an isolated read-only receipt mock.",
+    "Contradictory-mode clicks prove prepare-time denial; no prepared financial draft or send-time contract interaction is exercised."
+  ],
+  "assetSha256": {
+    "index.html": "175904510f9a36bab8fab33302516d2c851679023d11c294b37b447c542353b7",
+    "styles.css": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "app.js": "adf5c86cb9f8df3f77d9cc8abbba636e4cc754e62f563be974500651c5e335e6",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "batch-actions.js": "90d582fd8a73b994757e6bca1777dd2304eb59322b7c777572aa3be2a8ee2978",
+    "batch-pending.js": "73e7b7c1afa0833ba8484c233024b4e2078eb4260a98c7eac4cb666da805f572",
+    "environment.js": "42fa171cdb998b202c00e7aef54b19deac0eddb7f24a54ada1be8ad451bf3633",
+    "contract-profiles.js": "7c7afbfde0135c61cc317724e5f99e43b20fbcf66eb5233c22edeaeeb60745e5",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+  }
+}

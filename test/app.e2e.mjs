@@ -439,7 +439,7 @@ try {
     .filter({ hasText: "Evidence, publication & appeals" })
     .click();
   await page.locator("[data-publish]").click();
-  await expect(page.locator("#toast")).toContainText("stored locally");
+  await expect(page.locator("#toast")).toContainText("stored on this server");
   check(
     (await detail("event-a")).state.cases[0].publication,
     "local-only",

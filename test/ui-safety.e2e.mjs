@@ -81,12 +81,22 @@ try {
     (await page.request.get(`${server.url}/api/events/event-a`)).json();
   const refresh = async () => {
     const fresh = page.waitForResponse(
-      (response) =>
-        response.url() === `${server.url}/api/events/event-a` &&
-        response.request().method() === "GET",
+      (response) => {
+        const url = new URL(response.url());
+        return response.request().method() === "GET" && url.origin === server.url &&
+          (url.pathname === "/api/events/event-a" ||
+            (url.pathname === "/api/bootstrap" && url.searchParams.get("selectedEventId") === "event-a"));
+      },
     );
     await page.locator("#refresh").click();
-    await fresh;
+    const response = await fresh;
+    assert.equal(response.ok(), true);
+    if (new URL(response.url()).pathname === "/api/bootstrap") {
+      const body = await response.json();
+      assert.equal(body.selectedEvent?.eventId, "event-a");
+      assert.equal(body.selectedEvent?.wallet, body.session?.wallet ?? null);
+      assert.ok(body.selectedEvent?.detail && !body.selectedEvent.error);
+    }
     await expect(page.locator("#content")).toBeVisible();
   };
   const switchEvent = async (event) => {

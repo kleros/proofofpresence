@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/contract-inbox.css" />
     <link rel="stylesheet" href="/batch-actions.css" />
+    <link rel="stylesheet" href="/loading.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
@@ -45,9 +46,11 @@
         <div class="sidebar-events" id="sidebar-events"></div>
         <div class="sidebar-foot">
           <div class="network-pip"><i></i> Connecting…</div>
-          <p>Checking your event network.<br />Your wallet stays in your control.</p>
+          <p>
+            Checking your event network.<br />Your wallet stays in your control.
+          </p>
           <button class="text-link" id="demo-help" type="button">
-            How this demo works <span aria-hidden="true">↗</span>
+            How it works <span aria-hidden="true">↗</span>
           </button>
         </div>
       </aside>
@@ -66,6 +69,13 @@
           <div class="topbar-actions">
             <span class="environment" id="environment"><i></i> CONNECTING</span
             ><button
+              class="button button-small button-secondary"
+              id="top-identity"
+              type="button"
+              disabled
+            >
+              Checking account…</button
+            ><button
               class="button button-small button-quiet"
               id="refresh"
               type="button"
@@ -76,14 +86,37 @@
           </div>
         </header>
         <main id="main" tabindex="-1">
-          <div
-            class="page-loading"
-            id="loading"
-            role="status"
-            aria-live="polite"
-          >
-            <span class="spinner"></span>
-            <p>Loading your events…</p>
+          <div class="page-loading" id="loading">
+            <div class="loading-shell">
+              <div class="loading-heading">
+                <span class="spinner" aria-hidden="true"></span>
+                <div>
+                  <div class="eyebrow">KLEROS EVENTS</div>
+                  <h2 id="loading-title">Opening your events</h2>
+                </div>
+              </div>
+              <p id="loading-status" role="status" aria-live="polite">
+                Checking your event network…
+              </p>
+              <div class="loading-skeleton" aria-hidden="true">
+                <div class="loading-context">
+                  <span class="loading-bar loading-bar-title"></span
+                  ><span class="loading-bar loading-bar-short"></span>
+                </div>
+                <div class="loading-grid">
+                  <div class="loading-card">
+                    <span class="loading-bar loading-bar-title"></span
+                    ><span class="loading-bar"></span
+                    ><span class="loading-bar loading-bar-short"></span>
+                  </div>
+                  <div class="loading-card">
+                    <span class="loading-bar loading-bar-title"></span
+                    ><span class="loading-bar"></span
+                    ><span class="loading-bar loading-bar-short"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div id="content" hidden></div>
         </main>

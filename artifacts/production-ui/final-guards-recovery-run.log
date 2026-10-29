@@ -1,0 +1,42 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+A [Error]: expect(locator).toContainText(expected) failed
+
+Locator: locator('[data-submitted-recovery]')
+Expected substring: "0x9999999999999999999999999999999999999999999999999999999999999999"
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "to.have.text" with timeout 5000ms
+  - waiting for locator('[data-submitted-recovery]')
+
+    at Proxy.<anonymous> (/Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/playwright/lib/matchers/expect.js:213:24)
+    at runLoopback (file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/production-ui.e2e.mjs:753:65)
+    at async file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/production-ui.e2e.mjs:941:3 {
+  matcherResult: {
+    name: 'toContainText',
+    expected: '0x9999999999999999999999999999999999999999999999999999999999999999',
+    message: 'expect(locator).toContainText(expected) failed\n' +
+      '\n' +
+      "Locator: locator('[data-submitted-recovery]')\n" +
+      'Expected substring: "0x9999999999999999999999999999999999999999999999999999999999999999"\n' +
+      'Timeout: 5000ms\n' +
+      'Error: element(s) not found\n' +
+      '\n' +
+      'Call log:\n' +
+      '  - Expect "to.have.text" with timeout 5000ms\n' +
+      "  - waiting for locator('[data-submitted-recovery]')\n",
+    pass: false,
+    actual: undefined,
+    log: [
+      '  - Expect "to.have.text" with timeout 5000ms',
+      "  - waiting for locator('[data-submitted-recovery]')"
+    ],
+    timeout: 5000
+  }
+}
+
+Node.js v25.8.1

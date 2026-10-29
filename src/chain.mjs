@@ -5,9 +5,11 @@ import ganache from "ganache";
 import { ethers } from "ethers";
 import { hash, lower, requireThat } from "./utils.mjs";
 import { caseTemplate } from "../references/kickback/scripts/lib.mjs";
+import { verifyUpgradeableDeployment, IMPLEMENTATION_SLOT } from "./upgrade-verification.mjs";
 import {
   EVENT_V8_VERSION,
   EVENT_V8_TEST15M_VERSION,
+  EVENT_V9_VERSION,
   EVENT_V8_CAPACITY,
   eventV8Profile,
   isV8Version,
@@ -28,6 +30,9 @@ export const ABI = {
   },
   get "kleros-event-v8-test15m"() {
     return loadV8Artifacts(EVENT_V8_TEST15M_VERSION).event;
+  },
+  get "kleros-event-v9-uups"() {
+    return loadV8Artifacts(EVENT_V9_VERSION).event;
   },
 };
 export const sourceCommit = "57fc1c8233c60e31c1b5988c631ef57d7c3f1b81";
@@ -213,6 +218,9 @@ async function deployV8Event(
   profile,
 ) {
   const chainId = Number((await chain.provider.getNetwork()).chainId);
+  requireThat(!profile.upgradeable,
+    "Upgradeable production deployments require the separately reviewed unsigned deployment plan",
+    "DEPLOYMENT_MISMATCH", 409);
   requireProfileChain(profile, chainId);
   const artifacts = loadV8Artifacts(profile.contractVersion);
   const creator = await signer.getAddress();
@@ -367,7 +375,7 @@ async function deployV8Event(
 function requireProfileChain(profile, chainId) {
   requireThat(
     !profile?.chainId || chainId === profile.chainId,
-    "This test contract profile is restricted to Chiado chain10200",
+    profile?.testOnly ? "This test contract profile is restricted to Chiado chain10200" : "Contract profile does not match the configured chain",
     "WRONG_CHAIN",
     409,
   );
@@ -433,6 +441,12 @@ export async function verifyDeployment(chain, d) {
   );
   const profile = eventV8Profile(d.contractVersion);
   requireProfileChain(profile, d.chainId);
+  if (profile?.upgradeable) {
+    const trust = await verifyUpgradeableDeployment(chain, d);
+    chain.deploymentTrust ??= new Map();
+    chain.deploymentTrust.set(hash(d), trust);
+    return contractFor(chain, d);
+  }
   // Only an explicitly initialized external testnet context may reuse positive
   // immutable proofs. Local demos and unknown/changed registry entries always
   // execute the complete verification below.
@@ -694,11 +708,17 @@ async function verifyV8Provenance(chain, d, c, template) {
   };
 }
 
-export async function chainState(chain, record) {
+export async function chainState(
+  chain,
+  record,
+  { includeBlockHash = false } = {},
+) {
   const d = record.deployment;
   const v8 = isV8Version(d.contractVersion);
   const c = await verifyDeployment(chain, d);
-  const block = await chain.provider.getBlock("latest");
+  const trust = eventV8Profile(d.contractVersion)?.upgradeable
+    ? chain.deploymentTrust.get(hash(d)) : null;
+  const block = trust?.anchor ?? await chain.provider.getBlock("latest");
   const at = { blockTag: block.number };
   const keys = [
     "phase",
@@ -759,6 +779,7 @@ export async function chainState(chain, record) {
       const challenge = await c.challenges(wallet, at);
       let finalRuling = null,
         appeal = null,
+        rewardsReady = false,
         caseURI = null;
       const matched = lower(challenge.matcher) !== lower(ethers.ZeroAddress);
       if (matched && Number(challenge.state) >= 2) {
@@ -775,9 +796,11 @@ export async function chainState(chain, record) {
           at,
         );
         finalRuling = resolverCase.isRuled ? Number(resolverCase.ruling) : null;
+        rewardsReady = resolverCase.isRuled === true;
         if (Number(challenge.state) === 2) {
           const a = await c.appealStatus(wallet, at);
           appeal = {
+            ...(chain.production ? { rewardsReady, withdrawableWei: null } : {}),
             ruling: Number(a.ruling),
             start: Number(a.start),
             end: Number(a.end),
@@ -813,11 +836,13 @@ export async function chainState(chain, record) {
           ? (record.publications?.get(lower(wallet))?.status ?? "unpublished")
           : "not-applicable",
         appeal,
+        ...(chain.production ? { rewardsReady } : {}),
       };
     }),
   );
   const balanceWei = String(balance);
   const state = {
+    ...(trust ? { upgrade: trust.upgrade } : {}),
     phase: PHASES[Number(raw.phase)],
     owner: raw.owner,
     pendingOwner: raw.pendingOwner,
@@ -855,10 +880,28 @@ export async function chainState(chain, record) {
         }
       : {}),
   };
+  if (trust) {
+    const head = await chain.provider.send("eth_getBlockByNumber", ["latest", false]);
+    requireThat(head?.number && BigInt(head.number) >= BigInt(block.number),
+      "Production snapshot head moved backwards", "DEPLOYMENT_REORG", 409);
+    const [eventSlot, factorySlot, implementationCode, canonical] = await Promise.all([
+      chain.provider.send("eth_getStorageAt", [d.contract, IMPLEMENTATION_SLOT, head.number]),
+      chain.provider.send("eth_getStorageAt", [d.factory, IMPLEMENTATION_SLOT, head.number]),
+      chain.provider.send("eth_getCode", [d.implementation, head.number]),
+      chain.provider.send("eth_getBlockByNumber", [ethers.toQuantity(block.number), false]),
+    ]);
+    requireThat(ethers.isHexString(eventSlot, 32) && ethers.isHexString(factorySlot, 32) &&
+      BigInt(eventSlot) === BigInt(d.implementation) &&
+      BigInt(factorySlot) === BigInt(d.factoryImplementation) &&
+      ethers.keccak256(implementationCode) === d.implementationCodeHash && canonical?.hash === block.hash,
+      "Production implementation or snapshot changed", "UPGRADE_TRUST_MISMATCH", 409);
+  }
   return {
     ...state,
+    ...(trust ? { deploymentTrust: trust.deploymentTrust } : {}),
     fingerprint: hash(state),
     blockNumber: block.number,
+    ...(includeBlockHash ? { blockHash: block.hash } : {}),
     now: block.timestamp,
   };
 }

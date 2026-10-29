@@ -9,6 +9,9 @@
 !scripts/
 !scripts/build.mjs
 !scripts/compile-contracts.mjs
+!scripts/compile-contracts-v9.mjs
+!scripts/mainnet/
+!scripts/mainnet/**
 !scripts/compile-contracts-test15m.mjs
 !scripts/generate-contracts-test15m.mjs
 !contracts/

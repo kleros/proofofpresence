@@ -1,5 +1,55 @@
 # Verification report
 
+## Ethereum upgradeable v9 candidate — 29October2026
+
+Production source is `kleros-event-v9-uups`, VERSION9, Ethereum1/native ETH, with one-day windows.
+The project multisig controls separate event/factory UUPS proxies through a non-upgradeable timelock
+with a permanent48-hour floor. This is a tested local release candidate, not a mainnet deployment.
+V7/v8/80015 sources, policies, evidence, public assets and scheduled operators remain preserved.
+
+| Actual command/check | Result |
+| --- | --- |
+| `npm test` |453total,451passed,0failed,2opt-in fork skips;867450.6615ms. [Full log](../artifacts/mainnet-release/full-node-test.log). |
+| Final focused production runtime/artifact/proxy/HTTP/volume/environment/batch checks |57/57passed; separate independent artifact/runtime/HTTP check41/41passed. [Core log](../artifacts/mainnet-release/core-final-focused.log), [independent log](../artifacts/mainnet-release/final-targeted.log). |
+| `node --test test/production-workbench.test.mjs` |6/6passed on actual local v9 proxies, including financial flow, delegation during review, event isolation and minimal recovery-identity privacy. [Log](../artifacts/mainnet-release/recovery-privacy.log). |
+| Combined v9 financial/upgrade/security/capacity tests |12/12passed. [Contract evidence](V9_CONTRACT_RELEASE.md), [upgrade evidence](V9_UPGRADE_SECURITY.md). |
+| Explicit real-Kleros v9 local-fork run |1/1passed;5proxy children, held-case upgrade, rulings0/1/2, appeals/refunds/rewards;322read-only upstream calls and no upstream signature/broadcast. [Proof](../artifacts/mainnet-kleros/v9-fork-ethereum-final.json). |
+| Unsigned release guards, read-only verifier/reliability and ordinary storage-layout gate |49/49focused checks passed; separate exact four-CREATE local rehearsal1/1passed. [Release evidence](ETHEREUM_V9_RELEASE.md). |
+| `npm run test:browser` |39explicit checks plus Playwright expectations; final rerun passed. [Log](../artifacts/mainnet-release/app-browser-rerun.log). |
+| `npm run test:ui` / `test:ui:safety` / `test:ui:context` / `test:ui:simple` / `test:hosted` |49/16/4/13/35explicit checks passed, plus Playwright expectations. [Retained attempts and reruns](../artifacts/mainnet-release/browser-compatibility.log). |
+| Production browser projection and offline fixture checks |21browser groups and26offline checks passed, with all17tested frontend asset hashes matching the integrated source. [Proof](../artifacts/production-ui/final-provenance.json). |
+| `npm run typecheck` and authored-source whitespace check |Passed on final integrated source. Verbatim external Solidity archives and raw build logs retain original line endings/whitespace. |
+| Linux production Docker build |All41steps passed from a100-file source-only context. Includes clean pinned install, pruned production dependencies and `npm run build` for v7/v8/80015/v9. [Build log](../artifacts/mainnet-release/linux-final-build.log). |
+| Final image smoke tests |Node22.23.4, UID1000, dev compiler absent, source-pinned v9 artifacts; network-disabled loopback served two synthetic events and5JS modules. Unconfigured production startup correctly exited1. [Container evidence](../artifacts/mainnet-release/local-container-final.json). |
+| Frozen old Chiado operator |142files passed read-only verification again;0signing-file reads/signatures/broadcasts. Existing A/B/C jobs remain ACTIVE and unchanged. |
+
+The broad suite completed before final targeted integration fixes and the additional privacy assertion;
+the affected production paths and final frontend were then checked by the focused runs above. The
+two skipped default fork tests were not counted as executed; the explicit v8 and v9 real-protocol
+fork runs are separately retained. Tests use synthetic accounts and local chains. The real-Kleros fork
+retains actual deployed bytecode; jury state/final Court callbacks are simulated locally. UI production
+fixtures prove rendering, guard and receipt-recovery behavior, not a real wallet popup or mainnet transfer.
+The actual v9 application financial flow is independently exercised by its proxy-backed workbench test.
+
+Initial failures remain distinguished from passing reruns: sandbox loopback setup was denied before
+assertions; two browser fixtures expected obsolete toast wording or a bare event GET instead of the
+bound selected-bootstrap response. Only those test expectations were corrected, preserving the safety
+assertions. The privacy test initially expected the wrong trust error code and was corrected to the
+actual `WRONG_CONTRACT`409 rejection. Linux install first failed because npm had removed the existing
+optional flag from macOS-only `fsevents`; that flag was restored without changing package versions or
+integrity. The first loopback image harness used the hosted-mode default and correctly failed its HTTPS
+origin requirement; its passing rerun explicitly selected local-demo. ARM64 Ganache uses its verified
+JavaScript fallback because its optional native uWS binding is unavailable. None of these stopped
+attempts is described as a pass.
+
+The temporary isolated Colima profile/image was deleted after evidence capture; the original Docker
+context/default VM were unchanged. No image push, mainnet transaction, production hosting/IPFS
+publication or upstream push occurred. Concrete multisig membership/threshold, deployer, ETH budget,
+policy publication and manifest still require review for a separately authorized deployment. Hidden
+namespace/root storage review remains mandatory for future upgrades; the generic layout gate explicitly
+does not claim automatic ERC7201/assembly-root validation. These checks are not an external audit or
+proof against malicious authorized replacement code.
+
 ## D complete — 29 October 2026, 05:04 UTC
 
 The separate controlled Chiado D exercise is **complete**: actual UI deposits, admission, Alice-only

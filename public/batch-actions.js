@@ -105,6 +105,7 @@ export function mountBatchActions(host, options) {
     contract: text(options.contract),
     contractVersion: text(options.contractVersion),
     action: options.action,
+    ...(Number(options.chainId) === 1 ? { mode: text(options.mode) } : {}),
   });
   const action = scope.action,
     approval = action === "approve-admission",
@@ -897,6 +898,8 @@ export function mountBatchActions(host, options) {
       text(saved.chainId) !== text(scope.chainId) ||
       !same(saved.contract, scope.contract) ||
       saved.contractVersion !== scope.contractVersion ||
+      (Number(scope.chainId) === 1 &&
+        (saved.mode !== scope.mode || saved.instanceId !== scope.instanceId)) ||
       typeof value.id !== "string" ||
       !/^[a-zA-Z0-9_-]+$/.test(value.id) ||
       typeof value.nonce !== "string" ||

@@ -1,5 +1,89 @@
 # Current implementation — 29 October2026, Asia/Bangkok
 
+## Completed upgradeable production candidate — 29October13:49Bangkok
+
+The Ethereum source candidate is implemented and locally verified on `codex/core-application`.
+Production dispatch is explicitly `kleros-event-v9-uups`, VERSION9, native ETH/chain1. Each event
+and the factory have independent UUPS/ERC1967 proxies controlled by the project multisig through
+the reviewed non-upgradeable timelock with a permanent minimum172800-second delay. Factory default
+changes affect future events. Existing v7/v8/80015 contracts, financial bodies, policies and public
+rehearsal evidence remain preserved. Upgrade authority can change custody logic;48hours is review
+notice rather than a guaranteed withdrawal period.
+
+The keyless `hosted-production` runtime verifies source/ABI/bytecode/storage/immutable pins, actual
+proxy slots, initial creation and upgrade history, timelock code/roles/delay and the reviewed real
+Kleros V1 ARRAY-rewards pair. Fresh EOA and canonical checks run after slow provenance work.
+Unknown upgrades stop new financial drafts; known submitted receipts remain recoverable. A failed
+event does not freeze another verified event. Minimal recovery identities are scoped to the current
+authenticated wallet and contain no event title or financial data. Production initially supports EOAs
+only; contract and delegated accounts are rejected. UI metadata, finality, held shares, direct payments,
+owed credits and appeal rewards remain distinct.
+
+Verification: broad Node run453total/451passed/0failed/2opt-in-fork skips, followed by final focused
+production57/57 and independent41/41, actual-proxy application/privacy6/6, contract/security/capacity
+12/12, and a separately executed real-Kleros V9 local fork1/1. The fork uses actual deployed protocol
+code with jury adjudication simulated locally. All six compatibility browser suites pass156explicit
+checks plus Playwright expectations; production UI projections pass21groups/26offline checks.
+Final typecheck and the Linux Node22 production build pass. The final image ran as UID1000 with
+network disabled, source-pinned artifacts and pruned dev compiler, and served two synthetic events
+and required JS modules over internal loopback. Unconfigured production startup correctly fails.
+The temporary isolated Colima VM was deleted; the original default VM/context were untouched.
+
+See [production integration](docs/PRODUCTION_APPLICATION.md), [test report](docs/TEST_REPORT.md),
+[V9 contracts](docs/V9_CONTRACT_RELEASE.md), [upgrade trust](docs/V9_UPGRADE_SECURITY.md) and
+[unsigned release preparation](docs/ETHEREUM_V9_RELEASE.md). Public evidence is under
+`artifacts/mainnet-kleros/`, `artifacts/mainnet-release/` and `artifacts/production-ui/`.
+
+No mainnet transaction, production hosting change, IPFS publication or upstream push occurred.
+Concrete deployment still requires the actual multisig/deployer review, funding/fee budget, policy
+publication and manifest, plus separate authorization. Optional extra D publishing and cosmetic
+work remain deferred. A/B/C assets, journals and the two ACTIVE schedules stay unchanged; the142-file
+frozen operator closure passed again at06:48UTC. The completed D Bob payment remains established by
+the retained proofs below. Do not resume or replay D financial operations.
+
+## Historical implementation checkpoint — 29October12:50Bangkok
+
+The human reprioritized production readiness for Ethereum mainnet, requested upgradeable contracts,
+and confirmed a project multisig with a48-hour timelock. Implement and test a separate explicit
+`kleros-event-v9-uups` profile, VERSION9, retaining v8 financial behavior and86400-second windows.
+Per-event UUPS/ERC1967 proxies and the factory are separately upgradeable; the shared non-upgradeable
+timelock has a172800-second floor. A factory default change affects future events only. Preserve
+historical v7/v8/test15m source, ABI, policies and all public rehearsal records. No mainnet broadcast,
+production deployment, IPFS publication, upstream push or billing upgrade is authorized.
+
+Branch `codex/core-application`, committed financial checkpoint
+`40b20de125dd84d8805a16deb142b084580d8f48`. Reviewed selected-bootstrap/UI integration from8fd010c
+is now in the root working tree and locally validated; it is not deployed. The optional extra D
+preview publish and live release audit are deferred under the new priority. Existing A/B/C hosted
+assets, immutable plans/journals and their two independent schedules remain frozen. At05:48UTC C
+was still before its actual21:59:50UTC challenge deadline;142 frozen operator files verified again.
+
+Root owns existing `src/server.mjs`, `src/workbench.mjs`, `src/chain.mjs` and version dispatch/final
+integration. Contract chat owns new `contracts/v9/`, compiler/storage/upgrade tests, real-Court fork
+checks and unsigned release preparation. UI chat owns minimal production predicates, ETH/network,
+wallet/governance/reward disclosures in its isolated worktree. Root delegates new mainnet runtime,
+fresh EOA checks and upgrade verification modules with independent tests; no second financial operator.
+
+Stable API: mode `hosted-production`; environment production/ethereum-mainnet/chain1; chain ETH18;
+no server signers/demo identities/reset/time travel/mock rulings. Explicit profile/ABI
+`kleros-event-v9-uups`, financialModel `v8`, upgradeable true. Signed-wallet sessions and selected
+bootstrap union stay unchanged. Detail `deploymentTrust.status` is verified/unavailable/changed;
+`upgrade` reports kind, implementation/hash/version, authority, multisig, delaySeconds, pending and
+verified. Only standard EOAs are initially supported; fresh auth/draft checks reject contract and
+EIP7702-coded accounts. Known submitted transaction reconciliation stays read-only and available.
+
+Real arbitration uses the reviewed ARRAY-rewards resolver
+`0x4B89e798B10478A839Ea0Abcf86C4B94A3C782A4` and Kleros Liquid V1
+`0x988b3A538b618C7A603e1c11Ab82Cd16dbE28069`, with exact ABI/runtime verification and fresh fee
+quotes. The official default scalar-rewards resolver is incompatible with this adapter. Before
+delivered resolver finality, appeal rewards are not-ready/null; real resolver reads revert there.
+The EOA limitation follows its `.send` refund behavior and does not change child owed-credit economics.
+
+Remaining: complete keyless production runtime, proxy/implementation/governance provenance, auth and
+financial draft guards, UI integration, storage/upgrade/real-Court local fork checks and combined
+application checks. A concrete reviewed deployment manifest, multisig address, funding and policy
+publication remain deployment prerequisites, not reasons to pause local implementation.
+
 This root document is the **canonical project brain**. The current checkpoint and linked release
 records supersede historical implementation/deployment statements retained below.
 

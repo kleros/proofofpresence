@@ -1,0 +1,8 @@
+{
+  "status": "partial",
+  "passedGroupedChecks": 11,
+  "source": "first-partial-results.json",
+  "limits": "Initial valid-context/state presentation pass; does not include subsequently requested bootstrap profile/RPC/full-governance hardening or quote/conflict cases. No production-ready claim.",
+  "network": "loopback mocks only",
+  "financialActions": 0
+}

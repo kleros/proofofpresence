@@ -1,33 +1,14 @@
-import fs from "node:fs";
+import { prepareRuntimeVolume } from "./runtime-volume.mjs";
 
-// Railway mounts volumes as root. Prepare only the fixed testnet mount, then
+// Railway mounts volumes as root. Prepare only the fixed environment mount, then
 // drop all root credentials before loading application or network code.
-if (process.getuid?.() === 0) {
-  if (
-    process.env.MODE !== "hosted-testnet" ||
-    process.env.RAILWAY_VOLUME_MOUNT_PATH !== "/data" ||
-    process.env.TESTNET_STATE_FILE !== "/data/workbench-state.json" ||
-    !fs.lstatSync("/data").isDirectory() ||
-    fs.lstatSync("/data").isSymbolicLink()
-  ) {
-    throw new Error(
-      "Root startup requires the dedicated mounted testnet data directory",
-    );
-  }
-  fs.chownSync("/data", 1000, 1000);
-  fs.chmodSync("/data", 0o700);
-  process.setgroups([]);
-  process.setgid(1000);
-  process.setuid(1000);
-}
+const runtimeState = prepareRuntimeVolume();
 const { startServer } = await import("./server.mjs");
 const app = await startServer();
 console.log(
   JSON.stringify({
     status: "listening",
-    mode: process.env.MODE ?? "local-demo",
-    uid: process.getuid?.(),
-    durableTestnetState: process.env.MODE === "hosted-testnet",
+    ...runtimeState,
   }),
 );
 let closing = false;

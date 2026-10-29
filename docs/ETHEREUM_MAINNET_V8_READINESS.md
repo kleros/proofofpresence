@@ -1,5 +1,10 @@
 # Ethereum mainnet v8 readiness
 
+Historical checkpoint: the human's later upgradeability decision selects the separate
+`kleros-event-v9-uups` production candidate with project-multisig/48-hour governance. See
+[V9 release preparation](ETHEREUM_V9_RELEASE.md) and [V9 contract evidence](V9_CONTRACT_RELEASE.md).
+The v8 findings below are retained as the immutable-version baseline; they are not the current launch plan.
+
 Updated29October2026. Status: **production target recorded; source-only readiness review**.
 
 The human specified Ethereum mainnet, chain1, using native ETH. Production uses

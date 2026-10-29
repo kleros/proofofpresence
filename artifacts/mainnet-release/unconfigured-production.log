@@ -1,0 +1,24 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_linux_arm64_127.node'
+Require stack:
+- /app/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /app/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+file:///app/src/utils.mjs:16
+  if (!ok) throw Object.assign(new Error(message), { code, status });
+                               ^
+
+Error: PUBLIC_ORIGIN must be an exact HTTPS origin without a path
+    at requireThat (file:///app/src/utils.mjs:16:32)
+    at configuredOrigin (file:///app/src/server.mjs:86:5)
+    at startServer (file:///app/src/server.mjs:97:7)
+    at file:///app/src/container.mjs:7:19 {
+  code: 'INVALID_INPUT',
+  status: 400
+}
+
+Node.js v22.23.4

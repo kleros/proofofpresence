@@ -6,6 +6,7 @@ import {
   deployEvent,
   contractFor,
   chainState,
+  verifyDeployment,
   DAY,
 } from "./chain.mjs";
 import { importCsv } from "./imports.mjs";
@@ -14,6 +15,9 @@ import { createBatchService, participantBatchEligibility } from "./batches.mjs";
 import { projectPayments } from "./payments.mjs";
 import { v8DepositCredits } from "./v8-deposits.mjs";
 import { testnetChain, testnetStateStore } from "./testnet-runtime.mjs";
+import { mainnetChain, mainnetStateStore } from "./mainnet-runtime.mjs";
+import { assertProductionEOAWallet } from "./production-wallets.mjs";
+import { IMPLEMENTATION_SLOT } from "./upgrade-verification.mjs";
 import {
   hash,
   id,
@@ -57,21 +61,86 @@ export async function createWorkbench({
   rpcPort = 0,
   contractVersion = "truth-pays-v7",
   testnet = null,
-} = {}) {
+  production = null,
+} = {}, { productionRuntime = mainnetChain, productionStore = mainnetStateStore } = {}) {
   requireThat(
     contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
     "Unsupported contract version",
   );
-  const external = !!testnet;
+  requireThat(!(testnet && production), "Choose one external environment");
+  const external = !!(testnet || production);
+  const externalConfig = production || testnet;
+  requireThat(external || !eventV8Profile(contractVersion)?.upgradeable,
+    "Upgradeable production events require an explicit reviewed production manifest");
   const nativeSymbol = external
-    ? (testnet.manifest?.chain?.nativeCurrency?.symbol ?? "native token")
+    ? (externalConfig.manifest?.chain?.nativeCurrency?.symbol ?? "native token")
     : "ETH";
-  const chain = external
-    ? await testnetChain(testnet.manifest, testnet.rpcUrl)
+  const chain = production
+    ? await productionRuntime(production.manifest, production.rpcUrl)
+    : external
+    ? await testnetChain(externalConfig.manifest, testnet.rpcUrl)
     : await localChain(rpcPort);
-  const store = external
-    ? testnetStateStore(testnet.stateFile, testnet.manifest)
+  const store = production
+    ? productionStore(production.stateFile, production.manifest)
+    : external
+    ? testnetStateStore(testnet.stateFile, externalConfig.manifest)
     : null;
+  async function assertWallet(wallet) {
+    if (!production) return null;
+    requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,
+      "Production RPC chain changed", "WRONG_CHAIN", 409);
+    const result = await assertProductionEOAWallet(chain.provider, wallet);
+    requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,
+      "Production RPC chain changed", "WRONG_CHAIN", 409);
+    return result;
+  }
+  async function assertDraftDeployment(r, st) {
+    if (!production) return;
+    await verifyDeployment(chain, r.deployment);
+    const trust = Reflect.get(chain, "deploymentTrust")?.get(hash(r.deployment));
+    requireThat(trust && hash(trust.upgrade) === hash(st.upgrade),
+      "Upgrade governance changed; review a fresh draft", "STALE_DRAFT", 409);
+  }
+  async function finishDraftChecks(r, st, wallet) {
+    if (!production) return;
+    await assertDraftDeployment(r, st);
+    // Wallet compatibility closes the slow provenance scan, then implementation
+    // slots are read at that same block before its final canonical recheck.
+    const checked = await assertWallet(wallet);
+    const tag = ethers.toQuantity(checked.blockNumber);
+    const [eventSlot, factorySlot] = await Promise.all([
+      chain.provider.send("eth_getStorageAt", [r.deployment.contract, IMPLEMENTATION_SLOT, tag]),
+      chain.provider.send("eth_getStorageAt", [r.deployment.factory, IMPLEMENTATION_SLOT, tag]),
+    ]);
+    const canonical = await chain.provider.send("eth_getBlockByNumber", [tag, false]);
+    requireThat(ethers.isHexString(eventSlot, 32) && ethers.isHexString(factorySlot, 32) &&
+      BigInt(eventSlot) === BigInt(r.deployment.implementation) &&
+      BigInt(factorySlot) === BigInt(r.deployment.factoryImplementation) &&
+      canonical?.hash?.toLowerCase() === checked.blockHash,
+      "Production wallet or implementation snapshot changed", "UPGRADE_TRUST_MISMATCH", 409);
+  }
+  function externalMetadata(s = null) {
+    if (!production) return external ? {
+      arbitration: { mode: "controlled", notice: "Controlled test arbitrator; no independent jury" },
+    } : {};
+    return {
+      environment: { production: true, network: "ethereum-mainnet", chainId: 1 },
+      arbitration: { ...production.manifest.arbitration, verified: true,
+        label: "Kleros V1 · Ethereum", notice: "Real Kleros arbitration on Ethereum mainnet" },
+      walletSupport: { type: "eoa-only", eoa: true, erc1271: false, eip7702: false,
+        notice: "Use a standard wallet account. Smart contract and delegated accounts are not supported." },
+      contractProfile: { ...eventV8Profile("kleros-event-v9-uups"), verified: true },
+      // Only a wallet's own saved reviews reveal these minimal identities.
+      // They authorize receipt lookup, never a fresh financial action.
+      recoveryEvents: s?.wallet ? [...new Set([...drafts.values()]
+        .filter(d => lower(d.wallet) === lower(s.wallet)).map(d => d.eventId))]
+        .map(eventId => events.get(eventId)).filter(Boolean).map(r => ({
+          id: r.definition.id, chainId: r.deployment.chainId,
+          contract: r.deployment.contract, contractVersion: r.deployment.contractVersion,
+          abiVersion: r.deployment.abiVersion,
+        })) : [],
+    };
+  }
   const events = new Map(),
     drafts = new Map(),
     locks = new Set();
@@ -125,10 +194,10 @@ export async function createWorkbench({
     requireThat(r, "Unknown event", "NOT_FOUND", 404);
     return contractFor(chain, r.deployment);
   };
-  const state = async (eventId) => {
+  const state = async (eventId, options = {}) => {
     const r = events.get(eventId);
     requireThat(r, "Unknown event", "NOT_FOUND", 404);
-    const result = await chainState(chain, r);
+    const result = await chainState(chain, r, options);
     r.financialAccess = [result.owner, result.pendingOwner];
     return result;
   };
@@ -312,9 +381,9 @@ export async function createWorkbench({
       });
   }
   if (external) {
-    for (const initial of testnet.manifest.events) {
+    for (const initial of externalConfig.manifest.events) {
       const eventId = initial.definition.id;
-      requireThat(!events.has(eventId), "Duplicate testnet event ID");
+      requireThat(!events.has(eventId), "Duplicate external event ID");
       events.set(eventId, {
         ...initial,
         financialAccess: [],
@@ -387,7 +456,9 @@ export async function createWorkbench({
       deploymentBlock: r.deployment.deploymentBlock,
       contractVersion: r.deployment.contractVersion,
       abiVersion: r.deployment.abiVersion,
-      ...(eventV8Profile(r.deployment.contractVersion)?.testOnly
+      ...(production
+        ? { contractProfile: { ...eventV8Profile(r.deployment.contractVersion), verified: st.deploymentTrust?.status === "verified" } }
+        : eventV8Profile(r.deployment.contractVersion)?.testOnly
         ? { contractProfile: eventV8Profile(r.deployment.contractVersion) }
         : {}),
       claimDeadline: r.deployment.claimDeadline,
@@ -401,7 +472,13 @@ export async function createWorkbench({
       role,
     };
   }
-  async function bootstrap(s) {
+  async function bootstrap(s, options = {}) {
+    if (Object.hasOwn(options, "selectedEventId"))
+      return selectedBootstrap(s, options.selectedEventId);
+    if (production) {
+      const { selectedEvent, ...directory } = await selectedBootstrap(s, "");
+      return directory;
+    }
     await Promise.all(
       [...events.values()]
         .filter(
@@ -420,12 +497,12 @@ export async function createWorkbench({
       }
     });
     return {
-      mode: external ? "testnet" : "local-demo",
+      mode: production ? "hosted-production" : external ? "testnet" : "local-demo",
       identities: identities.map(({ signer, ...x }) => x),
       session: s ? { wallet: s.wallet, label: s.label, mode: s.mode } : null,
       events: await Promise.all(visible.map((r) => summary(r, s))),
       chain: external
-        ? testnet.manifest.chain
+        ? externalConfig.manifest.chain
         : {
             chainId: Number((await chain.provider.getNetwork()).chainId),
             rpcUrl: chain.rpcUrl,
@@ -433,24 +510,281 @@ export async function createWorkbench({
             nativeCurrency: { name: "Demo Ether", symbol: "ETH", decimals: 18 },
           },
       contractVersion: external
-        ? testnet.manifest.events[0].deployment.contractVersion
+        ? externalConfig.manifest.events[0].deployment.contractVersion
         : contractVersion,
-      ...(eventV8Profile(external ? testnet.manifest.events[0].deployment.contractVersion : contractVersion)?.testOnly
-        ? { contractProfile: eventV8Profile(external ? testnet.manifest.events[0].deployment.contractVersion : contractVersion) }
+      ...(eventV8Profile(external ? externalConfig.manifest.events[0].deployment.contractVersion : contractVersion)?.testOnly
+        ? { contractProfile: eventV8Profile(external ? externalConfig.manifest.events[0].deployment.contractVersion : contractVersion) }
         : {}),
-      ...(external
-        ? {
-            arbitration: {
-              mode: "controlled",
-              notice: "Controlled test arbitrator; no independent jury",
-            },
-          }
-        : {}),
+      ...externalMetadata(s),
       now: (await chain.provider.getBlock("latest")).timestamp,
     };
   }
-  async function detail(eventId, s) {
-    const st = await state(eventId),
+  // This map exists for one response only. It never survives a request, wallet
+  // change, ownership change or server instance; its snapshots are all fresh.
+  async function selectedBootstrap(s, selectedEventId) {
+    const snapshots = new Map();
+    const failed = new Set();
+    const snapshot = (eventId) => {
+      if (!snapshots.has(eventId))
+        snapshots.set(
+          eventId,
+          state(eventId, { includeBlockHash: true }).catch((error) => {
+            failed.add(eventId);
+            throw error;
+          }),
+        );
+      return snapshots.get(eventId);
+    };
+    const selected = (async () => {
+      requireThat(
+        typeof selectedEventId === "string" &&
+          /^[a-zA-Z0-9_-]{1,160}$/.test(selectedEventId),
+        "Choose one stable event identity",
+        "INVALID_INPUT",
+        400,
+      );
+      const st = await snapshot(selectedEventId);
+      const result = await detail(selectedEventId, s, st);
+      return {
+        eventId: selectedEventId,
+        wallet: s?.wallet ?? null,
+        detail: result,
+      };
+    })().catch((error) => ({
+      eventId: selectedEventId,
+      wallet: s?.wallet ?? null,
+      detail: null,
+      error: selectedError(error),
+    }));
+    await Promise.all(
+      [...events.values()]
+        .filter(
+          (r) =>
+            r.definition.visibility === "private" ||
+            r.definition.editorialStatus === "draft",
+        )
+        .map((r) =>
+          snapshot(r.definition.id).catch((error) => {
+            if (!production && r.definition.id !== selectedEventId) throw error;
+          }),
+        ),
+    );
+    const visible = [...events.values()].filter((r) => {
+      if (failed.has(r.definition.id)) return false;
+      try {
+        record(r.definition.id, s);
+        return true;
+      } catch {
+        return false;
+      }
+    });
+    const summaries = Promise.all(
+      visible.map(async (r) => {
+        if (r.definition.id === selectedEventId)
+          return (await selected).detail?.event ?? null;
+        try {
+          return await summary(r, s, await snapshot(r.definition.id));
+        } catch (error) {
+          if (!production && r.definition.id !== selectedEventId) throw error;
+          return null;
+        }
+      }),
+    );
+    const [directory, initialSelection, nowBlock, network] = await Promise.all([
+      summaries,
+      selected,
+      chain.provider.getBlock("latest"),
+      external ? Promise.resolve(null) : chain.provider.getNetwork(),
+    ]);
+    // Final authority reads cover the whole bundle, after every slow directory
+    // and metadata read. No other asynchronous work follows disclosure checks.
+    const disclosed = await selectedDisclosure(
+      s,
+      directory.filter(Boolean),
+      initialSelection,
+      initialSelection.detail ? await snapshot(selectedEventId) : null,
+    );
+    return {
+      mode: production ? "hosted-production" : external ? "testnet" : "local-demo",
+      identities: identities.map(({ signer, ...x }) => x),
+      session: s ? { wallet: s.wallet, label: s.label, mode: s.mode } : null,
+      events: disclosed.directory,
+      chain: external
+        ? externalConfig.manifest.chain
+        : {
+            chainId: Number(network.chainId),
+            rpcUrl: chain.rpcUrl,
+            name: "Local demo",
+            nativeCurrency: { name: "Demo Ether", symbol: "ETH", decimals: 18 },
+          },
+      contractVersion: external
+        ? externalConfig.manifest.events[0].deployment.contractVersion
+        : contractVersion,
+      ...(eventV8Profile(
+        external
+          ? externalConfig.manifest.events[0].deployment.contractVersion
+          : contractVersion,
+      )?.testOnly
+        ? {
+            contractProfile: eventV8Profile(
+              external
+                ? externalConfig.manifest.events[0].deployment.contractVersion
+                : contractVersion,
+            ),
+          }
+        : {}),
+      ...externalMetadata(s),
+      now: nowBlock.timestamp,
+      selectedEvent: disclosed.selectedEvent,
+    };
+  }
+  function selectedError(error) {
+    const known = {
+      NOT_FOUND: [404, "Unknown event"],
+      FORBIDDEN: [403, "Private or unpublished event"],
+      INVALID_INPUT: [400, "Choose one stable event identity"],
+      SELECTED_EVENT_ACCESS_CHANGED: [
+        409,
+        "Event access changed; refresh and try again",
+      ],
+      SELECTED_EVENT_REORG: [
+        409,
+        "Event snapshot changed; refresh and try again",
+      ],
+    };
+    const code = Object.hasOwn(known, error?.code)
+      ? error.code
+      : "SELECTED_EVENT_UNAVAILABLE";
+    const [status, message] = known[code] ?? [
+      503,
+      "Selected event is temporarily unavailable",
+    ];
+    return { code, status, message };
+  }
+  async function selectedDisclosure(s, directory, selection, st) {
+    const deniedSelection = (error) => ({
+      eventId: selection.eventId,
+      wallet: s?.wallet ?? null,
+      detail: null,
+      error: selectedError(error),
+    });
+    const targets = new Map(
+      directory.map((item) => [item.id, events.get(item.id)]),
+    );
+    if (selection.detail)
+      targets.set(selection.eventId, events.get(selection.eventId));
+    let rows, canonical;
+    try {
+      const current = await chain.provider.getBlock("latest");
+      [rows, canonical] = await Promise.all([
+        Promise.all(
+          [...targets].map(async ([eventId, r]) => {
+            try {
+              const c = contract(eventId);
+              const [owner, pendingOwner] = await Promise.all([
+                c.owner({ blockTag: current.number }),
+                c.pendingOwner({ blockTag: current.number }),
+              ]);
+              return {
+                eventId,
+                r,
+                owner,
+                pendingOwner,
+                available: true,
+                error: null,
+              };
+            } catch (error) {
+              return {
+                eventId,
+                r,
+                owner: null,
+                pendingOwner: null,
+                available: false,
+                error,
+              };
+            }
+          }),
+        ),
+        st ? chain.provider.getBlock(st.blockNumber) : Promise.resolve(null),
+      ]);
+      // Owner/pending-owner results are valid only while their newer authority
+      // block remains canonical; the older selected payment block is separate.
+      const authorityBlock = await chain.provider.getBlock(current.number);
+      requireThat(
+        authorityBlock?.number === current.number &&
+          authorityBlock.hash === current.hash,
+        "Current event authority snapshot changed",
+        "SELECTED_EVENT_REORG",
+        409,
+      );
+    } catch (error) {
+      return {
+        directory: [],
+        selectedEvent: selection.detail ? deniedSelection(error) : selection,
+      };
+    }
+    // All authority data is now available. Synchronous checks below observe the
+    // latest app visibility/staff lists without awaiting another event's RPCs.
+    const authority = new Map(rows.map((row) => [row.eventId, row]));
+    for (const row of rows)
+      if (row.available) row.r.financialAccess = [row.owner, row.pendingOwner];
+    const roleOf = (row) =>
+      s && lower(s.wallet) === lower(row.owner)
+        ? "organizer"
+        : s &&
+            row.r.definition.staff.some(
+              (wallet) => lower(wallet) === lower(s.wallet),
+            )
+          ? "staff"
+          : "participant";
+    let selectedEvent = selection;
+    if (selection.detail) {
+      try {
+        const row = authority.get(selection.eventId);
+        if (!row.available) throw row.error;
+        record(selection.eventId, s);
+        requireThat(
+          roleOf(row) === selection.detail.event.role,
+          "Event access changed",
+          "SELECTED_EVENT_ACCESS_CHANGED",
+          409,
+        );
+        requireThat(
+          canonical?.hash === st.blockHash &&
+            selection.detail.payments.blockHash === st.blockHash,
+          "Selected event snapshot changed",
+          "SELECTED_EVENT_REORG",
+          409,
+        );
+      } catch (error) {
+        selectedEvent = deniedSelection(error);
+      }
+    }
+    const visible = directory.filter((item) => {
+      if (item.id === selection.eventId && !selectedEvent.detail) return false;
+      const row = authority.get(item.id);
+      if (!row?.available) return false;
+      try {
+        record(item.id, s);
+      } catch {
+        return false;
+      }
+      // Keep immutable financial fields from the snapshot. Refresh only current
+      // access metadata and role; selected summary remains detail.event itself.
+      Object.assign(item, {
+        visibility: row.r.definition.visibility,
+        editorialStatus: row.r.definition.editorialStatus,
+        staff: row.r.definition.staff,
+        organizers: row.r.definition.organizers,
+        role: roleOf(row),
+      });
+      return true;
+    });
+    return { directory: visible, selectedEvent };
+  }
+
+  async function detail(eventId, s, knownState = null) {
+    const st = knownState ?? (await state(eventId)),
       r = record(eventId, s),
       event = await summary(r, s, st);
     // Wallet-owned recovery is independent of names, contact records or admission.
@@ -488,7 +822,13 @@ export async function createWorkbench({
             verificationError = null;
           if (p.deposit)
             try {
-              await verifyReceipt(eventId, p, p.deposit.txHash, true);
+              await verifyReceipt(
+                eventId,
+                p,
+                p.deposit.txHash,
+                true,
+                knownState ? st.blockNumber : "latest",
+              );
             } catch (e) {
               verificationState =
                 e.code === "RETURNED_DEPOSIT" ? "returned" : "unavailable";
@@ -537,10 +877,26 @@ export async function createWorkbench({
     const deposits = privileged
       ? await depositLedger(eventId, st.blockNumber)
       : [];
+    const stateDTO = knownState
+      ? Object.fromEntries(Object.entries(st).filter(([key]) => key !== "blockHash"))
+      : { ...st };
+    if (production) {
+      stateDTO.cases = await Promise.all(st.cases.map(async item => {
+        if (!item.matched) return item;
+        const rewardsReady = item.finalRuling !== null;
+        const withdrawableWei = rewardsReady && s?.wallet
+          ? String(await chain.resolver.getTotalWithdrawableAmount(
+              item.localDisputeID, s.wallet, [0, 1, 2], { blockTag: st.blockNumber }))
+          : null;
+        return { ...item, rewardsReady,
+          appeal: { ...item.appeal, rewardsReady, withdrawableWei } };
+      }));
+    }
     return {
       event,
-      state: st,
+      state: stateDTO,
       payments: await projectPayments(chain, r, { blockTag: st.blockNumber }),
+      ...(production ? { deploymentTrust: st.deploymentTrust, upgrade: st.upgrade } : {}),
       ownWallet,
       participants,
       deposits,
@@ -740,7 +1096,16 @@ export async function createWorkbench({
     r.revision++;
     return p;
   }
-  async function verifyReceipt(eventId, p, txHash, allowLinked = false) {
+  /** @param {string} eventId @param {any} p @param {string} txHash
+   * @param {boolean} [allowLinked] @param {number | "latest"} [blockTag]
+   */
+  async function verifyReceipt(
+    eventId,
+    p,
+    txHash,
+    allowLinked = false,
+    blockTag = "latest",
+  ) {
     requireThat(
       /^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""),
       "A transaction hash is required",
@@ -764,6 +1129,7 @@ export async function createWorkbench({
     const receiptBlock = await chain.provider.getBlock(receipt.blockNumber);
     requireThat(
       receipt.blockNumber >= d.deploymentBlock &&
+        (blockTag === "latest" || receipt.blockNumber <= blockTag) &&
         receiptBlock?.hash === receipt.blockHash,
       "Deposit is not canonical for this deployment",
       "DEPOSIT_REORG",
@@ -804,7 +1170,9 @@ export async function createWorkbench({
       409,
     );
     if (isV8Version(d.contractVersion)) {
-      const person = (await v8DepositCredits(c, d)).get(lower(p.wallet));
+      const person = (await v8DepositCredits(c, d, blockTag)).get(
+        lower(p.wallet),
+      );
       const lot = person?.lots.find(
         (lot) =>
           lower(lot.txHash) === lower(txHash) && lot.logIndex === log.log.index,
@@ -821,7 +1189,7 @@ export async function createWorkbench({
       );
       const pending = person.lots.reduce((sum, lot) => sum + lot.pending, 0n);
       requireThat(
-        pending === (await c.pendingDeposits(p.wallet)),
+        pending === (await c.pendingDeposits(p.wallet, { blockTag })),
         "v8 credit history differs from contract",
         "CREDIT_HISTORY",
         409,
@@ -829,10 +1197,26 @@ export async function createWorkbench({
     } else {
       // Preserve historical v7 pairing: spare returns do not erase held principal.
       const [deposited, rejected, refunded, registered] = await Promise.all([
-        c.queryFilter(c.filters.Deposited(p.wallet), d.deploymentBlock),
-        c.queryFilter(c.filters.Rejected(p.wallet), d.deploymentBlock),
-        c.queryFilter(c.filters.Refunded(p.wallet), d.deploymentBlock),
-        c.queryFilter(c.filters.StakerRegistered(p.wallet), d.deploymentBlock),
+        c.queryFilter(
+          c.filters.Deposited(p.wallet),
+          d.deploymentBlock,
+          blockTag,
+        ),
+        c.queryFilter(
+          c.filters.Rejected(p.wallet),
+          d.deploymentBlock,
+          blockTag,
+        ),
+        c.queryFilter(
+          c.filters.Refunded(p.wallet),
+          d.deploymentBlock,
+          blockTag,
+        ),
+        c.queryFilter(
+          c.filters.StakerRegistered(p.wallet),
+          d.deploymentBlock,
+          blockTag,
+        ),
       ]);
       const deposits = deposited
         .filter((x) => "args" in x)
@@ -856,7 +1240,7 @@ export async function createWorkbench({
             tx: l.transactionHash,
           };
         });
-      const status = Number(await c.status(p.wallet));
+      const status = Number(await c.status(p.wallet, { blockTag }));
       const paired = pairReturns(deposits, returnEvents, {
         deposit: BigInt(d.depositWei),
         prefer: new Set(
@@ -1151,7 +1535,9 @@ export async function createWorkbench({
         method = "matchChallenge";
         args = [wallet()];
         value = ch.deposit;
-        summaryText = external
+        summaryText = production
+          ? "Match this challenge to open a real Kleros V1 case on Ethereum mainnet. One provisional share may remain reserved during payouts."
+          : external
           ? "Match this challenge to open a controlled Chiado mock-arbitration case. There is no independent Kleros jury. One provisional share may remain reserved during payouts."
           : "Match this challenge to open a local mock V1 Court case. One provisional share may be reserved during payouts.";
         break;
@@ -1240,6 +1626,7 @@ export async function createWorkbench({
       case "transferOwnership":
         method = "transferOwnership";
         args = [to()];
+        if (production) await assertWallet(args[0]);
         summaryText =
           "Begin two-step ownership transfer; new wallet must accept.";
         break;
@@ -1278,7 +1665,7 @@ export async function createWorkbench({
         const localId = ch.localDisputeID;
         if (action === "evidence") {
           requireThat(
-            /^\/(ipfs|local-evidence)\/[A-Za-z0-9/._-]+$/.test(
+            (production ? /^\/ipfs\/[A-Za-z0-9/._-]+$/ : /^\/(ipfs|local-evidence)\/[A-Za-z0-9/._-]+$/).test(
               params.uri ?? "",
             ),
             "Evidence must use an IPFS or local evidence URI",
@@ -1301,6 +1688,12 @@ export async function createWorkbench({
             "Contribute directly from your wallet to the resolver. Ruling 0 funded alone can win and counts as excluded.";
         }
         if (action === "appealRewards") {
+          if (production) {
+            const resolverCase = await chain.resolver.disputes(localId);
+            requireThat(resolverCase.isRuled === true,
+              "Appeal rewards are available only after the resolver delivers its final ruling",
+              "REWARDS_NOT_READY", 409);
+          }
           requireThat(
             Array.isArray(params.sides) &&
               params.sides.every((x) => [0, 1, 2].includes(x)),
@@ -1319,6 +1712,8 @@ export async function createWorkbench({
     return { target, method, args, value, summary: summaryText };
   }
   async function createDraft(eventId, s, { action, params = {} }) {
+    authenticated(s);
+    await assertWallet(s.wallet);
     const st = await state(eventId),
       r = record(eventId, s);
     const spec = await actionSpec(eventId, s, action, params, st);
@@ -1339,6 +1734,7 @@ export async function createWorkbench({
         { code: "SIMULATION_FAILED", status: 409 },
       );
     }
+    await finishDraftChecks(r, st, s.wallet);
     const draft = {
       id: id(),
       eventId,
@@ -1368,6 +1764,7 @@ export async function createWorkbench({
   }
   async function validateDraft(eventId, s, draftId) {
     authenticated(s);
+    await assertWallet(s.wallet);
     const r = record(eventId, s),
       d = drafts.get(draftId);
     requireThat(
@@ -1403,9 +1800,12 @@ export async function createWorkbench({
       409,
     );
     await chain.provider.call(d.transaction);
+    await finishDraftChecks(r, st, s.wallet);
     return { d, spec, r };
   }
   async function executeDraft(eventId, s, draftId) {
+    requireThat(!production, "Production transactions require a browser wallet",
+      "WALLET_SIGNATURE_REQUIRED", 403);
     requireThat(
       !locks.has(eventId),
       "Another event action is in flight",
@@ -1716,6 +2116,12 @@ export async function createWorkbench({
       contract: d.contract,
     };
     Object.assign(entry, {
+      hash: txHash,
+      eventId,
+      wallet: d.wallet,
+      draftId,
+      chainId: d.chainId,
+      contract: d.contract,
       status,
       recovered: true,
       ...(receipt ? { blockNumber: receipt.blockNumber } : {}),
@@ -1841,6 +2247,7 @@ export async function createWorkbench({
     chain,
     events,
     provider: chain.provider,
+    assertWallet,
     session,
     record,
     contract,

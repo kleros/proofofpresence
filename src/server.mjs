@@ -9,6 +9,7 @@ import { ethers } from "ethers";
 import { assertDemoChainInstance } from "../public/hosted-wallet.js";
 import { createWorkbench } from "./workbench.mjs";
 import { createDepositInbox } from "./deposit-inbox.mjs";
+import { productionErrorResponse } from "./production-errors.mjs";
 import {
   json,
   requireThat,
@@ -33,6 +34,7 @@ const readMethods = new Set([
   "eth_blockNumber",
   "eth_getBalance",
   "eth_getCode",
+  "eth_getStorageAt",
   "eth_getTransactionCount",
   "eth_getBlockByNumber",
   "eth_getBlockByHash",
@@ -56,22 +58,26 @@ const mime = {
 };
 
 /**
- * @param {{port?:number,rpcPort?:number,contractVersion?:string,testnet?:any,deployment?:{mode?:string,publicOrigin?:string,backendOrigin?:string,proxySecret?:string,runtimeRoot?:string}}} [options]
+ * @param {{port?:number,rpcPort?:number,contractVersion?:string,testnet?:any,production?:any,deployment?:{mode?:string,publicOrigin?:string,backendOrigin?:string,proxySecret?:string,runtimeRoot?:string}}} [options]
  */
 export async function startServer({
   port = Number(process.env.PORT ?? 3000),
   rpcPort = Number(process.env.RPC_PORT ?? 18545),
   contractVersion = process.env.CONTRACT_VERSION ?? "truth-pays-v7",
   testnet = null,
+  production = null,
   deployment = {},
-} = {}) {
+} = {}, { workbenchFactory = createWorkbench } = {}) {
   const mode = deployment.mode ?? process.env.MODE ?? "local-demo";
   requireThat(
-    ["local-demo", "hosted-demo", "testnet", "hosted-testnet"].includes(mode),
-    "Choose explicit demo or Chiado testnet mode",
+    ["local-demo", "hosted-demo", "testnet", "hosted-testnet", "hosted-production"].includes(mode),
+    "Choose an explicit supported deployment mode",
   );
-  const hosted = mode === "hosted-demo" || mode === "hosted-testnet";
-  const external = mode === "testnet" || mode === "hosted-testnet";
+  const isProduction = mode === "hosted-production";
+  const hosted = mode === "hosted-demo" || mode === "hosted-testnet" || isProduction;
+  const external = mode === "testnet" || mode === "hosted-testnet" || isProduction;
+  requireThat(!production || isProduction, "Production configuration requires hosted-production mode");
+  requireThat(!isProduction || !testnet, "Production cannot use a testnet configuration");
   const configuredOrigin = (value, label) => {
     let parsed;
     try {
@@ -102,7 +108,7 @@ export async function startServer({
   const proxySecret = deployment.proxySecret ?? process.env.PROXY_SECRET;
   requireThat(
     !hosted || /^[A-Za-z0-9_-]{43,256}$/.test(proxySecret ?? ""),
-    "Hosted demo requires a high-entropy PROXY_SECRET of at least 43 URL-safe characters",
+    "Hosted mode requires a high-entropy PROXY_SECRET of at least 43 URL-safe characters",
   );
   const proxyDigest = hosted
     ? createHash("sha256").update(proxySecret).digest()
@@ -112,7 +118,16 @@ export async function startServer({
       process.env.RUNTIME_ROOT ??
       path.join(root, ".runtime"),
   );
-  if (external && !testnet) {
+  if (isProduction && !production) {
+    requireThat(process.env.MAINNET_MANIFEST && process.env.MAINNET_STATE_FILE,
+      "Production requires explicit MAINNET_MANIFEST and durable MAINNET_STATE_FILE paths");
+    production = {
+      manifest: JSON.parse(fs.readFileSync(process.env.MAINNET_MANIFEST, "utf8")),
+      stateFile: process.env.MAINNET_STATE_FILE,
+      rpcUrl: process.env.MAINNET_RPC_URL,
+    };
+  }
+  if (external && !isProduction && !testnet) {
     requireThat(
       process.env.TESTNET_MANIFEST && process.env.TESTNET_STATE_FILE,
       "Testnet requires explicit TESTNET_MANIFEST and durable TESTNET_STATE_FILE paths",
@@ -125,15 +140,19 @@ export async function startServer({
       rpcUrl: process.env.TESTNET_RPC_URL,
     };
   }
-  const w = await createWorkbench({
+  const w = await workbenchFactory({
       rpcPort,
       contractVersion,
-      testnet: external ? testnet : null,
+      testnet: external && !isProduction ? testnet : null,
+      production: isProduction ? production : null,
     }),
     sessions = new Map(),
     nonces = new Map(),
     localFiles = new Map(),
     configCache = new Map();
+  requireThat(!isProduction || (w.chain.chainId === 1 && "production" in w.chain && w.chain.production === true &&
+    Array.isArray(w.chain.signers) && w.chain.signers.length === 0),
+    "Production runtime must be verified chain1 with no server signers", "WRONG_CHAIN", 409);
   const instanceId = id();
   const depositInbox = createDepositInbox(w, { environment: mode, instanceId });
   let instanceMarker = null;
@@ -367,14 +386,69 @@ export async function startServer({
         req.method === "DELETE"
       )
         guardMutation(req, p === "/local-upload");
+      if (isProduction) {
+        requireThat(!(p === "/api/events" && req.method === "POST"),
+          "Production deployments require a separately reviewed deployment plan", "DEMO_ONLY", 403);
+        requireThat(!/^\/api\/(?:demo\/|events\/[^/]+\/demo\/)/.test(p),
+          "Demo controls are unavailable in production", "DEMO_ONLY", 403);
+        requireThat(!/^\/(?:local-upload|local-ipfs|local-policy)(?:\/|$)/.test(p),
+          "Local preview files are unavailable in production", "NOT_FOUND", 404);
+      }
       if (p === "/api/bootstrap" && req.method === "GET") {
-        const bootstrap = await w.bootstrap(s);
+        const selected = url.searchParams.has("selectedEventId");
+        requireThat(
+          !selected || url.searchParams.getAll("selectedEventId").length === 1,
+          "Choose one stable event identity",
+          "INVALID_INPUT",
+          400,
+        );
+        /** @type {any} */
+        let bootstrap = await w.bootstrap(
+          s,
+          selected
+            ? { selectedEventId: url.searchParams.get("selectedEventId") }
+            : undefined,
+        );
+        const selectedSession = selected || isProduction ? getSession(req) : s;
+        if ((selected || isProduction) && selectedSession !== s)
+          bootstrap = {
+            ...bootstrap,
+            session: selectedSession
+              ? {
+                  wallet: selectedSession.wallet,
+                  label: selectedSession.label,
+                  mode: selectedSession.mode,
+                }
+              : null,
+            events: [],
+            ...(isProduction ? { recoveryEvents: [] } : {}),
+            ...("selectedEvent" in bootstrap ? { selectedEvent: {
+              eventId: bootstrap.selectedEvent.eventId,
+              wallet: selectedSession?.wallet ?? null,
+              detail: null,
+              error: {
+                code: "SELECTED_EVENT_SESSION_CHANGED",
+                status: 401,
+                message: "Wallet session changed; refresh and try again",
+              },
+            } } : {}),
+          };
+        /** @type {Record<string, unknown>} */
         const capabilities = external
           ? {
               sharedDemo: false,
               browserWallet: true,
               createEvents: false,
               timeControls: false,
+              ...(isProduction ? {
+                production: true, walletTransactions: true, serverSigning: false,
+                financialInterface: "kleros-native-v1",
+                transactionsReady: !Reflect.get(w.chain, "eventVerification") ||
+                  [...Reflect.get(w.chain, "eventVerification").values()].some(entry => entry.status === "verified"),
+                supportedAccountTypes: ["eoa"], contractWallets: false,
+                erc1271: false, eip7702: false, reset: false, timeTravel: false,
+                mockRulings: false,
+              } : {}),
             }
           : hosted
             ? { sharedDemo: true, browserWallet: true }
@@ -383,10 +457,20 @@ export async function startServer({
           capabilities.contractInbox = true;
           capabilities.batchActions = true;
         }
+        if (selected) capabilities.selectedEventBootstrap = true;
         return send(res, 200, {
           ...bootstrap,
           mode,
           instanceId,
+          ...(selected && "selectedEvent" in bootstrap
+            ? {
+                selectedEvent: {
+                  ...bootstrap.selectedEvent,
+                  instanceId,
+                  wallet: selectedSession?.wallet ?? null,
+                },
+              }
+            : {}),
           chain: {
             ...bootstrap.chain,
             rpcUrl:
@@ -430,9 +514,10 @@ export async function startServer({
       if (p === "/api/auth/challenge" && req.method === "POST") {
         const b = await body(req);
         requireThat(ethers.isAddress(b.wallet), "Invalid wallet");
+        await w.assertWallet(b.wallet);
         const nonce = randomBytes(20).toString("hex"),
           expiresAt = Date.now() + 300_000;
-        const message = `Kleros ${external ? "Chiado testnet" : hosted ? "hosted demo" : "local event"} workbench\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: ${w.chain.chainId}\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this ${external ? "testnet" : "isolated demo"} wallet. No financial transaction.`;
+        const message = `Kleros ${isProduction ? "Ethereum mainnet" : external ? "Chiado testnet" : hosted ? "hosted demo" : "local event"} workbench\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: ${w.chain.chainId}\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this ${isProduction ? "Ethereum mainnet" : external ? "testnet" : "isolated demo"} wallet. No financial transaction.`;
         nonces.set(nonce, {
           wallet: ethers.getAddress(b.wallet),
           message,
@@ -457,6 +542,7 @@ export async function startServer({
           "BAD_SIGNATURE",
           403,
         );
+        await w.assertWallet(n.wallet);
         const walletSession = {
           id: id(),
           wallet: n.wallet,
@@ -561,6 +647,18 @@ export async function startServer({
             200,
             await depositInbox.read(eventId, s, { refresh: true }),
           );
+        }
+        // These endpoints record facts about an already submitted transaction.
+        // A later upgrade must not make its canonical receipt inaccessible.
+        const recoveryHash = tail.match(/^submissions\/(0x[0-9a-fA-F]{64})$/);
+        const recoveryDraft = tail.match(/^drafts\/([^/]+)\/submitted$/);
+        if (isProduction && ((tail === "submissions/reconcile" && req.method === "POST") ||
+          (recoveryHash && req.method === "GET") || (recoveryDraft && req.method === "POST"))) {
+          requireThat(s, "Sign in first", "UNAUTHENTICATED", 401);
+          if (recoveryHash) return send(res, 200, await w.submissionStatus(eventId, s, recoveryHash[1]));
+          const input = await body(req);
+          if (recoveryDraft) return send(res, 200, await w.recordSubmitted(eventId, s, recoveryDraft[1], input.hash));
+          return send(res, 200, await w.reconcileSubmission(eventId, s, input.draftId, input.hash));
         }
         await w.state(eventId);
         w.record(eventId, s);
@@ -706,6 +804,8 @@ export async function startServer({
           /^drafts\/([^/]+)\/(execute|confirm|validate|submitted)$/,
         );
         if (draft && req.method === "POST") {
+          requireThat(!isProduction || draft[2] !== "execute",
+            "Production transactions require a browser wallet", "WALLET_SIGNATURE_REQUIRED", 403);
           const b = await body(req);
           if (draft[2] === "submitted")
             return send(
@@ -898,6 +998,7 @@ export async function startServer({
         /^\/finance\/([a-zA-Z0-9_-]+)\/(guest|console)(?:\/(.*))?$/,
       );
       if (finance && req.method === "GET") {
+        requireThat(!isProduction, "Legacy demo finance tools are unavailable in production", "NOT_FOUND", 404);
         const [, eventId, view, file = ""] = finance;
         await w.state(eventId);
         const r = w.record(eventId, s);
@@ -955,6 +1056,9 @@ export async function startServer({
           "/",
           "/index.html",
           "/app.js",
+          "/ui-keyboard.js",
+          "/selected-event.js",
+          "/loading.css",
           "/contract-inbox.js",
           "/contract-profiles.js",
           "/contract-inbox.css",
@@ -965,6 +1069,7 @@ export async function startServer({
           "/styles.css",
           "/ethers.js",
           "/transaction-context.js",
+          "/environment.js",
           "/hosted-wallet.js",
           "/reconciliation.js",
           "/policies/v8-testnet.md",
@@ -985,6 +1090,10 @@ export async function startServer({
       }
       send(res, 404, { error: "Not found", code: "NOT_FOUND" });
     } catch (e) {
+      if (isProduction && !res.headersSent) {
+        const result = productionErrorResponse(e);
+        return send(res, result.status, result.body);
+      }
       if (!res.headersSent)
         send(
           res,
@@ -1014,6 +1123,7 @@ export async function startServer({
     throw e;
   }
   return {
+    mode,
     server,
     workbench: w,
     url: `http://127.0.0.1:${listeningPort}`,
@@ -1030,7 +1140,7 @@ if (
 ) {
   const app = await startServer();
   console.log(
-    `Kleros isolated demo: ${app.url}\nSynthetic ETH only. State resets on restart. No production financial services connected.`,
+    `Kleros workbench backend: ${app.url}\nMode: ${app.mode}`,
   );
   let closing = false;
   for (const signal of ["SIGINT", "SIGTERM"])
