@@ -39,6 +39,8 @@ NEWdirecthumancontractchatsteeringindependentlyread:01a1885a-6a8c-7ce0-838c-4e55
 ContractlanepreparesisolatedV10candidate/buildonly. DoNOTmigrate/retireV9orchangeitspolicy/controller,
 rootHEAD/buildorcurrent09acrelease. Newfactoryalonewillnotfixwallet7702compatibility. Coremust
 reviewexplicitversionedwallet/envelopesupportalongsideV10handoffbeforeanynewfinancialsend.
+Corelocalplanprepared: docs/V10_WALLET_COMPATIBILITY_PLAN.md; noV10appcode/transaction/publication
+yet. Contractlanehandofffrozencommitstillawaited; itslocaltestclaimsarenotCoreintegrationproof.
 A/B/Cretiredincomplete/PAUSED,Dcomplete,Eunused; noreplay/adoption/financialsend/upstreampush/billing.
 
 # Active original mainnet creation recovery — 29 October2026, 22:07 Bangkok
