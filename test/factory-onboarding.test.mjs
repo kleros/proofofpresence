@@ -14,6 +14,8 @@ import { assertProductionEOAWallet } from "../src/production-wallets.mjs";
 import { mainnetStateStore } from "../src/mainnet-runtime.mjs";
 import { MAINNET_KLEROS } from "../scripts/mainnet/verify-kleros.mjs";
 import { V9_LUMA_ATTENDANCE_STANDARD } from "../src/contracts-v9-luma.mjs";
+import { createWorkbench } from "../src/workbench.mjs";
+import { publicCatalogSnapshot } from "../src/public-catalog.mjs";
 
 const PROFILE = "kleros-event-v9-uups", GAS = { gasLimit: 8_000_000 }, send = async (p) => (await p).wait();
 const policy = { uri: "https://example.invalid/approved-v9-policy", text: "Synthetic published attendance policy. No external publication occurred." };
@@ -205,6 +207,42 @@ test("actual wallet creation is reviewed exactly, persisted only after full chil
   assert.equal(restored.events[0].dynamic, true);
   assert.equal(restored.events[0].deployment.contract, result.contract);
   assert.equal(restored.drafts.find(([key]) => key === draft.id)[1].confirmedHash, transaction.hash);
+  const originalCatalog = publicCatalogSnapshot({ manifest: chain.manifest, events, drafts,
+    instanceId: "synthetic-public-catalog", now: 1793275200000 });
+  assert.equal(originalCatalog.events.length, 1);
+  assert.equal(originalCatalog.events[0].contract, result.contract);
+  assert.deepEqual(originalCatalog.events[0].adoption, { kind: "recorded-adoption",
+    txHash: transaction.hash, blockNumber: receipt.blockNumber, blockHash: receipt.blockHash });
+  // A real disk restart retains only historical public metadata. A provider
+  // that throws on every read proves browsing cannot refresh or grant trust.
+  let forbidReads = false, attemptedReads = 0;
+  const catalogProvider = new Proxy(chain.provider, { get(target, key) {
+    const value = Reflect.get(target, key);
+    if (typeof value !== "function") return value;
+    return (...args) => {
+      if (forbidReads) { attemptedReads++; throw Error("Catalog must not read the chain"); }
+      return value.apply(target, args);
+    };
+  } });
+  const restarted = await createWorkbench({ production: { manifest: chain.manifest, stateFile },
+    serverInstanceId: "synthetic-public-catalog" }, {
+    productionRuntime: async () => ({ ...chain, provider: catalogProvider, close: async () => {} }),
+  });
+  forbidReads = true;
+  const afterRestart = restarted.publicCatalog();
+  assert.deepEqual(afterRestart.events, originalCatalog.events);
+  assert.equal(attemptedReads, 0);
+  const reloadedRecord = restarted.events.get(result.eventId);
+  assert.deepEqual(reloadedRecord.financialAccess, []);
+  reloadedRecord.definition.visibility = "private";
+  assert.deepEqual(restarted.publicCatalog().events, []);
+  reloadedRecord.definition.visibility = "public";
+  reloadedRecord.definition.editorialStatus = "draft";
+  assert.deepEqual(restarted.publicCatalog().events, []);
+  reloadedRecord.definition.editorialStatus = "published";
+  assert.deepEqual(restarted.publicCatalog().events, originalCatalog.events);
+  assert.equal(attemptedReads, 0);
+  // Do not persist test-only visibility mutations over the canonical fixture.
 });
 
 test("factory governance change invalidates an unsigned review without affecting the confirmed event", { timeout: 60000 }, async () => {

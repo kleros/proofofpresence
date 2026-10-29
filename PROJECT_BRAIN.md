@@ -1,3 +1,28 @@
+# Active loading-speed update — 29 October 2026
+
+Branch `codex/core-application`; organizer date fix source `d137d10` is LIVE on Netlify
+`6ae34352f4042839082e7733`. Actual served setup SHA256
+`390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6`; eight focused browser
+groups passed. End defaults to start+2h and follows until manually edited. No backend restart or
+user-tab reload. Proof: `artifacts/mainnet-release/organizer-date-release.json`.
+
+The human requested faster usable portal loading in the coordinated UI chat. The new production-only
+`GET /api/public-catalog` provides detached, strictly public/published, locally bound recorded-adoption
+metadata with ZERO RPC calls, session access or current trust/permission flags. It is separate from
+bootstrap. Exact confirmed factory draft, child, transaction/block, factory/profile, policy and immutable
+Luma/template bindings are required; pending, unavailable, malformed/private/draft records are omitted.
+Current selected/setup/bootstrap and fresh financial draft/validate verification are unchanged.
+Focused29 HTTP/privacy checks plus one actual local canonical adoption/disk-restart check, typecheck
+and static/pinned build passed. Proof: `artifacts/mainnet-release/public-catalog-backend-checks.json`.
+
+Performance implementation is NOT deployed yet. UI owns its separate app/index/loading/catalog changes
+and is closing a wallet-session invalidation regression before final handoff. Core remains sole live
+profiler/deployment operator. Full old bootstrap is approximately21s; old24.843s was complete checker
+wall time, not browser load time. A new measured comparison is pending. Preserve the human’s background
+organizer form and all durable drafts/journals; never force refresh. Backend rollout timing remains to
+be coordinated after concrete checks. A/B/C remain retired incomplete/PAUSED, D complete, E unused.
+No new financial action, mainnet deployment, IPFS publication, billing change or upstream push.
+
 # Current implementation — 29 October2026, Asia/Bangkok
 
 ## Final requested portal/search release LIVE and verified — 29 October 2026

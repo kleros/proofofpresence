@@ -123,6 +123,13 @@ function boundaryWorkbench(chainOverrides = {}) {
     },
     provider,
     events: new Map([[eventId, record]]),
+    publicCatalog() {
+      track("publicCatalog");
+      return { schemaVersion: 1, kind: "public-catalog", mode: "hosted-production",
+        instanceId: "synthetic-public-instance", environment: { production: true,
+          network: "ethereum-mainnet", chainId: 1 }, catalog: { metadataOnly: true,
+          currentFinancialState: "not-loaded", source: "recorded-adoption" }, events: [] };
+    },
     async assertWallet(wallet) {
       track("assertWallet", [wallet]);
       return assertProductionEOAWallet(codeProvider, wallet);
@@ -495,6 +502,25 @@ test("production HTTP bootstrap preserves the explicit mainnet profile and keyle
   assert.deepEqual(f.factories[0].production, f.options.production);
   assert.equal(response.headers["cache-control"], "no-store");
   assert.deepEqual(f.w.chain.signers, []);
+});
+
+test("public catalog uses the trusted gateway without bootstrap, RPC, session or financial authority", async (t) => {
+  const f = await fixture(t);
+  f.w.calls.length = 0;
+  const anonymous = await f.request("/api/public-catalog");
+  const cookie = await f.request("/api/public-catalog", { cookie: "kleros_session=unknown-revoked-session" });
+  assert.equal(anonymous.status, 200);
+  assert.deepEqual(cookie.data, anonymous.data);
+  assert.equal(anonymous.headers["cache-control"], "no-store");
+  assert.equal(anonymous.headers["x-content-type-options"], "nosniff");
+  assert.equal(anonymous.headers["set-cookie"], undefined);
+  assert.deepEqual(f.w.calls.map((call) => call.method), ["publicCatalog", "publicCatalog"]);
+  for (const key of ["session", "recoveryEvents", "capabilities", "factory", "selectedEvent", "contractProfile"])
+    assert.equal(Object.hasOwn(anonymous.data, key), false);
+  assert.equal((await f.request("/api/public-catalog", { headers: { "x-kleros-proxy-key": "incorrect" } })).status, 403);
+  assert.equal((await f.request("/api/public-catalog?selectedEventId=private")).status, 400);
+  assert.equal((await f.post("/api/public-catalog")).status, 404);
+  assert.deepEqual(f.w.calls.map((call) => call.method), ["publicCatalog", "publicCatalog"]);
 });
 
 test("production startup rejects the wrong chain, unverified mode and any server signer before listening", async () => {

@@ -379,6 +379,14 @@ export async function startServer({
           403,
         );
       }
+      // Public metadata is actor-independent and never starts a chain refresh or
+      // creates/renews a wallet session. Selected and financial routes below
+      // retain their existing fresh verification.
+      if (p === "/api/public-catalog") {
+        requireThat(isProduction && req.method === "GET", "Not found", "NOT_FOUND", 404);
+        requireThat(url.search === "", "Catalog does not accept query parameters", "INVALID_INPUT", 400);
+        return send(res, 200, w.publicCatalog());
+      }
       const s = getSession(req);
       const authOrigin = hosted ? publicUrl.origin : `http://${host}`;
       if (

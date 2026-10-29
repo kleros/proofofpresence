@@ -22,6 +22,7 @@ import { createFactoryOnboardingService } from "./factory-onboarding.mjs";
 import { eventV9LumaTemplate, V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
 import { createProductionCasePublicationService } from "./production-case-publication.mjs";
 import { createFactoryRefresh } from "./shared-factory-refresh.mjs";
+import { publicCatalogSnapshot } from "./public-catalog.mjs";
 import {
   hash,
   id,
@@ -2445,6 +2446,11 @@ export async function createWorkbench({
     state,
     owner,
     bootstrap,
+    publicCatalog: () => {
+      requireThat(production, "Not found", "NOT_FOUND", 404);
+      return publicCatalogSnapshot({ manifest: production.manifest, events, drafts,
+        instanceId: serverInstanceId });
+    },
     detail,
     depositLedger,
     createEvent,

@@ -1,0 +1,42 @@
+{
+  "status": "passed-local-backend-checks",
+  "checkedAt": "2026-10-29T13:03:50.601Z",
+  "kind": "zero-rpc-recorded-public-catalog",
+  "branch": "codex/core-application",
+  "sourceSha256": {
+    "src/public-catalog.mjs": "6c123e29151beae8103380594d937de3fe2628bdc6ea53de248c8cc6d05b0961",
+    "src/server.mjs": "cdffa52aa3e2a64ed3dbf3e1bf4437f223c047ba49d02fb0433f4601324689ec",
+    "src/workbench.mjs": "1aaee1a58d4179477cb95d6bbabc8252e85dcb1e76deeb4e12e6edb8425b5f75",
+    "test/public-catalog.test.mjs": "2d5696485c922e96d2d3962aff906f8288a03edf6e0aa4c8b23a584a99a2d69d",
+    "test/production-http.test.mjs": "0073a17397b4f39363a25e143ad156f0ef2a0e8f55041d996487e78171e0a755",
+    "test/factory-onboarding.test.mjs": "e2123195e4b715c504abc19ff114dcbf93ff47abe8305e28816ab7372b218b53"
+  },
+  "commands": [
+    {
+      "command": "node --test --test-concurrency=1 test/public-catalog.test.mjs test/production-http.test.mjs",
+      "passed": 29,
+      "failed": 0,
+      "note": "Ephemeral local listener required sandbox escalation; initial sandbox attempt was EPERM, not an application failure."
+    },
+    {
+      "command": "node --test --test-name-pattern='actual wallet creation is reviewed exactly' test/factory-onboarding.test.mjs",
+      "passed": 1,
+      "failed": 0,
+      "note": "Actual in-process chain1 factory creation, canonical adoption, real 0600 disk restart, same catalog row and zero provider calls during catalog. Synthetic Court code; no public transaction."
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/build.mjs",
+      "status": "passed",
+      "note": "Existing pinned v7 ABI/bytecode/static/module build verification; no Solidity change or broad financial replay."
+    }
+  ],
+  "limits": [
+    "Display-only past adoption, never current canonicality or wallet authorization.",
+    "Existing selected/bootstrap and all create/draft/validate financial guards remain unchanged.",
+    "Not yet deployed; frontend handoff and live timing still required."
+  ]
+}
