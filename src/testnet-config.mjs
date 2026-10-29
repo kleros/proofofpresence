@@ -5,6 +5,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { ethers } from "ethers";
 import solc from "solc";
 import hardened from "solc-hardened";
+import { EVENT_V8_VERSION, eventV8Profile } from "./contracts-v8.mjs";
+import { checkTest15mSources } from "../scripts/generate-contracts-test15m.mjs";
 
 export const ROOT = fileURLToPath(new URL("../", import.meta.url));
 export const PRIVATE_ROOT = path.join(ROOT, ".runtime/testnet");
@@ -206,21 +208,62 @@ export function fingerprint(plan) {
 }
 
 /** Recompile the exact saved standard input and compare every published creation artifact. */
-export function verifyCompiledInputs(root = ROOT) {
-  const manifest = readJson(path.join(root, "build/contracts/manifest.json"));
-  const input = readJson(
-    path.join(root, "build/contracts/standard-input.json"),
-  );
+export function verifyCompiledInputs(
+  root = ROOT,
+  contractVersion = EVENT_V8_VERSION,
+) {
+  const profile = eventV8Profile(contractVersion);
+  check(profile, "Unsupported v8 compilation profile.");
+  const artifactRoot = path.join(root, "build", profile.artifactDirectory);
+  const manifest = readJson(path.join(artifactRoot, "manifest.json"));
+  const input = readJson(path.join(artifactRoot, "standard-input.json"));
+  // Independent of the mutable build manifest: only the generator's exact,
+  // pinned-production transformation is an allowed fast-test implementation.
+  const testSources = profile.testOnly ? checkTest15mSources() : null;
   check(
     manifest.compiler === hardened.version() &&
       hardened.version().startsWith("0.8.38+"),
     "Compile v8 with the pinned0.8.38 compiler first.",
   );
+  if (profile.testOnly) {
+    const expectedSources = [profile.contractName, profile.factoryName]
+      .map((name) => `${profile.sourceDirectory}/${name}.sol`)
+      .sort();
+    check(
+      manifest.version === profile.version &&
+        manifest.profile === profile.contractVersion &&
+        manifest.chainId === profile.chainId &&
+        manifest.challengePeriod === profile.challengeWindowSeconds &&
+        manifest.matchPeriod === profile.matchWindowSeconds &&
+        JSON.stringify(Object.keys(manifest.sources).sort()) ===
+          JSON.stringify(expectedSources) &&
+        JSON.stringify(Object.keys(input.sources).sort()) ===
+          JSON.stringify(expectedSources),
+      "Test15m compilation must contain only its separately reviewed Chiado-only sources.",
+    );
+  }
   for (const [name, digest] of Object.entries(manifest.sources)) {
     const content = fs.readFileSync(path.join(root, name), "utf8");
     check(
       sha256(content) === digest && input.sources[name]?.content === content,
       "v8 sources changed since compilation; rerun compile:v8 and review the plan.",
+    );
+  }
+  if (testSources) {
+    const productionSources = Object.fromEntries(
+      testSources.map((source) => [
+        source.productionSource,
+        source.productionSha256,
+      ]),
+    );
+    check(
+      JSON.stringify(manifest.productionSources) ===
+        JSON.stringify(productionSources) &&
+        testSources.every(
+          (source) =>
+            input.sources[source.filename]?.content === source.content,
+        ),
+      "Test15m source is not the exact allowed transformation of pinned production financial logic.",
     );
   }
   const output = JSON.parse(hardened.compile(JSON.stringify(input)));
@@ -229,14 +272,22 @@ export function verifyCompiledInputs(root = ROOT) {
     "The saved v8 standard input does not compile.",
   );
   const artifacts = {};
-  for (const name of ["KlerosEventV8", "KlerosEventFactoryV8"]) {
-    const saved = readJson(path.join(root, "build/contracts", name + ".json"));
-    const compiled = output.contracts[`contracts/${name}.sol`][name];
+  for (const name of [profile.contractName, profile.factoryName]) {
+    const saved = readJson(path.join(artifactRoot, name + ".json"));
+    const compiled =
+      output.contracts[`${profile.sourceDirectory}/${name}.sol`][name];
     check(
       saved.bytecode === "0x" + compiled.evm.bytecode.object &&
         JSON.stringify(saved.abi) === JSON.stringify(compiled.abi),
       "v8 artifact differs from exact compilation.",
     );
+    if (profile.testOnly)
+      check(
+        saved.compiler === manifest.compiler &&
+          saved.deployedBytecode ===
+            "0x" + compiled.evm.deployedBytecode.object,
+        "Test15m runtime artifact differs from its exact source compilation.",
+      );
     check(
       ethers.keccak256(saved.bytecode) ===
         manifest.contracts[name].creationCodeHash,
@@ -281,6 +332,8 @@ export function verifyCompiledInputs(root = ROOT) {
   return {
     artifacts,
     provenance: {
+      ...(profile.testOnly ? { contractProfile: profile } : {}),
+      ...(testSources ? { productionSources: manifest.productionSources } : {}),
       v8Compiler: manifest.compiler,
       v7MockCompiler: solc.version(),
       sources: {

@@ -19,6 +19,7 @@ import {
   csvCell,
 } from "./utils.mjs";
 import { V7 } from "./chain.mjs";
+import { isV8Version } from "./contracts-v8.mjs";
 import {
   consoleSettings,
   renderConsole,
@@ -378,7 +379,7 @@ export async function startServer({
           : hosted
             ? { sharedDemo: true, browserWallet: true }
             : {};
-        if (bootstrap.contractVersion === "kleros-event-v8") {
+        if (isV8Version(bootstrap.contractVersion)) {
           capabilities.contractInbox = true;
           capabilities.batchActions = true;
         }
@@ -955,6 +956,7 @@ export async function startServer({
           "/index.html",
           "/app.js",
           "/contract-inbox.js",
+          "/contract-profiles.js",
           "/contract-inbox.css",
           "/batch-actions.js",
           "/batch-actions.css",
@@ -966,6 +968,7 @@ export async function startServer({
           "/hosted-wallet.js",
           "/reconciliation.js",
           "/policies/v8-testnet.md",
+          "/policies/v8-test15m.md",
           "/assets/kleros-logo.svg",
           "/assets/kleros-symbol.svg",
           "/assets/geist-latin.woff2",

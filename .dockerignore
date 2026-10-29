@@ -9,10 +9,14 @@
 !scripts/
 !scripts/build.mjs
 !scripts/compile-contracts.mjs
+!scripts/compile-contracts-test15m.mjs
+!scripts/generate-contracts-test15m.mjs
 !contracts/
 !contracts/**
 !registry/
 !registry/chiado-v8-controlled.json
+!registry/chiado-v8-ui-c.json
+!registry/chiado-v8-ui-d.json
 !references/
 !references/kickback/
 !references/kickback/scripts/

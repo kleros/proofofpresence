@@ -1,0 +1,61 @@
+{
+  "kind": "fast15m-integration-broad-validation",
+  "checkedAt": "2026-10-29T01:23:33.103Z",
+  "head": "d4068ec24abc5494c699eb0b4b6a73c5b57c868c",
+  "workingCandidate": true,
+  "commands": [
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "log": "artifacts/fast15m-build.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "log": "artifacts/fast15m-typecheck.log"
+    },
+    {
+      "command": "npm test",
+      "execution": "local-loopback-enabled",
+      "exitCode": 0,
+      "tests": 251,
+      "passed": 251,
+      "failed": 0,
+      "skipped": 0,
+      "cancelled": 0,
+      "durationMs": 616713.514084,
+      "log": "artifacts/fast15m-npm-test.log"
+    }
+  ],
+  "initialRestrictedAttempt": {
+    "command": "npm test",
+    "exitCode": 1,
+    "tests": 250,
+    "passed": 157,
+    "failed": 93,
+    "cause": "Sandbox prevented local Ganache loopback listeners (EADDRINUSE127.0.0.1:0). Successful loopback-enabled full rerun supersedes this environment attempt.",
+    "log": "artifacts/fast15m-npm-test-sandbox.log"
+  },
+  "logSha256": {
+    "artifacts/fast15m-build.log": "77445c012014a1a4d7f7c6669958ef69413fae2189843c88cd2ba4ab7d4de568",
+    "artifacts/fast15m-typecheck.log": "74bfb568ea65a9908ed4e1a7ca33240f5b07c996d3cf24a699237c432d32eac8",
+    "artifacts/fast15m-npm-test.log": "a3a1ac9049a2acaa5ec0babf571a492ba54d31b04feb06cc42f5b51a934bd75a",
+    "artifacts/fast15m-npm-test-sandbox.log": "44ea1e4f400ca43056095d8287b461187a4ecbbcb51c986f9532d2f89e3c478d"
+  },
+  "afterRunSourceSha256": {
+    "contracts/KlerosEventV8.sol": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769",
+    "contracts/KlerosEventFactoryV8.sol": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505",
+    "contracts/test/KlerosEventV8Test15m.sol": "46530aaf048f6a2026cdfd8e7e4cc820acce7da6a55472c10448dd7b32f638e7",
+    "contracts/test/KlerosEventFactoryV8Test15m.sol": "8ee8382bf9a1dd3e8997a63cf51950ae10cdcbbf41c92c96895195e10e9a2e90",
+    "src/chain.mjs": "7167a578e94648ed9c4bd383608cd1fdb9f051664e0dd669d9bacf7537fe5653",
+    "src/testnet-config.mjs": "b090d2735f796b1d386c874d009a10349513e66eb4ad5e1081fdc14151be6cd3",
+    "scripts/testnet-ui-d-scenario.mjs": "b6a2072fa616b34d1b93d45d960a3fd528fd1c8655d14ea15f1df2d774eacc57",
+    "scripts/testnet-ui-d-rehearsal.mjs": "a20a6fce58eb6d562338435edd6f96c65e8bb07f2a9db612e90b9cccec5dae25",
+    "scripts/chiado-ui-d-flow-audit.mjs": "24ba7003d90174bc8489611e7e465a151268f44451b0827a0047445600045f2b"
+  },
+  "scope": "Local synthetic chains and HTTP execution; Court adjudication mocked. Core changed D-only operator/prepare guards during this run and must record final focused guard validation separately. This is not a frozen-head guarantee for those late changes.",
+  "signingFilesRead": 0,
+  "publicSignatures": 0,
+  "publicBroadcasts": 0,
+  "publicDeploymentOrPaymentClaimed": false
+}

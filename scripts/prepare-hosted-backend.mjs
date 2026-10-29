@@ -20,6 +20,8 @@ const items = [
   "public",
   "scripts/build.mjs",
   "scripts/compile-contracts.mjs",
+  "scripts/compile-contracts-test15m.mjs",
+  "scripts/generate-contracts-test15m.mjs",
   "contracts",
   "references/kickback/scripts",
   "references/kickback/contracts",
@@ -31,6 +33,7 @@ const items = [
 for (const registryFile of [
   "registry/chiado-v8-controlled.json",
   "registry/chiado-v8-ui-c.json",
+  "registry/chiado-v8-ui-d.json",
 ]) {
   if (
     execFileSync(

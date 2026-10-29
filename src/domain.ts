@@ -1,5 +1,8 @@
 /** Stable IDs are independent of display slugs and off-chain content status. */
-export type DeploymentVersion = "truth-pays-v7" | "kleros-event-v8";
+export type DeploymentVersion =
+  | "truth-pays-v7"
+  | "kleros-event-v8"
+  | "kleros-event-v8-test15m";
 export interface Deployment {
   eventId: string;
   chainId: number;
@@ -25,6 +28,9 @@ export interface Deployment {
   creator?: string;
   factory?: string;
   factoryCodeHash?: string;
+  /** Required for the separate Chiado-only test profile's constructor provenance. */
+  factoryDeploymentTxHash?: string;
+  factoryDeploymentBlock?: number;
   factoryEventId?: string;
   eventKey?: string;
   configurationHash?: string;

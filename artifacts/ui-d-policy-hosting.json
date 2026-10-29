@@ -1,0 +1,10 @@
+{
+  "kind": "isolated-D-policy-preparation-only",
+  "siteId": "17e7e27e-1c2a-4411-91a7-cb0da8fece90",
+  "origin": "https://kleros-fast15m-d-20261029-9fe71683.netlify.app",
+  "deployId": "6ae29eb83d40aeeca03ecc0c",
+  "state": "uploaded",
+  "policySHA256": "d8df68ee6438a490569a6391a205913107d24beb90e4f5b4b3278cf92acb7e09",
+  "financialOperations": 0,
+  "applicationReady": false
+}

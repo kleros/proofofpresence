@@ -4,19 +4,60 @@ import fs from "node:fs";
 import { ethers } from "ethers";
 
 export const EVENT_V8_VERSION = "kleros-event-v8";
+export const EVENT_V8_TEST15M_VERSION = "kleros-event-v8-test15m";
 export const EVENT_V8_CAPACITY = 150;
 
-export function loadV8Artifacts() {
+const profiles = Object.freeze({
+  [EVENT_V8_VERSION]: Object.freeze({
+    contractVersion: EVENT_V8_VERSION,
+    contractName: "KlerosEventV8",
+    factoryName: "KlerosEventFactoryV8",
+    artifactDirectory: "contracts",
+    sourceDirectory: "contracts",
+    version: 8,
+    challengeWindowSeconds: 86400,
+    matchWindowSeconds: 86400,
+    chainId: null,
+    testOnly: false,
+  }),
+  [EVENT_V8_TEST15M_VERSION]: Object.freeze({
+    contractVersion: EVENT_V8_TEST15M_VERSION,
+    contractName: "KlerosEventV8Test15m",
+    factoryName: "KlerosEventFactoryV8Test15m",
+    artifactDirectory: "contracts-test15m",
+    sourceDirectory: "contracts/test",
+    version: 80015,
+    challengeWindowSeconds: 900,
+    matchWindowSeconds: 900,
+    chainId: 10200,
+    testOnly: true,
+  }),
+});
+
+/** Exact known profiles only. Unknown names must never inherit financial behavior. */
+export function eventV8Profile(version) {
+  return typeof version === "string" && Object.hasOwn(profiles, version)
+    ? profiles[version]
+    : null;
+}
+export const isV8Version = (version) => eventV8Profile(version) !== null;
+
+export function loadV8Artifacts(version = EVENT_V8_VERSION) {
+  const profile = eventV8Profile(version);
+  if (!profile) throw new Error("Unsupported v8 contract profile");
   const load = (name) =>
     JSON.parse(
       fs.readFileSync(
-        new URL(`../build/contracts/${name}.json`, import.meta.url),
+        new URL(
+          `../build/${profile.artifactDirectory}/${name}.json`,
+          import.meta.url,
+        ),
         "utf8",
       ),
     );
   return {
-    event: load("KlerosEventV8"),
-    factory: load("KlerosEventFactoryV8"),
+    event: load(profile.contractName),
+    factory: load(profile.factoryName),
   };
 }
 

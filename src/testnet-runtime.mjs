@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { ethers } from "ethers";
 import { loadArtifact, verifyDeployment } from "./chain.mjs";
 import { hash, requireThat, lower } from "./utils.mjs";
+import { isV8Version } from "./contracts-v8.mjs";
 
 // External testnet runtime has no unlocked accounts, automatic deployments or EVM time controls.
 export async function testnetChain(manifest, rpcUrl) {
@@ -50,6 +51,13 @@ export async function testnetChain(manifest, rpcUrl) {
     "DUPLICATE_EVENT",
     409,
   );
+  requireThat(
+    new Set(manifest.events.map((record) => record.deployment.contractVersion))
+      .size === 1,
+    "Testnet manifests must select one exact contract profile",
+    "MIXED_PROFILES",
+    409,
+  );
   const provider = new ethers.JsonRpcProvider(url.href, undefined, {
     cacheTimeout: -1,
   });
@@ -75,7 +83,9 @@ export async function testnetChain(manifest, rpcUrl) {
     );
     for (const record of manifest.events) {
       requireThat(
-        record.deployment.contractVersion === "kleros-event-v8" &&
+        isV8Version(record.deployment.contractVersion) &&
+          record.deployment.contractVersion === record.deployment.abiVersion &&
+          record.deployment.chainId === manifest.chain.chainId &&
           record.definition.id === record.deployment.eventId &&
           record.definition.title === record.deployment.eventName &&
           Date.parse(record.definition.startsAt) / 1000 ===

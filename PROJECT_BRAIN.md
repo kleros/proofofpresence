@@ -142,6 +142,56 @@ eligibility snapshot and current job prompt/file hashes without exporting their 
 
 ## Additional human requests under active integration
 
+### Separate 15-minute Chiado test D — 29October2026
+
+The human explicitly requested a separate fast test and the full actual UI deposit→dispute→kickback
+flow, preserving the existing scheduled runs. Verified human instructions are in the contract and UI
+chats, including UI turn `01a1852d-80d6-7fa2-9487-fc25151a7914`. Core remains the sole financial operator.
+New explicit profile `kleros-event-v8-test15m`, VERSION80015, has900-second challenge/matching periods
+and rejects construction outside chain10200. Production v8 and A/B/C keep their one-day periods;
+v7 stays the default compatibility profile. A deterministic generator pins reviewed production hashes
+and permits only test identity, chain guard, timing constants and related timing documentation changes.
+
+Actual contract source/ABI/boundary/economics tests passed9/9; backend profile7, legacy adapter/runtime9
+and tooling10 passed. UI fixture13, v7 browser49, v8 browser18 and journal4 passed. Full build/typecheck
+and Node251/251 passed (616.71seconds); the first restricted-loopback attempt failed for environment
+binding and is retained. Final D-only populated fee/nonce/balance and prepare-cap changes have their
+own focused8/8 rerun; the broader run may have loaded earlier versions of these D helpers. Read-only
+observer guards6/6 and UI final-signing budget1/1 passed. These are local validations, not public D payments.
+The separately added fast HTTP integration test passed1/1 in18.66seconds, exercising real local10200
+deposits, profile-free/excess recovery, separate batch admission, private inbox, immutable closure and
+actual posting/challenge block+900s deadlines while v7/v8 controls stayed unchanged. No app fix was needed.
+See `artifacts/fast15m-validation.json`, `docs/TESTNET_15M_PROFILE.md` and `docs/CHIADO_UI_D_ACCEPTANCE.md`.
+
+Prepared immutable D plan `70688861-87e2-4936-9e2e-bdc9a7c7a5fd`, fingerprint
+`23529f6b0418f310d0aed84444d444759ed7c5187291c0a07df07eacf0d427f8`.
+Event `chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d` starts1793240660 =
+**29October09:24:20Bangkok**; deposit cutoff is that start, app event hours last12hours and the
+minimum seven-day posting/claim term remains unchanged. Fresh owner/Alice/Bob, fixed `ui-d-*`
+plan/wallet/journal paths and one-event manifest isolate D. Reviewed budget: three1e13wei grants,
+12M factory/8M child gas ceilings, max fee250000wei and protected A/B+C reserve1e13wei. Budget approval
+`236f9b9541a2cdccfda147750bbad8ed81a2e0a5d50f49925019182a21b41253` binds this exact plan.
+Independent public review passed at `artifacts/ui-d-plan-independent.json`. The first1000wei ceiling
+was correctly refused before keys/plan/journal creation because existing operator fees include a
+100000wei priority fee; this diagnostic is retained, with no financial action.
+
+Separate D origin: `https://kleros-fast15m-d-20261029-9fe71683.netlify.app`, Netlify
+`17e7e27e-1c2a-4411-91a7-cb0da8fece90`; Railway service `8f2ab191-3c3b-4033-ae43-77fcfdeb9a81`,
+volume `c4531d97-ea11-4fe6-a2a2-91bd4736d0b1` at `/data`, separate proxy key. At this checkpoint only
+the fast policy is public; the full D application/contract are not deployed and no D funds were sent.
+Policy SHA `d8df68ee6438a490569a6391a205913107d24beb90e4f5b4b3278cf92acb7e09` was independently
+verified over HTTPS. Source-bound financial UI/status harnesses and an independent anonymous D
+observer use separate output namespaces. Every actual D operation must preserve immediate A/B/C
+financial snapshots, dynamic case IDs and once-journal receipt-only recovery. D ordinary Alice D/Bob
+held, delivered ruling1/unsettled and actual same Bob D settlement need distinct UI/chain proofs.
+
+To preserve A/B/C source checks while new code is developed, reviewed d4068ec operator source is frozen
+at `.runtime/operator-frozen-d4068ec`. `scripts/verify-frozen-chiado-operator.mjs` verifies142 Git blobs
+and canonical runtime/proof/dependency links without reading keys. Existing A/B/C jobs remain ACTIVE
+at the same times with unchanged plans, stage gates, rulings and notification policies; they now explicitly
+run their financial/audit commands from this verified source, sharing the original journals/lock/proofs.
+Never copy/replay the journals or run those jobs from D's changed UI. D remains a separate operator scope.
+
 The human in the coordinated UI chat first asked for Luma, then explicitly deferred it because
 there is no Luma Plus. No Luma key, guest fetch, source module, route or feature was activated.
 Current additional scope is automatic contract depositor monitoring, plus separate batch curated

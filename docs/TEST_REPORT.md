@@ -1,5 +1,38 @@
 # Verification report
 
+## Separate test15m profile and D tooling — 29October2026
+
+New profile VERSION80015/chain10200/900-second challenge and matching periods is explicitly dispatched;
+production v8 one-day source and historical v7 snapshots are unchanged. Build and typecheck passed.
+The loopback-enabled full Node run passed **251/251**, zero failures/skips/cancels,616.71seconds:
+`artifacts/fast15m-npm-test.log`. The first sandbox run's loopback binding failures are retained at
+`artifacts/fast15m-npm-test-sandbox.log`; they were not treated as successful execution or code defects.
+`artifacts/fast15m-validation.json` records actual commands, results, source fingerprints and limits.
+
+Focused final D tooling rerun passed8/8 after its last nonce/balance/prepare-cap hardening, including
+real local10200 factory/child creation and receipt-only resume,900-second boundaries, ordinary
+Alice paid/Bob held, ruling1 and actual same-Bob attendance payout plus separate collateral. It did
+not use public D or real UI initiation. New backend7/7, legacy adapter/runtime9/9 and tooling10/10,
+contract source/economics9/9, UI13 plus v7 browser49/v8 browser18/journal4, observer6/6, and final
+UI-signing budget1/1 passed in separate runs. Counts are not added as new public transactions.
+The full run may have loaded earlier D-only helper versions; focused final reruns cover those changes.
+D financial pure guards22accepted/117rejected and status guards18/117 passed with zero access/signing.
+The separately added `node --test test/test15m-app.test.mjs` passed1/1 in18.66seconds after the
+full suite had enumerated its files. It uses a real synthetic10200 chain and CA-pinned local HTTPS
+backend, signed HTTP sessions and seven reviewed Node-wallet transactions: credit recovery without
+a contact record, canonical deposits, separate batch approval/registration, excess recovery to a
+different destination preserving admitted principal, private owner inbox, static helper/policy200,
+immutable deposit closure and actual posting/challenge block timestamps plus900seconds. Normal
+v8/v7 controls stayed unchanged. This is local HTTP execution, not public UI-origin proof.
+
+The exact immutable D plan/public policy and budget passed independent read-only review. D funds,
+contract deployment and public UI financial lifecycle are still pending at this checkpoint. The first
+too-low1000wei preparation cap stopped before creating keys/plan/journal; the reviewed replacement
+250000wei cap fits the existing operator priority-fee policy and protects A/B+C reserves. See
+`artifacts/ui-d-preparation-stopped.json`, `ui-d-preparation.json`, `ui-d-plan-independent.json` and
+`ui-d-policy-independent.json`. Existing A/B/C source preservation passed142 Git blob checks;
+their reviewed operator source shares the canonical journals/lock/proof directory and schedules.
+
 ## Public Chiado v8 acceptance — 29October2026, Asia/Bangkok
 
 The current hosted app uses real chain10200, unchanged v8 bytecode and controlled V1 mocks.

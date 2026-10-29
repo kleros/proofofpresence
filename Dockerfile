@@ -13,6 +13,7 @@ COPY src/ ./src/
 COPY public/ ./public/
 COPY scripts/build.mjs ./scripts/build.mjs
 COPY scripts/compile-contracts.mjs ./scripts/compile-contracts.mjs
+COPY scripts/compile-contracts-test15m.mjs scripts/generate-contracts-test15m.mjs ./scripts/
 COPY contracts/ ./contracts/
 COPY registry/ ./registry/
 COPY references/kickback/scripts/ ./references/kickback/scripts/

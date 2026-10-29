@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { isV8Version } from "./contracts-v8.mjs";
 import { verifyDeployment } from "./chain.mjs";
 import { projectPayments } from "./payments.mjs";
 import { hash, lower, requireThat } from "./utils.mjs";
@@ -245,7 +246,7 @@ export async function indexDepositInbox(
       { log, wallet: event.args.from, amount: String(event.args.amount) },
     ]),
   );
-  const v8 = d.contractVersion === "kleros-event-v8";
+  const v8 = isV8Version(d.contractVersion);
   const ledgerLots = new Set();
   const rows = await boundedMap(
     ledger,

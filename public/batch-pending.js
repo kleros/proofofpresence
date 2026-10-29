@@ -1,3 +1,4 @@
+import { supportsBatchJournalProfile } from "./contract-profiles.js";
 const prefix = "kleros.offchain-batch-pending.v1:";
 const address = (value) =>
   typeof value === "string" && /^0x[0-9a-f]{40}$/i.test(value);
@@ -19,8 +20,7 @@ function scopeOf(scope) {
       address(scope.contract),
   );
   valid(
-    [1337, 10200].includes(scope.chainId) &&
-      ["truth-pays-v7", "kleros-event-v8"].includes(scope.contractVersion),
+    [1337, 10200].includes(scope.chainId) && supportsBatchJournalProfile(scope),
   );
   valid(["approve-admission", "check-in"].includes(scope.action));
   return {

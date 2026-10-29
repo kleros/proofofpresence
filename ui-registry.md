@@ -195,3 +195,20 @@ independent. A saved approval offers a separate explicit registration review for
 selection. Changed eligibility blocks that complete selection with a reason; no selected wallet is
 silently dropped. Registration, financial attendance, disputes and payouts retain fresh canonical
 simulation and the existing exact signing review. Luma approval remains a manual task outside this app.
+
+### Accelerated Chiado test profile
+
+Files: `public/contract-profiles.js`, `public/app.js`, `public/batch-pending.js` · Last updated: 29 October 2026
+
+Pattern notes: The exact `kleros-event-v8-test15m` profile reuses the existing persistent amber
+`.hosted-demo-notice` and `.notice.warning` surfaces; it adds no visual theme. Label it prominently
+“15-minute TEST ONLY · Chiado (10200)” in the environment, event context and signing review.
+Use synthetic data/test XDAI and retain the controlled-arbitrator/no-independent-jury disclosure.
+Show actual reported omission and matching deadlines with seconds; never calculate a new deadline
+from the window length or relabel a normal v7/v8 event as accelerated.
+
+Only the explicit known profile receives the v8 financial interface. Its ABI, chain10200 and any
+provided pinned profile metadata must agree. Unknown version prefixes and prototype names receive
+no financial support. Payer credit, admission, separate batch curation and exact signing review keep
+their established behavior. The contact-free pending journal admits this profile only on Chiado and
+keeps it isolated by version from normal v8; existing v7/v8 presentation and journal scopes remain.

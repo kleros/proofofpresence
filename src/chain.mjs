@@ -7,7 +7,10 @@ import { hash, lower, requireThat } from "./utils.mjs";
 import { caseTemplate } from "../references/kickback/scripts/lib.mjs";
 import {
   EVENT_V8_VERSION,
+  EVENT_V8_TEST15M_VERSION,
   EVENT_V8_CAPACITY,
+  eventV8Profile,
+  isV8Version,
   eventV8Template,
   factoryEventId,
   loadV8Artifacts,
@@ -22,6 +25,9 @@ export const ABI = {
   "truth-pays-v7": V7,
   get "kleros-event-v8"() {
     return loadV8Artifacts().event;
+  },
+  get "kleros-event-v8-test15m"() {
+    return loadV8Artifacts(EVENT_V8_TEST15M_VERSION).event;
   },
 };
 export const sourceCommit = "57fc1c8233c60e31c1b5988c631ef57d7c3f1b81";
@@ -68,14 +74,25 @@ export async function localChain(port = 0, { chainId = 1337 } = {}) {
           ? loadV8Artifacts().event
           : name === "KlerosEventFactoryV8"
             ? loadV8Artifacts().factory
-            : loadArtifact(name);
+            : name === "KlerosEventV8Test15m"
+              ? loadV8Artifacts(EVENT_V8_TEST15M_VERSION).event
+              : name === "KlerosEventFactoryV8Test15m"
+                ? loadV8Artifacts(EVENT_V8_TEST15M_VERSION).factory
+                : loadArtifact(name);
     const contract = await new ethers.ContractFactory(
       artifact.abi,
       artifact.bytecode,
       signer,
     ).deploy(
       ...args,
-      ...(name.startsWith("KlerosEvent") ? [{ gasLimit: 16_777_216n }] : []),
+      ...([
+        "KlerosEventV8",
+        "KlerosEventFactoryV8",
+        "KlerosEventV8Test15m",
+        "KlerosEventFactoryV8Test15m",
+      ].includes(name)
+        ? [{ gasLimit: 16_777_216n }]
+        : []),
     );
     await contract.waitForDeployment();
     // Ethers' factory type omits runtime ABI methods; retain its deployment receipt.
@@ -115,11 +132,11 @@ export async function deployEvent(
   { contractVersion = "truth-pays-v7", factory = null } = {},
 ) {
   requireThat(
-    ["truth-pays-v7", EVENT_V8_VERSION].includes(contractVersion),
+    contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
     "Unsupported contract/ABI version",
     "UNKNOWN_VERSION",
   );
-  if (contractVersion === EVENT_V8_VERSION)
+  if (isV8Version(contractVersion))
     return deployV8Event(
       chain,
       definition,
@@ -128,6 +145,7 @@ export async function deployEvent(
       start,
       deadline,
       factory,
+      eventV8Profile(contractVersion),
     );
   // Per-event text is immutable at deployment; historical policy/template is never edited.
   const policy = `Local synthetic policy for ${definition.id}: attendance at ${definition.location}; ${definition.startsAt}. v7 rulings: 1 attended; 2 absent; 0 excluded and challenge remainder split. Held-share rules unchanged.`;
@@ -192,11 +210,13 @@ async function deployV8Event(
   start,
   deadline,
   suppliedFactory,
+  profile,
 ) {
-  const artifacts = loadV8Artifacts();
   const chainId = Number((await chain.provider.getNetwork()).chainId);
+  requireProfileChain(profile, chainId);
+  const artifacts = loadV8Artifacts(profile.contractVersion);
   const creator = await signer.getAddress();
-  const policy = `Local synthetic v8 policy for ${definition.id}: attendance at ${definition.location}; ${definition.startsAt}. Unadmitted or excess deposits are reserved credits withdrawable by their payer. Admission commits exactly one deposit from that payer. Deposits close at eventStart. Maximum lifetime admissions: ${EVENT_V8_CAPACITY}. Case organizer identity is fixed when challenged. Rulings: 1 attended; 2 absent; 0 excluded and challenge remainder split. Held-share rules unchanged. Mock Court only; not a public policy publication.`;
+  const policy = `Local synthetic ${profile.testOnly ? profile.contractVersion : "v8"} policy for ${definition.id}: attendance at ${definition.location}; ${definition.startsAt}. Unadmitted or excess deposits are reserved credits withdrawable by their payer. Admission commits exactly one deposit from that payer. Deposits close at eventStart. Maximum lifetime admissions: ${EVENT_V8_CAPACITY}.${profile.testOnly ? ` TEST ONLY: Chiado chain10200; challenge period ${profile.challengeWindowSeconds} seconds; match period ${profile.matchWindowSeconds} seconds.` : ""} Case organizer identity is fixed when challenged. Rulings: 1 attended; 2 absent; 0 excluded and challenge remainder split. Held-share rules unchanged. Mock Court only; not a public policy publication.`;
   const policyURI = `/local-policy/${hash(policy)}`;
   const { pieces, slots } = eventV8Template({
     eventName: definition.title,
@@ -221,21 +241,41 @@ async function deployV8Event(
     "INVALID_V8_PARAMETERS",
   );
   // One permissionless registry per synthetic chain; each child retains isolated custody.
+  const factoryCacheKey = profile.testOnly
+    ? "v8Test15mFactoryPromise"
+    : "v8FactoryPromise";
   const factory = suppliedFactory
     ? typeof suppliedFactory === "string"
       ? new ethers.Contract(suppliedFactory, artifacts.factory.abi, signer)
       : suppliedFactory
-    : await (chain.v8FactoryPromise ??= chain.deploy(
-        "KlerosEventFactoryV8",
+    : await (chain[factoryCacheKey] ??= chain.deploy(
+        profile.factoryName,
         chain.signers?.[0] ?? signer,
       ));
   requireThat(
-    (await factory.VERSION()) === 8n &&
+    (await factory.VERSION()) === BigInt(profile.version) &&
       (await factory.eventCreationCode()) === artifacts.event.bytecode,
     "Factory does not deploy the trusted v8 implementation",
     "WRONG_FACTORY",
     409,
   );
+  let factoryBirth;
+  if (profile.testOnly) {
+    const factoryTx = factory.deploymentTransaction?.();
+    requireThat(
+      factoryTx,
+      "Test profile factory requires its original creation transaction before child creation",
+      "DEPLOYMENT_MISMATCH",
+      409,
+    );
+    const factoryReceipt = await factoryTx.wait();
+    factoryBirth = {
+      factory: factory.target,
+      factoryDeploymentTxHash: factoryReceipt.hash,
+      factoryDeploymentBlock: factoryReceipt.blockNumber,
+    };
+    await verifyFactoryConstructor(chain, factoryBirth, artifacts);
+  }
   const eventKey = ethers.id(definition.id);
   const config = {
     depositAmount: depositWei,
@@ -274,7 +314,7 @@ async function deployV8Event(
   requireThat(
     created &&
       created.args.eventId === expectedId &&
-      created.args.version === 8n &&
+      created.args.version === BigInt(profile.version) &&
       lower(created.args.creator) === lower(creator) &&
       created.args.configurationHash === configurationHash,
     "Factory creation receipt does not match the requested event",
@@ -290,8 +330,8 @@ async function deployV8Event(
     contract,
     deploymentBlock: receipt.blockNumber,
     deploymentTxHash: receipt.hash,
-    contractVersion: EVENT_V8_VERSION,
-    abiVersion: EVENT_V8_VERSION,
+    contractVersion: profile.contractVersion,
+    abiVersion: profile.contractVersion,
     depositWei: String(depositWei),
     eventName: definition.title,
     eventStart: start,
@@ -316,9 +356,58 @@ async function deployV8Event(
     creationCodeHash: ethers.keccak256(artifacts.event.bytecode),
     compiler: artifacts.event.compiler,
     // The source is a separately compiled local candidate, not the historical v7 commit.
-    sourceCommit: "unpublished-v8",
+    sourceCommit: profile.testOnly
+      ? "unpublished-v8-test15m"
+      : "unpublished-v8",
   };
+  if (factoryBirth) Object.assign(deployment, factoryBirth);
   return { deployment, policy, pieces, slots };
+}
+
+function requireProfileChain(profile, chainId) {
+  requireThat(
+    !profile?.chainId || chainId === profile.chainId,
+    "This test contract profile is restricted to Chiado chain10200",
+    "WRONG_CHAIN",
+    409,
+  );
+}
+
+async function verifyFactoryConstructor(chain, d, artifacts) {
+  requireThat(
+    Number.isSafeInteger(d.factoryDeploymentBlock) &&
+      d.factoryDeploymentBlock > 0 &&
+      (!d.deploymentBlock || d.factoryDeploymentBlock <= d.deploymentBlock) &&
+      ethers.isHexString(d.factoryDeploymentTxHash, 32),
+    "Test profile requires canonical factory constructor provenance",
+    "DEPLOYMENT_MISMATCH",
+    409,
+  );
+  const [factoryTx, factoryReceipt, factoryBlock] = await Promise.all([
+    chain.provider.getTransaction(d.factoryDeploymentTxHash),
+    chain.provider.getTransactionReceipt(d.factoryDeploymentTxHash),
+    chain.provider.getBlock(d.factoryDeploymentBlock),
+  ]);
+  requireThat(
+    factoryTx?.chainId === 10200n &&
+      factoryTx.to === null &&
+      factoryTx.value === 0n &&
+      factoryTx.data === artifacts.factory.bytecode &&
+      factoryReceipt?.status === 1 &&
+      factoryReceipt.blockNumber === d.factoryDeploymentBlock &&
+      lower(factoryReceipt.contractAddress) === lower(d.factory) &&
+      lower(
+        ethers.getCreateAddress({
+          from: factoryTx.from,
+          nonce: factoryTx.nonce,
+        }),
+      ) === lower(d.factory) &&
+      factoryBlock?.hash === factoryReceipt.blockHash,
+    "Test profile factory constructor differs from the compiled profile",
+    "DEPLOYMENT_MISMATCH",
+    409,
+  );
+  return factoryBlock.hash;
 }
 
 export function contractFor(chain, deployment, runner = chain.provider) {
@@ -328,27 +417,46 @@ export function contractFor(chain, deployment, runner = chain.provider) {
     "Unsupported contract/ABI version",
     "UNKNOWN_VERSION",
   );
+  requireProfileChain(
+    eventV8Profile(deployment.contractVersion),
+    deployment.chainId,
+  );
   const artifact = ABI[deployment.abiVersion];
   return new ethers.Contract(deployment.contract, artifact.abi, runner);
 }
 
 export async function verifyDeployment(chain, d) {
+  requireThat(
+    Object.hasOwn(ABI, d.abiVersion) && d.contractVersion === d.abiVersion,
+    "Unsupported contract/ABI version",
+    "UNKNOWN_VERSION",
+  );
+  const profile = eventV8Profile(d.contractVersion);
+  requireProfileChain(profile, d.chainId);
   // Only an explicitly initialized external testnet context may reuse positive
   // immutable proofs. Local demos and unknown/changed registry entries always
   // execute the complete verification below.
   const registryKey = hash(d);
-  const proofKey =
-    d.contractVersion === EVENT_V8_VERSION
-      ? chain.immutableDeploymentEntries?.get(registryKey)
-      : null;
+  const proofKey = isV8Version(d.contractVersion)
+    ? chain.immutableDeploymentEntries?.get(registryKey)
+    : null;
   const cache = proofKey ? chain.immutableProvenanceCache : null;
   const cached = cache?.get(proofKey);
   if (cached) {
-    const [actualChain, code, factoryCode, creationBlock] = await Promise.all([
+    const [
+      actualChain,
+      code,
+      factoryCode,
+      creationBlock,
+      factoryCreationBlock,
+    ] = await Promise.all([
       chain.provider.send("eth_chainId", []),
       chain.provider.getCode(d.contract),
       chain.provider.getCode(d.factory),
       chain.provider.getBlock(d.deploymentBlock),
+      profile.testOnly
+        ? chain.provider.getBlock(d.factoryDeploymentBlock)
+        : Promise.resolve(null),
     ]);
     requireThat(
       BigInt(actualChain) === BigInt(d.chainId),
@@ -371,6 +479,13 @@ export async function verifyDeployment(chain, d) {
     requireThat(
       creationBlock?.hash === cached.creationBlockHash,
       "Deployment creation block is no longer canonical",
+      "DEPLOYMENT_REORG",
+      409,
+    );
+    requireThat(
+      !profile.testOnly ||
+        factoryCreationBlock?.hash === cached.factoryCreationBlockHash,
+      "Factory creation block is no longer canonical",
       "DEPLOYMENT_REORG",
       409,
     );
@@ -411,7 +526,7 @@ export async function verifyDeployment(chain, d) {
     "DEPLOYMENT_MISMATCH",
     409,
   );
-  if (d.contractVersion === EVENT_V8_VERSION) {
+  if (profile) {
     const proof = await verifyV8Provenance(chain, d, c, template);
     if (cache) cache.set(proofKey, proof);
   }
@@ -436,7 +551,8 @@ async function verifyV8Provenance(chain, d, c, template) {
     "DEPLOYMENT_MISMATCH",
     409,
   );
-  const artifacts = loadV8Artifacts();
+  const profile = eventV8Profile(d.contractVersion);
+  const artifacts = loadV8Artifacts(profile.contractVersion);
   const factory = new ethers.Contract(
     d.factory,
     artifacts.factory.abi,
@@ -447,6 +563,8 @@ async function verifyV8Provenance(chain, d, c, template) {
     eventName,
     extraData,
     maximum,
+    challengePeriod,
+    matchPeriod,
     factoryCode,
     factoryVersion,
     creationCode,
@@ -458,6 +576,8 @@ async function verifyV8Provenance(chain, d, c, template) {
     c.eventName(),
     c.arbitratorExtraData(),
     c.MAX_STAKERS(),
+    c.CHALLENGE_PERIOD(),
+    c.MATCH_PERIOD(),
     chain.provider.getCode(d.factory),
     factory.VERSION(),
     factory.eventCreationCode(),
@@ -466,8 +586,10 @@ async function verifyV8Provenance(chain, d, c, template) {
     chain.provider.getTransactionReceipt(d.deploymentTxHash),
   ]);
   requireThat(
-    version === 8n &&
-      factoryVersion === 8n &&
+    version === BigInt(profile.version) &&
+      factoryVersion === BigInt(profile.version) &&
+      challengePeriod === BigInt(profile.challengeWindowSeconds) &&
+      matchPeriod === BigInt(profile.matchWindowSeconds) &&
       maximum === BigInt(EVENT_V8_CAPACITY) &&
       eventName === d.eventName &&
       extraData === d.arbitratorExtraData &&
@@ -518,7 +640,7 @@ async function verifyV8Provenance(chain, d, c, template) {
       lower(creation.args.eventContract) === lower(d.contract) &&
       lower(creation.args.creator) === lower(d.creator) &&
       creation.args.eventKey === d.eventKey &&
-      creation.args.version === 8n &&
+      creation.args.version === BigInt(profile.version) &&
       creation.args.configurationHash === configHash &&
       configHash === d.configurationHash,
     "v8 creation receipt does not match registry",
@@ -534,12 +656,47 @@ async function verifyV8Provenance(chain, d, c, template) {
     "DEPLOYMENT_REORG",
     409,
   );
-  return { creationBlockHash: canonicalCreationBlock.hash };
+  let factoryCreationBlockHash;
+  if (profile.testOnly) {
+    requireThat(
+      Number.isSafeInteger(d.factoryDeploymentBlock) &&
+        d.factoryDeploymentBlock > 0 &&
+        d.factoryDeploymentBlock <= d.deploymentBlock &&
+        ethers.isHexString(d.factoryDeploymentTxHash, 32) &&
+        d.compiler === artifacts.event.compiler,
+      "Test profile requires its exact compiler and factory constructor provenance",
+      "DEPLOYMENT_MISMATCH",
+      409,
+    );
+    const [factoryBlockHash, creationTx] = await Promise.all([
+      verifyFactoryConstructor(chain, d, artifacts),
+      chain.provider.getTransaction(d.deploymentTxHash),
+    ]);
+    requireThat(
+      creationTx?.chainId === 10200n &&
+        lower(creationTx.from) === lower(d.creator) &&
+        lower(creationTx.to) === lower(d.factory) &&
+        creationTx.value === 0n &&
+        creationTx.data ===
+          factory.interface.encodeFunctionData("createEvent", [
+            d.eventKey,
+            config,
+          ]),
+      "Test profile factory constructor or child creation input differs from the compiled profile",
+      "DEPLOYMENT_MISMATCH",
+      409,
+    );
+    factoryCreationBlockHash = factoryBlockHash;
+  }
+  return {
+    creationBlockHash: canonicalCreationBlock.hash,
+    ...(profile.testOnly ? { factoryCreationBlockHash } : {}),
+  };
 }
 
 export async function chainState(chain, record) {
   const d = record.deployment;
-  const v8 = d.contractVersion === EVENT_V8_VERSION;
+  const v8 = isV8Version(d.contractVersion);
   const c = await verifyDeployment(chain, d);
   const block = await chain.provider.getBlock("latest");
   const at = { blockTag: block.number };

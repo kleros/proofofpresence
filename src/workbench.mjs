@@ -1,5 +1,6 @@
 // @ts-check
 import { ethers } from "ethers";
+import { eventV8Profile, isV8Version } from "./contracts-v8.mjs";
 import {
   localChain,
   deployEvent,
@@ -58,7 +59,7 @@ export async function createWorkbench({
   testnet = null,
 } = {}) {
   requireThat(
-    ["truth-pays-v7", "kleros-event-v8"].includes(contractVersion),
+    contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
     "Unsupported contract version",
   );
   const external = !!testnet;
@@ -386,6 +387,9 @@ export async function createWorkbench({
       deploymentBlock: r.deployment.deploymentBlock,
       contractVersion: r.deployment.contractVersion,
       abiVersion: r.deployment.abiVersion,
+      ...(eventV8Profile(r.deployment.contractVersion)?.testOnly
+        ? { contractProfile: eventV8Profile(r.deployment.contractVersion) }
+        : {}),
       claimDeadline: r.deployment.claimDeadline,
       policyURI: r.deployment.policyURI,
       templateHash: r.deployment.templateHash,
@@ -428,7 +432,12 @@ export async function createWorkbench({
             name: "Local demo",
             nativeCurrency: { name: "Demo Ether", symbol: "ETH", decimals: 18 },
           },
-      contractVersion: external ? "kleros-event-v8" : contractVersion,
+      contractVersion: external
+        ? testnet.manifest.events[0].deployment.contractVersion
+        : contractVersion,
+      ...(eventV8Profile(external ? testnet.manifest.events[0].deployment.contractVersion : contractVersion)?.testOnly
+        ? { contractProfile: eventV8Profile(external ? testnet.manifest.events[0].deployment.contractVersion : contractVersion) }
+        : {}),
       ...(external
         ? {
             arbitration: {
@@ -454,7 +463,7 @@ export async function createWorkbench({
               blockTag: st.blockNumber,
             }),
           ),
-          ...(r.deployment.contractVersion === "kleros-event-v8"
+          ...(isV8Version(r.deployment.contractVersion)
             ? {
                 pendingCreditWei: String(
                   await contract(eventId).pendingDeposits(s.wallet, {
@@ -517,7 +526,7 @@ export async function createWorkbench({
                 blockTag: st.blockNumber,
               }),
             ),
-            ...(r.deployment.contractVersion === "kleros-event-v8"
+            ...(isV8Version(r.deployment.contractVersion)
               ? {
                   pendingCreditWei: st.pendingCredits?.[lower(p.wallet)] ?? "0",
                 }
@@ -567,7 +576,7 @@ export async function createWorkbench({
           ? await chain.provider.getBlockNumber()
           : blockTag,
       at = { blockTag: end };
-    if (r.deployment.contractVersion === "kleros-event-v8") {
+    if (isV8Version(r.deployment.contractVersion)) {
       const credits = await v8DepositCredits(c, r.deployment, end, { signal });
       return Promise.all(
         [...credits.values()].map(async (e) => {
@@ -794,7 +803,7 @@ export async function createWorkbench({
       "SHORT_DEPOSIT",
       409,
     );
-    if (d.contractVersion === "kleros-event-v8") {
+    if (isV8Version(d.contractVersion)) {
       const person = (await v8DepositCredits(c, d)).get(lower(p.wallet));
       const lot = person?.lots.find(
         (lot) =>
@@ -1124,14 +1133,18 @@ export async function createWorkbench({
         method = "postAttendance";
         args = [list, BigInt(st.poolWei) / BigInt(list.length)];
         summaryText =
-          "Post reviewed trusted attendance and open the one-day challenge window. Personal history and merch have no effect.";
+          eventV8Profile(r.deployment.contractVersion)?.testOnly
+            ? "TEST ONLY: post reviewed trusted attendance and open a 15-minute challenge window on Chiado. Follow the actual on-chain deadline. Personal history and merch have no effect."
+            : "Post reviewed trusted attendance and open the one-day challenge window. Personal history and merch have no effect.";
         break;
       }
       case "challenge":
         method = "challenge";
         value = BigInt(st.challengeDepositWei);
         summaryText =
-          "Challenge your omission. A separate one-day matching period starts; unmatched expired challenges count as attended.";
+          eventV8Profile(r.deployment.contractVersion)?.testOnly
+            ? "TEST ONLY: challenge your omission on Chiado. A separate 15-minute matching period starts; follow its on-chain deadline. Unmatched expired challenges count as attended."
+            : "Challenge your omission. A separate one-day matching period starts; unmatched expired challenges count as attended.";
         break;
       case "match": {
         const ch = await c.challenges(wallet());
@@ -1194,7 +1207,7 @@ export async function createWorkbench({
         break;
       case "withdrawPending": {
         requireThat(
-          r.deployment.contractVersion === "kleros-event-v8",
+          isV8Version(r.deployment.contractVersion),
           "Independent unused-credit recovery requires v8",
           "WRONG_VERSION",
           409,
@@ -1216,7 +1229,7 @@ export async function createWorkbench({
       case "refund":
         method = "refund";
         args = [to(), BigInt(params.amountWei)];
-        summaryText = `Return spare ${nativeSymbol} only. ${r.deployment.contractVersion === "kleros-event-v8" ? "Unused payer credit, the registered pool" : "The registered pool"}, held shares, owed payments and challenge escrow remain reserved.`;
+        summaryText = `Return spare ${nativeSymbol} only. ${isV8Version(r.deployment.contractVersion) ? "Unused payer credit, the registered pool" : "The registered pool"}, held shares, owed payments and challenge escrow remain reserved.`;
         break;
       case "sweep":
         method = "sweep";
