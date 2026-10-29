@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "kind": "v10-readonly-preflight",
+  "status": "observed-only",
+  "blockers": [],
+  "chainId": 1,
+  "contractVersion": "kleros-event-v10-uups",
+  "sourceCommit": "009bad57847e885f4562c18e677a50362859f88e",
+  "planSha256": "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+  "provenance": {
+    "v10BuildManifestSha256": "159da1bbb8a32fa0d98011a3b2e187807f6c124420f1933d594ddfa3970338b9",
+    "v10BuildManifestFileSha256": "4cbb51a87de44d03a25a7bec310c3107ba2b9887985e087f80d04d4d7f118f79",
+    "v10StandardInputSha256": "a19b7b236c2292222d8f6f090ba931a6c46d0205d213b3706e12635c700421d5",
+    "v10StandardInputFileSha256": "f66e17270fc7bb62027ed8b5d3fd4459e1b97f3f2df54e4b96621f2da5640094"
+  },
+  "anchor": {
+    "number": 26299743,
+    "hash": "0x4a49fcf7f119830e85169855c03936fb2a4f180e01450e850e52c44bb2e7dfd0",
+    "timestamp": 1793293079,
+    "baseFeePerGasWei": "259203805"
+  },
+  "initialAnchor": {
+    "number": 26299741,
+    "hash": "0x1c0ecff64545f0d4d02ec5522d6e0dc4880451a92636ad674ca006121d21fbef",
+    "timestamp": 1793293055,
+    "baseFeePerGasWei": "271899050"
+  },
+  "deployer": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "controllerInitialOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "account": {
+    "category": "eip7702-delegated",
+    "codeHash": "0xb09ef517c48d2bf6eed05457ff56871b2596e3fc904fc6e9795882a870c2e993",
+    "financialSupportEstablished": false,
+    "infrastructureCreateSupportObserved": true,
+    "delegatedCreateReview": {
+      "scope": "four-direct-type2-create-infrastructure-only",
+      "walletDesignation": "0xef010063c0c19a282a1b52b07dd5a65b58948a07dae32b",
+      "framework": [
+        {
+          "name": "manager",
+          "address": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+          "codeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3"
+        },
+        {
+          "name": "delegate",
+          "address": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+          "codeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab"
+        },
+        {
+          "name": "nativeBalanceEnforcer",
+          "address": "0xbD7B277507723490Cd50b12EaaFe87C616be6880",
+          "codeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76"
+        }
+      ],
+      "sourceProofSha256": "7108974bc07ca8b46964d855887d9c26c1891386d21c5cf1bdb3f628fb7cb17c",
+      "protocolProofSha256": "11ac36fe9af1158934012175c453dd9056e55962b644090d6c065497beea9ad3",
+      "sourceScriptSha256": "ed5a6bdaff07ac3cbae55e8f58899df738dace1ce42b48fb018c709649cea50c",
+      "harnessSha256": "d668bcfeee47e8063386086664562e9da337868cc30328000fb5b0bf608d2522",
+      "compatibilitySha256": "12a6d577b443e69c869b5bebec72863c809ea9cda35f5c4c6465d82f228c8485",
+      "applicationFinancialSupport": false,
+      "wrappedExecutionSupported": false
+    },
+    "frameworkObservations": [
+      {
+        "name": "manager",
+        "address": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+        "codeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3",
+        "initialCodeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3",
+        "finalCodeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3"
+      },
+      {
+        "name": "delegate",
+        "address": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+        "codeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab",
+        "initialCodeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab",
+        "finalCodeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab"
+      },
+      {
+        "name": "nativeBalanceEnforcer",
+        "address": "0xbD7B277507723490Cd50b12EaaFe87C616be6880",
+        "codeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76",
+        "initialCodeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76",
+        "finalCodeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76"
+      }
+    ]
+  },
+  "nonces": {
+    "planned": 6,
+    "latest": "6",
+    "pending": "6",
+    "pinned": "6"
+  },
+  "balanceWei": "9129904262762008",
+  "targetObservations": [
+    {
+      "contract": "KlerosUpgradeControllerV10",
+      "address": "0x8819994609eC122AaC2B4CC2200e694C6b039Cd2",
+      "category": "empty-code-eoa",
+      "nonce": "0"
+    },
+    {
+      "contract": "KlerosEventV10",
+      "address": "0x411ADfb7490C664362D7F933f693B41eE4E997c3",
+      "category": "empty-code-eoa",
+      "nonce": "0"
+    },
+    {
+      "contract": "KlerosEventFactoryV10",
+      "address": "0x5bD88F176d66e7daF87BD3Ff1d783DC26322B829",
+      "category": "empty-code-eoa",
+      "nonce": "0"
+    },
+    {
+      "contract": "ERC1967Proxy",
+      "address": "0x2E10024bD326FD34757b021A72F46813Fc1C61D2",
+      "category": "empty-code-eoa",
+      "nonce": "0"
+    }
+  ],
+  "fees": {
+    "gasQuoteAvailable": true,
+    "baseFeePerGasWei": "259203805",
+    "suggestedPriorityFeePerGasWei": "9800",
+    "declaredMaxFeePerGasWei": "750000000",
+    "declaredMaxPriorityFeePerGasWei": "10000000"
+  },
+  "gas": {
+    "estimatesVerified": false,
+    "fullBundleEstimateAvailable": false,
+    "budgetApproval": "NONE",
+    "declaredMaximumGasCostWei": "6562500000000000",
+    "declaredBudgetWei": "6562500000000000",
+    "steps": [
+      {
+        "contract": "KlerosUpgradeControllerV10",
+        "declaredGasLimit": "850000",
+        "estimatedGas": null
+      },
+      {
+        "contract": "KlerosEventV10",
+        "declaredGasLimit": "5600000",
+        "estimatedGas": null
+      },
+      {
+        "contract": "KlerosEventFactoryV10",
+        "declaredGasLimit": "2000000",
+        "estimatedGas": null
+      },
+      {
+        "contract": "ERC1967Proxy",
+        "declaredGasLimit": "300000",
+        "estimatedGas": null
+      }
+    ]
+  },
+  "limitations": [
+    "These are point-in-time public read observations, not signing approval or account compatibility support.",
+    "Later constructors depend on earlier deployments; four exact CREATE gas estimates are not proven by latest-state RPC reads.",
+    "Declared caps remain unapproved; human gas-budget approval and a source-bound complete-bundle rehearsal are required before signing."
+  ],
+  "preflightVerified": false,
+  "deploymentAuthorized": false,
+  "networkRequests": 35,
+  "privateFilesRead": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "sourcePins": {
+    "scripts/mainnet/preflight-v10-release.mjs": "b609546aebf5f85cfc52daaecf9a0ea3959c5faefe87d0933633e29884c00e52",
+    "scripts/mainnet/prepare-v10-release.mjs": "d9c0ec01c208134bc8daa4406bf1d0b41f6449f12c363529a69216c7fd11de1b",
+    "scripts/compile-contracts-v10.mjs": "b95cecdfb0b53e7ad627b4f79964c9ac35a149869ed5a9ef243a1f7cb41a9382",
+    "package.json": "11a4db02843aa679f56d2044d8503d38c04a87dbccf22e9fc31e949a0a3705cf",
+    "package-lock.json": "c622f472674738eb5228015a11dcb3cb75aa075dd529a8f6c4f31c57aa261758",
+    "contracts/v10/KlerosEventV10.sol": "b1e2b7573d7d863d806933404a218c4316a65c8e9f263866bc940fd43f31088d",
+    "contracts/v10/KlerosUpgradeGateV10.sol": "c06b76141a0e8dd19573db99801702c98b6cd27ce7c64a6ba6469cfd18ef6bfe",
+    "contracts/v10/KlerosUpgradeControllerV10.sol": "e128cff31b51b67acf82c9123dbd6314cf6f8a083618f2eaee37ea4811a091fb",
+    "contracts/v10/KlerosEventFactoryV10.sol": "157ea2b2fd7b74bd3d1639012645a0667f9a5de121b922431aa7f9ac72bfb025"
+  },
+  "startedAt": "2026-10-29T16:57:39.475Z",
+  "completedAt": "2026-10-29T16:58:35.271Z",
+  "operatorArguments": [
+    "--execute-readonly",
+    "--plan",
+    "artifacts/v10-release/user-2bb-nonce6-reviewed-account-proposed.json",
+    "--plan-sha256",
+    "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+    "--source",
+    "009bad57847e885f4562c18e677a50362859f88e",
+    "--rpc-url",
+    "https://eth.drpc.org",
+    "--delegated-create-review",
+    "artifacts/v10-release/delegated-four-create-review.json",
+    "--delegated-create-review-sha256",
+    "8769e4c2663c1746e083428b0681c84c66e6de68daa93f0cd256376e7d9c5a14"
+  ]
+}

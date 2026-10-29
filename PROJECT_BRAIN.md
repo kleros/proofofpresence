@@ -1,3 +1,21 @@
+# V10 final deployment budget review — 30 October 2026, Bangkok
+
+All bounded infrastructure checks complete: source009bad publicdRPC35reads/0blockers at26299743,
+nonce6/latest=pending, balance0.009129904262762008ETH, exactdesignation+3frameworkcodes and4unused
+predictedaddresses verified. Publicproofpreflight-2026-10-29T16-57-39.475Z-62d64915-72f8-416b-ad79-4841921f9533.json,
+SHA21b84ada92099187e80de0a3f9af3c122eb5a74c077af7f3de58c8379498eca7. Localexact4CREATE total7194866gas.
+Currentindicativecost0.00193688530366513ETH; proposed hardmax0.0065625ETH UNAPPROVED.
+
+V10walletbridge frozen backendcc74e502d2861bf1714d15aeed6a6b2d5c3580babb038f84269814fdf7aae86c;
+exact source/plan/review approval93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0.
+Initial10testsPASS inclactual4CREATE/fullfactoryproof; expanded12 had11PASS/1HTTPtestharnessissue,
+fixedthenaffectedHTTP/pacing2PASS. Finalbrowser3groupsPASS0RPC/wallet/sign/send and rootinspected
+matchingdesktop/mobileimages; independentfinalsource reviewclear. Signing remains disabled. Emit
+readinessrecordthencontractchatasksONEexactcapapproval; Core doesnotduplicatequestion. No mainnet
+broadcast/policyupload/appfinancialactivation/hostingcutover. Eachlaterhumanwalletrequeststillfreshly
+checksallcode/nonces/fees/gas andpreservesoriginalhash. SeparateparallelbackendV10appdispatch work
+continues locally; Your events/homepage/finance/auth/Netlify integration is not finished.
+
 # V10 four-CREATE deployment preparation — 29 October 2026, 23:51 Bangkok
 
 Active branch `codex/core-application`; reviewed operator checkpoint `2a281c606445d2eb646b3ab6d47b97f83449dad9`.

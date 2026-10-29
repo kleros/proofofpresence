@@ -1,3 +1,23 @@
+## V10 final deployment review checks — 30 October 2026, Bangkok
+
+Complete committed-source dRPC preflight PASSED35pacedreads/0blockers; canonicalblock26299743,
+nonce6 latest=pending=pinned, exact reviewed designation+3framework codepins atinitial/final,
+4unused addresses codeempty/nonce0, balance covers0.0065625ETH cap. Source009bad57847e885f4562c18e677a50362859f88e;
+proof artifacts/v10-release/preflight-2026-10-29T16-57-39.475Z-62d64915-72f8-416b-ad79-4841921f9533.json,
+SHA21b84ada92099187e80de0a3f9af3c122eb5a74c077af7f3de58c8379498eca7. Firstfailedrun remainsarchived.
+Narrow diagnostics/origin tests14/14PASS; no read/history/check was removed or financial method added.
+
+New V10 wallet handoff: initial10/10PASS includes actual local4CREATEs+2confirmations/fullsource and
+factory governance proof. Expanded12test run11PASS/1HTTP Hostoverride harnessfailed; corrected actual
+node:http harness and affected HTTP/pacing2/2PASS. No claim of final all12rerun. Final browser3groups
+PASS desktop/mobile,0RPC/wallet/sign/broadcast; proof artifacts/v10-wallet-browser/2026-10-29T17-03-00-470Z-39ab218e-bcbc-4682-8fbb-6882628aba3a/proof.json,
+SHA873ac01e3255fa601902b895743a5ab944b3d7e6f46ff78f315c32aa37158250. Root inspected images and
+confirmed identical screenshot bytes across the final backend pacing/chain-fence-only update.
+Finalbackendcc74e502d2861bf1714d15aeed6a6b2d5c3580babb038f84269814fdf7aae86c and approval
+93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0 matched independent bounded review.
+Root typecheck/diffcheck/defaultpublic-review0access passed. Signing disabled; no human signature or
+mainnet deployment claimed. Actual application integration and Netlify update remain pending separately.
+
 ## V10 isolated source and four-CREATE preparation — 29 October 2026
 
 Source checkpoint `2a281c606445d2eb646b3ab6d47b97f83449dad9` on `codex/core-application`.

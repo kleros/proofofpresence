@@ -78,8 +78,38 @@ The follow-up operator adds sanitized method/read-index/HTTP/RPC-code diagnostic
 already-used fixed public dRPC origin explicitly as primary. It retains all account/framework,
 canonical head, nonce, address, fee and balance checks, with no retries or signing interface.
 
-Next: complete a fresh canonical public preflight and finish the V10 wallet handoff review, then
-present one exact gas-cap approval in the contract chat. No signing or broadcast is authorized by this file.
+The complete fresh dRPC public preflight subsequently passed **35 reads / zero blockers**:
+`artifacts/v10-release/preflight-2026-10-29T16-57-39.475Z-62d64915-72f8-416b-ad79-4841921f9533.json`,
+SHA256 `21b84ada92099187e80de0a3f9af3c122eb5a74c077af7f3de58c8379498eca7`, source
+`009bad57847e885f4562c18e677a50362859f88e`. At canonical block 26299743, nonce 6 remained
+latest = pending = pinned, the exact designation and three framework runtimes matched initial/final
+anchors, all four predicted addresses had empty code and nonce zero, and the balance covered the cap.
+Observed base fee was 0.259203805 gwei. With the chosen 0.01 gwei tip and rehearsed gas, the indicative
+cost is **0.00193688530366513 ETH** (about 0.00194); the hard maximum remains **0.0065625 ETH**.
+
+The separate V10 loopback wallet handoff is frozen with signing disabled. Source/backend SHA256:
+`cc74e502d2861bf1714d15aeed6a6b2d5c3580babb038f84269814fdf7aae86c`.
+Exact plan + normalized reviewed account proof + bridge-source approval hash:
+`93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0`.
+It preserves isolated private journals, original hashes, uncertain-state locks, two canonical confirmations,
+strict direct type-2 receipt matching, runtime and full V10 factory/governance verification, plus fresh
+per-step account/framework/canonical/nonce/address/balance/fee/gas checks. Backend RPC is read-only,
+serially paced at least 1500 ms, cancellation-aware and without retries. Only the human's browser wallet
+can sign. No event creation, policy publication, ownership renunciation or old-event migration is included.
+
+Wallet checks: initial 10 focused tests passed, including actual local four-CREATE/full V10 factory proof.
+An expanded 12-test run had 11 passes and one HTTP test-harness failure (Host override); the harness
+was fixed to use the actual node:http Host header and both affected HTTP/pacing tests then passed.
+This is not a claim of an additional all-12 rerun. Final three browser groups passed on desktop/mobile,
+zero RPC/wallet requests/signatures/broadcasts:
+`artifacts/v10-wallet-browser/2026-10-29T17-03-00-470Z-39ab218e-bcbc-4682-8fbb-6882628aba3a/proof.json`,
+SHA256 `873ac01e3255fa601902b895743a5ab944b3d7e6f46ff78f315c32aa37158250`.
+Root inspected the images; their bytes match the preceding inspected screenshots. Independent bounded
+source review found no material blocker at these final hashes. Typecheck and diff checks passed.
+
+Next: emit the source-bound public readiness record, present one exact gas-cap approval in the contract
+chat, then enable only that reviewed handoff if the human approves. Each transaction still requires
+fresh checks and the human's own wallet confirmation. No signing or broadcast is authorized by this file.
 
 New V10 backend modules exist locally with explicit version dispatch, separate manifest/state,
 immediate-governance verifiers and onboarding. No V10 production route or financial capability is

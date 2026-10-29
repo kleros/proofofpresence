@@ -1,0 +1,33 @@
+{
+  "kind": "synthetic-loopback-v10-review-page",
+  "status": "passed",
+  "checks": [
+    "Exact4CREATE V10 plan and immediate/renounceable terms visible; all signing disabled; no wallet provider present",
+    "Desktop/mobile review has no horizontal overflow; exact plan/source/pinned-review disclosure is retained",
+    "GET-only local page caused no provider initialization, journal write, signature or broadcast"
+  ],
+  "forbidden": [],
+  "errors": [],
+  "rpcCalls": 0,
+  "walletCalls": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "screenshots": [
+    "desktop.png",
+    "mobile.png"
+  ],
+  "planSha256": "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+  "approvalHash": "93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0",
+  "bridgeSources": {
+    "src/v10-wallet-deployment.mjs": "cc74e502d2861bf1714d15aeed6a6b2d5c3580babb038f84269814fdf7aae86c",
+    "scripts/serve-v10-deployment.mjs": "38ebb51275ea0de36f0d50c6cfe1c418800bf0b5b06c16b624f14d415bb5cdb1",
+    "tools/v10-wallet/index.html": "065a050c791ee50ce95e55bfa66a99ca93143690d93fb646894a17f34f905a49",
+    "tools/v10-wallet/deploy.js": "61f8990f12ef8459dd396f85562150719581c2980a2b79c53b13eb516a44fcb3",
+    "tools/v10-wallet/style.css": "8cf758583a95e2368ac137ecaf667862e3fdc0ca0192dd2484d7f2cfbebe418a",
+    "scripts/mainnet/prepare-v10-release.mjs": "d9c0ec01c208134bc8daa4406bf1d0b41f6449f12c363529a69216c7fd11de1b",
+    "scripts/mainnet/preflight-v10-release.mjs": "b609546aebf5f85cfc52daaecf9a0ea3959c5faefe87d0933633e29884c00e52",
+    "src/v10-upgrade-verification.mjs": "a45d90ad3b89becc4b532957ecde859e2ba929c370a0b1134acf78dbf5259b61",
+    "src/v10-upgrade-artifacts.mjs": "c260b855e3b0e5f2d33b3436ba196764d623ec803d3e8efb61063230554a2e25"
+  },
+  "harnessSha256": "572ef6ce32eb5f63f895901e72a699e38a2961dfa7fca26ed38bf18f54b0a0d0"
+}
