@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "status": "local-checks-recorded",
+  "logs": {
+    "build.log": "de7ed1b0d9149bdb882d2d40ddaea139e357e936da00bcddb01e7bc49f6518ef",
+    "typecheck.log": "74bfb568ea65a9908ed4e1a7ca33240f5b07c996d3cf24a699237c432d32eac8",
+    "core32.log": "d93b57aa26cf25d6bd9e4dd392447dc9ffc34b67adef31297a5f415464496c19",
+    "workbench-case-authority10.log": "546c1fa19ae1f528471674136ef48ee49fb96466bdcf423867e795fce1ed1b69",
+    "publication-service15.log": "64d548b70ccbcedcb6fc85a0164b945d348b1a5d747bbd78c0cae73c0e93654f",
+    "state-store21.log": "ce2832183fe31b699f910ef8cc0460ca7180abd899053bfe8c319654d52b788f",
+    "upgrade-artifacts28-final.log": "4e1dd3bda1a9145c3b70263f3c14cb172bbeb97de10c42b0ac5bae6e4affab22",
+    "trust-initial111-of112-stale-source-count.log": "900603c9b7ffe52150102894ffc89edfdb8935dd86931ce25278aaf4d5b8cffe",
+    "luma-guards12.log": "13402893607559da5d544b26f91166d7ce15bcc4c2e649a3d5d29c8114a1fc09",
+    "case-ui-offline26.log": "2b46aad7550492a1f1460bddd7fe8990e1a6dfecfc2442d1604500dd8d88ddcc",
+    "frozen-operator142.log": "fdaaae5e362cba4e723c6d9db46eaf69597aebc4fd5f2431419cb7a271845729"
+  },
+  "financialBrowserProof": "48558e9e31d1253b5565202cf8d69757833d84e17595877cec0ff3e96aca4581",
+  "laterDelta": "Publication-only durable artifact/own-intent protection; actual state-store21passed; no financial replay",
+  "publicBroadSuite": "Initial112tests111passed1stale26-sourcefixturefailed; correctedto28andall6artifacttestsrepassed. No claim unchanged initial command passed."
+}

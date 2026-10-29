@@ -1,3 +1,4 @@
+import { V9_TESTNET_CONTRACT_VERSION } from "./contract-profiles.js";
 import { createBatchSelection } from "./batch-selection.js";
 const escape = (value) =>
   String(value ?? "").replace(
@@ -105,7 +106,10 @@ export function mountBatchActions(host, options) {
     contract: text(options.contract),
     contractVersion: text(options.contractVersion),
     action: options.action,
-    ...(Number(options.chainId) === 1 ? { mode: text(options.mode) } : {}),
+    ...(Number(options.chainId) === 1 ||
+    options.contractVersion === V9_TESTNET_CONTRACT_VERSION
+      ? { mode: text(options.mode) }
+      : {}),
   });
   const action = scope.action,
     approval = action === "approve-admission",
@@ -898,7 +902,8 @@ export function mountBatchActions(host, options) {
       text(saved.chainId) !== text(scope.chainId) ||
       !same(saved.contract, scope.contract) ||
       saved.contractVersion !== scope.contractVersion ||
-      (Number(scope.chainId) === 1 &&
+      ((Number(scope.chainId) === 1 ||
+        scope.contractVersion === V9_TESTNET_CONTRACT_VERSION) &&
         (saved.mode !== scope.mode || saved.instanceId !== scope.instanceId)) ||
       typeof value.id !== "string" ||
       !/^[a-zA-Z0-9_-]+$/.test(value.id) ||

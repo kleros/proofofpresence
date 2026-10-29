@@ -26,18 +26,22 @@ Files: `public/app.js`, `public/styles.css` · Updated 28 October 2026
 
 The notice stays visible through event and identity switches and states valueless ETH, mock Court, shared state, reset on server restart and synthetic inputs only. It has no dismissal control and does not move focus. Existing financial action, calldata, authority and journal behavior remains unchanged.
 
-Updated 28 October 2026 using the imprint skill after implementing selected Option B in the isolated UI worktree. This replaces the earlier light workbench patterns. The retained legacy apps keep their own visual systems. Exact selected values come from `KLEROS_REDESIGN_HANDOFF/design-tokens.json`.
+Updated 29 October 2026 using the imprint skill. The user-supplied Kleros briefing and booth references
+supersede the original Option B color values in `KLEROS_REDESIGN_HANDOFF/design-tokens.json`;
+that handoff remains a historical design snapshot. The retained legacy apps keep their own visual
+systems. See [current palette and reference images](docs/UI_COLOR_PALETTE.md). Preserve these tokens
+when integrating the compact portal from the separate UI worktree.
 
 ### Shell and typography
 
-Files: `public/styles.css`, `public/index.html` · Last updated: 28 October 2026
+Files: `public/styles.css`, `public/index.html` · Last updated: 29 October 2026
 
 | Property                      | Token / selector                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| Background / rail             | `--paper: #17131F`, `--deep: #120F19`                                                       |
-| Surface / raised              | `--surface: #201A2B`, `--raised: #2A2336`                                                   |
-| Text / heading / muted        | `--ink: #E6E1EE`, `--heading: #F2EEF7`, `--muted: #A69FB5`                                  |
-| Decorative / control boundary | `--line: #352D44`, `--boundary: #81788F`                                                    |
+| Background / rail             | `--paper: #120E1C`, `--deep: #100C19`; subtle plum glow at the canvas's top right             |
+| Surface / raised              | `--surface: #1C1829`, `--raised: #2E1D4C`                                                   |
+| Text / heading / muted        | `--ink: #EEEAF5`, `--heading: #FCFAFF`, `--muted: #CAC5D5`                                  |
+| Decorative / control boundary | `--line: #473C5F`, `--boundary: #84739E`                                                    |
 | Display                       | Instrument Serif, regular 400; h1 up to 60px, h2 32px                                       |
 | Body / controls / metadata    | Geist 16px/1.6; 14px controls; 13px metadata                                                |
 | Identifiers / amounts         | Geist Mono; long values wrap rather than disappear                                          |
@@ -47,7 +51,7 @@ Pattern notes: Every financial view keeps stable event identity and network visi
 
 ### Cards, participant facts and next action
 
-Files: `public/styles.css`, `public/app.js` · Last updated: 28 October 2026
+Files: `public/styles.css`, `public/app.js` · Last updated: 29 October 2026
 
 | Property         | Token / selector                                                         |
 | ---------------- | ------------------------------------------------------------------------ |
@@ -56,18 +60,19 @@ Files: `public/styles.css`, `public/app.js` · Last updated: 28 October 2026
 | Inner facts      | `.state-fact`: raised surface, control radius 8px; explicit dt/dd labels |
 | Next action      | `.next-action`: accent boundary, one primary eligible action with reason |
 | Status           | Text and badge; never color alone                                        |
-| Hover            | Lavender boundary / subtle raised surface; no essential motion           |
+| Hover            | Lavender boundary / plum raised surface; no essential motion              |
 | Shadow           | `--shadow: 0 18px 56px #09060d38`, restrained use                        |
 
 Pattern notes: Admission, verified deposit, contract registration, staff check-in, financial attendance, challenge and payout remain independent. Personal history is a separate panel. Participant status precedes event story. Do not label a receipt as confirmed admission, an open matched case as a global payout freeze, or absent payment history as a successful payout.
 
 ### Buttons, inputs and focus
 
-Files: `public/styles.css`, `public/app.js` · Last updated: 28 October 2026
+Files: `public/styles.css`, `public/app.js` · Last updated: 29 October 2026
 
 | Property       | Token / selector                                                                   |
 | -------------- | ---------------------------------------------------------------------------------- |
-| Primary        | `.button-primary`: `--purple: #A78BFA`, `--on-accent: #17131F`                     |
+| Primary        | `.button-primary`: `--teal: #5BD4EF`, dark `--on-accent: #100C19`; hover `#86E2F5`  |
+| Links / focus  | Lavender `--purple: #C2B5F2`; soft tint `#C2B5F214`, tinted border `#C2B5F240`      |
 | Secondary      | `.button-secondary`: transparent/deep surface, meaningful boundary                 |
 | Danger         | `--red: #FF8FA3` with tinted surface                                               |
 | Geometry       | 8px control radius; buttons at least 44px; fields at least 46px                    |
@@ -220,7 +225,7 @@ Files: `public/index.html`, `public/loading.css`, `public/ui-keyboard.js`, `publ
 | Property             | Pattern                                                                                                                                                                            |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Loading              | Static `aria-hidden` cards using existing deep/surface/raised/line/radius tokens; 36rem initial main reserve.                                                                      |
-| Accent and type      | Scoped loading teal `--loading-accent: var(--teal, #4ccebd)`; existing Instrument Serif heading and Geist 14px status.                                                             |
+| Accent and type      | Scoped loading cyan resolves to shared `--teal: #5BD4EF`; existing Instrument Serif heading and Geist 14px status.                                                                 |
 | Compact mobile shell | Same navigation geometry before/after hydration at ≤600px; preallocated account slot ≤45%; 44px refresh keeps a screen-reader label.                                               |
 | Announcements        | Stage status outside busy content; one explicit read-error alert with a focused retry only when focus remains in the request context.                                              |
 | Focus                | Skip focuses main without routing; event/tab focus intent binds to the current load; background refresh retains the most recent focus and never displaces a moved-to live control. |
@@ -248,7 +253,24 @@ A pending/unavailable appeal reward amount stays unavailable rather than becomin
 An event's UUPS proxy and upgrade authority are event-specific. The timelock gives review notice,
 not guaranteed withdrawal; custody logic can change under the upgrade authority. Factory defaults
 apply to future events. Only verified supplied governance facts are displayed as verified.
-Keep the simple participant, organizer and disputes navigation and the established teal accents.
+Keep the simple participant, organizer and disputes navigation and the shared cyan action accents.
+
+### Compact participant deposit page
+
+Files: active UI worktree `public/luma-launch.css`, `public/styles.css`, `public/index.html` · 29 October 2026
+
+| Property | Pattern |
+| --- | --- |
+| Canvas / cards | Shared plum paper/deep/surface tokens and restrained background gradient. |
+| Primary action | Cyan `--teal: #5BD4EF`, dark `--on-accent: #100C19`, hover `#86E2F5`. |
+| State / receipt boundary | `--launch-accent: var(--teal)`; confirmed remains a receipt-backed state. |
+| Links / keyboard focus | Lavender `--purple: #C2B5F2`; 3px outline with 3px offset. |
+| Geometry / text | Existing 20px cards, 24px padding (20px mobile), 44px actions, Instrument Serif/Geist. |
+
+Pattern notes: Deposit, pending, failed and confirmed states share one palette. Return to Luma uses
+the same cyan primary action. Launch CSS must not remap shared lavender tokens to older teal or
+override the shared action label color. Current implementation is in the compact UI worktree;
+preserve these changes on integration. Existing warning/error semantics and signing behavior remain.
 
 
 ### Submitted hashes during verification failure

@@ -41,6 +41,11 @@ export const PRODUCTION_UI_CONTRACT = Object.freeze({
   },
   bootstrapContext: {
     environment: { production: true, network: "ethereum-mainnet", chainId: 1 },
+    governance: {
+      kind: "single-owner-timelock",
+      initialOwner: "0x" + "2".repeat(40),
+      minimumDelaySeconds: 172800,
+    },
     arbitration: {
       mode: "kleros-v1",
       verified: true,
@@ -67,13 +72,32 @@ export const PRODUCTION_UI_CONTRACT = Object.freeze({
       implementationCodeHash: "0x" + "b".repeat(64),
       version: 9,
       authority: "0x" + "8".repeat(40),
-      multisig: "0x" + "9".repeat(40),
+      governanceKind: "single-owner-timelock",
+      owner: "0x" + "2".repeat(40),
+      pendingOwner: null,
+      pendingOperationCount: 0,
+      executingOperationCount: 0,
       delaySeconds: 172800,
       pending: null,
       verified: true,
     },
   },
   invalidContexts: [
+    {
+      name: "wrong-governance-kind",
+      bootstrap: { governance: { kind: "multisig" } },
+      warning: /governance|verified|unavailable/i,
+    },
+    {
+      name: "missing-current-governance-owner",
+      detail: { upgrade: { owner: null } },
+      warning: /governance|verified|unavailable/i,
+    },
+    {
+      name: "invalid-operation-count",
+      detail: { upgrade: { executingOperationCount: -1 } },
+      warning: /governance|verified|unavailable/i,
+    },
     {
       name: "unavailable-deployment",
       detail: { deploymentTrust: { status: "unavailable" } },

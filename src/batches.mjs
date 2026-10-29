@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { hash, id, lower, requireThat, text } from "./utils.mjs";
+import { hash, id, lower, requireThat, text, hasVerifiedParticipantWallet } from "./utils.mjs";
 
 const ACTIONS = new Set(["approve-admission", "check-in"]);
 const TTL = 300_000;
@@ -31,7 +31,7 @@ export function participantBatchEligibility(
   let reasonCode = null,
     reason = null;
   if (
-    !person?.identityVerified ||
+    !hasVerifiedParticipantWallet(record, person) ||
     person.eventId !== record.definition.id ||
     lower(person.wallet) !== lower(wallet)
   ) {
@@ -211,7 +211,7 @@ export function createBatchService(
         );
       }
       const linked =
-        person?.identityVerified &&
+        hasVerifiedParticipantWallet(record, person) &&
         person.eventId === eventId &&
         lower(person.wallet) === lower(item.wallet);
       rows.push({

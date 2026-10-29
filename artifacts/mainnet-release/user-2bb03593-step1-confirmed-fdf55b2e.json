@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "kind": "canonical-read-only-deployment-receipt",
+  "planSha256": "542e3df4ee6eea7827286c3dfcb084ceadd9d12744a0815d2da11b8a0d1b4ba0",
+  "approvalHash": "e23f190b9f94fdc118d2eed87826be57d7b46f0253ad4115d02c07d9789cd151",
+  "step": 1,
+  "hash": "0xfdf55b2e83c5b93eadc492a8e8b2fc4ef26a928b75da9e7f7c76d141d1b065c0",
+  "verification": {
+    "status": "confirmed",
+    "validTransaction": true,
+    "receipt": {
+      "blockNumber": 26297406,
+      "blockHash": "0x4e87bd046f741ce6d92f764aa849e8e9e6fa2c7b3880c7d1e56108e2748c1ff5",
+      "contractAddress": "0xd895AD679c8bDd4B6782EbC5d5AfA2958cC1aFd7",
+      "gasUsed": "1699095",
+      "gasPrice": "58753507",
+      "costWei": "99827789976165",
+      "confirmations": 8
+    },
+    "state": {
+      "planSha256": "542e3df4ee6eea7827286c3dfcb084ceadd9d12744a0815d2da11b8a0d1b4ba0",
+      "signingEnabled": true,
+      "steps": [
+        {
+          "step": 1,
+          "state": "confirmed",
+          "hash": "0xfdf55b2e83c5b93eadc492a8e8b2fc4ef26a928b75da9e7f7c76d141d1b065c0",
+          "originalHash": "0xfdf55b2e83c5b93eadc492a8e8b2fc4ef26a928b75da9e7f7c76d141d1b065c0",
+          "candidates": [
+            {
+              "hash": "0xfdf55b2e83c5b93eadc492a8e8b2fc4ef26a928b75da9e7f7c76d141d1b065c0",
+              "state": "confirmed",
+              "code": null
+            }
+          ],
+          "receipt": {
+            "blockNumber": 26297406,
+            "blockHash": "0x4e87bd046f741ce6d92f764aa849e8e9e6fa2c7b3880c7d1e56108e2748c1ff5",
+            "contractAddress": "0xd895AD679c8bDd4B6782EbC5d5AfA2958cC1aFd7",
+            "gasUsed": "1699095",
+            "gasPrice": "58753507",
+            "costWei": "99827789976165",
+            "confirmations": 8
+          },
+          "attempt": 1
+        },
+        {
+          "step": 2,
+          "state": "not-prepared",
+          "hash": null,
+          "originalHash": null,
+          "candidates": [],
+          "receipt": null,
+          "attempt": 0
+        },
+        {
+          "step": 3,
+          "state": "not-prepared",
+          "hash": null,
+          "originalHash": null,
+          "candidates": [],
+          "receipt": null,
+          "attempt": 0
+        },
+        {
+          "step": 4,
+          "state": "not-prepared",
+          "hash": null,
+          "originalHash": null,
+          "candidates": [],
+          "receipt": null,
+          "attempt": 0
+        }
+      ],
+      "setup": {
+        "status": "not-verified"
+      }
+    }
+  },
+  "operatorSignatures": 0,
+  "operatorBroadcasts": 0,
+  "humanWalletSigned": true
+}

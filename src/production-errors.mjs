@@ -152,6 +152,23 @@ define(
 define(409, "This case is not ready for the requested action.", [
   "NOT_MATCHED_CASE",
 ]);
+define(409, "The event's immutable Luma terms cannot be edited.", ["IMMUTABLE_EVENT_TERMS"]);
+define(409, "The reviewed factory is unavailable. Preserve any existing creation hash.", ["FACTORY_UNAVAILABLE", "FACTORY_CHANGED"]);
+define(409, "A verified published policy is required before creating an event.", ["POLICY_UNPUBLISHED", "POLICY_UNAVAILABLE"]);
+define(400, "Review and approve the exact case file and scope before publishing.", ["PUBLICATION_NOT_APPROVED"]);
+define(400, "The case export or its scope is invalid. Request a fresh export.", [
+  "INVALID_CASE_SCOPE", "INVALID_CASE_CONTENT", "INVALID_CASE_ARTIFACT",
+]);
+define(409, "The original case bytes or canonical provenance changed. Preserve the export for review.", [
+  "CASE_CID_MISMATCH", "CASE_ARTIFACT_CHANGED", "CASE_PUBLICATION_CHANGED", "PUBLICATION_RECORD_CHANGED",
+]);
+define(409, "This case already has a publication attempt. Verify the existing file without uploading again.", [
+  "PUBLICATION_ALREADY_CLAIMED", "PUBLICATION_INTENT_IMMUTABLE",
+]);
+define(503, "Publication storage is unavailable. Preserve the existing attempt and use read-only verification.", [
+  "PUBLICATION_STORAGE_UNAVAILABLE", "PUBLICATION_INTENT_FAILED", "PUBLICATION_INTENT_REQUIRED",
+]);
+define(409, "Another state save is in progress. Preserve the current request and check its status.", ["STATE_BUSY"]);
 define(409, "The requested amount exceeds the available pending credit.", [
   "INSUFFICIENT_CREDIT",
 ]);

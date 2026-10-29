@@ -7,9 +7,23 @@ import { mountContractInbox } from "./contract-inbox.js";
 import { mountBatchActions } from "./batch-actions.js";
 import { createBatchPendingJournal } from "./batch-pending.js";
 import {
+  lumaReturnUrl,
+  launchWei,
+  participantDeposit,
+  knownAttendanceStandard,
+  attendanceStandardText,
+} from "./luma-launch.js";
+import { mountLumaSetup } from "./luma-setup.js";
+import {
+  validateCaseArtifact,
+  publicationActions,
+} from "./case-publication.js";
+import {
   isProductionMode,
   isSandboxMode,
+  isV9TestnetMode,
   productionContextIssue,
+  v9TestnetContextIssue,
 } from "./environment.js";
 import {
   contractProfileForEvent,
@@ -268,7 +282,7 @@ function mountOrganizerBatchActions() {
           id &&
           person.id === id &&
           person.eventId === scope.eventId &&
-          person.identityVerified === true &&
+          participantWalletVerified(person) &&
           same(person.wallet, wallet),
       );
     };
@@ -413,7 +427,7 @@ async function prepareBatchRegistration() {
         ? "Registration is closed in the current contract phase."
         : !person ||
             person.eventId !== selected.scope.eventId ||
-            person.identityVerified !== true ||
+            !participantWalletVerified(person, fresh.event) ||
             !same(person.wallet, item.wallet)
           ? "The verified participant and wallet link changed."
           : person.admission !== "approved"
@@ -436,7 +450,10 @@ async function prepareBatchRegistration() {
   });
 }
 let contractInboxController = null;
+let lumaSetupController = null;
 function disposeContractInbox() {
+  lumaSetupController?.dispose();
+  lumaSetupController = null;
   app.batchRegistrationSelection = null;
   disposeBatchActions();
   contractInboxController?.dispose();
@@ -544,15 +561,21 @@ function mountOwnerContractInbox() {
   });
 }
 let toastTimer;
+let caseArtifactReview = null;
+let caseArtifactGeneration = 0;
+const caseUploadAttempts = new Set();
 let hostedNoticeObserver;
 const isHostedDemo = () => app.bootstrap?.mode === "hosted-demo";
 const isProduction = () => isProductionMode(app.bootstrap?.mode);
+const isV9Testnet = () => isV9TestnetMode(app.bootstrap?.mode);
+const isGuardedV9 = () => isProduction() || isV9Testnet();
 const isSandbox = () => isSandboxMode(app.bootstrap?.mode);
 const isTestnet = () =>
   ["testnet", "hosted-testnet"].includes(app.bootstrap?.mode);
-const isWalletEnvironment = () => isTestnet() || isProduction();
+const isWalletEnvironment = () => isTestnet() || isGuardedV9();
 const isControlledArbitration = () =>
-  isTestnet() && app.bootstrap?.arbitration?.mode === "controlled";
+  (isTestnet() || isV9Testnet()) &&
+  app.bootstrap?.arbitration?.mode === "controlled";
 const rulingNumber = (value) =>
   [0, 1, 2, "0", "1", "2"].includes(value) ? Number(value) : null;
 const currencySymbol = () =>
@@ -560,13 +583,17 @@ const currencySymbol = () =>
 const walletSupportNotice = () =>
   app.bootstrap?.walletSupport?.notice ??
   "Use a standard wallet account. Smart contract and delegated accounts are not supported.";
-const productionConnectionIssue = () => productionContextIssue(app.bootstrap);
+const guardedV9ContextIssue = (detail = null, options = {}) =>
+  isV9Testnet()
+    ? v9TestnetContextIssue(app.bootstrap, detail, options)
+    : productionContextIssue(app.bootstrap, detail, options);
+const productionConnectionIssue = () => guardedV9ContextIssue();
 const arbitrationLabel = () =>
-  isProduction() && productionConnectionIssue()
+  isGuardedV9() && productionConnectionIssue()
     ? "Arbitration verification unavailable"
     : (app.bootstrap?.arbitration?.label ?? "Kleros V1");
 const arbitrationNotice = () =>
-  isProduction() && productionConnectionIssue()
+  isGuardedV9() && productionConnectionIssue()
     ? "Verified arbitration metadata is unavailable."
     : (app.bootstrap?.arbitration?.notice ??
       "Arbitration metadata is unavailable.");
@@ -590,7 +617,7 @@ function assertFinancialEnvironment(action, params = {}) {
   const event = app.detail?.event;
   const productionProfile = "kleros-event-v9-uups";
   if (
-    !isProduction() &&
+    !isGuardedV9() &&
     (Number(app.bootstrap?.chain?.chainId) === 1 ||
       Number(event?.chainId) === 1 ||
       [
@@ -600,24 +627,45 @@ function assertFinancialEnvironment(action, params = {}) {
         event?.contractProfile,
       ].some(
         (value) =>
-          value?.contractVersion === productionProfile ||
-          value?.abiVersion === productionProfile ||
+          [productionProfile, "kleros-event-v9-uups-chiado"].includes(
+            value?.contractVersion,
+          ) ||
+          [productionProfile, "kleros-event-v9-uups-chiado"].includes(
+            value?.abiVersion,
+          ) ||
           value?.version === 9,
       ))
   )
     throw new Error(
-      "Ethereum mainnet and v9 transactions require the explicit verified production environment.",
+      "V9 transactions require their exact verified production or Chiado test environment.",
     );
-  if (isProduction()) {
+  if (isGuardedV9()) {
     if (app.detail?.event.id !== app.route.eventId)
       throw new Error(
         "The selected event changed. Refresh before financial review.",
       );
-    const issue = productionContextIssue(app.bootstrap, app.detail, {
+    const issue = guardedV9ContextIssue(app.detail, {
       requireTransactions: true,
       requireWallet: true,
     });
     if (issue) throw new Error(issue);
+    if (isProduction() && action === "deposit") {
+      if (!knownAttendanceStandard(app.detail?.event.attendanceStandard))
+        throw new Error(
+          "This event's attendance standard is missing or unsupported. New deposit review is unavailable; existing recovery rights remain accessible.",
+        );
+      const eligible = launchDepositAction();
+      if (
+        app.bootstrap?.capabilities?.lumaDepositPortal !== true ||
+        app.bootstrap?.capabilities?.walletFirstDeposits !== true ||
+        !eligible?.eligible ||
+        ownWalletFacts()?.deposit?.status === "submitted"
+      )
+        throw new Error(
+          eligible?.reason ??
+            "This wallet is not eligible for a new event deposit. Refresh its verified status.",
+        );
+    }
     if (action === "appealRewards") {
       const item = app.detail?.state?.cases?.find((item) =>
         same(item.wallet, params.wallet),
@@ -633,13 +681,15 @@ function assertFinancialEnvironment(action, params = {}) {
     );
 }
 function assertProductionDraft(draft) {
-  if (!isProduction()) {
+  if (!isGuardedV9()) {
     if (
       Number(draft?.chainId) === 1 ||
-      draft?.abiVersion === "kleros-event-v9-uups"
+      ["kleros-event-v9-uups", "kleros-event-v9-uups-chiado"].includes(
+        draft?.abiVersion,
+      )
     )
       throw new Error(
-        "Ethereum mainnet and v9 transactions require the explicit verified production environment.",
+        "V9 transactions require their exact verified production or Chiado test environment.",
       );
     return;
   }
@@ -658,6 +708,13 @@ function assertProductionDraft(draft) {
     throw new Error(
       "The transaction review does not match the verified event, wallet or environment. Refresh and prepare it again.",
     );
+  if (isProduction() && draft.action === "deposit") {
+    const action = launchDepositAction();
+    if (!action?.eligible || draft.valueWei !== action.amountWei)
+      throw new Error(
+        "The deposit amount changed. Refresh and review the authoritative amount again.",
+      );
+  }
 }
 const isV8 = (event = app.detail?.event) => hasV8FinancialInterface(event);
 const versionLabel = (event = app.detail?.event) =>
@@ -667,9 +724,11 @@ const versionLabel = (event = app.detail?.event) =>
       ? "v8"
       : event?.contractVersion === "kleros-event-v9-uups"
         ? "v9 · upgradeable"
-        : event?.contractVersion === "truth-pays-v7"
-          ? "v7"
-          : "Unsupported profile";
+        : event?.contractVersion === "kleros-event-v9-uups-chiado"
+          ? "v9 · Chiado testnet"
+          : event?.contractVersion === "truth-pays-v7"
+            ? "v7"
+            : "Unsupported profile";
 const contractDeadline = (value, timezone, event = app.detail?.event) =>
   isTest15mVersion(event?.contractVersion)
     ? formatDeadline(value, timezone)
@@ -696,23 +755,30 @@ function productionUpgradeNotice(delaySeconds = null) {
   return `<p class="field-help">Each event has its own upgradeable contract. ${escape(period)} is not a guaranteed withdrawal window. Upgrade authority can change contract behavior and custody of funds. Future events created through a factory are separate deployments.</p>`;
 }
 function renderProductionDetails() {
-  if (!isProduction()) return "";
+  if (!isGuardedV9()) return "";
   const detail = app.detail;
-  const issue = productionContextIssue(app.bootstrap, detail, {
-    requireTransactions: true,
-  });
+  const issue = guardedV9ContextIssue(detail, { requireTransactions: true });
   const upgrade = detail?.upgrade;
   const verified =
     !!detail &&
-    !productionContextIssue(app.bootstrap, detail) &&
+    !guardedV9ContextIssue(detail) &&
     upgrade?.verified === true &&
     upgrade.kind === "uups";
   const pending = upgrade?.pending;
-  return `${issue ? `<div class="notice warning" data-production-unavailable role="status">${escape(issue)}</div>` : ""}<details class="disclosure" data-production-details><summary>Ethereum deployment, arbitration & upgrades</summary><p>${escape(arbitrationLabel())}</p><p>${escape(arbitrationNotice())}</p><p>${escape(walletSupportNotice())}</p>${verified ? `<dl class="details-list"><div><dt>Deployment verification</dt><dd>${escape(detail.deploymentTrust.status)}</dd></div><div><dt>Upgrade model</dt><dd>Per-event UUPS / ERC1967</dd></div><div><dt>Implementation</dt><dd class="mono">${escape(upgrade.implementation ?? "Unavailable")}</dd></div><div><dt>Implementation code hash</dt><dd class="mono">${escape(upgrade.implementationCodeHash ?? "Unavailable")}</dd></div><div><dt>Implementation version</dt><dd>${escape(upgrade.version ?? "Unavailable")}</dd></div><div><dt>Upgrade authority</dt><dd class="mono">${escape(upgrade.authority ?? "Unavailable")}</dd></div><div><dt>Multisig</dt><dd class="mono">${escape(upgrade.multisig ?? "Unavailable")}</dd></div><div><dt>Upgrade delay</dt><dd>${Number.isSafeInteger(upgrade.delaySeconds) ? `${escape(upgrade.delaySeconds)} seconds · ${escape(upgrade.delaySeconds / 3600)} hours` : "Unavailable"}</dd></div><div><dt>Pending upgrade</dt><dd>${pending ? `${escape(pending.status)}<br>Operation: <span class="mono">${escape(pending.operationId)}</span><br>New implementation: <span class="mono">${escape(pending.newImplementation)}</span><br>Eligible: ${escape(formatTime(pending.eligibleAt, detail.event.timezone))}` : "None reported in this verified snapshot"}</dd></div><div><dt>Resolver</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.resolver)}</dd></div><div><dt>Arbitrator</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.arbitrator)}</dd></div></dl>` : "<p>Verified upgrade metadata is unavailable. Financial review is disabled.</p>"}${productionUpgradeNotice(verified ? upgrade.delaySeconds : null)}</details>`;
+  const environment = isV9Testnet()
+    ? "Chiado test deployment"
+    : "Ethereum deployment";
+  const detailsAttribute = isV9Testnet()
+    ? "data-v9-testnet-details"
+    : "data-production-details";
+  const issueAttribute = isV9Testnet()
+    ? "data-v9-testnet-unavailable"
+    : "data-production-unavailable";
+  return `${issue ? `<div class="notice warning" ${issueAttribute} role="status">${escape(issue)}</div>` : ""}<details class="disclosure" ${detailsAttribute}><summary>${environment}, arbitration & upgrades</summary><p>${escape(arbitrationLabel())}</p><p>${escape(arbitrationNotice())}</p><p>${escape(walletSupportNotice())}</p>${verified ? `<dl class="details-list"><div><dt>Deployment verification</dt><dd>${escape(detail.deploymentTrust.status)}</dd></div><div><dt>Upgrade model</dt><dd>Per-event UUPS / ERC1967</dd></div><div><dt>Implementation</dt><dd class="mono">${escape(upgrade.implementation)}</dd></div><div><dt>Implementation code hash</dt><dd class="mono">${escape(upgrade.implementationCodeHash)}</dd></div><div><dt>Implementation version</dt><dd>${escape(upgrade.version)}</dd></div><div><dt>Upgrade authority contract</dt><dd class="mono">${escape(upgrade.authority)}</dd></div><div><dt>Upgrade owner</dt><dd class="mono">${escape(upgrade.owner)}</dd></div><div><dt>Pending upgrade owner</dt><dd class="mono">${upgrade.pendingOwner === null ? "None" : escape(upgrade.pendingOwner)}</dd></div><div><dt>Initial upgrade owner · historical</dt><dd class="mono">${escape(app.bootstrap?.governance?.initialOwner)}</dd></div><div><dt>Pending governance operations</dt><dd>${escape(upgrade.pendingOperationCount)}</dd></div><div><dt>Executing governance operations</dt><dd>${escape(upgrade.executingOperationCount)}</dd></div><div><dt>Event financial owner</dt><dd class="mono">${escape(detail.state.owner)}</dd></div><div><dt>Upgrade delay</dt><dd>${escape(upgrade.delaySeconds)} seconds · ${escape(upgrade.delaySeconds / 3600)} hours</dd></div><div><dt>Pending upgrade</dt><dd>${pending ? `${escape(pending.status)}<br>Operation: <span class="mono">${escape(pending.operationId)}</span><br>New implementation: <span class="mono">${escape(pending.newImplementation)}</span><br>Eligible: ${escape(formatTime(pending.eligibleAt, detail.event.timezone))}` : "None reported in this verified snapshot"}</dd></div><div><dt>Resolver</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.resolver)}</dd></div><div><dt>Arbitrator</dt><dd class="mono">${escape(app.bootstrap?.arbitration?.arbitrator)}</dd></div></dl><p class="field-help">The upgrade owner is separate from the event financial owner. An upgrade ownership transfer requires the proposed owner to accept while the pending and executing operation counts are both zero.</p>` : "<p>Verified upgrade metadata is unavailable. Financial review is disabled.</p>"}${productionUpgradeNotice(verified ? upgrade.delaySeconds : null)}</details>`;
 }
 function disableUnreadyProductionActions() {
-  if (!isProduction()) return;
-  const issue = productionContextIssue(app.bootstrap, app.detail, {
+  if (!isGuardedV9()) return;
+  const issue = guardedV9ContextIssue(app.detail, {
     requireTransactions: true,
   });
   if (issue)
@@ -733,21 +799,25 @@ function updateHostedDemoNotice() {
     selectedEvent?.contractVersion ?? app.bootstrap?.contractVersion,
   );
   const production = isProduction(),
+    v9Testnet = isV9Testnet(),
     hosted = isHostedDemo(),
-    testnet = isTestnet();
+    testnet = isTestnet() || v9Testnet;
   document.body.classList.toggle(
     "hosted-shared-demo",
     production || hosted || testnet || test15m,
   );
+  document.body.classList.toggle("launch-mode", production);
   const activeId = production
     ? "production-banner"
-    : hosted
-      ? "hosted-demo-banner"
-      : testnet || test15m
-        ? "testnet-banner"
-        : null;
+    : v9Testnet
+      ? "v9-testnet-banner"
+      : hosted
+        ? "hosted-demo-banner"
+        : testnet || test15m
+          ? "testnet-banner"
+          : null;
   for (const notice of $$(
-    "#hosted-demo-banner,#testnet-banner,#production-banner",
+    "#hosted-demo-banner,#testnet-banner,#production-banner,#v9-testnet-banner",
   ))
     if (notice.id !== activeId) {
       hostedNoticeObserver?.disconnect();
@@ -781,11 +851,13 @@ function updateHostedDemoNotice() {
   if (notice) {
     const message = production
       ? `<strong>ETHEREUM MAINNET</strong><p>Transactions use real ETH. ${escape(walletSupportNotice())}</p>`
-      : test15m
-        ? `<strong>15-MINUTE TEST ONLY · CHIADO</strong><p>${escape(networkName())} · Chain ${escape(app.bootstrap?.chain?.chainId)}. 15-minute omission and matching windows. Test XDAI and synthetic data only. ${escape(app.bootstrap?.arbitration?.notice ?? "Review the configured test arbitrator")}. Follow the actual on-chain deadlines.</p>`
-        : testnet
-          ? `<strong>PUBLIC TESTNET</strong><p>${escape(networkName())} · Test tokens only. Use your own wallet and test data. ${escape(app.bootstrap?.arbitration?.notice ?? "Review this event's arbitration setup before depositing")}. Transactions remain on the public chain.</p>`
-          : "<strong>SHARED ONLINE DEMO</strong><p>Synthetic accounts · valueless ETH · mock Court. Everyone shares this sandbox; state resets on server restart. Use synthetic inputs only.</p>";
+      : v9Testnet
+        ? `<strong>V9 CHIADO TESTNET</strong><p>Test XDAI and synthetic data only. Standard one-day challenge and matching windows. ${escape(arbitrationNotice())} ${escape(walletSupportNotice())}</p>`
+        : test15m
+          ? `<strong>15-MINUTE TEST ONLY · CHIADO</strong><p>${escape(networkName())} · Chain ${escape(app.bootstrap?.chain?.chainId)}. 15-minute omission and matching windows. Test XDAI and synthetic data only. ${escape(app.bootstrap?.arbitration?.notice ?? "Review the configured test arbitrator")}. Follow the actual on-chain deadlines.</p>`
+          : testnet
+            ? `<strong>PUBLIC TESTNET</strong><p>${escape(networkName())} · Test tokens only. Use your own wallet and test data. ${escape(app.bootstrap?.arbitration?.notice ?? "Review this event's arbitration setup before depositing")}. Transactions remain on the public chain.</p>`
+            : "<strong>SHARED ONLINE DEMO</strong><p>Synthetic accounts · valueless ETH · mock Court. Everyone shares this sandbox; state resets on server restart. Use synthetic inputs only.</p>";
     if (notice.innerHTML !== message) {
       notice.innerHTML = message;
       document.documentElement.style.setProperty(
@@ -818,7 +890,7 @@ function updateHostedDemoNotice() {
 }
 
 function annotateHostedForms(parent = document) {
-  if (!isHostedDemo() && !isTestnet()) return;
+  if (!isHostedDemo() && !isTestnet() && !isV9Testnet()) return;
   for (const form of parent.querySelectorAll("form[data-form]")) {
     if (
       form.querySelector(".hosted-input-hint") ||
@@ -827,9 +899,10 @@ function annotateHostedForms(parent = document) {
       continue;
     const hint = document.createElement("p");
     hint.className = "hosted-input-hint";
-    hint.textContent = isTestnet()
-      ? "Use test data only, such as alice@example.test. Public testnet transactions are visible to others; do not submit real guest or contact data."
-      : "Use synthetic inputs only, such as alice@example.test. Other demo visitors share this sandbox; do not enter personal guest or contact data.";
+    hint.textContent =
+      isTestnet() || isV9Testnet()
+        ? "Use test data only, such as alice@example.test. Public testnet transactions are visible to others; do not submit real guest or contact data."
+        : "Use synthetic inputs only, such as alice@example.test. Other demo visitors share this sandbox; do not enter personal guest or contact data.";
     form.prepend(hint);
   }
 }
@@ -873,6 +946,7 @@ function toast(message, error = false) {
   );
 }
 function invalidateDraft() {
+  closeCaseArtifactReview();
   app.unsignedReviewVersion++;
   app.draft = null;
   app.draftParams = null;
@@ -894,8 +968,10 @@ function navigate(eventId, view = "participant", focusSelector = null) {
 }
 function readRoute() {
   const params = new URLSearchParams(location.hash.slice(1));
+  const eventId = params.get("event");
   return {
-    eventId: params.get("event"),
+    eventId,
+    setup: !eventId && params.get("setup") === "kickback",
     view: ["participant", "organizer", "cases"].includes(params.get("view"))
       ? params.get("view")
       : "participant",
@@ -906,6 +982,16 @@ function currentIdentity() {
 }
 function isOwner() {
   return same(currentIdentity()?.wallet, app.detail?.state?.owner);
+}
+function participantWalletVerified(person, event = app.detail?.event) {
+  return (
+    person?.identityVerified === true ||
+    (isProduction() &&
+      event?.chainId === 1 &&
+      event.contractVersion === "kleros-event-v9-uups" &&
+      event.abiVersion === "kleros-event-v9-uups" &&
+      person?.walletVerified === true)
+  );
 }
 function isStaff() {
   return (
@@ -965,18 +1051,22 @@ function identityOptions() {
   return `<option value="">${isHostedDemo() ? "Select a synthetic demo identity" : "Select a local demo identity"}</option>${session?.mode === "wallet" ? `<option value="connected-wallet" selected>Connected wallet · ${escape(short(session.wallet))}</option>` : ""}${(app.bootstrap?.identities ?? []).map((identity) => `<option value="${escape(identity.id)}" ${same(identity.wallet, session?.wallet) ? "selected" : ""}>${escape(identity.label)} · ${escape(short(identity.wallet))}</option>`).join("")}`;
 }
 function sidebar() {
-  const events = app.bootstrap?.events ?? [];
+  const events = isProduction() ? [] : (app.bootstrap?.events ?? []);
   $("#event-count").textContent = events.length;
   $("#all-events-link").classList.toggle("active", !app.route.eventId);
-  $("#sidebar-events").innerHTML = events
-    .map(
-      (event) =>
-        `<a class="sidebar-event ${event.id === app.route.eventId ? "selected" : ""}" href="#${new URLSearchParams({ event: event.id, view: "participant" })}">${escape(event.title)}</a>`,
-    )
-    .join("");
-  $("#breadcrumb").innerHTML = app.route.eventId
-    ? `Workspace <span>/</span> <a href="#">Events</a> <span>/</span> <strong>${escape(app.detail?.event.title ?? "Loading")}</strong>`
-    : "Workspace <span>/</span> <strong>All events</strong>";
+  if (isProduction()) $("#sidebar-events").replaceChildren();
+  else
+    $("#sidebar-events").innerHTML = events
+      .map(
+        (event) =>
+          `<a class="sidebar-event ${event.id === app.route.eventId ? "selected" : ""}" href="#${new URLSearchParams({ event: event.id, view: "participant" })}">${escape(event.title)}</a>`,
+      )
+      .join("");
+  $("#breadcrumb").innerHTML = isProduction()
+    ? `<a href="#">Kickback</a>${app.route.eventId ? ` <span>/</span> ${app.route.view === "organizer" ? "Manage event" : "Event deposit"}` : app.route.setup ? " <span>/</span> Set up kickback" : ""}`
+    : app.route.eventId
+      ? `Workspace <span>/</span> <a href="#">Events</a> <span>/</span> <strong>${escape(app.detail?.event.title ?? "Loading")}</strong>`
+      : "Workspace <span>/</span> <strong>All events</strong>";
   let identity = $("#top-identity");
   if (!identity) {
     identity = document.createElement("button");
@@ -986,21 +1076,24 @@ function sidebar() {
     $(".topbar-actions").insertBefore(identity, $("#refresh"));
   }
   identity.disabled = false;
-  identity.textContent =
-    currentIdentity()?.label ??
-    (isWalletEnvironment()
-      ? "Connect wallet"
-      : isSandbox()
-        ? "Choose identity"
-        : "Account unavailable");
+  identity.textContent = isProduction()
+    ? currentIdentity()?.wallet
+      ? `Wallet ${short(currentIdentity().wallet)}`
+      : "Connect wallet"
+    : (currentIdentity()?.label ??
+      (isWalletEnvironment()
+        ? "Connect wallet"
+        : isSandbox()
+          ? "Choose identity"
+          : "Account unavailable"));
   identity.onclick = showIdentityDialog;
 }
 function showIdentityDialog() {
   invalidateDraft();
-  if (isProduction()) {
+  if (isGuardedV9()) {
     const issue = productionConnectionIssue();
     showDialog(
-      `<div class="dialog-eyebrow">${escape(networkName())}</div><h2 class="dialog-title" id="dialog-title">Connect your wallet</h2><p class="dialog-body-text">${escape(walletSupportNotice())} A one-use signature proves wallet ownership; it does not send a transaction. Each contract action has its own review.</p>${currentIdentity() ? `<p class="mono">${escape(currentIdentity().wallet)}</p>` : ""}${issue ? `<div class="notice warning" data-production-unavailable>${escape(issue)}</div>` : ""}<div class="button-row"><button class="button button-primary" data-connect-wallet ${issue ? "disabled" : ""}>Connect browser wallet</button></div><p class="field-help">Network: ${escape(networkName())} · ${escape(app.bootstrap?.chain?.chainId)}. Transactions use real ETH.</p><div class="dialog-buttons"><button class="button button-secondary" data-close>Close</button>${currentIdentity() ? '<button class="button button-quiet" data-logout>Sign out</button>' : ""}</div>`,
+      `<div class="dialog-eyebrow">${escape(networkName())}</div><h2 class="dialog-title" id="dialog-title">Connect your wallet</h2><p class="dialog-body-text">${escape(walletSupportNotice())} A one-use signature proves wallet ownership; it does not send a transaction. Each contract action has its own review.</p>${currentIdentity() ? `<p class="mono">${escape(currentIdentity().wallet)}</p>` : ""}${issue ? `<div class="notice warning" ${isV9Testnet() ? "data-v9-testnet-unavailable" : "data-production-unavailable"}>${escape(issue)}</div>` : ""}<div class="button-row"><button class="button button-primary" data-connect-wallet ${issue ? "disabled" : ""}>Connect browser wallet</button></div><p class="field-help">Network: ${escape(networkName())} · ${escape(app.bootstrap?.chain?.chainId)}. Transactions use ${isV9Testnet() ? "test XDAI" : "real ETH"}.</p><div class="dialog-buttons"><button class="button button-secondary" data-close>Close</button>${currentIdentity() ? '<button class="button button-quiet" data-logout>Sign out</button>' : ""}</div>`,
     );
     return;
   }
@@ -1089,7 +1182,7 @@ function installWalletSessionListeners(provider) {
   provider.on("chainChanged", invalidateSession);
 }
 async function connectWallet() {
-  if (isProduction()) {
+  if (isGuardedV9()) {
     const issue = productionConnectionIssue();
     if (issue) throw new Error(issue);
   } else if (!isTestnet() && !isSandbox())
@@ -1112,7 +1205,7 @@ async function connectWallet() {
       throw new Error(
         "The wallet environment changed. Connect again using the current event network.",
       );
-    if (isProduction()) {
+    if (isGuardedV9()) {
       const issue = productionConnectionIssue();
       if (issue) throw new Error(issue);
     }
@@ -1167,7 +1260,7 @@ async function connectWallet() {
     throw new Error(
       `Select ${networkName()} (${expectedChain}) before authenticating.`,
     );
-  if (isProduction()) {
+  if (isGuardedV9()) {
     const issue = productionConnectionIssue();
     if (issue) throw new Error(issue);
   }
@@ -1198,9 +1291,11 @@ async function connectWallet() {
   toast(
     isProduction()
       ? "Wallet ownership verified. Every Ethereum transaction requires a separate review."
-      : isTestnet()
-        ? "Wallet ownership verified. You can now review actions on the configured testnet."
-        : "Wallet ownership verified by a one-use nonce signature. Use “Choose identity” to receive local demo ETH if needed.",
+      : isV9Testnet()
+        ? "Wallet ownership verified. V9 Chiado uses test XDAI and controlled arbitration. Every transaction requires a separate review."
+        : isTestnet()
+          ? "Wallet ownership verified. You can now review actions on the configured testnet."
+          : "Wallet ownership verified by a one-use nonce signature. Use “Choose identity” to receive local demo ETH if needed.",
   );
 }
 
@@ -1324,7 +1419,7 @@ async function loadView(record, silent) {
     if (generation !== app.generation) return;
     record.readBootstrap = bootstrap;
     app.bootstrap = bootstrap;
-    if (!isSandbox() && !isTestnet() && !isProduction()) {
+    if (!isSandbox() && !isTestnet() && !isGuardedV9()) {
       updateHostedDemoNotice();
       throw new Error(
         "This application environment is unsupported. Wallet connection and financial review are unavailable.",
@@ -1457,6 +1552,7 @@ async function loadView(record, silent) {
     annotateHostedForms();
     mountOwnerContractInbox();
     mountOrganizerBatchActions();
+    mountLaunchSetup();
     if (restoreNavigation && record.focusIntent)
       $(record.focusIntent.selector)?.focus();
     else if (silent && latestFocus && !$("#review-dialog").open)
@@ -1474,19 +1570,249 @@ async function loadView(record, silent) {
     app.submittedRecovery = submittedRecoveryFromManifest(record, error);
     if (app.submittedRecovery) sidebar();
     $("#content").innerHTML =
-      `<div class="page-header"><div><div class="eyebrow">Event workbench</div><h1>We couldn’t load this view.</h1></div></div><div class="error-panel" role="alert">${escape(error.message)}</div>${renderSubmittedRecovery()}<div class="button-row"><button class="button button-primary" data-reload>Try again</button><a href="#" class="button button-secondary">All events</a></div>`;
+      `<div class="page-header"><div><div class="eyebrow">Event workbench</div><h1>We couldn’t load this view.</h1></div></div><div class="error-panel" role="alert">${escape(error.message)}</div>${renderSubmittedRecovery()}<div class="button-row"><button class="button button-primary" data-reload>Try again</button><a href="#" class="button button-secondary">${isProduction() ? "Deposit or setup" : "All events"}</a></div>`;
     if (restoreError) $("[data-reload]")?.focus();
   }
 }
 
 function renderHome() {
+  if (isProduction()) return renderLaunchHome();
   const events = app.bootstrap.events;
   return `<div class="page-header"><div><div class="eyebrow">GOOD EVENTS. KEPT PROMISES.</div><h1>Events, with commitment.</h1><p class="intro">Find your event. Reserve a place. Show up.<br>Follow your kickback from attendance to payout.</p></div>${isSandbox() ? '<div class="header-actions"><button class="button button-primary" data-create-event><span aria-hidden="true">＋</span> Create local event</button></div>' : ""}</div>
     <ol class="quick-start" aria-label="How event commitments work"><li><span class="step-number">1</span><div><strong>Choose an event</strong><p>Each event keeps its own guest list and money.</p></div></li><li><span class="step-number">2</span><div><strong>Reserve your place</strong><p>Choose free entry or review a deposit. The host approves admission.</p></div></li><li><span class="step-number">3</span><div><strong>Attend & get a kickback</strong><p>Check in, review the attendance list and challenge a mistake if needed.</p></div></li></ol>
     <div class="section-heading"><h2>Choose your event</h2><span class="small">${events.length} independent events</span></div>
     <div class="event-grid">${events.map((event, index) => `<article class="event-card"><div class="event-visual theme-${index % 4}"><span class="visual-kicker">KLEROS / COMMUNITY</span><div class="visual-title">${escape(event.title)}</div><span class="event-sequence">${String(index + 1).padStart(2, "0")} / ${String(events.length).padStart(2, "0")}</span></div><div class="card-body"><div class="card-meta">${badge(phaseName(event.financialPhase), phaseStyle(event.financialPhase))}<span class="tiny-label">${escape(event.visibility ?? "public").toUpperCase()} · ${escape(event.editorialStatus ?? "published").toUpperCase()}</span></div><h3>${escape(event.title)}</h3><p>${escape(event.description ?? "")}</p><div class="event-facts"><span><i class="fact-icon" aria-hidden="true">◷</i>${escape(formatTime(event.startsAt, event.timezone))}</span><span><i class="fact-icon" aria-hidden="true">⌖</i>${escape(event.location ?? "Location to be announced")}</span><span><i class="fact-icon" aria-hidden="true">◇</i>Independent ${versionLabel(event)} contract · ${escape(short(event.contract))}</span></div><div class="card-footer"><div class="price">${eth(event.depositWei)} ${escape(currencySymbol())}<small>Optional commitment · free entry available</small></div><a href="#${new URLSearchParams({ event: event.id, view: "participant" })}" class="button button-secondary">Open event <span class="icon-arrow" aria-hidden="true">↗</span></a></div></div></article>`).join("")}</div>
-    <div class="trust-strip"><div class="trust-icon" aria-hidden="true">◇</div><div>${isProduction() ? "<strong>Your wallet. Your Ethereum transactions.</strong><p>Review each event’s verified contract, ETH amount, policy and arbitration provider before depositing. Host approval, attendance and payment remain separate.</p>" : isTestnet() ? "<strong>Your wallet. One clear next step.</strong><p>Open an event and connect a wallet with test tokens. Review the contract, policy and arbitration provider before a deposit. A verified payment is separate from host approval.</p>" : "<strong>New here? Try a demo identity.</strong><p>Open an event, then choose Alice to try a deposit or its organizer to manage guests. This sandbox uses valueless ETH and mock Court rulings. A verified payment is separate from host approval.</p>"}</div></div>
+    <div class="trust-strip"><div class="trust-icon" aria-hidden="true">◇</div><div>${isProduction() ? "<strong>Your wallet. Your Ethereum transactions.</strong><p>Review each event’s verified contract, ETH amount, policy and arbitration provider before depositing. Host approval, attendance and payment remain separate.</p>" : isTestnet() || isV9Testnet() ? "<strong>Your wallet. One clear next step.</strong><p>Open an event and connect a wallet with test tokens. Review the contract, policy and arbitration provider before a deposit. A verified payment is separate from host approval.</p>" : "<strong>New here? Try a demo identity.</strong><p>Open an event, then choose Alice to try a deposit or its organizer to manage guests. This sandbox uses valueless ETH and mock Court rulings. A verified payment is separate from host approval.</p>"}</div></div>
     ${renderDemoControls()}`;
+}
+
+function renderLaunchHome() {
+  if (app.route.setup)
+    return '<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"></div></section>';
+  return `<section class="luma-launch" data-launch-root><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Keep registration on Luma. Use this page for the event deposit and kickback.</p></div><div class="luma-launch-choices"><section class="luma-launch-card"><h2>Deposit for your event</h2><p>Open the deposit link provided with your Luma registration.</p><button class="button button-primary" data-launch-open-link>Open an event deposit link</button></section><section class="luma-launch-card"><h2>Set up kickback</h2><p>Organizers can connect a Luma event to its own reviewed contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></div></section>`;
+}
+function mountLaunchSetup() {
+  const host = $("#luma-setup");
+  if (!host || !isProduction() || !app.route.setup || app.route.eventId) return;
+  const scope = {
+    generation: app.generation,
+    instanceId: app.bootstrap?.instanceId,
+    wallet: currentIdentity()?.wallet ?? null,
+  };
+  const current = () =>
+    host.isConnected &&
+    $("#luma-setup") === host &&
+    isProduction() &&
+    app.generation === scope.generation &&
+    app.bootstrap?.instanceId === scope.instanceId &&
+    !readRoute().eventId &&
+    readRoute().setup &&
+    (scope.wallet === null
+      ? currentIdentity()?.wallet == null
+      : same(currentIdentity()?.wallet, scope.wallet));
+  lumaSetupController = mountLumaSetup(host, {
+    bootstrap: app.bootstrap,
+    isCurrent: current,
+    request: api,
+    provider: () => walletProvider(),
+    beforeOpen: () => invalidateDraft(),
+    onComplete: () => {
+      if (current())
+        toast("Event creation confirmed. Share the deposit link below.");
+    },
+  });
+}
+function launchPendingDeposit() {
+  return app.pending
+    .slice()
+    .reverse()
+    .find(
+      (entry) =>
+        entry.eventId === app.route.eventId &&
+        entry.instanceId === app.bootstrap?.instanceId &&
+        same(entry.wallet, currentIdentity()?.wallet) &&
+        entry.action === "deposit" &&
+        !["confirmed", "failed"].includes(entry.status),
+    );
+}
+function launchDepositAction() {
+  const action = ownWalletFacts()?.depositAction;
+  const amountWei = launchWei(action?.amountWei);
+  return action &&
+    typeof action.eligible === "boolean" &&
+    (!action.eligible || (amountWei !== null && BigInt(amountWei) > 0n))
+    ? {
+        eligible: action.eligible,
+        amountWei,
+        reasonCode:
+          typeof action.reasonCode === "string" ? action.reasonCode : "",
+        reason:
+          typeof action.reason === "string"
+            ? action.reason
+            : "Refresh this event for deposit eligibility.",
+      }
+    : null;
+}
+function renderLaunchEvent() {
+  const event = app.detail.event;
+  if (event?.id !== app.route.eventId)
+    return '<section class="luma-launch" data-luma-launch><div class="luma-launch-card" data-launch-state="unavailable"><h1>Verify the event link</h1><p>The returned event does not match this deposit link. No deposit or Luma return action is available.</p><button class="button button-secondary" data-reload>Refresh verified event</button></div></section>';
+  return `<section class="luma-launch" data-luma-launch><a class="back-link" href="#">← Deposit or setup</a><header class="luma-launch-event"><div class="eyebrow">${app.route.view === "organizer" ? "ORGANIZER KICKBACK" : "EVENT DEPOSIT"}</div><h1>${escape(event.title)}</h1><p>${escape(formatTime(event.startsAt, event.timezone))} · ${escape(networkName())}</p></header>${app.route.view === "organizer" ? renderLaunchOrganizer() : renderLaunchParticipant()}</section>`;
+}
+function renderLaunchParticipant() {
+  const { event, state } = app.detail;
+  const identity = currentIdentity(),
+    receipt = participantDeposit(app.detail, identity?.wallet),
+    action = launchDepositAction();
+  const pending = launchPendingDeposit(),
+    returnUrl = lumaReturnUrl(event.lumaUrl);
+  const issue = productionContextIssue(app.bootstrap, app.detail, {
+    requireTransactions: true,
+  });
+  const snapshotIssue = productionContextIssue(app.bootstrap, app.detail, {
+    requireWallet: true,
+  });
+  const portal =
+    app.bootstrap?.capabilities?.lumaDepositPortal === true &&
+    app.bootstrap?.capabilities?.walletFirstDeposits === true;
+  const canonical = receipt.status === "confirmed" && !snapshotIssue;
+  const canReview =
+    !!identity &&
+    !issue &&
+    portal &&
+    !!returnUrl &&
+    action?.eligible === true &&
+    knownAttendanceStandard(event.attendanceStandard) &&
+    phaseName(state.phase) !== "Cancelled" &&
+    !pending &&
+    receipt.status !== "submitted" &&
+    receipt.status !== "unavailable";
+  let status = "ready",
+    heading = "Review your event deposit",
+    explanation =
+      "Your wallet will show the exact amount and contract before you confirm.";
+  if (!identity) {
+    status = "connect";
+    heading = "Connect your wallet";
+    explanation =
+      "Use your own standard Ethereum account. No name, email or registration form is needed here.";
+  } else if (phaseName(state.phase) === "Cancelled") {
+    status = "cancelled";
+    heading = "This event is cancelled";
+    explanation =
+      "Review your current credit, confirmed returns and any still-owed payment below. A historical receipt does not establish a current commitment.";
+  } else if (
+    ownParticipant()?.admission === "declined" ||
+    (action?.eligible !== true &&
+      /REFUND|RETURNED|REJECT|DECLIN/i.test(action?.reasonCode ?? ""))
+  ) {
+    status = "not-eligible";
+    heading = "Review your event and funds status";
+    explanation =
+      action?.reason ??
+      "Do not submit a historical receipt as proof of a current commitment. Review the funds status below.";
+  } else if (pending && !pending.hash) {
+    status = "awaiting-wallet";
+    heading = "Confirm in your wallet";
+    explanation =
+      "No transaction ID has been returned yet. Check the open wallet request before trying again.";
+  } else if (pending || receipt.status === "submitted") {
+    status = "pending";
+    heading = "Your deposit is pending";
+    explanation =
+      "Keep the transaction ID. Check its receipt before trying another deposit.";
+  } else if (canonical && action?.eligible !== true) {
+    status = "confirmed";
+    heading = "Deposit transaction confirmed";
+    explanation =
+      "Copy your transaction ID, then return to Luma to finish its registration steps. Host approval remains separate.";
+  } else if (receipt.status === "failed") {
+    status = "failed";
+    heading = "The deposit did not succeed";
+    explanation =
+      "Check the reverted transaction and your wallet activity. Any new attempt needs a fresh review.";
+  } else if (
+    issue ||
+    !portal ||
+    (action?.eligible === true &&
+      !knownAttendanceStandard(event.attendanceStandard)) ||
+    receipt.status === "unavailable" ||
+    !action ||
+    !returnUrl
+  ) {
+    status = "unavailable";
+    heading = "Deposit review is unavailable";
+    explanation =
+      issue ??
+      (action?.eligible === true &&
+      !knownAttendanceStandard(event.attendanceStandard)
+        ? "The event attendance standard is missing or unsupported. New deposits are unavailable; existing funds and recovery remain accessible."
+        : null) ??
+      (!returnUrl
+        ? "The organizer has not provided a valid Luma event link. Contact them before depositing."
+        : "Refresh the verified event and wallet status before depositing.");
+  } else if (!action.eligible) {
+    status =
+      phaseName(state.phase) === "Cancelled" ? "cancelled" : "not-eligible";
+    heading = "No new deposit is needed";
+    explanation = action.reason;
+  }
+  const hash =
+    pending && !pending.hash
+      ? null
+      : canonical
+        ? receipt.hash
+        : (pending?.hash ?? receipt.hash);
+  const showReturn =
+    status === "confirmed" &&
+    canonical &&
+    !snapshotIssue &&
+    portal &&
+    action?.eligible === false &&
+    !!returnUrl;
+  return `<ol class="luma-launch-steps" aria-label="Deposit steps"><li>Connect wallet</li><li>Review deposit</li><li>Return to Luma</li></ol><section class="luma-launch-card luma-launch-state" data-launch-state="${status}" aria-labelledby="launch-state-title"><div class="luma-launch-terms"><span>Event commitment</span><strong>${eth(state.depositWei ?? event.depositWei)} ETH</strong></div><h2 id="launch-state-title">${escape(heading)}</h2><p>${escape(explanation)}</p>${action?.eligible && identity ? `<p>Amount to review now: <strong>${eth(action.amountWei)} ETH</strong></p>` : ""}<div class="luma-launch-actions">${!identity ? `<button class="button button-primary" data-connect-wallet ${productionConnectionIssue() ? "disabled" : ""}>Connect wallet</button>` : showReturn ? `<a class="button button-primary" data-launch-return href="${escape(returnUrl)}" target="_blank" rel="noopener noreferrer">Return to Luma ↗</a>` : canReview ? '<button class="button button-primary" data-tx="deposit">Review deposit</button>' : '<button class="button button-secondary" data-reload>Check status</button>'}</div>${identity ? `<p class="small mono">Wallet ${escape(short(identity.wallet))}</p>` : ""}${hash ? `<div class="luma-launch-receipt"><label for="launch-txhash">${canonical ? "Confirmed transaction ID" : "Transaction ID"}</label><input id="launch-txhash" data-launch-hash readonly value="${escape(hash)}"><button class="button button-secondary button-small" data-launch-copy>Copy transaction ID</button>${canonical ? `<p class="small">${eth(receipt.amountWei)} ETH · canonical receipt at block ${escape(receipt.blockNumber)}. A receipt does not establish admission or prove funds are still held.</p>` : '<p class="small">Wait for confirmation before submitting this reference on Luma.</p>'}</div>` : ""}<p class="field-help">Registration and admission stay on Luma. This page does not approve your place.</p></section>${renderLaunchFinancialDetails()}<details class="luma-launch-card disclosure"><summary>Contract, terms & safeguards</summary>${renderLaunchTerms()}</details>${isOwner() || isStaff() ? `<a class="text-link" href="#${new URLSearchParams({ event: event.id, view: "organizer" })}">Manage this event’s kickback</a>` : ""}`;
+}
+function renderLaunchTerms() {
+  const { event, state } = app.detail;
+  return `<dl class="details-list"><div><dt>Connected wallet</dt><dd class="mono">${escape(currentIdentity()?.wallet ?? "Not connected")}</dd></div><div><dt>Event ID</dt><dd class="mono">${escape(event.id)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(event.contract)}</dd></div><div><dt>Network</dt><dd>${escape(networkName())} · ${escape(event.chainId)}</dd></div><div><dt>Event commitment</dt><dd>${eth(state.depositWei ?? event.depositWei)} ETH</dd></div><div><dt>Deposit deadline</dt><dd>${escape(formatTime(event.depositDeadline ?? event.startsAt, event.timezone))}</dd></div><div><dt>Policy</dt><dd class="mono">${escape(event.policyURI)}</dd></div></dl>${renderAttendanceStandard(event)}<p>Every transaction shows the event, wallet, exact ETH amount, recipient and policy before signing. Host admission and contract registration remain separate from a deposit.</p>${renderProductionDetails()}`;
+}
+function renderAttendanceStandard(event) {
+  const text = attendanceStandardText(event?.attendanceStandard);
+  return text
+    ? `<div data-attendance-standard><h3>Attendance standard</h3><p>${escape(text)}</p><p class="small">Immutable event interval: ${escape(formatTime(event.startsAt, event.timezone))} — ${escape(formatTime(event.endsAt, event.timezone))}.</p></div>`
+    : '<p class="notice warning" data-attendance-standard>The attendance standard is unavailable. New deposits are disabled; existing recovery rights remain accessible.</p>';
+}
+function renderLaunchFinancialDetails() {
+  if (!currentIdentity()) return "";
+  const { event, state } = app.detail,
+    wallet = currentIdentity().wallet;
+  const facts = ownWalletFacts(),
+    person = ownParticipant(),
+    phase = phaseName(state.phase);
+  const credit = launchWei(facts?.pendingCreditWei),
+    owed = launchWei(facts?.owedWei);
+  const registered = !!person?.registered || isIn(state.stakers, wallet);
+  const attended = !!person?.attended || isIn(state.attendees, wallet);
+  const ownCase = state.cases?.find((item) => same(item.wallet, wallet));
+  const noList =
+    phase === "Open" &&
+    isIn(state.activeStakers, wallet) &&
+    Number(app.detail.now) > Number(event.claimDeadline);
+  const challengeOpen =
+    registered &&
+    !attended &&
+    !ownCase &&
+    phase === "Listed" &&
+    Number(app.detail.now) <= Number(state.challengeEndsAt);
+  const delivery = participantPayments(wallet);
+  return `<details class="luma-launch-card disclosure luma-launch-recovery"><summary>Your funds, refunds & attendance</summary><dl class="details-list"><div><dt>Unused payer credit</dt><dd>${credit === null ? "Unavailable" : `${eth(credit)} ETH`}</dd></div><div><dt>Still owed</dt><dd>${owed === null ? "Unavailable" : `${eth(owed)} ETH`}</dd></div><div><dt>Contract registration</dt><dd>${registered ? "Registered in this event" : "Not registered in the reward pool"}</dd></div><div><dt>Financial attendance</dt><dd>${attended ? "Included in contract attendance" : "Not established"}</dd></div><div><dt>Successful direct attendance payments</dt><dd>${delivery ? `${eth(delivery.attendance)} ETH` : "Verified history unavailable"}</dd></div><div><dt>Principal returns</dt><dd>${delivery ? `${eth(delivery.refunds)} ETH` : "Verified history unavailable"}</dd></div></dl><p>Unused credit, admitted commitments, held shares, owed transfers and successful payments are separate. A historical deposit receipt does not prove your current funding.</p>${phase === "Cancelled" ? "<p>This event is cancelled. Review confirmed returns, unused credit and any still-owed payment below.</p>" : ""}<div class="button-row">${credit !== null && BigInt(credit) > 0n ? '<button class="button button-secondary" data-recovery="withdrawPending">Review credit withdrawal</button>' : ""}${owed !== null && BigInt(owed) > 0n ? '<button class="button button-secondary" data-recovery="claim">Review owed payment</button>' : ""}${noList ? '<button class="button button-secondary" data-tx="emergencyWithdraw">Review no-list recovery</button>' : ""}${challengeOpen ? '<button class="button button-secondary" data-tx="challenge">Challenge missing attendance</button>' : ""}</div>${challengeOpen ? `<p>Challenge deadline: ${escape(contractDeadline(state.challengeEndsAt, event.timezone, event))}.</p>` : ""}${ownCase ? renderCase(ownCase) : ""}${renderPending()}</details>`;
+}
+function renderLaunchOrganizer() {
+  if (!currentIdentity() || (!isOwner() && !isStaff()))
+    return `<section class="luma-launch-card"><h2>Organizer access</h2><p>Connect the event financial owner or its authorized attendance staff wallet.</p><button class="button button-primary" data-connect-wallet>Connect organizer wallet</button></section>`;
+  const { event, state, participants = [], attendance = [] } = app.detail;
+  const owner = isOwner();
+  return `<section class="luma-launch-card"><h2>Manage this kickback</h2><p>Admission and registration remain separate from trusted check-in and financial attendance.</p><a class="button button-secondary" href="#${new URLSearchParams({ event: event.id, view: "participant" })}">Open the participant deposit page</a></section><details class="luma-launch-card disclosure"><summary>Deposits & host approvals</summary>${renderDepositReview()}</details><details class="luma-launch-card disclosure"><summary>Admission, registration & attendance</summary><section id="people-review">${renderBatchHost("check-in")}<div id="people-batch-selection"><div class="table-scroll"><table><thead><tr><th>Wallet</th><th>Host approval</th><th>Registration</th><th>Check-in</th></tr></thead><tbody>${participants.map((person) => `<tr data-batch-person="${escape(person.id)}" data-batch-wallet="${escape(person.wallet)}"><td class="person-cell"><strong class="mono">${escape(person.wallet)}</strong></td><td>${owner ? `<select data-admission="${escape(person.id)}" aria-label="Host approval for ${escape(person.wallet)}">${["pending", "approved", "declined", "free"].map((value) => `<option value="${value}" ${person.admission === value ? "selected" : ""}>${value}</option>`).join("")}</select>` : escape(person.admission)}</td><td>${person.registered ? "Registered" : owner ? `<button class="button button-secondary button-small" data-launch-register="${escape(person.wallet)}" data-launch-participant="${escape(person.id)}" ${person.admission !== "approved" || !person.deposit?.verified ? "disabled" : ""}>Review registration</button>` : "Owner review required"}</td><td>${attendance.some((record) => record.participantId === person.id || same(record.wallet, person.wallet)) ? "Check-in recorded" : `<button class="button button-secondary button-small" data-checkin="${escape(person.id)}">Review check-in</button>`}</td></tr>`).join("")}</tbody></table></div></div></section>${owner ? '<div id="attendance-review"><p>Only eligible registered wallets with trusted observations are proposed. Review the exact list before signing.</p><button class="button button-primary" data-tx="postAttendance">Review attendance proposal</button><button class="button button-secondary" data-correction>Review an attendance correction</button></div>' : ""}</details><details class="luma-launch-card disclosure"><summary>Payouts & attendance disputes</summary>${renderCases()}</details>${owner ? '<details class="luma-launch-card disclosure"><summary>Cancellation & recovery</summary><p>Existing contract deadlines, reserves and unresolved-case protections apply to every review.</p><div class="button-row"><button class="button button-secondary" data-tx="cancel">Review cancellation</button><button class="button button-secondary" data-recovery="sweep">Review spare-funds return</button><button class="button button-secondary" data-recovery="transferOwnership">Review event financial ownership transfer</button><button class="button button-secondary" data-tx="acceptOwnership">Review event financial ownership acceptance</button></div></details>' : ""}<details class="luma-launch-card disclosure"><summary>Contract & upgrade safeguards</summary>${renderLaunchTerms()}</details>`;
 }
 
 function renderEventContext() {
@@ -1500,9 +1826,10 @@ function renderEventContext() {
       ? "Omission challenge ended"
       : "Omission challenge ends"
     : "Attendance-list deadline";
-  return `<section class="event-context" aria-label="Selected event and verified deployment"><div class="context-main"><div class="event-switch"><label for="event-switch">Your event</label><select id="event-switch">${app.bootstrap.events.map((item) => `<option value="${escape(item.id)}" ${item.id === event.id ? "selected" : ""}>${escape(item.title)}</option>`).join("")}</select></div><div class="context-status">${badge(phaseName(state.phase), phaseStyle(state.phase))} ${badge(`${networkName()} ${event.chainId}`, "purple")}</div></div>${testProfileNotice(event)}${renderProductionDetails()}<details class="disclosure context-verification" id="deployment-details"><summary>Contract, policy & verified details · ${versionLabel(event)}</summary><dl class="context-details"><div><dt>${isProduction() && app.detail?.deploymentTrust?.status !== "verified" ? "Deployment verification unavailable" : "Deployment"} · ${escape(event.contractVersion)}</dt><dd class="mono">${escape(event.contract)}</dd></div><div><dt>${deadlineLabel}</dt><dd>${escape(contractDeadline(deadline, event.timezone, event))}</dd></div><div><dt>Last verified · block ${escape(state.blockNumber)}</dt><dd>${escape(formatTime(now, event.timezone))}</dd></div></dl><p>Event ID: <span class="mono">${escape(event.id)}</span><br>Policy: <span class="mono">${escape(event.policyURI)}</span></p><p>Native ${escape(currencySymbol())} · ${escape(isProduction() ? arbitrationLabel() : "Kleros V1")} · ${escape(event.abiVersion)}. The attendance-list deadline governs posting and no-list recovery, not every later claim. Full transaction details are always shown before signing.</p>${isV8(event) ? "<p>This financial interface tracks each payer’s unused deposit credit. Credit can be withdrawn independently; an admitted commitment follows event recovery rules.</p>" : ""}</details></section>`;
+  return `<section class="event-context" aria-label="Selected event and verified deployment"><div class="context-main"><div class="event-switch"><label for="event-switch">Your event</label><select id="event-switch">${app.bootstrap.events.map((item) => `<option value="${escape(item.id)}" ${item.id === event.id ? "selected" : ""}>${escape(item.title)}</option>`).join("")}</select></div><div class="context-status">${badge(phaseName(state.phase), phaseStyle(state.phase))} ${badge(`${networkName()} ${event.chainId}`, "purple")}</div></div>${testProfileNotice(event)}${renderProductionDetails()}<details class="disclosure context-verification" id="deployment-details"><summary>Contract, policy & verified details · ${versionLabel(event)}</summary><dl class="context-details"><div><dt>${isGuardedV9() && app.detail?.deploymentTrust?.status !== "verified" ? "Deployment verification unavailable" : "Deployment"} · ${escape(event.contractVersion)}</dt><dd class="mono">${escape(event.contract)}</dd></div><div><dt>${deadlineLabel}</dt><dd>${escape(contractDeadline(deadline, event.timezone, event))}</dd></div><div><dt>Last verified · block ${escape(state.blockNumber)}</dt><dd>${escape(formatTime(now, event.timezone))}</dd></div></dl><p>Event ID: <span class="mono">${escape(event.id)}</span><br>Policy: <span class="mono">${escape(event.policyURI)}</span></p><p>Native ${escape(currencySymbol())} · ${escape(isGuardedV9() ? arbitrationLabel() : "Kleros V1")} · ${escape(event.abiVersion)}. The attendance-list deadline governs posting and no-list recovery, not every later claim. Full transaction details are always shown before signing.</p>${isV8(event) ? "<p>This financial interface tracks each payer’s unused deposit credit. Credit can be withdrawn independently; an admitted commitment follows event recovery rules.</p>" : ""}</details></section>`;
 }
 function renderEvent() {
+  if (isProduction()) return renderLaunchEvent();
   const { event, state } = app.detail;
   const phase = phaseName(state.phase);
   return `<a class="back-link" href="#">← All events</a>${renderEventContext()}<div class="event-heading"><div><div class="eyebrow">EVENT DETAILS</div><h1>${escape(event.title)}</h1><div class="event-subtitle"><span>◷ ${escape(formatTime(event.startsAt, event.timezone))}</span><span>⌖ ${escape(event.location ?? "")}</span></div></div></div>
@@ -1577,8 +1904,21 @@ function restoreTransactionJournal() {
 }
 // Saved-review identities locate existing journal records only. They are never
 // event summaries, verified financial profiles or authority to prepare a send.
+function submittedRecoveryProfile(mode) {
+  if (isProductionMode(mode))
+    return { chainId: 1, version: "kleros-event-v9-uups", label: "Ethereum" };
+  if (isV9TestnetMode(mode))
+    return {
+      chainId: 10200,
+      version: "kleros-event-v9-uups-chiado",
+      label: "Chiado",
+    };
+  return null;
+}
 function submittedRecoveryIdentity(bootstrap, eventId) {
+  const expected = submittedRecoveryProfile(bootstrap?.mode);
   if (
+    !expected ||
     !Array.isArray(bootstrap?.events) ||
     typeof eventId !== "string" ||
     !eventId
@@ -1599,12 +1939,12 @@ function submittedRecoveryIdentity(bootstrap, eventId) {
     source = "recoveryEvents";
   }
   if (
-    identity.chainId !== 1 ||
+    identity.chainId !== expected.chainId ||
     typeof identity.contract !== "string" ||
     !/^0x[0-9a-f]{40}$/i.test(identity.contract) ||
     /^0x0{40}$/i.test(identity.contract) ||
-    identity.contractVersion !== "kleros-event-v9-uups" ||
-    identity.abiVersion !== "kleros-event-v9-uups"
+    identity.contractVersion !== expected.version ||
+    identity.abiVersion !== expected.version
   )
     return null;
   return { identity, source };
@@ -1619,16 +1959,17 @@ function submittedRecoveryFromManifest(record, error) {
     return null;
   const bootstrap = record.readBootstrap;
   const session = bootstrap?.session;
+  const expected = submittedRecoveryProfile(bootstrap?.mode);
   const address = (value) =>
     typeof value === "string" &&
     /^0x[0-9a-f]{40}$/i.test(value) &&
     !/^0x0{40}$/i.test(value);
   if (
     bootstrap !== app.bootstrap ||
-    bootstrap?.mode !== "hosted-production" ||
+    !expected ||
     typeof bootstrap.instanceId !== "string" ||
     !bootstrap.instanceId ||
-    bootstrap.chain?.chainId !== 1 ||
+    bootstrap.chain?.chainId !== expected.chainId ||
     session?.mode !== "wallet" ||
     !address(session.wallet) ||
     (record.capturedMode !== null && record.capturedMode !== bootstrap.mode) ||
@@ -1665,6 +2006,7 @@ function submittedRecoveryFromManifest(record, error) {
     return {
       context,
       manifestSource: manifest.source,
+      networkLabel: expected.label,
       generation: record.generation,
       title:
         manifest.source === "events" ? (summary.title ?? eventId) : eventId,
@@ -1676,6 +2018,7 @@ function submittedRecoveryFromManifest(record, error) {
     return {
       context,
       manifestSource: manifest.source,
+      networkLabel: expected.label,
       generation: record.generation,
       title:
         manifest.source === "events" ? (summary.title ?? eventId) : eventId,
@@ -1690,7 +2033,7 @@ function renderSubmittedRecovery() {
   if (!recovery || (!recovery.entries.length && !recovery.journalError))
     return "";
   const { context } = recovery;
-  return `<section class="panel" data-submitted-recovery><h2>Submitted transactions</h2><p>New financial reviews are disabled while event verification is unavailable. These recorded hashes remain available. Checking an original submission does not send it again.</p><p>${escape(recovery.title)} · <span class="mono">${escape(context.eventId)}</span><br>Ethereum · chain ${escape(context.chainId)}<br>Event contract: <span class="mono">${escape(context.contract)}</span><br>Wallet: <span class="mono">${escape(context.wallet)}</span></p>${recovery.journalError ? `<div class="notice warning">${escape(recovery.journalError)} Preserve your wallet activity and transaction references.</div>` : `<ul class="transaction-log">${recovery.entries.map((entry) => `<li><strong>${escape(actionNames[entry.action] ?? entry.action ?? "Submitted transaction")}</strong><br><span class="mono">${escape(entry.hash)}</span><p data-reconcile-status="${escape(entry.hash)}" role="status">${entry.status === "confirmed" ? "Previously confirmed in this journal" : entry.status === "failed" ? "Previously recorded as reverted" : "Receipt verification pending · hash preserved"}</p><button class="button button-secondary button-small" data-reconcile-submission="${escape(entry.hash)}">Check submitted transaction</button></li>`).join("")}</ul>`}</section>`;
+  return `<section class="panel" data-submitted-recovery><h2>Submitted transactions</h2><p>New financial reviews are disabled while event verification is unavailable. These recorded hashes remain available. Checking an original submission does not send it again.</p><p>${escape(recovery.title)} · <span class="mono">${escape(context.eventId)}</span><br>${escape(recovery.networkLabel)} · chain ${escape(context.chainId)}<br>Event contract: <span class="mono">${escape(context.contract)}</span><br>Wallet: <span class="mono">${escape(context.wallet)}</span></p>${recovery.journalError ? `<div class="notice warning">${escape(recovery.journalError)} Preserve your wallet activity and transaction references.</div>` : `<ul class="transaction-log">${recovery.entries.map((entry) => `<li><strong>${escape(actionNames[entry.action] ?? entry.action ?? "Submitted transaction")}</strong><br><span class="mono">${escape(entry.hash)}</span><p data-reconcile-status="${escape(entry.hash)}" role="status">${entry.status === "confirmed" ? "Previously confirmed in this journal" : entry.status === "failed" ? "Previously recorded as reverted" : "Receipt verification pending · hash preserved"}</p><button class="button button-secondary button-small" data-reconcile-submission="${escape(entry.hash)}">Check submitted transaction</button></li>`).join("")}</ul>`}</section>`;
 }
 function submittedRecoveryCurrent(recovery) {
   const { context } = recovery;
@@ -2469,11 +2812,215 @@ function renderCase(item) {
     typeof item.publication === "object"
       ? item.publication.status
       : item.publication;
-  return `<article class="case-card case-summary"><h3>${escape(title)}</h3><p>${escape(statusNote)}</p><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(title ?? "Challenge", resolved ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(contractDeadline(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ${escape(currencySymbol())}</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ${escape(currencySymbol())}</dd></div><div><dt>Resolver local ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.localDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.arbitratorDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Final ruling</dt><dd>${!hasRuling ? "Not final" : invalidRuling ? "Unavailable · unsupported result" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][rulingNumber(item.finalRuling)])}</dd></div></dl>${invalidRuling ? '<div class="button-row"><button class="button button-secondary button-small" data-reload>Refresh ruling status</button></div>' : ""}${isV8() || invalidRuling ? `<details class="disclosure case-source-details"><summary>Case organizer & source details</summary>${isV8() ? `<dl class="details-list"><div><dt>Organizer for this case</dt><dd class="mono">${escape(item.caseOrganizer ?? "Unavailable")}</dd></div></dl><p>The contract captured this organizer when the challenge opened. A later owner change does not rewrite this case identity.</p>` : ""}${invalidRuling ? `<p>Reported ruling, not accepted for settlement: <code>${escape(item.finalRuling)}</code></p>` : ""}</details>` : ""}<div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !waiting || matchExpired ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || resolved || !((waiting && matchExpired) || (matched && final)) ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Deliver final ruling</button></div><details class="disclosure" ${!hasCourtCase ? "hidden" : ""}><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p><div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify server copy" : "Store exact bytes on this server"}</button></div><form data-form="evidence" data-wallet="${caseWallet}">${isProduction() ? '<p class="field-help">Enter an evidence URI for a separately reviewed submission. File uploads are unavailable here.</p>' : `<label for="evidence-file-${caseWallet}">Store an evidence file on this server (optional)</label><input id="evidence-file-${caseWallet}" type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored by this app; it is not published to IPFS.</p>`}<label for="evidence-uri-${caseWallet}" style="margin-top:12px">Evidence URI</label><input id="evidence-uri-${caseWallet}" name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form>${renderAppealStatus(item)}<form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label for="appeal-side-${caseWallet}">Ruling side</label><select id="appeal-side-${caseWallet}" name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label for="appeal-amount-${caseWallet}">Contribution (${escape(currencySymbol())})</label><input id="appeal-amount-${caseWallet}" name="amount" inputmode="decimal" required placeholder="Enter contribution"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() || (isProduction() && !appealRewardsReady(item)) ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. A contribution is separate from the attendance share reserved by the event contract.</p></form></details>${owner && isSandbox() ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real ${versionLabel()} event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
+  return `<article class="case-card case-summary"><h3>${escape(title)}</h3><p>${escape(statusNote)}</p><div class="panel-header"><div><strong class="case-title">${escape(short(item.wallet))}</strong><span class="small muted">Participant attendance challenge</span></div>${badge(title ?? "Challenge", resolved ? "green" : "amber")}</div><dl class="details-list"><div><dt>Matching deadline</dt><dd>${escape(contractDeadline(item.matchEndsAt, app.detail.event.timezone))}</dd></div><div><dt>Challenge deposit</dt><dd>${eth(item.depositWei)} ${escape(currencySymbol())}</dd></div><div><dt>Reserved share</dt><dd>${eth(item.heldShareWei)} ${escape(currencySymbol())}</dd></div><div><dt>Resolver local ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.localDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Arbitrator dispute ID</dt><dd><code>${!hasCourtCase ? "Not created · no matched case" : escape(item.arbitratorDisputeID ?? "Unavailable")}</code></dd></div><div><dt>Final ruling</dt><dd>${!hasRuling ? "Not final" : invalidRuling ? "Unavailable · unsupported result" : escape(["0 · Refused / excluded", "1 · Attended", "2 · Absent"][rulingNumber(item.finalRuling)])}</dd></div></dl>${invalidRuling ? '<div class="button-row"><button class="button button-secondary button-small" data-reload>Refresh ruling status</button></div>' : ""}${isV8() || invalidRuling ? `<details class="disclosure case-source-details"><summary>Case organizer & source details</summary>${isV8() ? `<dl class="details-list"><div><dt>Organizer for this case</dt><dd class="mono">${escape(item.caseOrganizer ?? "Unavailable")}</dd></div></dl><p>The contract captured this organizer when the challenge opened. A later owner change does not rewrite this case identity.</p>` : ""}${invalidRuling ? `<p>Reported ruling, not accepted for settlement: <code>${escape(item.finalRuling)}</code></p>` : ""}</details>` : ""}<div class="button-row"><button class="button button-secondary button-small" data-tx="match" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !waiting || matchExpired ? "disabled" : ""}>Review matching</button><button class="button button-primary button-small" data-tx="resolve" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || resolved || !((waiting && matchExpired) || (matched && final)) ? "disabled" : ""}>Settle final / unmatched case</button></div><div class="button-row"><button class="button button-secondary button-small" data-tx="passPeriod" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Advance expired appeal</button><button class="button button-secondary button-small" data-tx="deliverRuling" data-wallet="${caseWallet}" ${!currentIdentity() || invalidRuling || !matched || final ? "disabled" : ""}>Deliver final ruling</button></div>${renderCasePublication(item)}<details class="disclosure" ${!hasCourtCase ? "hidden" : ""}><summary>Evidence, publication & appeals</summary><p>Case metaevidence: <span class="mono">${escape(item.caseURI ?? "Not created")}</span><br>Publication: <strong>${escape(publication ?? "Not published")}</strong>. A computed CID does not establish IPFS availability.</p>${!isProduction() ? `<div class="button-row"><button class="button button-secondary button-small" data-publish="${caseWallet}">${publication ? "Retry / verify server copy" : "Store exact bytes on this server"}</button></div>` : ""}<form data-form="evidence" data-wallet="${caseWallet}">${isProduction() ? '<p class="field-help">Enter an evidence URI for a separately reviewed submission. File uploads are unavailable here.</p>' : `<label for="evidence-file-${caseWallet}">Store an evidence file on this server (optional)</label><input id="evidence-file-${caseWallet}" type="file" data-evidence-file><p class="field-help">Maximum 256 KiB. Stored by this app; it is not published to IPFS.</p>`}<label for="evidence-uri-${caseWallet}" style="margin-top:12px">Evidence URI</label><input id="evidence-uri-${caseWallet}" name="uri" required maxlength="2000" placeholder="/ipfs/CID/evidence.json"><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review evidence submission</button></div></form>${renderAppealStatus(item)}<form data-form="appeal" data-wallet="${caseWallet}"><div class="form-grid"><div><label for="appeal-side-${caseWallet}">Ruling side</label><select id="appeal-side-${caseWallet}" name="side"><option value="1">1 · Attended</option><option value="2">2 · Absent</option><option value="0">0 · Refused</option></select></div><div><label for="appeal-amount-${caseWallet}">Contribution (${escape(currencySymbol())})</label><input id="appeal-amount-${caseWallet}" name="amount" inputmode="decimal" required placeholder="Enter contribution"></div></div><div class="button-row"><button class="button button-secondary button-small" ${!currentIdentity() ? "disabled" : ""}>Review direct appeal contribution</button><button class="button button-secondary button-small" type="button" data-tx="appealRewards" data-wallet="${caseWallet}" ${!currentIdentity() || (isGuardedV9() && !appealRewardsReady(item)) ? "disabled" : ""}>Review appeal rewards</button></div><p class="field-help">Contributions go directly from this wallet to the V1 resolver. A contribution is separate from the attendance share reserved by the event contract.</p></form></details>${owner && isSandbox() ? `<details class="disclosure"><summary>Local Court mock controls</summary><p>Only the local mock arbitrator can be driven here. A final mock ruling still requires settlement through the real ${versionLabel()} event contract.</p><div class="button-row">${[1, 2, 0].map((ruling) => `<button class="button button-secondary button-small" data-ruling="${ruling}" data-wallet="${caseWallet}">${["Refuse", "Attended", "Absent"][ruling]}</button>`).join("")}<button class="button button-secondary button-small" data-open-appeal="${caseWallet}">Open mock appeal period</button></div></details>` : ""}</article>`;
+}
+
+function renderCasePublication(item) {
+  if (!isProduction()) return "";
+  const status =
+    item.publication && typeof item.publication === "object"
+      ? item.publication
+      : null;
+  const actions = publicationActions(status);
+  return `<details class="disclosure"><summary>Advanced · exact case artifact</summary><p data-case-publication-summary="${escape(item.wallet)}">${escape(status ? actions.label : "Not exported or uploaded by this app")}</p><p>Review the exact public JSON before any upload. A contract URI or upload acknowledgment does not establish gateway availability.</p><div class="button-row"><button class="button button-secondary button-small" data-case-artifact="review" data-case-wallet="${escape(item.wallet)}" ${!currentIdentity() ? "disabled" : ""}>Review / download exact JSON</button>${status && status.status !== "exported" && actions.canVerify ? `<button class="button button-secondary button-small" data-case-artifact="availability" data-case-wallet="${escape(item.wallet)}" ${!currentIdentity() ? "disabled" : ""}>Check gateway availability</button>` : ""}</div></details>`;
+}
+function closeCaseArtifactReview() {
+  if (!caseArtifactReview) return;
+  caseArtifactReview = null;
+  caseArtifactGeneration++;
+  if ($("#review-dialog").open) $("#review-dialog").close();
+  $("#dialog-body").replaceChildren();
+}
+function caseArtifactCurrent(review) {
+  const scope = review.scope,
+    route = readRoute();
+  return (
+    caseArtifactReview === review &&
+    review.generation === caseArtifactGeneration &&
+    isProduction() &&
+    app.generation === scope.generation &&
+    app.unsignedReviewVersion === scope.unsignedReviewVersion &&
+    app.bootstrap?.instanceId === scope.instanceId &&
+    same(currentIdentity()?.wallet, scope.actorWallet) &&
+    currentIdentity()?.mode === "wallet" &&
+    app.route.eventId === scope.eventId &&
+    route.eventId === scope.eventId &&
+    app.route.view === scope.view &&
+    route.view === scope.view &&
+    app.detail?.event.id === scope.eventId &&
+    app.detail.event.chainId === scope.chainId &&
+    same(app.detail.event.contract, scope.contract) &&
+    app.detail.event.contractVersion === scope.contractVersion
+  );
+}
+function caseAttemptKey(record) {
+  return `${record.artifact.scopeHash}:${record.artifact.sha256}`;
+}
+function acceptCaseArtifactRecord(review, record) {
+  const key = caseAttemptKey(record);
+  if (record.publication.uploadAttempted === true) caseUploadAttempts.add(key);
+  else if (publicationActions(record.publication).canPublish)
+    caseUploadAttempts.delete(key);
+  review.record = record;
+  const item = app.detail?.state?.cases?.find((item) =>
+    same(item.wallet, review.scope.wallet),
+  );
+  if (item) item.publication = { ...record.publication };
+  for (const node of $$("[data-case-publication-summary]"))
+    if (same(node.dataset.casePublicationSummary, review.scope.wallet))
+      node.textContent = publicationActions(record.publication).label;
+}
+function renderCaseArtifactReview(review) {
+  if (!caseArtifactCurrent(review)) return;
+  const { artifact, currentCase, publication } = review.record;
+  const actions = publicationActions(publication),
+    consumed = caseUploadAttempts.has(caseAttemptKey(review.record));
+  const ids = (scope) =>
+    scope.matched
+      ? `Resolver local ID ${scope.localDisputeID} · arbitrator dispute ID ${scope.arbitratorDisputeID}`
+      : "Waiting / unmatched · no case IDs created";
+  showDialog(
+    `<div class="dialog-eyebrow">PUBLIC CASE ARTIFACT · ETHEREUM</div><h2 class="dialog-title" id="dialog-title">Review exact case JSON</h2><div data-case-publication-review><p>Public IPFS publication may be permanent and cannot be reliably removed. Review every byte before consenting. Downloading only saves these exact bytes on your device.</p><dl class="details-list"><div><dt>Event / child contract</dt><dd>${escape(artifact.scope.eventId)}<br><span class="mono">${escape(artifact.scope.contract)}</span></dd></div><div><dt>Challenged wallet</dt><dd class="mono">${escape(artifact.scope.wallet)}</dd></div><div><dt>Signed-in reviewer</dt><dd class="mono">${escape(review.scope.actorWallet)}</dd></div><div><dt>Original artifact provenance</dt><dd>${escape(artifact.scope.instanceId)} · block ${escape(artifact.scope.blockNumber)}<br><span class="mono">${escape(artifact.scope.blockHash)}</span><br>${escape(ids(artifact.scope))}</dd></div><div><dt>Current canonical case</dt><dd>${escape(currentCase.instanceId)} · block ${escape(currentCase.blockNumber)}<br><span class="mono">${escape(currentCase.blockHash)}</span><br>${escape(ids(currentCase))}</dd></div><div><dt>Contract URI · no gateway request made by this view</dt><dd class="mono">${escape(artifact.uri)}</dd></div><div><dt>SHA256 / exact byte length</dt><dd class="mono">${escape(artifact.sha256)}<br>${escape(artifact.byteLength)} bytes</dd></div><div><dt>Original scope SHA256</dt><dd class="mono">${escape(artifact.scopeHash)}</dd></div></dl><pre class="review-code" data-case-publication-json>${escape(artifact.content)}</pre><p class="notice" data-case-publication-status role="status">${escape(consumed && publication.status === "exported" ? "An upload request may have been made. Verify the existing attempt; no automatic retry is permitted." : actions.label)}${publication.reason ? `<br>${escape(publication.reason)}` : ""}</p>${actions.canPublish && !consumed ? '<label><input type="checkbox" data-case-publication-consent> I reviewed this exact public JSON, SHA256, URI and case context, and consent to publishing these exact bytes publicly on IPFS, which may be permanent and cannot be reliably removed.</label>' : ""}<div class="dialog-buttons"><button class="button button-secondary" data-close>Close</button><button class="button button-secondary" data-case-publication="download">Download exact JSON</button><button class="button button-secondary" data-case-publication="availability">Check gateway availability</button><button class="button button-primary" data-case-publication="publish" disabled ${!actions.canPublish || consumed ? "hidden" : ""}>Publish reviewed bytes</button></div></div>`,
+  );
+}
+async function openCaseArtifact(wallet, action = "review") {
+  if (!isProduction() || !/^0x[0-9a-f]{40}$/i.test(wallet))
+    throw new Error("Choose a production attendance case.");
+  if (
+    app.detail?.event.id !== app.route.eventId ||
+    readRoute().eventId !== app.route.eventId
+  )
+    throw new Error(
+      "The selected event changed. Refresh before reviewing its case artifact.",
+    );
+  const issue = productionContextIssue(app.bootstrap, app.detail, {
+    requireWallet: true,
+  });
+  if (issue) throw new Error(issue);
+  invalidateDraft();
+  const event = app.detail.event;
+  const review = {
+    generation: ++caseArtifactGeneration,
+    working: true,
+    record: null,
+    scope: Object.freeze({
+      mode: app.bootstrap.mode,
+      instanceId: app.bootstrap.instanceId,
+      eventId: event.id,
+      chainId: event.chainId,
+      contract: event.contract,
+      contractVersion: event.contractVersion,
+      wallet,
+      actorWallet: currentIdentity().wallet,
+      generation: app.generation,
+      unsignedReviewVersion: app.unsignedReviewVersion,
+      view: app.route.view,
+    }),
+  };
+  review.base = `/api/events/${encodeURIComponent(event.id)}/cases/${encodeURIComponent(wallet)}`;
+  caseArtifactReview = review;
+  try {
+    const response = await post(
+      review.base + (action === "availability" ? "/availability" : "/artifact"),
+      {},
+    );
+    if (!caseArtifactCurrent(review)) return;
+    const record = await validateCaseArtifact(response, review.scope);
+    if (!caseArtifactCurrent(review)) return;
+    acceptCaseArtifactRecord(review, record);
+    review.working = false;
+    renderCaseArtifactReview(review);
+  } catch (error) {
+    if (caseArtifactCurrent(review)) {
+      closeCaseArtifactReview();
+      toast(error.message, true);
+    }
+  }
+}
+async function casePublicationAction(action) {
+  const review = caseArtifactReview;
+  if (
+    !review ||
+    !caseArtifactCurrent(review) ||
+    review.working ||
+    !review.record
+  )
+    return;
+  const artifact = review.record.artifact;
+  if (action === "download") {
+    const url = URL.createObjectURL(
+      new Blob([new TextEncoder().encode(artifact.content)], {
+        type: "application/json",
+      }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `case-${artifact.scope.eventId}-${artifact.scope.wallet}.json`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return;
+  }
+  const publish = action === "publish";
+  if (!publish && action !== "availability") return;
+  if (
+    publish &&
+    (!publicationActions(review.record.publication).canPublish ||
+      caseUploadAttempts.has(caseAttemptKey(review.record)) ||
+      !$("[data-case-publication-consent]")?.checked)
+  )
+    throw new Error(
+      "Review and consent to the exact original artifact before publishing.",
+    );
+  review.working = true;
+  for (const button of $$("[data-case-publication]", $("#dialog-body")))
+    button.disabled = true;
+  if (publish) caseUploadAttempts.add(caseAttemptKey(review.record));
+  try {
+    if (!caseArtifactCurrent(review)) return;
+    const response = await post(
+      review.base + (publish ? "/publish" : "/availability"),
+      publish ? { sha256: artifact.sha256, scopeHash: artifact.scopeHash } : {},
+    );
+    if (!caseArtifactCurrent(review)) return;
+    const validated = await validateCaseArtifact(response, review.scope);
+    if (!caseArtifactCurrent(review)) return;
+    if (
+      validated.artifact.sha256 !== artifact.sha256 ||
+      validated.artifact.scopeHash !== artifact.scopeHash ||
+      validated.artifact.content !== artifact.content
+    )
+      throw new Error(
+        "The original reviewed artifact changed. No further upload is permitted.",
+      );
+    acceptCaseArtifactRecord(review, validated);
+    review.working = false;
+    renderCaseArtifactReview(review);
+  } catch (error) {
+    if (!caseArtifactCurrent(review)) return;
+    if ([401, 403].includes(error.status)) {
+      closeCaseArtifactReview();
+      toast(error.message, true);
+      return;
+    }
+    review.working = false;
+    if (publish)
+      review.record = {
+        ...review.record,
+        publication: {
+          ...review.record.publication,
+          status: "upload-uncertain",
+          reason:
+            "The upload outcome is unknown. Verify the existing attempt; do not upload again.",
+        },
+      };
+    renderCaseArtifactReview(review);
+    const status = $("[data-case-publication-status]");
+    if (status) status.textContent += ` ${error.message}`;
+  }
 }
 
 function renderAppealRewardsStatus(item) {
-  if (!isProduction()) return "";
+  if (!isGuardedV9()) return "";
   const ready = appealRewardsReady(item);
   const value = item.appeal?.withdrawableWei;
   const known = ready && typeof value === "string" && /^\d+$/.test(value);
@@ -2512,7 +3059,7 @@ function renderDemoControls() {
 }
 
 async function prepareTransaction(action, params = {}) {
-  if (isProduction() && !currentIdentity()) {
+  if (isGuardedV9() && !currentIdentity()) {
     showIdentityDialog();
     return;
   }
@@ -2555,7 +3102,7 @@ async function prepareTransaction(action, params = {}) {
   app.draftParams = { ...params };
   const event = app.detail.event;
   showDialog(
-    `${testProfileNotice(event)}<div class="dialog-eyebrow">Review before signing</div><h2 class="dialog-title" id="dialog-title">${escape(actionNames[action] ?? action)}</h2><p class="dialog-body-text">${escape(typeof draft.summary === "string" ? draft.summary : JSON.stringify(draft.summary))}</p><div class="review-list"><dl class="details-list"><div><dt>Event</dt><dd><strong>${escape(event.title)}</strong><br>${escape(draft.eventId)}</dd></div>${action === "postAttendance" ? `<div><dt>Proposed attendees</dt><dd><strong>${draft.args[0].length} registered wallets</strong></dd></div><div><dt>Initial share</dt><dd><strong>${eth(draft.args[1])} ${escape(currencySymbol())}</strong></dd></div><div><dt>Registered pool</dt><dd>${eth(app.detail.state.poolWei)} ${escape(currencySymbol())}</dd></div>` : ""}${action === "register" || action === "reject" ? `<div><dt>Reviewed wallets</dt><dd><strong>${draft.args[0].length} verified participants</strong></dd></div>` : ""}<div><dt>Network</dt><dd>${escape(networkName())} · ${escape(draft.chainId)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(draft.contract)}</dd></div>${!same(draft.contract, draft.transaction.to) ? `<div><dt>Transaction recipient</dt><dd class="mono">${escape(draft.transaction.to)}</dd></div>` : ""}<div><dt>Signing wallet</dt><dd class="mono">${escape(draft.wallet)}</dd></div><div><dt>Value</dt><dd><strong>${eth(draft.valueWei)} ${escape(currencySymbol())}</strong><br><span class="small mono">${escape(draft.valueWei)} wei</span></dd></div><div><dt>Method</dt><dd><code>${escape(draft.method)}</code></dd></div><div><dt>Policy</dt><dd>${escape(event.policyURI ?? event.policyUri ?? "Immutable event policy")}</dd></div><div><dt>Review expires</dt><dd>${escape(formatTime(draft.expiresAt, "UTC"))}</dd></div></dl></div><details class="disclosure"><summary>Inspect calldata and arguments</summary><pre class="review-code">${escape(JSON.stringify({ args: draft.args, transaction: draft.transaction, snapshot: draft.snapshot }, null, 2))}</pre></details>${action === "release" ? releaseBreakdown() : ""}<div class="notice warning">Confirming sends a transaction from the selected wallet on ${escape(networkName())} (${escape(draft.chainId)}). The server checks this state snapshot again and rejects an expired or stale draft. Changing event or wallet clears the review.</div><div id="transaction-status" role="status"></div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" id="execute-transaction" data-execute>${isProduction() ? "Confirm Ethereum transaction" : Number(draft.chainId) === 1337 ? "Confirm local transaction" : "Confirm testnet transaction"}</button></div>`,
+    `${testProfileNotice(event)}<div class="dialog-eyebrow">Review before signing</div><h2 class="dialog-title" id="dialog-title">${escape(actionNames[action] ?? action)}</h2><p class="dialog-body-text">${escape(typeof draft.summary === "string" ? draft.summary : JSON.stringify(draft.summary))}</p><div class="review-list"><dl class="details-list"><div><dt>Event</dt><dd><strong>${escape(event.title)}</strong><br>${escape(draft.eventId)}</dd></div>${action === "postAttendance" ? `<div><dt>Proposed attendees</dt><dd><strong>${draft.args[0].length} registered wallets</strong></dd></div><div><dt>Initial share</dt><dd><strong>${eth(draft.args[1])} ${escape(currencySymbol())}</strong></dd></div><div><dt>Registered pool</dt><dd>${eth(app.detail.state.poolWei)} ${escape(currencySymbol())}</dd></div>` : ""}${action === "register" || action === "reject" ? `<div><dt>Reviewed wallets</dt><dd><strong>${draft.args[0].length} verified participants</strong></dd></div>` : ""}<div><dt>Network</dt><dd>${escape(networkName())} · ${escape(draft.chainId)}</dd></div><div><dt>Event contract</dt><dd class="mono">${escape(draft.contract)}</dd></div>${!same(draft.contract, draft.transaction.to) ? `<div><dt>Transaction recipient</dt><dd class="mono">${escape(draft.transaction.to)}</dd></div>` : ""}<div><dt>Signing wallet</dt><dd class="mono">${escape(draft.wallet)}</dd></div><div><dt>Value</dt><dd><strong>${eth(draft.valueWei)} ${escape(currencySymbol())}</strong><br><span class="small mono">${escape(draft.valueWei)} wei</span></dd></div><div><dt>Method</dt><dd><code>${escape(draft.method)}</code></dd></div><div><dt>Policy</dt><dd>${escape(event.policyURI ?? event.policyUri ?? "Immutable event policy")}</dd></div><div><dt>Review expires</dt><dd>${escape(formatTime(draft.expiresAt, "UTC"))}</dd></div></dl></div>${isProduction() && action === "deposit" ? renderAttendanceStandard(event) : ""}<details class="disclosure"><summary>Inspect calldata and arguments</summary><pre class="review-code">${escape(JSON.stringify({ args: draft.args, transaction: draft.transaction, snapshot: draft.snapshot }, null, 2))}</pre></details>${action === "release" ? releaseBreakdown() : ""}<div class="notice warning">Confirming sends a transaction from the selected wallet on ${escape(networkName())} (${escape(draft.chainId)}). The server checks this state snapshot again and rejects an expired or stale draft. Changing event or wallet clears the review.</div><div id="transaction-status" role="status"></div><div class="dialog-buttons"><button class="button button-secondary" data-close>Cancel</button><button class="button button-primary" id="execute-transaction" data-execute>${isProduction() ? "Confirm Ethereum transaction" : Number(draft.chainId) === 1337 ? "Confirm local transaction" : "Confirm testnet transaction"}</button></div>`,
   );
 }
 function releaseBreakdown() {
@@ -2813,9 +3360,9 @@ function showCheckin(participantId) {
   );
 }
 function showDemoHelp() {
-  if (isProduction()) {
+  if (isGuardedV9()) {
     showDialog(
-      `<div class="dialog-eyebrow">Ethereum mainnet</div><h2 class="dialog-title" id="dialog-title">From a deposit to a kickback</h2><ol class="dialog-body-text"><li>Connect a supported standard Ethereum wallet account.</li><li>Review the event, ETH amount, contract, policy and arbitration provider before depositing.</li><li>The host approves admission and separately registers approved commitments.</li><li>Trusted check-in supports the organizer's attendance review; it does not post financial attendance.</li><li>Review the posted attendance and challenge an omission before the on-chain deadline. Matched disputes use the verified arbitration provider.</li><li>Ordinary payments can proceed with unresolved shares held. A final ruling still needs settlement; owed amounts and successful payments are separate.</li></ol><p>${escape(walletSupportNotice())}</p><p>${escape(arbitrationNotice())}</p>${productionUpgradeNotice()}<div class="dialog-buttons"><button class="button button-primary" data-close>Continue</button></div>`,
+      `<div class="dialog-eyebrow">${escape(networkName())}${isV9Testnet() ? " · public testnet" : ""}</div><h2 class="dialog-title" id="dialog-title">From a deposit to a kickback</h2><ol class="dialog-body-text"><li>Connect a supported standard Ethereum wallet account.</li><li>Review the event, ${escape(currencySymbol())} amount, contract, policy and arbitration provider before depositing.</li><li>The host approves admission and separately registers approved commitments.</li><li>Trusted check-in supports the organizer's attendance review; it does not post financial attendance.</li><li>Review the posted attendance and challenge an omission before the on-chain deadline. Matched disputes use the verified arbitration provider.</li><li>Ordinary payments can proceed with unresolved shares held. A final ruling still needs settlement; owed amounts and successful payments are separate.</li></ol><p>${escape(walletSupportNotice())}</p><p>${escape(arbitrationNotice())}</p>${productionUpgradeNotice()}<div class="dialog-buttons"><button class="button button-primary" data-close>Continue</button></div>`,
     );
     return;
   }
@@ -2841,6 +3388,22 @@ document.addEventListener("change", async (event) => {
   )
     return;
   try {
+    if (
+      target instanceof HTMLInputElement &&
+      target.matches("[data-case-publication-consent]")
+    ) {
+      const review = caseArtifactReview,
+        button = $("[data-case-publication=publish]");
+      if (button)
+        button.disabled =
+          !review ||
+          !caseArtifactCurrent(review) ||
+          review.working ||
+          !target.checked ||
+          !publicationActions(review.record?.publication).canPublish ||
+          caseUploadAttempts.has(caseAttemptKey(review.record));
+      return;
+    }
     if (target.id === "event-switch") {
       invalidateDraft();
       navigate(target.value, app.route.view, "#event-switch");
@@ -2944,6 +3507,60 @@ document.addEventListener("click", async (event) => {
   if (!button || button.disabled) return;
   const data = button.dataset;
   try {
+    if ("caseArtifact" in data) {
+      button.disabled = true;
+      try {
+        await openCaseArtifact(data.caseWallet, data.caseArtifact);
+      } finally {
+        if (button.isConnected) button.disabled = false;
+      }
+      return;
+    }
+    if ("casePublication" in data) {
+      await casePublicationAction(data.casePublication);
+      return;
+    }
+    if ("launchRegister" in data) {
+      const person = app.detail?.participants?.find(
+        (person) =>
+          person.id === data.launchParticipant &&
+          person.eventId === app.route.eventId &&
+          same(person.wallet, data.launchRegister),
+      );
+      if (
+        !isProduction() ||
+        !isOwner() ||
+        !person ||
+        person.admission !== "approved" ||
+        !person.deposit?.verified ||
+        person.registered
+      )
+        throw new Error(
+          "Review this wallet's current host approval and canonical deposit before registration.",
+        );
+      await prepareTransaction("register", { wallets: [person.wallet] });
+      return;
+    }
+    if ("launchOpenLink" in data) {
+      showDialog(
+        '<div class="dialog-eyebrow">EVENT DEPOSIT LINK</div><h2 class="dialog-title" id="dialog-title">Open your event deposit</h2><p>Use the deposit link provided with your Luma registration.</p><form data-form="launch-link"><label for="launch-event-link">Deposit link</label><input id="launch-event-link" name="link" required type="url" placeholder="https://this-site/#event=…&view=participant"><div class="dialog-buttons"><button class="button button-secondary" type="button" data-close>Cancel</button><button class="button button-primary" type="submit">Open deposit page</button></div></form>',
+      );
+      return;
+    }
+    if ("launchCopy" in data) {
+      const field = $("[data-launch-hash]");
+      if (!field || !/^0x[0-9a-f]{64}$/i.test(field.value))
+        throw new Error("A verified transaction reference is unavailable.");
+      try {
+        await navigator.clipboard.writeText(field.value);
+        toast("Transaction ID copied. Paste it into your Luma registration.");
+      } catch {
+        field.focus();
+        field.select();
+        toast("Select and copy the transaction ID shown here.");
+      }
+      return;
+    }
     if ("reconcileSubmission" in data) {
       await reconcileSubmittedRecovery(data.reconcileSubmission, button);
       return;
@@ -3038,6 +3655,10 @@ document.addEventListener("click", async (event) => {
       return;
     }
     if ("personal" in data) {
+      if (isProduction())
+        throw new Error(
+          "Event registration and personal history stay outside this deposit page.",
+        );
       button.disabled = true;
       await post(eventPath("/personal"), { attended: true });
       await load({ silent: true });
@@ -3055,6 +3676,10 @@ document.addEventListener("click", async (event) => {
       return;
     }
     if ("publish" in data) {
+      if (isProduction())
+        throw new Error(
+          "Review and consent to the exact production artifact before publication.",
+        );
       button.disabled = true;
       const result = await post(
         eventPath(`/cases/${encodeURIComponent(data.publish)}/publish`),
@@ -3121,7 +3746,26 @@ document.addEventListener("submit", async (event) => {
   if (submit) submit.disabled = true;
   try {
     switch (form.dataset.form) {
+      case "launch-link": {
+        const url = new URL(String(values.link));
+        const eventId = new URLSearchParams(url.hash.slice(1)).get("event");
+        if (
+          url.origin !== location.origin ||
+          !eventId ||
+          !/^[a-zA-Z0-9_-]{1,200}$/.test(eventId)
+        )
+          throw new Error(
+            "Use a deposit link for a specific event on this site.",
+          );
+        invalidateDraft();
+        navigate(eventId, "participant");
+        break;
+      }
       case "registration":
+        if (isProduction())
+          throw new Error(
+            "Complete registration on Luma. This page does not collect registration details.",
+          );
         await post(eventPath("/participants"), values);
         await load({ silent: true });
         toast(
@@ -3285,12 +3929,38 @@ document.addEventListener("submit", async (event) => {
 });
 
 $("#review-dialog").addEventListener("close", () => {
+  closeCaseArtifactReview();
   app.draft = null;
+  app.draftParams = null;
   app.importReview = null;
   const restore = dialogReturnFocus;
   dialogReturnFocus = null;
+  if (
+    isProduction() &&
+    app.detail?.event.id === app.route.eventId &&
+    readRoute().eventId === app.route.eventId &&
+    app.route.view !== "organizer" &&
+    !$("#review-dialog").open
+  ) {
+    const card = $("[data-luma-launch] [data-launch-state]");
+    if (card) {
+      const template = document.createElement("template");
+      template.innerHTML = renderLaunchParticipant();
+      const refreshed = template.content.querySelector("[data-launch-state]");
+      if (refreshed) card.replaceWith(refreshed);
+      disableUnreadyProductionActions();
+    }
+  }
   if (restore?.element?.isConnected) restore.element.focus();
   else if (restore?.selector) $(restore.selector)?.focus();
+  if (
+    isProduction() &&
+    document.activeElement === document.body &&
+    $("#launch-state-title")
+  ) {
+    $("#launch-state-title").tabIndex = -1;
+    $("#launch-state-title").focus();
+  }
 });
 document.addEventListener("keydown", (event) => {
   const dialog = $("#review-dialog");

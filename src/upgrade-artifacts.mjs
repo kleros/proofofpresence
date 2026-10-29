@@ -8,6 +8,8 @@ const ROOT = fileURLToPath(new URL("../", import.meta.url));
 export const V9_SOURCE_FILES = Object.freeze([
   "@openzeppelin/contracts/access/AccessControl.sol",
   "@openzeppelin/contracts/access/IAccessControl.sol",
+  "@openzeppelin/contracts/access/Ownable.sol",
+  "@openzeppelin/contracts/access/Ownable2Step.sol",
   "@openzeppelin/contracts/governance/TimelockController.sol",
   "@openzeppelin/contracts/interfaces/IERC1967.sol",
   "@openzeppelin/contracts/interfaces/draft-IERC1822.sol",

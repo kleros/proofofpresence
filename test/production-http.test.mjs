@@ -24,6 +24,21 @@ const sentinel = "PRIVATE_PROVIDER_SIGNATURE_CALLDATA_MUST_NOT_APPEAR";
 const errorPayload =
   sentinel + " https://user:password@rpc.example.invalid/private";
 const clone = (value) => structuredClone(value);
+const deferred = () => {
+  let resolve;
+  const promise = new Promise((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+};
+const caseWallet = "0x" + "56".repeat(20);
+const caseRoutes = [
+  ["artifact", "caseArtifact"],
+  ["availability", "verifyCaseArtifact"],
+  ["publish", "publishCaseArtifact"],
+];
+const caseApproval = { sha256: "ab".repeat(32), scopeHash: "cd".repeat(32) };
+const privateCaseBody = "SYNTHETIC_PRIVATE_CASE_ARTIFACT_MUST_NOT_LEAK";
 
 function boundaryWorkbench(chainOverrides = {}) {
   const calls = [];
@@ -97,6 +112,8 @@ function boundaryWorkbench(chainOverrides = {}) {
     bootstrapFailure: null,
     stateFailure: null,
     privateWallet: null,
+    caseContexts: [],
+    caseHandler: null,
     chain: {
       chainId: 1,
       production: true,
@@ -214,10 +231,80 @@ function boundaryWorkbench(chainOverrides = {}) {
       assert.equal(hash, submittedHash);
       return { hash, status: "pending", eventId: id, wallet: session.wallet };
     },
+    caseArtifact(id, session, wallet, assertSession) {
+      return caseAction(
+        "caseArtifact",
+        id,
+        session,
+        wallet,
+        undefined,
+        assertSession,
+      );
+    },
+    verifyCaseArtifact(id, session, wallet, assertSession) {
+      return caseAction(
+        "verifyCaseArtifact",
+        id,
+        session,
+        wallet,
+        undefined,
+        assertSession,
+      );
+    },
+    publishCaseArtifact(id, session, wallet, approval, assertSession) {
+      return caseAction(
+        "publishCaseArtifact",
+        id,
+        session,
+        wallet,
+        approval,
+        assertSession,
+      );
+    },
     async close() {
       track("close");
     },
   };
+  async function caseAction(
+    method,
+    id,
+    session,
+    wallet,
+    approval,
+    assertSession,
+  ) {
+    // Capture serializable routing arguments separately. The live callback must
+    // remain callable; structuredClone intentionally cannot clone functions.
+    track(
+      method,
+      approval === undefined
+        ? [id, session, wallet]
+        : [id, session, wallet, approval],
+    );
+    assert.equal(id, eventId);
+    assert.equal(wallet, caseWallet);
+    assert(session?.wallet);
+    assert.equal(typeof assertSession, "function");
+    const context = {
+      method,
+      eventId: id,
+      session,
+      wallet,
+      approval,
+      assertSession,
+    };
+    w.caseContexts.push(context);
+    assertSession();
+    track("caseSessionChecked", [method, "before"]);
+    if (w.caseHandler) return w.caseHandler(context);
+    await Promise.resolve();
+    assertSession();
+    track("caseSessionChecked", [method, "after"]);
+    return {
+      artifact: { content: privateCaseBody },
+      publication: { status: "exported" },
+    };
+  }
   for (const method of [
     "session",
     "createEvent",
@@ -270,7 +357,7 @@ async function fixture(t) {
   });
   async function request(
     route,
-    { method = "GET", payload, cookie, headers: overrides = {} } = {},
+    { method = "GET", payload, cookie, headers: overrides = {}, bodyGate } = {},
   ) {
     const url = new URL(route, app.url);
     assert.equal(
@@ -311,7 +398,16 @@ async function fixture(t) {
         },
       );
       req.on("error", reject);
-      req.end(payload === undefined ? undefined : JSON.stringify(payload));
+      const serialized =
+        payload === undefined ? undefined : JSON.stringify(payload);
+      if (bodyGate) {
+        assert(serialized?.length > 1);
+        req.write(serialized.slice(0, 1));
+        Promise.resolve(bodyGate).then(
+          () => req.end(serialized.slice(1)),
+          (error) => req.destroy(error),
+        );
+      } else req.end(serialized);
     });
   }
   const post = (route, payload = {}, extra = {}) =>
@@ -830,3 +926,279 @@ test("production HTTP enforces gateway Host, credential and mutation content-typ
   assert.deepEqual(health.data, { status: "ok", mode: "hosted-production" });
   assert.deepEqual(f.w.calls, []);
 });
+
+test("production case publication routes preserve the exact signed session, wallet and two-field approval", async (t) => {
+  const f = await fixture(t);
+  const { wallet, cookie } = await f.login();
+  const guardCount = f.count("assertWallet");
+  for (const [action, handler] of caseRoutes) {
+    const payload = action === "publish" ? caseApproval : {};
+    const response = await f.post(
+      `/api/events/${eventId}/cases/${caseWallet}/${action}`,
+      payload,
+      { cookie },
+    );
+    assert.equal(response.status, 200, response.raw);
+    assert.equal(response.data.artifact.content, privateCaseBody);
+    assert.equal(f.count(handler), 1);
+    const tracked = f.w.calls.find((call) => call.method === handler);
+    assert.equal(tracked.args[0], eventId);
+    assert.equal(tracked.args[1].wallet, wallet.address);
+    assert.equal(tracked.args[1].mode, "wallet");
+    assert.equal(tracked.args[2], caseWallet);
+    assert.equal(tracked.args.length, action === "publish" ? 4 : 3);
+    if (action === "publish") assert.deepEqual(tracked.args[3], caseApproval);
+    const context = f.w.caseContexts.at(-1);
+    assert.equal(context.session.wallet, wallet.address);
+    assert.equal(
+      context.assertSession(),
+      undefined,
+      "The route supplies a live session validator",
+    );
+    assert.deepEqual(
+      f.w.calls
+        .filter(
+          (call) =>
+            call.method === "caseSessionChecked" && call.args[0] === handler,
+        )
+        .map((call) => call.args[1]),
+      ["before", "after"],
+    );
+  }
+  assert(
+    f.w.caseContexts.every(
+      (context) => context.session === f.w.caseContexts[0].session,
+    ),
+    "All three handlers receive the exact same server-held session object",
+  );
+  assert.equal(
+    f.count("assertWallet"),
+    guardCount,
+    "Metadata routes do not ask for a financial signature or fresh EOA signing check",
+  );
+  assert.equal(
+    f.count("publish"),
+    0,
+    "The legacy local publication handler stays separate",
+  );
+  assert.equal(f.count("forwardedRPC"), 0);
+});
+
+test("production case artifact and availability reject all nonempty bodies before the workbench", async (t) => {
+  const f = await fixture(t);
+  const { cookie } = await f.login();
+  for (const [action, handler] of caseRoutes.filter(
+    ([action]) => action !== "publish",
+  )) {
+    for (const payload of [
+      { sha256: caseApproval.sha256 },
+      { content: privateCaseBody },
+      [],
+      ["unexpected"],
+      null,
+      "unexpected",
+    ]) {
+      const response = await f.post(
+        `/api/events/${eventId}/cases/${caseWallet}/${action}`,
+        payload,
+        { cookie },
+      );
+      assert.equal(response.status, 400, `${action} ${response.raw}`);
+      assert.equal(response.data.code, "INVALID_INPUT");
+      assert(!response.raw.includes(privateCaseBody));
+      assert.equal(f.count(handler), 0);
+    }
+  }
+  assert.deepEqual(f.w.caseContexts, []);
+});
+
+test("production case publication routes never call wallet or publication handlers without a session", async (t) => {
+  const f = await fixture(t);
+  for (const [action, handler] of caseRoutes) {
+    const response = await f.post(
+      `/api/events/${eventId}/cases/${caseWallet}/${action}`,
+      action === "publish" ? caseApproval : {},
+    );
+    assert.equal(response.status, 401, response.raw);
+    assert.equal(response.data.code, "UNAUTHENTICATED");
+    assert(!response.raw.includes(privateCaseBody));
+    assert.equal(f.count(handler), 0);
+  }
+  assert.equal(f.count("assertWallet"), 0);
+  assert.equal(f.count("publish"), 0);
+  assert.equal(f.count("forwardedRPC"), 0);
+});
+
+test(
+  "production case routes recheck a revoked session after an incomplete asynchronous request body",
+  { timeout: 10000 },
+  async (t) => {
+    for (const [action, handler] of caseRoutes) {
+      const f = await fixture(t);
+      const { cookie } = await f.login();
+      const entered = deferred(),
+        release = deferred(),
+        state = f.w.state;
+      f.w.state = async (...args) => {
+        const result = await state(...args);
+        entered.resolve();
+        return result;
+      };
+      const pending = f.post(
+        `/api/events/${eventId}/cases/${caseWallet}/${action}`,
+        action === "publish" ? caseApproval : {},
+        { cookie, bodyGate: release.promise },
+      );
+      let response;
+      try {
+        await entered.promise;
+        assert.equal(
+          f.count(handler),
+          0,
+          "The client has not completed the JSON body",
+        );
+        const loggedOut = await f.request("/api/session", {
+          method: "DELETE",
+          cookie,
+        });
+        assert.equal(loggedOut.status, 200, loggedOut.raw);
+      } finally {
+        release.resolve();
+      }
+      response = await pending;
+      assert.equal(response.status, 401, response.raw);
+      assert.equal(response.data.code, "UNAUTHENTICATED");
+      assert.equal(
+        f.count(handler),
+        0,
+        "The post-body session guard must run before the private handler",
+      );
+      assert(!response.raw.includes(privateCaseBody));
+      assert.deepEqual(f.w.caseContexts, []);
+    }
+  },
+);
+
+test(
+  "the passed case callback rejects a session revoked during awaited work without disclosing an artifact",
+  { timeout: 10000 },
+  async (t) => {
+    for (const [action, handler] of caseRoutes) {
+      const f = await fixture(t);
+      const { cookie } = await f.login();
+      const entered = deferred(),
+        release = deferred();
+      let callbacksAfterAwait = 0;
+      f.w.caseHandler = async ({ assertSession }) => {
+        entered.resolve();
+        await release.promise;
+        callbacksAfterAwait++;
+        assertSession();
+        return { artifact: { content: privateCaseBody } };
+      };
+      const pending = f.post(
+        `/api/events/${eventId}/cases/${caseWallet}/${action}`,
+        action === "publish" ? caseApproval : {},
+        { cookie },
+      );
+      try {
+        await entered.promise;
+        const loggedOut = await f.request("/api/session", {
+          method: "DELETE",
+          cookie,
+        });
+        assert.equal(loggedOut.status, 200);
+      } finally {
+        release.resolve();
+      }
+      const response = await pending;
+      assert.equal(response.status, 401, response.raw);
+      assert.equal(response.data.code, "UNAUTHENTICATED");
+      assert.equal(callbacksAfterAwait, 1);
+      assert.equal(f.count(handler), 1);
+      assert(!response.raw.includes(privateCaseBody));
+      assert.deepEqual(Object.keys(response.data).sort(), ["code", "error"]);
+    }
+  },
+);
+
+test(
+  "the production route's final session check suppresses private results even if an awaited handler returns them",
+  { timeout: 10000 },
+  async (t) => {
+    for (const [action, handler] of caseRoutes) {
+      const f = await fixture(t);
+      const { cookie } = await f.login();
+      const entered = deferred(),
+        release = deferred();
+      f.w.caseHandler = async () => {
+        entered.resolve();
+        await release.promise;
+        // Deliberately omit a second callback check to isolate the HTTP route's
+        // own post-await disclosure guard from the service's guards.
+        return {
+          artifact: { content: privateCaseBody },
+          publication: { status: "verified" },
+        };
+      };
+      const pending = f.post(
+        `/api/events/${eventId}/cases/${caseWallet}/${action}`,
+        action === "publish" ? caseApproval : {},
+        { cookie },
+      );
+      try {
+        await entered.promise;
+        assert.equal(
+          (await f.request("/api/session", { method: "DELETE", cookie }))
+            .status,
+          200,
+        );
+      } finally {
+        release.resolve();
+      }
+      const response = await pending;
+      assert.equal(response.status, 401, response.raw);
+      assert.equal(response.data.code, "UNAUTHENTICATED");
+      assert.equal(f.count(handler), 1);
+      assert(!response.raw.includes(privateCaseBody));
+      assert(!response.raw.includes('"status":"verified"'));
+    }
+  },
+);
+
+test(
+  "production case routes retain an awaited private-scope denial without disclosing the handler payload",
+  { timeout: 10000 },
+  async (t) => {
+    const f = await fixture(t);
+    const { wallet, cookie } = await f.login();
+    const entered = deferred(),
+      release = deferred();
+    f.w.privateWallet = wallet.address;
+    f.w.caseHandler = async ({ eventId: id, session, assertSession }) => {
+      entered.resolve();
+      await release.promise;
+      assertSession();
+      f.w.record(id, session);
+      return { artifact: { content: privateCaseBody } };
+    };
+    const pending = f.post(
+      `/api/events/${eventId}/cases/${caseWallet}/artifact`,
+      {},
+      { cookie },
+    );
+    try {
+      await entered.promise;
+      f.w.privateWallet = ethers.Wallet.createRandom().address;
+    } finally {
+      release.resolve();
+    }
+    const response = await pending;
+    assert.equal(response.status, 403, response.raw);
+    assert.equal(response.data.code, "FORBIDDEN");
+    assert(!response.raw.includes(privateCaseBody));
+    assert(!response.raw.includes(sentinel));
+    assert(!response.raw.includes(wallet.address));
+    assert.equal(f.count("caseArtifact"), 1);
+  },
+);

@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import { isV8Version } from "./contracts-v8.mjs";
 import { verifyDeployment } from "./chain.mjs";
 import { projectPayments } from "./payments.mjs";
-import { hash, lower, requireThat } from "./utils.mjs";
+import { hash, lower, requireThat, hasVerifiedParticipantWallet } from "./utils.mjs";
 import { getLogsChunked } from "../references/kickback/scripts/lib.mjs";
 
 export const DEPOSIT_INBOX_LIMITS = Object.freeze({
@@ -429,7 +429,7 @@ export function createDepositInbox(
     const rows = snapshot.rows.map((row) => {
       const p = [...record.participants.values()].find(
         (p) =>
-          p.identityVerified === true &&
+          hasVerifiedParticipantWallet(record, p) &&
           p.eventId === snapshot.eventId &&
           lower(p.wallet) === lower(row.wallet),
       );

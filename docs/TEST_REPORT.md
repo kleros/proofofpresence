@@ -1,5 +1,47 @@
 # Verification report
 
+## Core release integration and later persistence hardening — 29 October 2026
+
+Integrated compact UI613c79a plus publication checkpointfd99afb, retaining exact app6aef1590/helper
+488354b0 tested by the final actual browser flow below. The later optional keyboard annotation remains
+isolated and is not in this release. Root build and typecheck passed. The backend stays keyless;
+wallet-only records, exact remaining-credit deposits, immutable Luma terms, durable factory adoption,
+canonical case exports and separate explicit publication are implemented in the main checkout.
+
+Focused commands actually run:
+
+- `node --test --test-concurrency=1 test/factory-onboarding.test.mjs test/production-workbench.test.mjs test/mainnet-runtime.test.mjs`:
+  32/32 passed before the later publication/persistence additions.
+- `node --test --test-concurrency=1 test/production-workbench.test.mjs`: final10/10 passed, including
+  actual Waiting/matched case exports, session revocation, a real ownership transfer during a slow
+  case read while the old block remains canonical, and a new private financial owner with an empty
+  cached access list. The complete financial path and partial-credit top-up also pass.
+- `node --test test/production-http.test.mjs`:22/22 passed in the independent routing review,
+  including revocation during body/handler waits and suppression of private artifact responses.
+- Pure publication16/16 and orchestration15/15 passed with mocked transports. Approval binds both
+  SHA256 and scope; a durable claim precedes the sole POST. Repeats and unknown attempts use GET only.
+- Final `node --test test/mainnet-runtime.test.mjs`:21/21 passed. The later source change is confined
+  to preserving every original production artifact and any own intent property, including null,
+  false, zero and unfamiliar consumed values. Disk/restart/stale-writer/concurrent-writer tests cover
+  the actual exclusive write lock, fsync and immutable state guard. Runtime SHA256
+  `fb3e3f9e1178aac370d7390d7d4d14b46d1ec6c59cdb6b5d97589a486602da8d`.
+  This tightening follows the immutable full-flow proof below; no additional financial replay is claimed.
+- Integrated Luma pure guards12/12 and case UI offline26/26 passed. The isolated matching UI source
+  also passed9 publication browser groups,26 shared modal groups, v7 compatibility13 and v8 compatibility18.
+- The selected trust run initially passed111/112, with one stale test expecting26 compiler sources.
+  The reviewed owner-controller source contains28, including Ownable and Ownable2Step. The corrected
+  `node --test test/upgrade-artifacts.test.mjs` passed all6; the original command is retained as failed.
+- `npm run build`, final `npm run typecheck`, authored-source diff checks and the142-file frozen
+  Chiado operator verification passed. No historical operator signing file was read or transaction sent.
+
+Exact root logs and hashes: [integration checks](../artifacts/mainnet-release/integration-checks-20261029/manifest.json).
+The actual keyless production runtime separately verified the deployed Ethereum factory and real
+Kleros pair at block26297519 with zero signers; public proof
+[live factory runtime](../artifacts/mainnet-release/user-2bb03593-live-factory-runtime.json).
+Four HUMAN-signed infrastructure deployments are canonically verified under the separately approved
+gas cap. This is not an event creation, participant deposit or independent jury result. Generic policy
+publication and durable hosting activation are still separate launch steps.
+
 ## Final publication-integrated Luma browser flow — 29 October 2026
 
 `node test/luma-launch-flow.e2e.mjs --run-local` passed14 grouped checks, all12 unique UI financial

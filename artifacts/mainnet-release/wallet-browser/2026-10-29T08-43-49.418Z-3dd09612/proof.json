@@ -1,0 +1,82 @@
+{
+  "status": "passed-synthetic-browser-only",
+  "command": "node test/mainnet-wallet-browser.e2e.mjs",
+  "sourceBefore": {
+    "test/mainnet-wallet-browser.e2e.mjs": "47cbb922c5bf356ccf90a622b1d20a1ccac61b02c5f022c2d93cb25278463437",
+    "src/mainnet-wallet-deployment.mjs": "07b923f09a67789d11f90b29196a6e481f7b36ede006e37278f1231f3bc4e7c9",
+    "scripts/serve-mainnet-deployment.mjs": "53db8ab83d80067ab475674cbc633eb3455298fa6c643afe30f5599aa27dfa69",
+    "tools/mainnet-wallet/index.html": "5cb0e608a708efd5585563e760b100060d983cd148d6236674276b4fda6f3cf9",
+    "tools/mainnet-wallet/deploy.js": "f32c0c76370d9128a94bdf22a2e11adab3c74da5b993e0c9e1b394fc9851aaf8",
+    "tools/mainnet-wallet/style.css": "85e852a4467b7cae97eca6a7a115e07eb583d8ade46da166b648e49d11a95e09",
+    "src/upgrade-artifacts.mjs": "3f3e3becd880846b09276d854322eff92416388ba81ca9e4154efe64d79d9f38",
+    "src/upgrade-verification.mjs": "614cd3ac0f8e7eb49f08f8b4159831d603059d7e24fb987f017a9c923cadd9a3",
+    "scripts/mainnet/prepare-release.mjs": "8d3f2e76443abc6804aa3894184dba86e570a1a37b3e4738b308cf7d1cfb9970",
+    "artifacts/mainnet-release/user-2bb03593-four-create-proposed.json": "72ea2a36acdc77805c627b748f0e8da8a0e5330d20be6034c3912deb885fafc9"
+  },
+  "proposalSha256": "72ea2a36acdc77805c627b748f0e8da8a0e5330d20be6034c3912deb885fafc9",
+  "checks": [
+    "Wallet CREATE request has no recipient and retains exact reviewed nonce/gas/type/fee fields",
+    "Actual double-click opens one synthetic wallet request and leaves the server intent prepared after response loss",
+    "Reload restores the exact validated hash without another wallet request",
+    "Explicit restored-hash recovery reaches the actual read-only route without resending",
+    "Mobile recovery remains inside the viewport",
+    "Wallet CREATE request has no recipient and retains exact reviewed nonce/gas/type/fee fields",
+    "An unknown wallet outcome remains locked after reload and reconnect",
+    "Wrong plan metadata cannot restore or display a private saved hash",
+    "Wrong wallet metadata cannot restore or display a private saved hash",
+    "Wrong chain metadata cannot restore or display a private saved hash",
+    "Wrong step metadata cannot restore or display a private saved hash",
+    "Wrong nonce metadata cannot restore or display a private saved hash",
+    "Review-only DOM and actual prepare route deny financial handoff before initializing any provider",
+    "Every browser request stayed on the current loopback origin",
+    "Actual page boot, handlers and reloads produced no uncaught browser errors"
+  ],
+  "scenarios": [
+    {
+      "name": "lost-server-record-reload-and-double-click",
+      "sends": 1,
+      "preparedPosts": 1,
+      "receiptStatus": "synthetic-pending"
+    },
+    {
+      "name": "unknown-wallet-response-no-hash",
+      "sends": 1,
+      "state": "uncertain"
+    },
+    {
+      "name": "saved-hash-context-isolation",
+      "variants": 5,
+      "sends": 0
+    },
+    {
+      "name": "review-only-denies-wallet-handoff",
+      "sends": 0,
+      "backendInitializations": 0
+    }
+  ],
+  "browserErrors": [],
+  "externalRequests": [],
+  "publicRpcRequests": 0,
+  "signingKeys": 0,
+  "cryptographicSignatures": 0,
+  "transactionBroadcasts": 0,
+  "limitations": [
+    "Actual Chromium and actual loopback HTTP bridge/static assets; provider, Court and transaction responses are synthetic.",
+    "Public proposal is used as source-pinned fixture data only; no real wallet is opened or asked to sign.",
+    "A fake EIP-1193 eth_sendTransaction response is not a broadcast or canonical receipt proof.",
+    "Actual local-chain four-CREATE execution and final factory governance are covered by separate tests."
+  ],
+  "sourceAfter": {
+    "test/mainnet-wallet-browser.e2e.mjs": "47cbb922c5bf356ccf90a622b1d20a1ccac61b02c5f022c2d93cb25278463437",
+    "src/mainnet-wallet-deployment.mjs": "07b923f09a67789d11f90b29196a6e481f7b36ede006e37278f1231f3bc4e7c9",
+    "scripts/serve-mainnet-deployment.mjs": "53db8ab83d80067ab475674cbc633eb3455298fa6c643afe30f5599aa27dfa69",
+    "tools/mainnet-wallet/index.html": "5cb0e608a708efd5585563e760b100060d983cd148d6236674276b4fda6f3cf9",
+    "tools/mainnet-wallet/deploy.js": "f32c0c76370d9128a94bdf22a2e11adab3c74da5b993e0c9e1b394fc9851aaf8",
+    "tools/mainnet-wallet/style.css": "85e852a4467b7cae97eca6a7a115e07eb583d8ade46da166b648e49d11a95e09",
+    "src/upgrade-artifacts.mjs": "3f3e3becd880846b09276d854322eff92416388ba81ca9e4154efe64d79d9f38",
+    "src/upgrade-verification.mjs": "614cd3ac0f8e7eb49f08f8b4159831d603059d7e24fb987f017a9c923cadd9a3",
+    "scripts/mainnet/prepare-release.mjs": "8d3f2e76443abc6804aa3894184dba86e570a1a37b3e4738b308cf7d1cfb9970",
+    "artifacts/mainnet-release/user-2bb03593-four-create-proposed.json": "72ea2a36acdc77805c627b748f0e8da8a0e5330d20be6034c3912deb885fafc9"
+  },
+  "sourceStable": true
+}

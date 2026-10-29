@@ -1,4 +1,5 @@
-/* Selected Option B. Font binaries and licenses are retained in /assets/. */
+/* Selected Option B; palette follows the supplied 29 October Kleros references.
+   Font binaries and licenses are retained in /assets/. */
 @font-face {
   font-family: Geist;
   src: url("/assets/geist-latin.woff2") format("woff2");
@@ -29,20 +30,23 @@
 }
 :root {
   color-scheme: dark;
-  --paper: #17131f;
-  --deep: #120f19;
-  --surface: #201a2b;
-  --raised: #2a2336;
-  --line: #352d44;
-  --boundary: #81788f;
-  --ink: #e6e1ee;
-  --heading: #f2eef7;
-  --muted: #a69fb5;
-  --quiet: #a69fb5;
-  --purple: #a78bfa;
-  --purple-deep: #17131f;
-  --purple-soft: #a78bfa14;
-  --on-accent: #17131f;
+  --paper: #120e1c;
+  --deep: #100c19;
+  --surface: #1c1829;
+  --raised: #2e1d4c;
+  --line: #473c5f;
+  --boundary: #84739e;
+  --ink: #eeeaf5;
+  --heading: #fcfaff;
+  --muted: #cac5d5;
+  --quiet: var(--muted);
+  --purple: #c2b5f2;
+  --purple-deep: var(--deep);
+  --purple-soft: #c2b5f214;
+  --purple-border: #c2b5f240;
+  --teal: #5bd4ef;
+  --teal-hover: #86e2f5;
+  --on-accent: var(--deep);
   --green: #86d9b4;
   --green-soft: #86d9b412;
   --amber: #f0c08a;
@@ -127,7 +131,9 @@ html {
 }
 body {
   margin: 0;
-  background: var(--paper);
+  background:
+    radial-gradient(ellipse at top right, #2e1d4c80, transparent 60%),
+    var(--paper);
 }
 button,
 input,
@@ -551,12 +557,12 @@ main {
 }
 .button-primary {
   color: var(--on-accent);
-  background: var(--purple);
-  border-color: var(--purple);
+  background: var(--teal);
+  border-color: var(--teal);
 }
 .button-primary:hover:not(:disabled) {
-  background: #bca7fc;
-  border-color: #bca7fc;
+  background: var(--teal-hover);
+  border-color: var(--teal-hover);
 }
 .button-secondary {
   background: var(--surface);
@@ -698,16 +704,16 @@ main {
   transform: rotate(35deg);
 }
 .event-visual.theme-0 {
-  background: #302341;
+  background: linear-gradient(135deg, var(--surface), var(--raised));
 }
 .event-visual.theme-1 {
-  background: #23362f;
+  background: linear-gradient(135deg, var(--deep), #153340);
 }
 .event-visual.theme-2 {
-  background: #292d43;
+  background: linear-gradient(135deg, var(--surface), #26204c);
 }
 .event-visual.theme-3 {
-  background: #3c2b2e;
+  background: linear-gradient(135deg, var(--raised), #322140);
 }
 .visual-title {
   position: relative;
@@ -1149,7 +1155,7 @@ main {
 .amount-block {
   padding: 24px;
   background: var(--purple-soft);
-  border: 1px solid #a78bfa40;
+  border: 1px solid var(--purple-border);
   border-radius: var(--small-radius);
   display: flex;
   flex-wrap: wrap;
@@ -1397,7 +1403,7 @@ td:last-child {
   align-items: flex-start;
   padding: 16px;
   margin-bottom: 24px;
-  border: 1px solid #a78bfa40;
+  border: 1px solid var(--purple-border);
   border-radius: var(--small-radius);
   font-size: 14px;
   background: var(--purple-soft);

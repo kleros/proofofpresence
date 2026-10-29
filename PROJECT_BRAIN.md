@@ -1,5 +1,107 @@
 # Current implementation — 29 October2026, Asia/Bangkok
 
+## Old A/B/C schedules retired by the human — 29 October 2026
+
+The human explicitly said "please retire them" in the UI chat after asking whether the old v8
+scheduled runs were still needed. Core independently read that direct user message
+`01a18701-aa3f-79b1-895a-d2ab86cf328c` and verified both native automation configs now say PAUSED:
+`finish-kleros-testnet-kickbacks` and `finish-kleros-ui-testnet-flow-c`. This supersedes every older
+ACTIVE/automatic-continuation instruction below. Do not resume or execute those financial stages
+without a new human instruction. A/B/C are retired INCOMPLETE, not settled or completed. Preserve
+their contracts, funds, plans, proofs, private once-journals and frozen operator; no cleanup transaction
+or chain-state change was performed. D remains separately completed. V9/mainnet launch continues.
+
+## Core integration and wallet review — 29 October 2026, 16:10 Bangkok
+
+Active branch `codex/core-application`; scoped browser-evidence checkpoint `9fe35cc` follows contract/
+generic-policy checkpoint `d7687b9`. Core runtime/UI integration remains uncommitted. The exact compact
+UI checkpoint `613c79a` is integrated, including the supplied palette, wallet-only deposit/return and
+factory setup. [Current core interfaces and decisions](docs/LM_CORE_HANDOFF.md) records the routes,
+direct scoped receipt DTO, remaining-credit action and immutable Luma attendance bindings.
+
+Actual local browser/proxy flow passed12 financial UI operations with one wallet request each, two
+organizers/events and restart recovery without resending. Alice was paid while Bob remained held and
+UNRULED; after a controlled delivered ruling1 the SAME Bob received1e12wei attendance plus separately
+reconciled16200000000000000wei collateral. Final reserves/balance/owed were zero. Proof
+`artifacts/luma-launch-flow/2026-10-29T08-50-45-508Z-8ffa8d0b/proof.json`, SHA256
+`94d3c676d88eb71ee7d54cc34d77d85928b28170caa71de3e372aa4f6afc60a1`; all77 source pins matched
+on independent audit. A prior stopped navigation attempt is preserved, not counted as passed. Court
+adjudication is controlled locally; no public jury, hosting release or mainnet deployment is established.
+Later case-publication integration is a separate delta requiring its own final checks.
+
+The human approved the exact four infrastructure CREATEs and aggregate gas ceiling
+0.0010174541274ETH in the coordinated management chat, independently read by Core. Exact plan
+SHA256 `542e3df4ee6eea7827286c3dfcb084ceadd9d12744a0815d2da11b8a0d1b4ba0`, bridge closure
+`c85876cca7271f09547cd0d150ea8ec189b45f69e3d9b37a9ef9aace64ab491c`, approval
+`e23f190b9f94fdc118d2eed87826be57d7b46f0253ad4115d02c07d9789cd151`. The same local page at
+http://127.0.0.1:8787 is enabled for the HUMAN'S manual Brave wallet approvals; the server cannot sign
+or broadcast. Approval is saved separately, preserving the unsigned proposal. Do not increase fees,
+rebuild nonces, reset a journal or replay an uncertain handoff. Human reported transaction1 submitted,
+but the local journal remained entirely not-prepared and a fresh nonce0/empty-target/balance preflight
+still passed at26297363. Require the actual public hash and canonical reconciliation before treating
+that report as a deployment or proceeding. The human subsequently clarified "not yet"; no transaction
+had been submitted, so no recovery/reset is needed. Management verified the connected MetaMask address
+and Ethereum chain1 in Brave; the first actual signing step remains pending. Management owns the human walkthrough; Core remains sole
+RPC/journal operator. No confirmed mainnet hash exists at this checkpoint.
+
+Generic policy8246bytes/SHA256 `24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308`
+has proposed `/ipfs/QmYyofYYD211etbQAabmdoqLeoM5w54STNZW5yfQECYwG1`; it is not approved or
+published. First real event/participant deposits remain gated on approved public policy and hosting.
+Case publication must use explicit exact-content/scope review, durable once-only intent and separate
+gateway byte verification, without blocking challenge/match rights. No upload or paid gateway action.
+
+Root focused integration32/32, integrated Luma guards12/12 and typecheck passed. The frozen A/B/C
+operator142-file closure passed again without reading signing files or broadcasting. Their original
+sites, plans, journals, deadlines and independent ACTIVE schedules remain unchanged; D stays complete.
+
+## Requested Kleros reference colors — 29 October 2026
+
+The human supplied briefing/booth images and requested their color schemes. Root public UI now uses
+near-black plum `#120E1C`, lavender `#C2B5F2`, cyan primary actions `#5BD4EF` with dark labels, and
+soft white headings `#FCFAFF`. [Current palette](docs/UI_COLOR_PALETTE.md) retains both reference
+images; [ui-registry](ui-registry.md) records the updated tokens. The human also explicitly requested
+the deposit page: the active compact UI worktree now has the same shared palette and its launch CSS
+inherits cyan actions/state borders while retaining lavender links/focus. Preserve these changes during
+compact-portal integration. Original
+redesign handoff values remain historical. Verification for this local visual change is recorded in
+`docs/TEST_REPORT.md`; this chat performs no hosting or financial action.
+
+## Narrow Luma portal mainnet launch — 29 October 14:41 Bangkok
+
+The human now requests Ethereum mainnet launch using their own wallet, with the portal limited to
+participant deposit → confirmed receipt → return to Luma, and organizer setup/operation of a kickback
+for a Luma event. They explicitly authorized this management chat to coordinate the existing three
+chats directly. [Launch scope, ownership and acceptance](docs/LUMA_MAINNET_LAUNCH.md) records the
+sent LM-CORE/LM-UI/LM-CONTRACT assignments and observed gaps; this is not a completed release.
+
+Latest trusted human instructions in the core/contract chats supersede the multisig checkpoint below:
+one wallet deploys and initially controls upgrades, two-step transferable ownership, permanent
+172800-second minimum timelock. Supplied public deployer/initial owner is
+`0x2bb03593892724d225071068E59ab1E48aF05b55`; checksum checked locally, current on-chain preflight
+and concrete fee/spend review remain with the core owner. Never request/import its private key.
+The contract owner now reports the single-owner source frozen, with fresh ownership/security,
+release/layout/rehearsal and source-bound real-Kleros fork checks passed; management independently
+verified current artifact/source binding. Contract checkpoint
+`6c7803fd6c1a16541ded8f55ae38d5992f0d08c6` is now saved locally; integrated narrow-app acceptance
+remains pending. Historical `417b2c0` proofs do not verify this delta.
+
+Core chat **Unify Kleros event deposits** remains sole integration/backend/deployment operator; UI
+chat **Implement Option B UI redesign** owns public UI in its isolated worktree; contract chat
+**Review Kleros smart contract** owns contract/release/security closure. Management owns the linked
+scope record. Production currently requires duplicate participant registration and disables organizer
+creation; both need real backend/UI work to satisfy the requested flow. Keep recoveries and dispute
+rights reachable while hiding unrelated event-platform features. No management broadcast, hosting
+change or product-file edit occurred. A/B/C jobs/assets/journals and D evidence remain preserved.
+
+Latest steering: the human explicitly requested finishing app verification and guiding four mainnet
+wallet approvals, choosing Brave. Management owns the human walkthrough/concrete plan questions;
+core remains sole RPC/journal/deployment operator. Its existing worker owns the local review service
+`src/mainnet-wallet-deployment.mjs`, `scripts/serve-mainnet-deployment.mjs` and `tools/mainnet-wallet/`.
+Do not create another signer. Current root/UI worktrees contain active wallet-first/factory/compact
+portal implementation; inspect current WIP before editing. Independent onboarding corrections passed
+8/8 focused local tests. Contract chat owns `test/luma-launch-flow.e2e.mjs` actual browser/proxy
+acceptance; full integrated acceptance and wallet-bridge review remain pending. No mainnet write.
+
 ## Completed upgradeable production candidate — 29October13:49Bangkok
 
 The Ethereum source candidate is implemented and locally verified on `codex/core-application`.

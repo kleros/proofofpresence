@@ -82,3 +82,12 @@ export const csvCell = (value) => {
   if (/^[=+@\-\t\r]/.test(s)) s = "'" + s;
   return '"' + s.replaceAll('"', '""') + '"';
 };
+
+// A nonce-authenticated paying wallet is not a verified Luma identity.
+// Historical profiles retain their original identity gate.
+export function hasVerifiedParticipantWallet(record, person) {
+  if (record?.deployment?.contractVersion === "kleros-event-v9-uups" &&
+      record.deployment.chainId === 1)
+    return person?.walletVerified === true || person?.identityVerified === true;
+  return person?.identityVerified === true;
+}

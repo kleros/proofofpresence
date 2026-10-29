@@ -17,7 +17,10 @@ import { v8DepositCredits } from "./v8-deposits.mjs";
 import { testnetChain, testnetStateStore } from "./testnet-runtime.mjs";
 import { mainnetChain, mainnetStateStore } from "./mainnet-runtime.mjs";
 import { assertProductionEOAWallet } from "./production-wallets.mjs";
-import { IMPLEMENTATION_SLOT } from "./upgrade-verification.mjs";
+import { IMPLEMENTATION_SLOT, verifyV9FactoryDeployment } from "./upgrade-verification.mjs";
+import { createFactoryOnboardingService } from "./factory-onboarding.mjs";
+import { eventV9LumaTemplate, V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
+import { createProductionCasePublicationService } from "./production-case-publication.mjs";
 import {
   hash,
   id,
@@ -27,6 +30,7 @@ import {
   text,
   email,
   associations,
+  hasVerifiedParticipantWallet,
 } from "./utils.mjs";
 import { pairReturns, depKey } from "../references/kickback/scripts/lib.mjs";
 
@@ -62,6 +66,7 @@ export async function createWorkbench({
   contractVersion = "truth-pays-v7",
   testnet = null,
   production = null,
+  serverInstanceId = id(),
 } = {}, { productionRuntime = mainnetChain, productionStore = mainnetStateStore } = {}) {
   requireThat(
     contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
@@ -70,6 +75,8 @@ export async function createWorkbench({
   requireThat(!(testnet && production), "Choose one external environment");
   const external = !!(testnet || production);
   const externalConfig = production || testnet;
+  const activeContractVersion = production ? "kleros-event-v9-uups"
+    : external ? externalConfig.manifest.events[0].deployment.contractVersion : contractVersion;
   requireThat(external || !eventV8Profile(contractVersion)?.upgradeable,
     "Upgradeable production events require an explicit reviewed production manifest");
   const nativeSymbol = external
@@ -85,6 +92,17 @@ export async function createWorkbench({
     : external
     ? testnetStateStore(testnet.stateFile, externalConfig.manifest)
     : null;
+  const factoryDeployment = production ? production.manifest.factoryDeployment ?? Reflect.get(chain, "factoryDeployment") : null;
+  async function refreshFactory() {
+    if (!factoryDeployment) return;
+    try {
+      Reflect.set(chain, "factoryTrust", await verifyV9FactoryDeployment(chain, factoryDeployment));
+      Reflect.set(chain, "verifiedFactory", true);
+    } catch {
+      Reflect.set(chain, "factoryTrust", null);
+      Reflect.set(chain, "verifiedFactory", false);
+    }
+  }
   async function assertWallet(wallet) {
     if (!production) return null;
     requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,
@@ -130,6 +148,18 @@ export async function createWorkbench({
       walletSupport: { type: "eoa-only", eoa: true, erc1271: false, eip7702: false,
         notice: "Use a standard wallet account. Smart contract and delegated accounts are not supported." },
       contractProfile: { ...eventV8Profile("kleros-event-v9-uups"), verified: true },
+      governance: { ...production.manifest.governance },
+      ...(factoryDeployment ? {
+        factory: { chainId: 1, address: factoryDeployment.factory, contractVersion: activeContractVersion,
+          abiVersion: activeContractVersion, verified: Reflect.get(chain, "verifiedFactory") === true,
+          deploymentTrust: Reflect.get(chain, "factoryTrust")?.deploymentTrust ?? { status: "unavailable" },
+          upgrade: Reflect.get(chain, "factoryTrust")?.upgrade ?? null },
+        organizerSetup: { policyURI: factoryDeployment.policy?.uri ?? null,
+          policySha256: factoryDeployment.policy?.sha256 ?? null,
+          policyStatus: factoryDeployment.policyStatus === "published" && factoryDeployment.policy?.uri ? "verified" : "unpublished",
+          attendanceStandard: { ...V9_LUMA_ATTENDANCE_STANDARD },
+          challengeWindowSeconds: 86400, matchWindowSeconds: 86400, minimumClaimDays: 7 },
+      } : {}),
       // Only a wallet's own saved reviews reveal these minimal identities.
       // They authorize receipt lookup, never a fresh financial action.
       recoveryEvents: s?.wallet ? [...new Set([...drafts.values()]
@@ -235,6 +265,36 @@ export async function createWorkbench({
         );
     requireThat(p, "Register a linked participant first", "UNKNOWN_IDENTITY");
     return p;
+  }
+  function ensureWalletParticipant(r, s) {
+    authenticated(s);
+    const existing = [...r.participants.values()].find(p => lower(p.wallet) === lower(s.wallet));
+    if (existing) return existing;
+    requireThat(production && s.mode === "wallet", "A verified wallet is required", "WALLET_REQUIRED", 403);
+    const person = { id: id(), eventId: r.definition.id, wallet: ethers.getAddress(s.wallet),
+      name: null, email: null, walletVerified: true, identityVerified: false,
+      identitySource: "signed-wallet-nonce", lumaIdentity: null, admission: "pending", deposit: null };
+    r.participants.set(person.id, person);
+    r.revision++;
+    return person;
+  }
+  async function productionDepositAction(r, s, st, creditValue = null) {
+    const c = contract(r.definition.id), at = { blockTag: st.blockNumber };
+    const [status, credit] = await Promise.all([
+      c.status(s.wallet, at), creditValue === null ? c.pendingDeposits(s.wallet, at) : BigInt(creditValue),
+    ]);
+    const amount = BigInt(r.deployment.depositWei) > credit ? BigInt(r.deployment.depositWei) - credit : 0n;
+    let reasonCode = null, reason = null;
+    if (st.phase !== "Open") { reasonCode = "DEPOSIT_CLOSED"; reason = "This event no longer accepts deposits."; }
+    else if (st.now < r.deployment.depositOpensAt || st.now >= r.deployment.depositDeadline) {
+      reasonCode = "OUTSIDE_DEPOSIT_WINDOW"; reason = "Deposits close when the event starts.";
+    } else if (r.definition.registrationStatus !== "open") { reasonCode = "DEPOSIT_CLOSED"; reason = "The organizer has closed deposits."; }
+    else if ([1, 2].includes(Number(status))) { reasonCode = "ALREADY_REGISTERED"; reason = "Your commitment is already registered. No further deposit is needed."; }
+    else if (Number(status) === 3) { reasonCode = "REGISTRATION_REJECTED"; reason = "This wallet cannot be admitted again. Any unused credit remains withdrawable."; }
+    else if (r.transactions.some(t => t.action === "deposit" && lower(t.wallet) === lower(s.wallet) && ["pending", "mined"].includes(t.status))) {
+      reasonCode = "PENDING_DEPOSIT"; reason = "Check your submitted deposit before preparing another payment.";
+    } else if (amount === 0n) { reasonCode = "CREDIT_AVAILABLE"; reason = "Your deposit is fully funded. Organizer approval and admission are separate."; }
+    return { eligible: reasonCode === null, amountWei: reasonCode === null ? String(amount) : "0", reasonCode, reason };
   }
   async function createEvent(s, input, seedId) {
     authenticated(s);
@@ -400,6 +460,12 @@ export async function createWorkbench({
     const saved = store.load();
     if (saved) {
       for (const item of saved.events) {
+        if (production && item.dynamic === true && !events.has(item.eventId)) {
+          events.set(item.eventId, { definition: item.definition, deployment: item.deployment,
+            dynamic: true, policy: item.policy, pieces: item.pieces, slots: item.slots,
+            financialAccess: [], participants: new Map(), observations: [], batches: [], personal: new Map(),
+            publications: new Map(), transactions: [], nonces: new Set(), revision: 0 });
+        }
         const r = events.get(item.eventId);
         requireThat(
           r && item.definition.id === item.eventId,
@@ -440,8 +506,27 @@ export async function createWorkbench({
       for (const [key, value] of saved.drafts) drafts.set(key, value);
     }
   }
+  const factoryService = factoryDeployment ? createFactoryOnboardingService(/** @type {any} */ ({
+    chain, factoryDeployment, events, drafts, store, instanceId: serverInstanceId, assertWallet,
+    verifyFactory: (context, deployment) => verifyV9FactoryDeployment(context, deployment),
+  })) : null;
+  function onboarding() {
+    requireThat(factoryService, "A verified factory is required", "FACTORY_UNAVAILABLE", 503);
+    return factoryService;
+  }
   async function summary(r, s, knownState = null) {
     const st = knownState ?? (await chainState(chain, r));
+    let immutableLuma = {};
+    if (production && r.dynamic === true) {
+      const template = eventV9LumaTemplate({ eventName: r.deployment.eventName, depositAmount: r.deployment.depositWei,
+        policyURI: r.deployment.policyURI, policySha256: hash(r.policy), lumaUrl: r.definition.lumaUrl,
+        startsAt: r.definition.startsAt, endsAt: r.definition.endsAt, timezone: r.definition.timezone });
+      requireThat(hash([template.pieces, template.slots]) === r.deployment.templateHash,
+        "The Luma destination or event terms differ from the verified contract", "IMMUTABLE_EVENT_TERMS", 409);
+      immutableLuma = { attendanceStandard: { ...V9_LUMA_ATTENDANCE_STANDARD },
+        immutableTerms: { lumaUrl: r.definition.lumaUrl, startsAt: r.definition.startsAt, endsAt: r.definition.endsAt,
+          timezone: r.definition.timezone, policySha256: hash(r.policy) } };
+    }
     const role =
       s && lower(s.wallet) === lower(st.owner)
         ? "organizer"
@@ -450,6 +535,7 @@ export async function createWorkbench({
           : "participant";
     return {
       ...r.definition,
+      ...immutableLuma,
       depositWei: r.deployment.depositWei,
       contract: r.deployment.contract,
       chainId: r.deployment.chainId,
@@ -473,6 +559,7 @@ export async function createWorkbench({
     };
   }
   async function bootstrap(s, options = {}) {
+    await refreshFactory();
     if (Object.hasOwn(options, "selectedEventId"))
       return selectedBootstrap(s, options.selectedEventId);
     if (production) {
@@ -510,10 +597,10 @@ export async function createWorkbench({
             nativeCurrency: { name: "Demo Ether", symbol: "ETH", decimals: 18 },
           },
       contractVersion: external
-        ? externalConfig.manifest.events[0].deployment.contractVersion
+        ? activeContractVersion
         : contractVersion,
-      ...(eventV8Profile(external ? externalConfig.manifest.events[0].deployment.contractVersion : contractVersion)?.testOnly
-        ? { contractProfile: eventV8Profile(external ? externalConfig.manifest.events[0].deployment.contractVersion : contractVersion) }
+      ...(eventV8Profile(external ? activeContractVersion : contractVersion)?.testOnly
+        ? { contractProfile: eventV8Profile(external ? activeContractVersion : contractVersion) }
         : {}),
       ...externalMetadata(s),
       now: (await chain.provider.getBlock("latest")).timestamp,
@@ -618,17 +705,17 @@ export async function createWorkbench({
             nativeCurrency: { name: "Demo Ether", symbol: "ETH", decimals: 18 },
           },
       contractVersion: external
-        ? externalConfig.manifest.events[0].deployment.contractVersion
+        ? activeContractVersion
         : contractVersion,
       ...(eventV8Profile(
         external
-          ? externalConfig.manifest.events[0].deployment.contractVersion
+          ? activeContractVersion
           : contractVersion,
       )?.testOnly
         ? {
             contractProfile: eventV8Profile(
               external
-                ? externalConfig.manifest.events[0].deployment.contractVersion
+                ? activeContractVersion
                 : contractVersion,
             ),
           }
@@ -789,6 +876,7 @@ export async function createWorkbench({
       event = await summary(r, s, st);
     // Wallet-owned recovery is independent of names, contact records or admission.
     // Its values use the same canonical block as the surrounding financial state.
+    /** @type {{wallet:string,owedWei:string,pendingCreditWei?:string,deposit?:any,depositAction?:any}|null} */
     const ownWallet = s?.wallet
       ? {
           wallet: s.wallet,
@@ -877,6 +965,19 @@ export async function createWorkbench({
     const deposits = privileged
       ? await depositLedger(eventId, st.blockNumber)
       : [];
+    if (production && ownWallet) {
+      const person = participants.find(p => lower(p.wallet) === lower(s.wallet));
+      const transaction = [...r.transactions].reverse().find(t => t.action === "deposit" && lower(t.wallet) === lower(s.wallet));
+      ownWallet.deposit = person?.deposit?.verificationState === "current"
+        ? { status: "confirmed", hash: person.deposit.txHash, amountWei: person.deposit.amountWei,
+            blockNumber: person.deposit.blockNumber }
+        : transaction?.status === "failed" ? { status: "failed", hash: transaction.hash }
+        : transaction && ["pending", "mined"].includes(transaction.status)
+          ? { status: "submitted", hash: transaction.hash } : { status: "none" };
+      Object.assign(ownWallet.deposit, { wallet: s.wallet, eventId, chainId: r.deployment.chainId,
+        contract: r.deployment.contract, abiVersion: r.deployment.abiVersion });
+      ownWallet.depositAction = await productionDepositAction(r, s, st, ownWallet.pendingCreditWei);
+    }
     const stateDTO = knownState
       ? Object.fromEntries(Object.entries(st).filter(([key]) => key !== "blockHash"))
       : { ...st };
@@ -1045,6 +1146,7 @@ export async function createWorkbench({
   }
   async function registerParticipant(eventId, s, input) {
     authenticated(s);
+    if (production) return ensureWalletParticipant(record(eventId, s), s);
     const r = record(eventId, s);
     requireThat(
       r.definition.registrationStatus === "open",
@@ -1164,7 +1266,9 @@ export async function createWorkbench({
     );
     const log = logs[0];
     requireThat(
-      log.parsed.args.amount >= BigInt(d.depositWei),
+      production && d.contractVersion === "kleros-event-v9-uups"
+        ? log.parsed.args.amount > 0n
+        : log.parsed.args.amount >= BigInt(d.depositWei),
       "Deposit amount is too small",
       "SHORT_DEPOSIT",
       409,
@@ -1179,9 +1283,12 @@ export async function createWorkbench({
       );
       const committed =
         person?.lots.reduce((sum, item) => sum + item.committed, 0n) ?? 0n;
+      const aggregatePending = person?.lots.reduce((sum, item) => sum + item.pending, 0n) ?? 0n;
       requireThat(
         lot &&
-          (lot.pending >= BigInt(d.depositWei) ||
+          ((production && d.contractVersion === "kleros-event-v9-uups"
+            ? lot.pending > 0n && aggregatePending >= BigInt(d.depositWei)
+            : lot.pending >= BigInt(d.depositWei)) ||
             (lot.committed > 0n && committed === BigInt(d.depositWei))),
         "This deposit credit was recovered or refunded and cannot be reused",
         "RETURNED_DEPOSIT",
@@ -1310,7 +1417,7 @@ export async function createWorkbench({
   async function checkin(eventId, s, input) {
     const r = await staff(eventId, s),
       p = participantFor(r, s, input.participantId);
-    requireThat(p.identityVerified, "Participant wallet must be verified");
+    requireThat(hasVerifiedParticipantWallet(r, p), "Participant wallet must be verified");
     requireThat(
       input.source === "staff-door",
       "Only authenticated door observations can use this endpoint",
@@ -1376,7 +1483,7 @@ export async function createWorkbench({
     const to = () => ethers.getAddress(params.to ?? s.wallet);
     const eligible = async (admission) => {
       let candidates = [...r.participants.values()].filter(
-        (p) => p.admission === admission && p.deposit && p.identityVerified,
+        (p) => p.admission === admission && p.deposit && hasVerifiedParticipantWallet(r, p),
       );
       if (params.wallets) {
         requireThat(
@@ -1447,8 +1554,10 @@ export async function createWorkbench({
           "OUTSIDE_DEPOSIT_WINDOW",
           409,
         );
-        const p = participantFor(r, s);
-        if (p.deposit) {
+        const depositAction = production ? await productionDepositAction(r, s, st) : null;
+        if (production) requireThat(depositAction.eligible, depositAction.reason, depositAction.reasonCode, 409);
+        const p = production ? ensureWalletParticipant(r, s) : participantFor(r, s);
+        if (!production && p.deposit) {
           let returned = false;
           try {
             await verifyReceipt(eventId, p, p.deposit.txHash, true);
@@ -1468,8 +1577,10 @@ export async function createWorkbench({
           "Registration closed",
         );
         method = "deposit";
-        value = BigInt(r.deployment.depositWei);
-        summaryText = `Deposit exactly this event’s ${nativeSymbol} commitment. Payment is separate from organizer approval and contract registration.`;
+        value = production ? BigInt(depositAction.amountWei) : BigInt(r.deployment.depositWei);
+        summaryText = production
+          ? `Pay the remaining ${ethers.formatEther(value)} ETH toward this event's deposit. Organizer approval, contract admission and Luma registration remain separate.`
+          : `Deposit exactly this event’s ${nativeSymbol} commitment. Payment is separate from organizer approval and contract registration.`;
         break;
       }
       case "register":
@@ -1714,8 +1825,14 @@ export async function createWorkbench({
   async function createDraft(eventId, s, { action, params = {} }) {
     authenticated(s);
     await assertWallet(s.wallet);
-    const st = await state(eventId),
-      r = record(eventId, s);
+    let st = await state(eventId);
+    const r = record(eventId, s);
+    if (production && action === "deposit" && ![...r.participants.values()].some(p => lower(p.wallet) === lower(s.wallet))) {
+      ensureWalletParticipant(r, s);
+      // Observer membership changes the pending-credit projection even at zero.
+      // Bind the review to the same wallet-aware snapshot validation will read.
+      st = await state(eventId);
+    }
     const spec = await actionSpec(eventId, s, action, params, st);
     const tx = {
       to: spec.target.target,
@@ -2243,6 +2360,86 @@ export async function createWorkbench({
     r.publications.set(lower(wallet), publication);
     return publication;
   }
+  function caseContext(eventId, s, wallet, assertSession = () => {}) {
+    requireThat(production, "Production case publication requires Ethereum V9", "FORBIDDEN", 403);
+    requireThat(typeof wallet === "string" && ethers.isAddress(wallet), "Choose a challenged wallet");
+    return { eventId, session: s, wallet: ethers.getAddress(wallet), assertSession };
+  }
+  function caseRecord(context) {
+    context.assertSession();
+    authenticated(context.session);
+    const r = events.get(context.eventId);
+    requireThat(r, "Unknown event", "NOT_FOUND", 404);
+    requireThat(r.deployment.contractVersion === "kleros-event-v9-uups" &&
+      r.deployment.chainId === 1, "Unsupported case environment", "WRONG_CHAIN", 409);
+    return r;
+  }
+  function caseAccess(context) {
+    caseRecord(context);
+    return record(context.eventId, context.session);
+  }
+  async function readProductionCase(context, savedArtifact) {
+    const r = caseRecord(context);
+    const st = await state(context.eventId, { includeBlockHash: true });
+    caseAccess(context);
+    const at = { blockTag: st.blockNumber }, c = contract(context.eventId);
+    const [challenge, metadata, organizer] = await Promise.all([
+      c.challenges(context.wallet, at), c.caseMetaEvidence(context.wallet, at),
+      c.caseOrganizer(context.wallet, at),
+    ]);
+    caseAccess(context);
+    requireThat(Number(challenge.state) > 0 && organizer !== ethers.ZeroAddress,
+      "An opened attendance challenge is required", "NOT_MATCHED_CASE", 409);
+    const matched = Number(challenge.state) >= 2 && lower(challenge.matcher) !== lower(ethers.ZeroAddress);
+    if (savedArtifact) requireThat(savedArtifact.scope?.eventId === context.eventId &&
+      lower(savedArtifact.scope?.contract) === lower(r.deployment.contract) &&
+      lower(savedArtifact.scope?.wallet) === lower(context.wallet) &&
+      Number.isSafeInteger(savedArtifact.scope?.blockNumber) && savedArtifact.scope.blockNumber > 0,
+      "The saved case artifact belongs to another scope", "CASE_ARTIFACT_CHANGED", 409);
+    // A historical case snapshot can remain canonical while financial ownership
+    // changes. Close private disclosure against fresh current authority too.
+    const authorityHead = await chain.provider.send("eth_getBlockByNumber", ["latest", false]);
+    context.assertSession();
+    authenticated(context.session);
+    requireThat(authorityHead?.number && ethers.isHexString(authorityHead.hash, 32),
+      "Current event authority is unavailable", "CASE_ARTIFACT_CHANGED", 409);
+    const authorityAt = { blockTag: Number(BigInt(authorityHead.number)) };
+    const [network, block, originalBlock, currentOwner, pendingOwner] = await Promise.all([
+      chain.provider.send("eth_chainId", []),
+      chain.provider.send("eth_getBlockByNumber", [ethers.toQuantity(st.blockNumber), false]),
+      savedArtifact ? chain.provider.send("eth_getBlockByNumber",
+        [ethers.toQuantity(savedArtifact.scope.blockNumber), false]) : Promise.resolve(null),
+      c.owner(authorityAt), c.pendingOwner(authorityAt),
+    ]);
+    const authorityCanonical = await chain.provider.send("eth_getBlockByNumber", [authorityHead.number, false]);
+    context.assertSession();
+    authenticated(context.session);
+    requireThat(BigInt(network) === 1n && lower(block?.hash) === lower(st.blockHash) &&
+      (!savedArtifact || lower(originalBlock?.hash) === lower(savedArtifact.scope.blockHash)) &&
+      lower(authorityCanonical?.hash) === lower(authorityHead.hash),
+      "The canonical case snapshot changed; keep the original export for review", "CASE_ARTIFACT_CHANGED", 409);
+    r.financialAccess = [currentOwner, pendingOwner];
+    caseAccess(context);
+    return {
+      scope: { environment: "production", instanceId: serverInstanceId, chainId: 1,
+        contractVersion: "kleros-event-v9-uups", eventId: context.eventId,
+        contract: r.deployment.contract, wallet: context.wallet, blockNumber: st.blockNumber,
+        blockHash: st.blockHash, matched,
+        localDisputeID: matched ? String(challenge.localDisputeID) : null,
+        arbitratorDisputeID: matched ? String(challenge.arbitratorDisputeID) : null },
+      content: metadata[0], expectedURI: metadata[1],
+    };
+  }
+  const casePublications = production ? createProductionCasePublicationService({
+    readCase: readProductionCase,
+    // Stored bytes stay internal until readCase refreshes authority. Cached or
+    // empty access metadata must not reject a newly transferred private owner.
+    readRecord: (context) => caseRecord(context).publications.get(lower(context.wallet)) ?? null,
+    writeRecord: (context, publication) => {
+      caseAccess(context).publications.set(lower(context.wallet), publication);
+    },
+    persist: () => store.save(events, drafts),
+  }) : null;
   const w = {
     chain,
     events,
@@ -2270,10 +2467,18 @@ export async function createWorkbench({
     recordSubmitted,
     submissionStatus,
     reconcileSubmission,
+    createFactoryDraft: (s, input) => onboarding().createDraft(s, input),
+    validateFactoryDraft: (s, draftId) => onboarding().validateDraft(s, draftId),
+    recordFactorySubmitted: (s, draftId, txHash) => onboarding().recordSubmitted(s, draftId, txHash),
+    reconcileFactorySubmission: (s, draftId, txHash) => onboarding().reconcile(s, draftId, txHash),
+    getFactoryDraft: (s, draftId) => onboarding().getDraft(s, draftId),
     advance,
     mockRuling,
     mockAppeal,
     publish,
+    caseArtifact: (eventId, s, wallet, assertSession) => casePublications.exportCase(caseContext(eventId, s, wallet, assertSession)),
+    publishCaseArtifact: (eventId, s, wallet, approval, assertSession) => casePublications.publishCase(caseContext(eventId, s, wallet, assertSession), approval),
+    verifyCaseArtifact: (eventId, s, wallet, assertSession) => casePublications.verifyCase(caseContext(eventId, s, wallet, assertSession)),
     close: async () => {
       store?.save(events, drafts);
       await chain.close();

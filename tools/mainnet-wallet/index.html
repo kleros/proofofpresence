@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Review Ethereum setup</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/deploy.js"></script>
+  </head>
+  <body>
+    <main>
+      <p class="network">Ethereum mainnet · ETH</p>
+      <h1>Review the four setup transactions</h1>
+      <p>
+        These four transactions create shared setup only. No event is created in
+        this review.
+      </p>
+      <section class="budget">
+        <h2>Approved spending ceiling</h2>
+        <p id="budget">Loading unsigned plan…</p>
+        <p id="owner"></p>
+        <p>
+          This wallet initially controls upgrades through a permanent minimum
+          48-hour timelock. Ownership transfers take two steps. The delay
+          provides notice; it does not guarantee a withdrawal window.
+        </p>
+      </section>
+      <p id="approval" role="status"></p>
+      <label for="provider">Browser wallet provider</label
+      ><select id="provider"></select>
+      <button id="connect" type="button">Connect selected wallet</button>
+      <p id="wallet"></p>
+      <label class="consent"
+        ><input id="consent" type="checkbox" /> I reviewed the wallet, four
+        CREATE requests, source hashes and maximum total ETH gas cost.</label
+      >
+      <p id="message" role="status" aria-live="polite"></p>
+      <p id="setup" role="status"></p>
+      <div id="steps"></div>
+      <details>
+        <summary>Plan and source verification hashes</summary>
+        <pre id="sources"></pre>
+      </details>
+      <p class="muted">
+        Each Send button opens one wallet request. A prepared step with an
+        unknown result stays locked. Preserve the original transaction hash and
+        use receipt recovery; do not resend.
+      </p>
+    </main>
+  </body>
+</html>

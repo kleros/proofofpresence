@@ -1,4 +1,7 @@
-import { supportsBatchJournalProfile } from "./contract-profiles.js";
+import {
+  supportsBatchJournalProfile,
+  V9_TESTNET_CONTRACT_VERSION,
+} from "./contract-profiles.js";
 const prefix = "kleros.offchain-batch-pending.v1:";
 const address = (value) =>
   typeof value === "string" && /^0x[0-9a-f]{40}$/i.test(value);
@@ -32,7 +35,10 @@ function scopeOf(scope) {
     contract: scope.contract.toLowerCase(),
     contractVersion: scope.contractVersion,
     action: scope.action,
-    ...(scope.chainId === 1 ? { mode: scope.mode } : {}),
+    ...(scope.chainId === 1 ||
+    scope.contractVersion === V9_TESTNET_CONTRACT_VERSION
+      ? { mode: scope.mode }
+      : {}),
   };
 }
 function identity(scope) {
@@ -47,7 +53,10 @@ function identity(scope) {
     // Chiado keeps its contract and persisted batch receipts across restarts.
     scope.chainId === 1337 ? scope.instanceId : null,
     // Production off-chain receipts are bound to this exact backend world.
-    ...(scope.chainId === 1 ? [scope.mode, scope.instanceId] : []),
+    ...(scope.chainId === 1 ||
+    scope.contractVersion === V9_TESTNET_CONTRACT_VERSION
+      ? [scope.mode, scope.instanceId]
+      : []),
   ];
 }
 function markerOf(marker, current) {

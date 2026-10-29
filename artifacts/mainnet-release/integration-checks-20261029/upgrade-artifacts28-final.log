@@ -1,0 +1,14 @@
+✔ approved canonical build/input pins verify exactly28 current V9/OZ sources without a compiler (20.425834ms)
+✔ missing or malformed trusted release pins fail before filesystem access (0.717375ms)
+✔ input/artifact-manifest replacement cannot replace approved release hashes (27.256292ms)
+✔ repository, dependency and exact installed OZ package changes fail without recompilation (28.673334ms)
+✔ even newly approved pins cannot widen the exact profile compiler/settings/source boundary (70.042125ms)
+✔ missing or malformed public build inputs fail with bounded non-path diagnostics (8.166125ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 233.11475

@@ -1,0 +1,54 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+A [Error]: expect(locator).toContainText(expected) failed
+
+Locator: locator('[data-case-publication-status]')
+Expected pattern: /do not match/i
+Received string:  "Publication integrity mismatch · inspect the reported reason"
+Timeout: 5000ms
+
+Call log:
+  - Expect "to.have.text" with timeout 5000ms
+  - waiting for locator('[data-case-publication-status]')
+    2 × locator resolved to <p role="status" class="notice" data-case-publication-status="">Upload outcome uncertain · verify existing attempt</p>
+      - unexpected value "Upload outcome uncertain · verify existing attempt"
+    7 × locator resolved to <p role="status" class="notice" data-case-publication-status="">Publication integrity mismatch · inspect the repo…</p>
+      - unexpected value "Publication integrity mismatch · inspect the reported reason"
+
+    at Proxy.<anonymous> (/Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/playwright/lib/matchers/expect.js:213:24)
+    at run (file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/case-publication.e2e.mjs:522:66)
+    at async file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/case-publication.e2e.mjs:665:61 {
+  matcherResult: {
+    name: 'toContainText',
+    expected: /do not match/i,
+    message: 'expect(locator).toContainText(expected) failed\n' +
+      '\n' +
+      "Locator: locator('[data-case-publication-status]')\n" +
+      'Expected pattern: /do not match/i\n' +
+      'Received string:  "Publication integrity mismatch · inspect the reported reason"\n' +
+      'Timeout: 5000ms\n' +
+      '\n' +
+      'Call log:\n' +
+      '  - Expect "to.have.text" with timeout 5000ms\n' +
+      "  - waiting for locator('[data-case-publication-status]')\n" +
+      '    2 × locator resolved to <p role="status" class="notice" data-case-publication-status="">Upload outcome uncertain · verify existing attempt</p>\n' +
+      '      - unexpected value "Upload outcome uncertain · verify existing attempt"\n' +
+      '    7 × locator resolved to <p role="status" class="notice" data-case-publication-status="">Publication integrity mismatch · inspect the repo…</p>\n' +
+      '      - unexpected value "Publication integrity mismatch · inspect the reported reason"\n',
+    pass: false,
+    actual: 'Publication integrity mismatch · inspect the reported reason',
+    log: [
+      '  - Expect "to.have.text" with timeout 5000ms',
+      "  - waiting for locator('[data-case-publication-status]')",
+      '    2 × locator resolved to <p role="status" class="notice" data-case-publication-status="">Upload outcome uncertain · verify existing attempt</p>',
+      '      - unexpected value "Upload outcome uncertain · verify existing attempt"',
+      '    7 × locator resolved to <p role="status" class="notice" data-case-publication-status="">Publication integrity mismatch · inspect the repo…</p>',
+      '      - unexpected value "Publication integrity mismatch · inspect the reported reason"'
+    ],
+    timeout: 5000
+  }
+}
+
+Node.js v25.8.1

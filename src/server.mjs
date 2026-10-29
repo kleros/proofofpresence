@@ -140,11 +140,13 @@ export async function startServer({
       rpcUrl: process.env.TESTNET_RPC_URL,
     };
   }
+  const instanceId = id();
   const w = await workbenchFactory({
       rpcPort,
       contractVersion,
       testnet: external && !isProduction ? testnet : null,
       production: isProduction ? production : null,
+      serverInstanceId: instanceId,
     }),
     sessions = new Map(),
     nonces = new Map(),
@@ -153,7 +155,6 @@ export async function startServer({
   requireThat(!isProduction || (w.chain.chainId === 1 && "production" in w.chain && w.chain.production === true &&
     Array.isArray(w.chain.signers) && w.chain.signers.length === 0),
     "Production runtime must be verified chain1 with no server signers", "WRONG_CHAIN", 409);
-  const instanceId = id();
   const depositInbox = createDepositInbox(w, { environment: mode, instanceId });
   let instanceMarker = null;
   if (hosted && !external) {
@@ -442,9 +443,12 @@ export async function startServer({
               timeControls: false,
               ...(isProduction ? {
                 production: true, walletTransactions: true, serverSigning: false,
+                lumaDepositPortal: true, walletFirstDeposits: true,
+                createEvents: bootstrap.factory?.verified === true && bootstrap.organizerSetup?.policyStatus === "verified",
                 financialInterface: "kleros-native-v1",
                 transactionsReady: !Reflect.get(w.chain, "eventVerification") ||
-                  [...Reflect.get(w.chain, "eventVerification").values()].some(entry => entry.status === "verified"),
+                  [...Reflect.get(w.chain, "eventVerification").values()].some(entry => entry.status === "verified") ||
+                  bootstrap.factory?.verified === true,
                 supportedAccountTypes: ["eoa"], contractWallets: false,
                 erc1271: false, eip7702: false, reset: false, timeTravel: false,
                 mockRulings: false,
@@ -555,6 +559,29 @@ export async function startServer({
           label: walletSession.label,
           mode: "wallet",
         });
+      }
+      const factoryRoute = p.match(/^\/api\/organizer\/events\/drafts(?:\/([a-zA-Z0-9_-]+)(?:\/(validate|submitted|reconcile))?)?$/);
+      if (factoryRoute) {
+        requireThat(isProduction, "Organizer setup requires the verified production factory", "FACTORY_UNAVAILABLE", 503);
+        requireThat(s?.mode === "wallet", "Sign in with your wallet first", "UNAUTHENTICATED", 401);
+        const [, draftId, action] = factoryRoute;
+        if (!draftId && req.method === "POST")
+          return send(res, 201, await w.createFactoryDraft(s, await body(req)));
+        if (draftId && !action && req.method === "GET")
+          return send(res, 200, await w.getFactoryDraft(s, draftId));
+        if (draftId && req.method === "POST" && action) {
+          const input = await body(req);
+          if (action === "validate") {
+            const draft = await w.validateFactoryDraft(s, draftId);
+            return send(res, 200, { draft, transaction: draft.transaction });
+          }
+          if (action === "submitted")
+            return send(res, 200, await w.recordFactorySubmitted(s, draftId, input.hash));
+          const result = await w.reconcileFactorySubmission(s, draftId, input.hash);
+          return send(res, 200, { ...result, ...(result.status === "confirmed"
+            ? { participantUrl: `${publicUrl.origin}/#event=${encodeURIComponent(result.eventId)}&view=participant` } : {}) });
+        }
+        return send(res, 405, { error: "Method is not available", code: "METHOD_NOT_ALLOWED" });
       }
       if (p === "/api/events" && req.method === "POST")
         return send(res, 201, await w.createEvent(s, await body(req)));
@@ -667,6 +694,8 @@ export async function startServer({
         if (!tail && req.method === "PATCH") {
           const r = await w.owner(eventId, s),
             b = await body(req);
+          requireThat(!isProduction || !["lumaUrl", "lumaEventId", "contentUrl", "contentEventId"].some(key => Object.hasOwn(b, key)),
+            "The Luma destination was fixed in the event creation review", "IMMUTABLE_EVENT_TERMS", 409);
           const allowed = [
             "description",
             "location",
@@ -824,6 +853,24 @@ export async function startServer({
               ? await w.executeDraft(eventId, s, draft[1])
               : await w.confirmDraft(eventId, s, draft[1], b.hash),
           );
+        }
+        const productionCase = tail.match(/^cases\/(0x[0-9a-fA-F]{40})\/(artifact|availability|publish)$/);
+        if (isProduction && productionCase && req.method === "POST") {
+          const input = await body(req);
+          const assertSession = () => requireThat(getSession(req) === s && s,
+            "Wallet session changed; authenticate again", "UNAUTHENTICATED", 401);
+          assertSession();
+          const action = productionCase[2], wallet = productionCase[1];
+          if (action !== "publish") requireThat(input && !Array.isArray(input) &&
+            typeof input === "object" && Object.keys(input).length === 0,
+            "This read-only case action accepts no parameters");
+          const out = action === "artifact"
+            ? await w.caseArtifact(eventId, s, wallet, assertSession)
+            : action === "availability"
+              ? await w.verifyCaseArtifact(eventId, s, wallet, assertSession)
+              : await w.publishCaseArtifact(eventId, s, wallet, input, assertSession);
+          assertSession();
+          return send(res, 200, out);
         }
         const publish = tail.match(/^cases\/(0x[0-9a-fA-F]{40})\/publish$/);
         if (publish && req.method === "POST") {
@@ -1070,6 +1117,11 @@ export async function startServer({
           "/ethers.js",
           "/transaction-context.js",
           "/environment.js",
+          "/luma-launch.js",
+          "/luma-launch.css",
+          "/luma-setup.js",
+          "/luma-factory.js",
+          "/case-publication.js",
           "/hosted-wallet.js",
           "/reconciliation.js",
           "/policies/v8-testnet.md",

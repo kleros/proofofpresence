@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-29",
+  "node": "v25.8.1",
+  "scope": "Local reference palette only; concurrent launch WIP is not accepted by this record",
+  "hashes": {
+    "public/styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "public/index.html": "57f2d547ec666afcc2ceba8e1e7d0b8884ecb1886ad73547c6f3b560ad18eeb9",
+    "test/ui-redesign.e2e.mjs": "c4ca7f9794240cf6c7a854817b7c9704fe147c36b6640d7b97b077e1bc127036"
+  },
+  "checks": {
+    "build": "passed",
+    "typecheck": "passed",
+    "browser": {
+      "viewports": [
+        "1440×900",
+        "400×800"
+      ],
+      "assertions": 49,
+      "passed": [
+        "Supplied display, body and technical font families load",
+        "Seven participant facts are independently labeled",
+        "Persistent event context exposes full deployment and chain identity",
+        "Review receives initial keyboard focus",
+        "Review contains keyboard focus 1",
+        "Review contains keyboard focus 2",
+        "Review contains keyboard focus 3",
+        "Review contains keyboard focus 4",
+        "Review contains keyboard focus 5",
+        "Review contains keyboard focus 6",
+        "Review contains keyboard focus 7",
+        "Review contains keyboard focus 8",
+        "Review contains keyboard focus 9",
+        "Review contains keyboard focus 10",
+        "Review contains keyboard focus 11",
+        "Review contains keyboard focus 12",
+        "Review contains keyboard focus 13",
+        "Review contains keyboard focus 14",
+        "Escape dismisses unsigned review and restores its trigger",
+        "Event switching discards unsigned review without sending ETH",
+        "event-a deposit uses a confirmed local receipt",
+        "Verified payment does not turn admission or contract registration into success",
+        "event-a deposit uses a confirmed local receipt",
+        "event-a register uses a confirmed local receipt",
+        "Reconciliation preview does not commit attendance",
+        "Explicit source approval commits one trusted observation",
+        "Staff observation remains separate from on-chain attendance",
+        "Proven mismatched source has no attendance effect",
+        "Switching events clears unapproved import data and scoped authority",
+        "event-a postAttendance uses a confirmed local receipt",
+        "event-a challenge uses a confirmed local receipt",
+        "event-a match uses a confirmed local receipt",
+        "event-a release uses a confirmed local receipt",
+        "Sent projection equals actual successful payout logs",
+        "Ordinary payout batch proceeds with matched case open",
+        "Real contract retains full provisional matched share",
+        "Unavailable authoritative state removes financial actions",
+        "Explicit retry restores verified event state",
+        "Event tabs support Home, End and arrow-key activation with focus",
+        "Keyboard activation has a visible 3px focus outline",
+        "Desktop organizer does not overflow at 1440×900",
+        "participant does not overflow at 400×800",
+        "organizer does not overflow at 400×800",
+        "cases does not overflow at 400×800",
+        "Visible primary controls meet chosen 44px minimum target height",
+        "Cases reflow with actual 200% text size at 400px width",
+        "Browser attempted no external network request",
+        "Browser raised no uncaught page errors",
+        "Local scripts, styles, fonts and images load without failed responses"
+      ],
+      "externalRequests": [],
+      "pageErrors": [],
+      "assetErrors": []
+    },
+    "visualInspection": [
+      "desktop-directory.viewport.png",
+      "desktop-participant.viewport.png",
+      "mobile-participant.viewport.png"
+    ],
+    "contrast": {
+      "minimumTextOnSolidSurfaces": 8.01,
+      "action": 11.12,
+      "actionHover": 13.05,
+      "minimumControlBoundary": 3.53
+    }
+  },
+  "browserCommand": "node .runtime/palette-2026-10-29T08-32-22-245Z.mjs",
+  "runnerDifference": "Existing test/ui-redesign.e2e.mjs with output path strings redirected to this run only",
+  "restrictedAttempts": "Failed before assertions when sandbox blocked loopback listener; successful run used approved local execution"
+}

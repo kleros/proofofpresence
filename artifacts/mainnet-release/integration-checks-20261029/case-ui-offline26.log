@@ -1,0 +1,7 @@
+{
+  "status": "passed",
+  "checks": 26,
+  "networkRequests": 0,
+  "browserLaunches": 0,
+  "coreFixtureSourceSha256": "612ae4bcb11046ab95afbe6f518fb4ed83b231c672a062b8eb9409d5bedfde5e"
+}

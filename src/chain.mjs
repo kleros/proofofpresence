@@ -811,6 +811,12 @@ export async function chainState(
         }
         caseURI = (await c.caseMetaEvidence(wallet, at))[1];
       }
+      // A Waiting V9 case already fixes its organizer and exact public bytes.
+      // Publication never changes matching eligibility or Court IDs.
+      if (chain.production && Number(challenge.state) > 0 && !caseURI)
+        caseURI = (await c.caseMetaEvidence(wallet, at))[1];
+      const savedPublication = chain.production ? record.publications?.get(lower(wallet)) : null;
+      const publicationArtifact = savedPublication?.productionCase === true ? savedPublication.artifact : null;
       return {
         wallet,
         matched,
@@ -832,9 +838,16 @@ export async function chainState(
         ...(v8 ? { caseOrganizer: await c.caseOrganizer(wallet, at) } : {}),
         finalRuling,
         caseURI,
-        publication: matched
-          ? (record.publications?.get(lower(wallet))?.status ?? "unpublished")
-          : "not-applicable",
+        publication: publicationArtifact
+          ? { status: savedPublication.status, uri: publicationArtifact.uri,
+              sha256: publicationArtifact.sha256, scopeHash: publicationArtifact.scopeHash,
+              byteLength: publicationArtifact.byteLength,
+              uploadAttempted: Object.hasOwn(savedPublication, "intent"),
+              canPublish: !Object.hasOwn(savedPublication, "intent"),
+              ...(savedPublication.reason ? { reason: savedPublication.reason } : {}),
+              ...(savedPublication.lastCheckedAt !== undefined ? { lastCheckedAt: savedPublication.lastCheckedAt } : {}) }
+          : matched ? (record.publications?.get(lower(wallet))?.status ?? "unpublished")
+          : chain.production ? "unpublished" : "not-applicable",
         appeal,
         ...(chain.production ? { rewardsReady } : {}),
       };

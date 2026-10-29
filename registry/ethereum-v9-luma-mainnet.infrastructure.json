@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "chain": {
+    "chainId": 1,
+    "name": "Ethereum",
+    "rpcUrl": "https://ethereum-rpc.publicnode.com",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  },
+  "arbitration": {
+    "mode": "kleros-v1",
+    "resolver": "0x4B89e798B10478A839Ea0Abcf86C4B94A3C782A4",
+    "arbitrator": "0x988b3A538b618C7A603e1c11Ab82Cd16dbE28069",
+    "extraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003"
+  },
+  "governance": {
+    "kind": "single-owner-timelock",
+    "initialOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+    "minimumDelaySeconds": 172800
+  },
+  "provenance": {
+    "v9BuildManifestSha256": "10202cfd4a9657215b6ba6645fbf6dd649287da97e27e17cb485f098564d1e84",
+    "v9StandardInputSha256": "559709d4b23f5d8b2396eaa72017c85dbc7ebc2a5df30625dec267c05600a073"
+  },
+  "factoryDeployment": {
+    "contractVersion": "kleros-event-v9-uups",
+    "abiVersion": "kleros-event-v9-uups",
+    "chainId": 1,
+    "factory": "0xEe049D03a007e150ec8ec46B066823043BAcf14E",
+    "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+    "implementation": "0xE659A187f0b7B210CBa7F58bF4017Edf56800F92",
+    "implementationCodeHash": "0xb3b1180fd2f010d2963c7cc0c733e5994ffd68c5a2327bbeddb76ea2c7d5a41f",
+    "factoryImplementation": "0xb99299166d31B008Bc4ED5a35c5b11e16D6786AD",
+    "factoryImplementationCodeHash": "0x679a64ba0b98ec3d0db19e648d485c904bf44c2930485a690139f0c62ce89906",
+    "initialImplementation": "0xE659A187f0b7B210CBa7F58bF4017Edf56800F92",
+    "initialFactoryImplementation": "0xb99299166d31B008Bc4ED5a35c5b11e16D6786AD",
+    "upgradeAuthority": "0xd895AD679c8bDd4B6782EbC5d5AfA2958cC1aFd7",
+    "upgradeAuthorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+    "initialUpgradeOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+    "factoryDeploymentTxHash": "0x0b13cabff8fda7fdaccfa577833c19ba2aca75ff41e49133e0edb6a86d1c17f2",
+    "factoryDeploymentBlock": 26297485,
+    "timelockDeploymentTxHash": "0xfdf55b2e83c5b93eadc492a8e8b2fc4ef26a928b75da9e7f7c76d141d1b065c0",
+    "timelockDeploymentBlock": 26297406,
+    "resolver": "0x4B89e798B10478A839Ea0Abcf86C4B94A3C782A4",
+    "arbitrator": "0x988b3A538b618C7A603e1c11Ab82Cd16dbE28069",
+    "arbitratorExtraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+    "policyStatus": "unpublished"
+  },
+  "events": []
+}

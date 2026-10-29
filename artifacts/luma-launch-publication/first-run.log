@@ -1,0 +1,19 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+0 !== 1
+
+    at run (file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/luma-launch.e2e.mjs:677:12)
+    at async file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/luma-launch.e2e.mjs:790:61 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 0,
+  expected: 1,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v25.8.1

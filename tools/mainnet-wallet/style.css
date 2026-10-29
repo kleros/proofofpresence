@@ -1,0 +1,145 @@
+:root {
+  font:
+    16px/1.55 system-ui,
+    sans-serif;
+  color: #182234;
+  background: #f4f6fa;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  overflow-wrap: anywhere;
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 22px 50px;
+}
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.15rem;
+}
+.network {
+  font-weight: 750;
+  color: #92361c;
+}
+.budget,
+.step {
+  background: white;
+  border: 1px solid #d8deea;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 18px 0;
+}
+.budget #budget {
+  font-size: 1.5rem;
+  font-weight: 750;
+}
+.consent {
+  display: block;
+  margin: 22px 0;
+}
+button {
+  font: inherit;
+  font-weight: 650;
+  padding: 11px 16px;
+  margin: 5px 8px 5px 0;
+  border: 1px solid #b6bfd1;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+button.send {
+  background: #342a96;
+  color: #fff;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #7165f1;
+  outline-offset: 3px;
+}
+code,
+pre,
+.address {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+pre {
+  white-space: pre-wrap;
+  font-size: 0.82rem;
+}
+input[type="text"] {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px;
+  font: inherit;
+  border: 1px solid #b6bfd1;
+  border-radius: 7px;
+}
+select {
+  font: inherit;
+  min-height: 44px;
+  padding: 8px;
+  width: 100%;
+  max-width: 600px;
+}
+.facts {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 7px;
+}
+.facts dt {
+  font-weight: 650;
+}
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.muted {
+  color: #596579;
+}
+.status {
+  font-weight: 700;
+}
+#message {
+  min-height: 28px;
+}
+#approval {
+  font-weight: 700;
+}
+details {
+  margin: 20px 0;
+}
+@media (max-width: 600px) {
+  main {
+    margin-top: 20px;
+    padding: 0 16px 30px;
+  }
+  h1 {
+    font-size: 1.65rem;
+  }
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .facts dd {
+    margin-bottom: 8px;
+  }
+  .step {
+    padding: 16px;
+  }
+  button {
+    width: 100%;
+    margin: 5px 0;
+  }
+}

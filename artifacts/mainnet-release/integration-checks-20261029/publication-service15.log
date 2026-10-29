@@ -1,0 +1,23 @@
+✔ construction/export perform no HTTP; original waiting artifact survives restart, new head and actual match IDs (4.47875ms)
+✔ parallel reviewed publishes serialize to exactly one POST; a returned CID is still not gateway verification (6.463125ms)
+✔ unknown POST outcome survives a true fresh-service restart and permits GET recovery only (2.244166ms)
+✔ approval binds the original scope as well as exact bytes; export and verify never imply approval (3.179291ms)
+✔ unconfirmed availability before any upload remains publishable, then an intent permits only GET recovery (2.378917ms)
+✔ wallet, event, child, profile, chain and content substitutions cannot reuse an exported artifact (1.687792ms)
+✔ revoked auth or changed content after remote await stops disclosure and leaves the intent consumed (3.340834ms)
+✔ a fourth-read authorization or canonical failure before the claim retains its original code without intent or POST (1.317667ms)
+✔ a transient canonical-read failure during HTTP cannot be swallowed as an ordinary transport result (0.764208ms)
+✔ the original block must remain canonical across later heads and restarts (0.5745ms)
+✔ an expired upload deadline during canonical authorization cannot later reach a transport that ignores abort (1.343416ms)
+✔ claim save failure is not retried or rolled back, even when commit outcome is uncertain (1.043667ms)
+✔ a status save failure after POST retains the durable original intent for fresh-instance GET-only recovery (1.314083ms)
+✔ independent stale services rely on the atomic durable guard and cannot both POST (1.252958ms)
+✔ an unknown intent marker is consumed, and tampered stored artifacts fail without HTTP (0.732833ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 166.722417

@@ -55,12 +55,14 @@ function fixture() {
   };
 }
 
-test("approved canonical build/input pins verify exactly26 current V9/OZ sources without a compiler", () => {
+test("approved canonical build/input pins verify exactly28 current V9/OZ sources without a compiler", () => {
   const provenance = pins(ROOT);
   const result = verifyV9ArtifactSources(provenance);
   assert.equal(result.profile, "kleros-event-v9-uups");
   assert.equal(result.compiler, "0.8.38+commit.1835d247.Emscripten.clang");
-  assert.equal(Object.keys(result.sources).length, 26);
+  assert.equal(Object.keys(result.sources).length, 28);
+  assert(Object.hasOwn(result.sources, "@openzeppelin/contracts/access/Ownable2Step.sol"));
+  assert(Object.hasOwn(result.sources, "@openzeppelin/contracts/access/Ownable.sol"));
   assert.deepEqual(Object.keys(result.sources).sort(), [...V9_SOURCE_FILES]);
   assert.equal(
     Object.hasOwn(result.sources, "contracts/KlerosEventV8.sol"),
