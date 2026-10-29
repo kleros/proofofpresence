@@ -45,6 +45,17 @@ const date = (seconds) =>
     .toISOString()
     .replace("T", " ")
     .replace(".000Z", " UTC");
+const localDateValue = (value) =>
+  new Date(value.valueOf() - value.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+const completeLocalDate = (value) => {
+  if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(value)) return null;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.valueOf()) && localDateValue(parsed) === value
+    ? parsed
+    : null;
+};
 
 /** A compact factory workflow. Mounting reads local recovery data only, never the wallet. */
 export function mountLumaSetup(host, options) {
@@ -67,6 +78,15 @@ export function mountLumaSetup(host, options) {
     typeof bootstrap.session.wallet === "string";
   const readyIssue = factorySetupIssue(bootstrap, { requireWallet: true });
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const dateForms = new WeakMap();
+  const dateState = (form) => {
+    if (!dateForms.has(form))
+      dateForms.set(form, {
+        endEdited: !!form.elements.namedItem("endsAt")?.value,
+        suggested: null,
+      });
+    return dateForms.get(form);
+  };
   // Discover only this wallet's exact factory/profile on this origin. An uncertain
   // send belongs to its original instance even after the server has restarted.
   const discoverRecovery = () => {
@@ -253,7 +273,7 @@ export function mountLumaSetup(host, options) {
     const standard = attendanceStandardText(
       bootstrap.organizerSetup?.attendanceStandard,
     );
-    host.innerHTML = `<section class="luma-setup"><div class="eyebrow">FOR LUMA ORGANIZERS</div><h1>Set up kickback.</h1><p>Create one deposit page for your Luma event. Review the fixed terms before your wallet opens.</p>${issue ? `<p class="luma-setup-notice" data-luma-setup-issue>${escape(issue)}</p>` : ""}${standard ? `<p class="luma-setup-notice" data-luma-attendance-standard>${escape(standard)}</p>` : ""}${!authenticated ? '<div class="luma-launch-card"><h2>Connect your organizer wallet</h2><p>Use the wallet that will manage this event.</p><button class="button button-primary" data-connect-wallet>Connect wallet</button></div>' : `<form class="luma-setup-form" data-luma-form><div class="full"><label for="luma-title">Event title</label><input id="luma-title" name="title" required maxlength="120" autocomplete="off" /></div><div class="full"><label for="luma-url">Luma event URL</label><input id="luma-url" name="lumaUrl" type="url" required placeholder="https://luma.com/your-event" /><p class="field-help">Registration stays on Luma. No guest names or emails are imported.</p></div><div><label for="luma-start">Starts · your local time</label><input id="luma-start" name="startsAt" type="datetime-local" required /></div><div><label for="luma-end">Ends · your local time</label><input id="luma-end" name="endsAt" type="datetime-local" required /></div><div><label for="luma-timezone">Your time zone</label><input id="luma-timezone" name="timezone" readonly value="${escape(timezone)}" /></div><div><label for="luma-deposit">Deposit per guest · ETH</label><input id="luma-deposit" name="depositEth" required inputmode="decimal" placeholder="0.01" autocomplete="off" /></div><p class="luma-setup-capacity full">Fixed capacity: <strong>150 guests</strong> · Claim period: <strong>7 days</strong> · Challenge and response windows: <strong>1 day each</strong></p><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="review" ${readyIssue ? "disabled" : ""}>Review event setup</button></div></form>`}<p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
+    host.innerHTML = `<section class="luma-setup"><div class="eyebrow">FOR LUMA ORGANIZERS</div><h1>Set up kickback.</h1><p>Create one deposit page for your Luma event. Review the fixed terms before your wallet opens.</p>${issue ? `<p class="luma-setup-notice" data-luma-setup-issue>${escape(issue)}</p>` : ""}${standard ? `<p class="luma-setup-notice" data-luma-attendance-standard>${escape(standard)}</p>` : ""}${!authenticated ? '<div class="luma-launch-card"><h2>Connect your organizer wallet</h2><p>Use the wallet that will manage this event.</p><button class="button button-primary" data-connect-wallet>Connect wallet</button></div>' : `<form class="luma-setup-form" data-luma-form><div class="full"><label for="luma-title">Event title</label><input id="luma-title" name="title" required maxlength="120" autocomplete="off" /></div><div class="full"><label for="luma-url">Luma event URL</label><input id="luma-url" name="lumaUrl" type="url" required placeholder="https://luma.com/your-event" /><p class="field-help">Registration stays on Luma. No guest names or emails are imported.</p></div><div><label for="luma-start">Starts · your local time</label><input id="luma-start" name="startsAt" type="datetime-local" required /></div><div><label for="luma-end">Ends · your local time</label><input id="luma-end" name="endsAt" type="datetime-local" required aria-describedby="luma-end-help" /><p id="luma-end-help" class="field-help">Defaults to 2 hours after start until you edit it.</p></div><div><label for="luma-timezone">Your time zone</label><input id="luma-timezone" name="timezone" readonly value="${escape(timezone)}" /></div><div><label for="luma-deposit">Deposit per guest · ETH</label><input id="luma-deposit" name="depositEth" required inputmode="decimal" placeholder="0.01" autocomplete="off" /></div><p class="luma-setup-capacity full">Fixed capacity: <strong>150 guests</strong> · Claim period: <strong>7 days</strong> · Challenge and response windows: <strong>1 day each</strong></p><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="review" ${readyIssue ? "disabled" : ""}>Review event setup</button></div></form>`}<p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
   };
   const formInput = (form) => {
     const values = new FormData(form),
@@ -493,6 +513,36 @@ export function mountLumaSetup(host, options) {
       lock(false);
     }
   };
+  const onDateInput = (event) => {
+    const input = event.target;
+    if (!current() || !input.matches?.('[name="endsAt"]')) return;
+    const form = input.closest("[data-luma-form]");
+    if (form && host.contains(form)) dateState(form).endEdited = true;
+  };
+  const onDateChange = (event) => {
+    const input = event.target;
+    if (!current()) return;
+    if (input.matches?.('[name="endsAt"]')) {
+      onDateInput(event);
+      return;
+    }
+    if (busy || !input.matches?.('[name="startsAt"]')) return;
+    const form = input.closest("[data-luma-form]");
+    if (!form || !host.contains(form)) return;
+    const start = completeLocalDate(input.value);
+    if (!start || start.valueOf() <= Date.now()) return;
+    const end = form.elements.namedItem("endsAt"),
+      state = dateState(form);
+    end.min = input.value;
+    if (state.endEdited || (end.value && end.value !== state.suggested)) return;
+    const suggested = new Date(start.valueOf() + 2 * 60 * 60 * 1000),
+      value = localDateValue(suggested);
+    // A repeated DST hour cannot express both instants in datetime-local. Keep
+    // manual choice rather than silently suggesting a different elapsed time.
+    if (completeLocalDate(value)?.valueOf() !== suggested.valueOf()) return;
+    end.value = value;
+    state.suggested = value;
+  };
   const onSubmit = (event) => {
     const form = event.target.closest("[data-luma-form]");
     if (!form) return;
@@ -552,6 +602,8 @@ export function mountLumaSetup(host, options) {
   };
   host.addEventListener("submit", onSubmit);
   host.addEventListener("click", onClick);
+  host.addEventListener("input", onDateInput);
+  host.addEventListener("change", onDateChange);
   renderForm();
   return {
     dispose() {
@@ -559,6 +611,8 @@ export function mountLumaSetup(host, options) {
       closeDialog();
       host.removeEventListener("submit", onSubmit);
       host.removeEventListener("click", onClick);
+      host.removeEventListener("input", onDateInput);
+      host.removeEventListener("change", onDateChange);
       host.replaceChildren();
     },
   };
