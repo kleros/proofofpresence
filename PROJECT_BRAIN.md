@@ -1,3 +1,46 @@
+# Recovery repair LIVE; broader registration remains open — 29October2026,22:44Bangkok
+
+Source09ac3a9134fc0cf04cd0179774154df5cfe08df4 oncodex/core-application is LIVE: Netlify
+6ae367c7adb51327d1ebbb34, Railway52578d21-88fe-4a37-8ab7-2e5d8ac72842 SUCCESS/health200,
+image60bed7d7081a5c956bd22a43907501727a9065899f76a0d8a343da4add4e2d06. Humanexplicitlyapproved
+exactsourcebackend+Netlifyrelease call711182ec... afterautoreviewrejectedearlierambiguousscope.
+Rejectedcallneverexecuted. FirstactualuploadfailedTLS/snapshot(c0910202... FAILED); identicalretry
+succeeded, mountedstate preserved. Activeprivatehostingcontextpointers now09ac; releasepointerupdated.
+
+ActualanonymousliveproofPASSED7sourceassets,recoveryGET401,publiccatalog200/publiccount0,2screens,
+0errors/auth/wallet/financial: artifacts/recovery-hosting-readonly/2026-10-29T15-39-40-784Z-493ee431-6e63-4699-965b-a6717d9ae4a6/proof.json,
+SHAa6a252f34bb44bd2a2461d98258c2f4795589a714f28899c3b71c0d6d5a4c46f. Rootinspectedbothscreens.
+AllJS/CSSexact; recoveryHTMLonlyoneexact326Bown-sitehostingcommentat71 allowed,noresponse rewrite.
+
+Shipped: scopedread-onlyoriginalcreationnonce/session+defaultdeny, factualcanonicaldirect/narrow
+wrapperreceiptinspection, separate/recovery.html#transaction=HASH, pureprogress+bounded6/3min
+originalhashwatcherwithlostACKGETonly, freshordinaryEOAownedsummarylistandreceipt-preserving
+inventoryrefresh. Local41service/HTTP+71clientwatcher+4ownership,5mountedwatcher+10fullapp+4recovery
+browsergroupsPASS; unknowncountnullchange9servicecasesretouchedandpassed; type/static/diffPASS.
+Financialsender,normalverifier,walletEOAgate,contracts,policyandmanifest11pinsunchanged.
+
+Originalef60... succeededandinnercallmatchesoriginalreviewexactly; child4542D9... isSTILLUNADOPTED.
+Read-onlyviewdoesnotenabledeposit/manage orfinishbroadermissingevent/financialwalletrequest.
+Fullhistorical/source/policy/governanceproofandreviewedonce-onlyregistrationremainrequired.
+PublicNodehistoricaleth_getCode403/-32602; alternateofficialdRPCchain1+historicalcodePASS.
+Unchangedfullverifierdiagnostic firsthitpublic429after7reads. Onepaced1.5s/readpasscompleted30reads
+butstoppedatgovernancelogqueryHTTP400/code35(freeplanrangemessage). FullprovenanceNOTverified;
+original-ef60cbf9-strict-provenance-2026-10-29T15-56-20-171Z-92686b17-c3c1-402d-bf83-4d9507ac6b48.json.
+No skipped/split history or providertransactionrewriting; strictdirectbirthgatewouldstillrejectwrapper.
+Concretefollow-onconstraints/planin docs/MAINNET_CREATION_RECOVERY.md; nofuturestateadoption
+approvalrequestedbeforeconcretesource/tests. EOArevocation/reconnectalonecannotfixoldwrapper.
+Actualhumanmustsignscopedread-onlynonce; agentneverauthenticated/impersonatedthatwallet.
+
+BlockaidpublicreviewrequestSUBMITTED afterhumanapprovalcall5b0c... andCAPTCHAconfirmationc131...;
+actualbrowser/submittionSuccessfully showsReportSent. Proofblockaid-review/submission.json +report-sent.png.
+Vendorclassification/reasonremainsunresolved; nofalsepositiveclaim orprotectiondisabling. MatchingAFTERperformanceprobe stilldeferred; do notclaimafreshtiminggain.
+NEWdirecthumancontractchatsteeringindependentlyread:01a1885a-6a8c-7ce0-838c-4e550ee95f97 and
+01a1885d-cdfd-7363-a6f8-bc385d1ecf88 chooseNEWimmediate-upgradefactory, newgasfees, oldeventsseparate.
+ContractlanepreparesisolatedV10candidate/buildonly. DoNOTmigrate/retireV9orchangeitspolicy/controller,
+rootHEAD/buildorcurrent09acrelease. Newfactoryalonewillnotfixwallet7702compatibility. Coremust
+reviewexplicitversionedwallet/envelopesupportalongsideV10handoffbeforeanynewfinancialsend.
+A/B/Cretiredincomplete/PAUSED,Dcomplete,Eunused; noreplay/adoption/financialsend/upstreampush/billing.
+
 # Active original mainnet creation recovery — 29 October2026, 22:07 Bangkok
 
 Core branch `codex/core-application`, HEAD `73cf9b26131be15e776cb7b0714e4b883be2cc20`.

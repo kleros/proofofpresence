@@ -1,0 +1,15 @@
+{
+  "kind": "original-child-historical-code-readonly",
+  "checkedAt": "2026-10-29T15:39:16.231Z",
+  "chainId": 1,
+  "child": "0x4542D9b3De78a59d74cbbfe2166e3ef054E42A69",
+  "blockNumber": 26298864,
+  "status": "unavailable",
+  "checks": {},
+  "financialActions": 0,
+  "adoption": false,
+  "limits": [
+    "Historical proxy code and implementation slot only; this is not full factory/governance/history/source provenance or operational wallet support."
+  ],
+  "reason": "PUBLIC_ARCHIVE_READ_UNAVAILABLE"
+}

@@ -1,0 +1,107 @@
+{
+  "kind": "public-recovery-static-and-anonymous-boundary",
+  "status": "passed",
+  "sourceCommit": "09ac3a9134fc0cf04cd0179774154df5cfe08df4",
+  "origin": "https://kleros-luma-ethereum.netlify.app",
+  "startedAt": "2026-10-29T15:39:40.785Z",
+  "checkerSha256": "a63e5d834196d5a783578e7f71963f9366a023dbe54de57a653a2e2a397c19b5",
+  "assets": [
+    {
+      "path": "recovery.html",
+      "rawSha256": "a44243795e7924f65ef779b27cf7a44f80f9bc211be3d130cf7cd0fd32b7aae7",
+      "expectedSha256": "51c794933041f6e78ca1d9e3e9af449323bdc5e7e76d5e3de0950222874d10e8",
+      "rawExact": false,
+      "transform": "one-exact-reviewed-own-site-comment",
+      "matches": true,
+      "removedOffset": 71,
+      "removedBytes": 326,
+      "commentSha256": "e9b89dd339418b6be291663a028b2f9613075ad5f33038ca6e57beea2fd9c0dc",
+      "normalizedSha256": "51c794933041f6e78ca1d9e3e9af449323bdc5e7e76d5e3de0950222874d10e8"
+    },
+    {
+      "path": "recovery-creation.js",
+      "rawSha256": "e564e6bcd994c667ecca1f6fbfa1e7a2cfff26a758819a1145208ea298f4d276",
+      "expectedSha256": "e564e6bcd994c667ecca1f6fbfa1e7a2cfff26a758819a1145208ea298f4d276",
+      "rawExact": true,
+      "transform": "exact-bytes",
+      "matches": true
+    },
+    {
+      "path": "setup-progress.js",
+      "rawSha256": "ada969fc9d86c145fd01e87cfd453cbf165797c500f7c505714c869962b01209",
+      "expectedSha256": "ada969fc9d86c145fd01e87cfd453cbf165797c500f7c505714c869962b01209",
+      "rawExact": true,
+      "transform": "exact-bytes",
+      "matches": true
+    },
+    {
+      "path": "owned-events.js",
+      "rawSha256": "4f57dbd42a55cdc5ccbc805e8f95eec64910781f1494d858581b1771c96ef286",
+      "expectedSha256": "4f57dbd42a55cdc5ccbc805e8f95eec64910781f1494d858581b1771c96ef286",
+      "rawExact": true,
+      "transform": "exact-bytes",
+      "matches": true
+    },
+    {
+      "path": "app.js",
+      "rawSha256": "61c0cfa5e4e1dde1cd0bf16b8c0fe886ee81780ce3fbc44a3b9ecb4c6fb706ca",
+      "expectedSha256": "61c0cfa5e4e1dde1cd0bf16b8c0fe886ee81780ce3fbc44a3b9ecb4c6fb706ca",
+      "rawExact": true,
+      "transform": "exact-bytes",
+      "matches": true
+    },
+    {
+      "path": "luma-setup.js",
+      "rawSha256": "d42a60c3d6167355ed61ddebd95d03b5657712da3e8fcccfd0dadcbcc8d0fbed",
+      "expectedSha256": "d42a60c3d6167355ed61ddebd95d03b5657712da3e8fcccfd0dadcbcc8d0fbed",
+      "rawExact": true,
+      "transform": "exact-bytes",
+      "matches": true
+    },
+    {
+      "path": "luma-launch.css",
+      "rawSha256": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+      "expectedSha256": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+      "rawExact": true,
+      "transform": "exact-bytes",
+      "matches": true
+    }
+  ],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/api/recovery/original-creation",
+      "status": 401,
+      "code": "UNAUTHENTICATED"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "status": 200,
+      "publicEventCount": 0,
+      "metadataOnly": true
+    }
+  ],
+  "screenshots": [
+    {
+      "device": "desktop",
+      "path": "/Users/hashmanansala/Documents/ChatGPT/Kleros projects/artifacts/recovery-hosting-readonly/2026-10-29T15-39-40-784Z-493ee431-6e63-4699-965b-a6717d9ae4a6/desktop.png",
+      "sha256": "7db4f0224a79b82cca18351d3b4e7ec42766dfae35caae2ec89e4a06ad03c83f"
+    },
+    {
+      "device": "mobile",
+      "path": "/Users/hashmanansala/Documents/ChatGPT/Kleros projects/artifacts/recovery-hosting-readonly/2026-10-29T15-39-40-784Z-493ee431-6e63-4699-965b-a6717d9ae4a6/mobile.png",
+      "sha256": "cddca11e87122b86a03b3f505e651371445a077b267a28236a5ccadf3486b09f"
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "walletRequests": 0,
+  "authActions": 0,
+  "financialActions": 0,
+  "limits": [
+    "One anonymous static visit and two unauthenticated GETs only. No original owner signature, private inspection result, adoption or financial compatibility was tested.",
+    "Unknown or additional hosting byte transformations fail; the only HTML exception is one exact reviewed own-site non-executable comment at charset offset71."
+  ],
+  "completedAt": "2026-10-29T15:39:49.708Z"
+}

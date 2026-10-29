@@ -2,7 +2,19 @@
 
 29 October2026, Asia/Bangkok. Core owns integration and the only live operator.
 Branch `codex/core-application`; pure presentation handoff bdddf4e integrated as f96ebdf.
-The prior lean release73cf is live; the recovery release below is being verified locally.
+Recovery source `09ac3a9134fc0cf04cd0179774154df5cfe08df4` is LIVE. Netlify production
+`6ae367c7adb51327d1ebbb34`; Railway `52578d21-88fe-4a37-8ab7-2e5d8ac72842`, SUCCESS/health200,
+image `sha256:60bed7d7081a5c956bd22a43907501727a9065899f76a0d8a343da4add4e2d06`.
+The human explicitly approved this exact backend+Netlify cutover in call711182ec..., after automatic
+review rejected extending earlier optimization authorization. The rejected attempt never executed.
+First actual Railway upload failed at code-snapshot creation after TLS BadRecordMac; deployment
+c0910202... was confirmed FAILED while73cf remained live. An identical package retry succeeded.
+
+One anonymous live readback passed7 source assets, recoveryGET401/publiccatalog200,2 screenshots,
+0errors/wallet/auth/financial actions. Actual owner recovery signature has not been performed by the
+agent. Proof: artifacts/recovery-hosting-readonly/2026-10-29T15-39-40-784Z-493ee431-6e63-4699-965b-a6717d9ae4a6/proof.json.
+Only one exact326-byte own-site Netlify comment at charset offset71 is allowed in recoveryHTML;
+all executed JS/CSS bytes match source exactly, responses delivered to Chromium are unchanged.
 
 ## Actual original transaction
 
@@ -60,11 +72,50 @@ and once-only adoption of this existing hash. It must preserve exact sender/targ
 source/history/canonical proofs, event isolation and all v9 economics. Do not loosen only the first
 TX_MISMATCH check, fake provider transactions, auto-adopt an EventCreated log or create a replacement.
 
+Specific outstanding checks are historical child proxy runtime/slot at birth and before birth,
+initializer implementation, compiled implementation source with immutable values, immutable event
+configuration/policy/template, current factory membership/owner, full upgrade/governance histories
+and their closing canonical anchors. Public RPC chain1 succeeded, but historical eth_getCode at
+birth returned403/-32602 (historical-state-unavailable). See original-ef60cbf9-archive-diagnostic-readonly.json.
+An alternate officially documented public dRPC endpoint successfully returned this historical code;
+source proof original-ef60cbf9-drpc-archive-capability-readonly.json. The first unchanged full-verifier
+diagnostic then hit public429 after7reads. The slower1.5s/request pass completed30reads, then
+stopped at the governance-log query with HTTP400/RPC35 and a free-plan range message. The exact
+normal filter and all checks were preserved; no history was skipped or transaction data changed.
+Saved result: artifacts/mainnet-release/original-ef60cbf9-strict-provenance-2026-10-29T15-56-20-171Z-92686b17-c3c1-402d-bf83-4d9507ac6b48.json. Neither a capability probe nor a stopped verifier establishes full provenance. The authenticated archive RPC
+is configured privately in Railway, not exported to local/browser files.
+The current scoped inspector deliberately does not invoke the full deployment verifier, whose
+direct-envelope birth assertion rejects the immutable original wrapper.
+
+Concrete follow-on plan (prepared, not implemented/deployed/approved for adoption):
+
+1. Extend the full v9 provenance engine with a distinct read-only original-creation entry point,
+   consuming the exact signature-scoped saved-review/known-hash proof. Accept only the already
+   proven one-call wrapper in this entry point; preserve normal direct-envelope financial paths.
+   Run all existing historical/current/source/policy/governance/canonical checks through the
+   backend's configured archive provider. Return facts only, without financial eligibility/trust.
+2. Test mismatched/extra inner calls, values, creator/configuration, original review, birth runtime,
+   initializer, upgrade history and mid-read reorgs; prove ordinary EOA and direct paths unchanged.
+   Prepare an exact source commit and schema-compatible, once-only registration preview for this
+   already bound hash, preserving stable eventID and every original journal record.
+3. Seek explicit approval for that exact state-registration/cutover only after the source/proofs
+   are reviewable. Keep financial operations unavailable if the organizer's account remains
+   incompatible; registration/public visibility and operational financial eligibility must have
+   separate authoritative states. Do not make a deposit-ready link from inspection alone.
+4. Resolve future wallet compatibility separately across all action receipts. Returning this wallet
+   to an EOA would not change the original immutable manager envelope or alone register the event.
+
+The current release does not complete those follow-on steps or the broader missing-event/financial
+wallet request. Do not mark that overall request resolved merely because inspection is live.
+
 The screenshot shows a Blockaid-powered malicious interaction alert and Added protection enabled.
 Neither successful execution nor exact inner-call equality proves the warning a false positive.
 MetaMask documents enforced simulation and EIP7702 integration; a vendor classification review is
-separate. No security report was sent and no protection setting was changed. Preserve the prepared
-public-only vendor packet without submitting it unless the human explicitly authorizes that action.
+separate. The human explicitly approved the public-only review request (call5b0c...) and CAPTCHA step (callc131...).
+The official browser now shows Report Sent at /submittionSuccessfully; screenshot and exact public
+fields are recorded in artifacts/mainnet-release/blockaid-review/submission.json. No email, wallet
+field, private terms or credentials were supplied, and no files uploaded. This proves receipt only,
+not vendor resolution. No protection setting was changed.
 
 Official references: https://support.metamask.io/manage-crypto/transactions/simulations/ and
 https://github.com/MetaMask/delegation-framework/blob/main/documents/DelegationManager.md .
@@ -77,7 +128,7 @@ chain execution is claimed. Unit widget/watch checks are recorded separately wit
 Standalone UI4 groups PASS with mocked transport/inspection DTOs and actual synthetic auth signature,
 two screenshots; actual server/cookie/canonical reader are tested separately. Root full-app feedback
 10 groups PASS against current modules; typecheck, static build and diff checks PASS. No unchanged
-financial/contract/fork suite was rerun. Hosted publication/readback will be recorded separately.
+financial/contract/fork suite was rerun. Hosted publication/readback passed as recorded above.
 
 Evidence: creation-recovery-ui/2026-10-29T15-19-52-692Z-c2c75333-4f6e-4847-8583-a921a6f2561c/proof.json,
 setup-wallet-feedback/final-2026-10-29T15-21-57.415Z/results.json, plus the immutable original comparison.
@@ -86,3 +137,20 @@ command passed with local listener permission. This was not a product failure.
 
 A/B/C remain retired incomplete/PAUSED; D complete; E unused. No billing upgrade, upstream push,
 IPFS upload, contract change, real guest write or new financial transaction belongs to this repair.
+
+## Separately authorized next contract version
+
+Root independently read contract-chat human messages01a1885a-6a8c-7ce0-838c-4e550ee95f97
+and01a1885d-cdfd-7363-a6f8-bc385d1ecf88: immediate upgrade control followed by final renunciation,
+choosing a NEW factory with new gas costs while existing events stay separate. Contract lane prepares
+an isolated version10 candidate/build; root has not integrated it, changed V9 proofs, deployed it or
+requested a new financial signature. V9 remains governed by its original immutable48-hour controller.
+A new factory alone does not fix the current wallet or register its old V9 event.
+
+Final operator findings: the 30-read diagnostic did not reach the known direct-envelope assertion.
+It cannot establish later birth, immutable terms, membership, upgrade-history or final canonical
+closure checks. The original fixed inspector attempt is archived with its source hash; the second
+changes only dispatch spacing from100ms to1500ms. No more blind provider retries are scheduled.
+The fresh V10 rollout is the next separately authorized target; preserve the V9 record and its
+recovery limitation instead of silently moving it into a new factory or treating a new deployment
+as proof of the old event.

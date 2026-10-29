@@ -1,0 +1,10 @@
+{
+  "exitCode": 1,
+  "sourceCommit": "09ac3a9134fc0cf04cd0179774154df5cfe08df4",
+  "deploymentId": null,
+  "startedAt": "2026-10-29T15:30:43.836Z",
+  "approval": "call_711182ecff4441e9a39121a19075aebd: Approve backend and Netlify release",
+  "financialActions": 0,
+  "forcedRefresh": false,
+  "scope": "Authorized bounded mainnet application repair; no transaction/adoption/state migration."
+}

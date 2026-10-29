@@ -1,75 +1,85 @@
 {
-  "status": "live-and-verified",
+  "status": "live-bounded-recovery-repair",
   "publicOrigin": "https://kleros-luma-ethereum.netlify.app",
   "branch": "codex/core-application",
   "frontend": {
-    "sourceCommit": "9cac8df641ec0d3d8ac66531bfaa48936282e4f5",
-    "uiSource": "c36754918a2853158d3daf6f688d6557c98ae833",
-    "deployId": "6ae34f33c420d0953a515606",
+    "sourceCommit": "09ac3a9134fc0cf04cd0179774154df5cfe08df4",
     "siteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
+    "deployId": "6ae367c7adb51327d1ebbb34",
+    "state": "ready",
     "context": "production",
-    "appSha256": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630",
-    "searchHelperSha256": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
-    "launchCssSha256": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
-    "loadingCssSha256": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
-    "indexSha256": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
-    "setupSha256": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509"
+    "appSha256": "61c0cfa5e4e1dde1cd0bf16b8c0fe886ee81780ce3fbc44a3b9ecb4c6fb706ca",
+    "setupSha256": "d42a60c3d6167355ed61ddebd95d03b5657712da3e8fcccfd0dadcbcc8d0fbed",
+    "recoverySha256": "e564e6bcd994c667ecca1f6fbfa1e7a2cfff26a758819a1145208ea298f4d276"
   },
   "backend": {
-    "sourceCommit": "4028e8c04b490507ddef2b2899ceadd0713ac1fe",
-    "deploymentId": "30d0d598-a118-46c3-b523-0f9858e7a8e6",
-    "imageDigest": null,
+    "sourceCommit": "09ac3a9134fc0cf04cd0179774154df5cfe08df4",
+    "deploymentId": "52578d21-88fe-4a37-8ab7-2e5d8ac72842",
+    "status": "SUCCESS",
+    "imageDigest": "sha256:60bed7d7081a5c956bd22a43907501727a9065899f76a0d8a343da4add4e2d06",
+    "healthHttpStatus": 200,
     "mode": "hosted-production",
     "chainId": 1,
-    "serverSigning": false,
-    "restartedForCatalog": false,
-    "restartAuthorization": "Human explicitly answered Restart now",
-    "imageDigestNote": "Current deployment identity and health verified; prior image digest is not reused.",
-    "restartedForOrganizerRepair": true
+    "serverSigning": false
+  },
+  "approval": {
+    "id": "call_711182ecff4441e9a39121a19075aebd",
+    "answer": "Approve backend and Netlify release"
   },
   "acceptance": {
-    "kind": "public-static-and-anonymous-organizer-repair-readback",
-    "proof": "artifacts/mainnet-release/organizer-jobs-live-readback.json",
-    "sha256": "74d844f3fb984f66f814241a32dd27eb2ee5fb33196e9c64b8b0d4397ae664b8",
-    "observedAt": "2026-10-29T13:53:10.234Z",
-    "servedAssetsVerified": 3,
-    "apiGets": 2,
-    "authenticatedJobStarts": 0,
-    "actualWalletRequests": 0,
-    "financialActions": 0,
-    "publicEventCountAtReadback": 0,
-    "localCombinedBrowserGroups": 10,
-    "localJobWidgetGroups": 3,
-    "localDateGroups": 8,
-    "localUnitAndHttpTests": 70,
-    "priorPerformanceComparison": "artifacts/mainnet-release/portal-performance-comparison.json",
-    "humanAuthenticatedReviewRetestRequired": true
+    "proof": "artifacts/recovery-hosting-readonly/2026-10-29T15-39-40-784Z-493ee431-6e63-4699-965b-a6717d9ae4a6/proof.json",
+    "sha256": "a6a252f34bb44bd2a2461d98258c2f4795589a714f28899c3b71c0d6d5a4c46f",
+    "observedAt": "2026-10-29T15:39:49.708Z",
+    "assetsVerified": 7,
+    "unauthenticatedApiGets": 2,
+    "screenshots": 2,
+    "authActions": 0,
+    "walletRequests": 0,
+    "financialActions": 0
   },
-  "infrastructure": {
-    "factory": "0xEe049D03a007e150ec8ec46B066823043BAcf14E",
-    "upgradeOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
-    "minimumDelaySeconds": 172800,
-    "policySha256": "24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308"
+  "originalCreation": {
+    "hash": "0xef60cbf9c65883eb3a1daf6f250bd6cc8328ba655270e897ba17870b1d8a06dc",
+    "child": "0x4542D9b3De78a59d74cbbfe2166e3ef054E42A69",
+    "canonicalTransactionSucceeded": true,
+    "originalReviewedInnerCallMatches": true,
+    "registeredInPortal": false,
+    "financialReady": false,
+    "securityAlertResolved": false,
+    "provenanceDiagnostic": {
+      "proof": "artifacts/mainnet-release/original-ef60cbf9-strict-provenance-2026-10-29T15-56-20-171Z-92686b17-c3c1-402d-bf83-4d9507ac6b48.json",
+      "status": "stopped-at-public-governance-log-query",
+      "fullProvenanceVerified": false,
+      "requests": 30,
+      "rpcErrorCode": 35
+    }
   },
   "operations": {
-    "agentFinancialActionsDuringUiRelease": 0,
-    "activeUserTabReloaded": false,
+    "forcedRefresh": false,
     "billingUpgrade": false,
     "upstreamPush": false,
-    "oldSitesChanged": false,
-    "retiredRehearsalsResumed": false
+    "retiredRehearsalsResumed": false,
+    "financialActions": 0,
+    "stateMigration": false
   },
-  "priorRelease": {
-    "frontendSource": "fec62112aca1bb36cab08a02d823044646a73a6e",
-    "netlifyDeployId": "6ae3462bcb1e1d2301a97fb2",
-    "backendSource": "73fb2ff09c112b40873bc9571f1ea34fb2b6e37b",
-    "railwayDeploymentId": "3ca7a15d-c52f-447f-a40c-f8b4f8979384",
-    "proof": "artifacts/portal-performance-readonly/2026-10-29T13-13-43-310Z-catalog-a44a438d-fa3e-4b1a-8e72-d02544fcc150/proof.json"
+  "priorActualRelease": {
+    "sourceCommit": "73cf9b26131be15e776cb7b0714e4b883be2cc20",
+    "netlifyDeployId": "6ae3588bebd4d8a681fd1612",
+    "backendDeploymentId": "df28a9da-d62b-4332-9c99-07a1efdc233f"
+  },
+  "supersedesPointer": {
+    "frontend": "9cac8df641ec0d3d8ac66531bfaa48936282e4f5",
+    "backend": "4028e8c04b490507ddef2b2899ceadd0713ac1fe"
   },
   "limits": [
-    "The authenticated human review must be retried by the human. No real event terms were posted and no independent wallet was impersonated.",
-    "Local70checks/10combinedbrowser/3job-widget/date8 provide orchestration evidence; not a mainnet-created event or economic outcome.",
-    "The prior7x homepage measurement belongs to the preceding release; do not present it as a fresh timing measurement of this repair.",
-    "User-authorized frontend/duplicate-RPC optimization is a separate next phase, with free plans and every transaction check preserved."
-  ]
+    "Actual owner must sign the scoped read-only recovery nonce; the live checker never authenticated or impersonated the wallet.",
+    "Original child remains unadopted. dRPC historical code was readable, but the unchanged full verifier stopped at the public governance-log query (HTTP400/RPC35) after30reads. No omitted history or direct-envelope override; full provenance/registration remain outstanding.",
+    "Normal EOA financial policy and strict direct-envelope reconciliation remain unchanged. Read-only recovery does not grant smart-account financial support.",
+    "MetaMask/Blockaid security classification remains unresolved. The explicitly approved public review request is submitted, with Report Sent confirmation.",
+    "Matching lean AFTER performance sample remains deferred; no new timing gain is claimed."
+  ],
+  "securityReview": {
+    "status": "report-sent-awaiting-vendor-review",
+    "proof": "artifacts/mainnet-release/blockaid-review/submission.json",
+    "classificationResolved": false
+  }
 }

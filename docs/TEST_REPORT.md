@@ -1,3 +1,29 @@
+## Original-child public provenance attempts and vendor report — 29October2026
+
+Actual readonlychain probes: PublicNode chain1passed/historicalcode403; officialanonymousdRPC
+chain1andhistoricalchild134bytecode readable. Unchangedfullv9verifierattempt1stoppedHTTP429
+after7reads. Onepaced1.5s/readattempt2completed30reads, thenstoppedateth_getLogs withHTTP400/
+RPC35free-planrangemessage. It DIDNOTcompletefullprovenance orreachtheknownstrictdirect-envelope
+assertion. No method/filter/history coverage was removed; no provider tx bytes, state or journal
+changed. Exactproof: artifacts/mainnet-release/original-ef60cbf9-strict-provenance-2026-10-29T15-56-20-171Z-92686b17-c3c1-402d-bf83-4d9507ac6b48.json.
+
+ExplicitlyapprovedBlockaidreview+CAPTCHAflow now showsReportSent; proof
+artifacts/mainnet-release/blockaid-review/submission.json and report-sent.png. Noemail/walletfield/
+privateeventterms/credentials/fileuploads; vendorclassificationstillunresolved.
+
+## Recovery publication verified — 29October2026
+
+Source09ac3a9 is LIVE on Netlify6ae367c7adb51327d1ebbb34 and Railway52578d21-88fe-4a37-8ab7-2e5d8ac72842
+(SUCCESS/health200). Explicit human backend+Netlify release approval resolved automatic review’s
+authorization rejection. First Railway upload failed at code snapshot creation; identical retry passed.
+One live anonymous readback passed7 exact source assets (HTML has only exact reviewed Netlify comment),
+2API GETs(recovery401/catalog200),2screenshots,0errors/auth/wallet/financial. Proof:
+artifacts/recovery-hosting-readonly/2026-10-29T15-39-40-784Z-493ee431-6e63-4699-965b-a6717d9ae4a6/proof.json.
+Root visually inspected both. Actual owner recovery signature and full child adoption NOT tested/claimed.
+Public historical-code probe unavailable: chain1passed, eth_getCode403/-32602 historicalstate.
+Full original-child provenance/once-only registration and vendor classification remain outstanding;
+this bounded repair is not completion of the broader missing-event/financial wallet request.
+
 ## Original mainnet creation recovery — 29 October2026
 
 Local recovery inspector9 +HTTP6 +existing productionHTTP26 passed41/41 in the root combined run.
