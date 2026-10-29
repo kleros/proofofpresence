@@ -1,4 +1,49 @@
 /* Initial loading and shell geometry only. Data and wallet state remain authoritative in app.js. */
+.initial-shell .app-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+.initial-shell .sidebar,
+.initial-shell .breadcrumb,
+.initial-shell #top-identity {
+  display: none;
+}
+.initial-shell .topbar,
+.initial-shell #main,
+.initial-shell .footer {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+.initial-shell .topbar {
+  min-height: 80px;
+  padding: 16px 24px;
+  flex-wrap: nowrap;
+}
+.initial-shell .mobile-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 44px;
+}
+.initial-shell .mobile-brand img {
+  width: 80px;
+  height: 30px;
+}
+.initial-shell .app-shell .topbar-actions {
+  flex: 1 1 auto;
+  width: auto;
+  justify-content: flex-end;
+}
+.initial-shell .environment {
+  margin-right: auto;
+}
+.initial-shell #main {
+  padding: 32px 24px 56px;
+}
+.initial-shell .footer {
+  padding: 20px 24px;
+  font-size: 12px;
+}
 #loading {
   display: block;
   min-width: 0;
@@ -132,6 +177,16 @@
   text-align: center;
 }
 @media (max-width: 600px) {
+  .initial-shell .topbar {
+    min-height: 76px;
+    padding: 16px;
+  }
+  .initial-shell #main {
+    padding: 24px 16px 40px;
+  }
+  .initial-shell .footer {
+    padding: 16px;
+  }
   /* These match the compact event shell without waiting for .event-context to mount. */
   .app-shell .sidebar {
     gap: 8px;

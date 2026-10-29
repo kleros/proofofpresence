@@ -15,12 +15,13 @@ Current selected/setup/bootstrap and fresh financial draft/validate verification
 Focused29 HTTP/privacy checks plus one actual local canonical adoption/disk-restart check, typecheck
 and static/pinned build passed. Proof: `artifacts/mainnet-release/public-catalog-backend-checks.json`.
 
-Performance implementation is NOT deployed yet. UI owns its separate app/index/loading/catalog changes
-and is closing a wallet-session invalidation regression before final handoff. Core remains sole live
+Performance code is integrated and publication is in progress. Accepted UI source354e045 includes
+the reviewed wallet-session invalidation fix, four exact product assets and source-bound8 browser plus
+2 synthetic session groups; root repeated12 pure checks, typecheck/build and a zero-authority DTO round trip. Core remains sole live
 profiler/deployment operator. Full old bootstrap is approximately21s; old24.843s was complete checker
 wall time, not browser load time. A new measured comparison is pending. Preserve the human’s background
-organizer form and all durable drafts/journals; never force refresh. Backend rollout timing remains to
-be coordinated after concrete checks. A/B/C remain retired incomplete/PAUSED, D complete, E unused.
+organizer form and all durable drafts/journals; never force refresh. The human answered “Restart now”; backend73fb2ff rollout3ca7a15d-c52f-447f-a40c-f8b4f8979384
+is building. Frontend publication and the same one-visit after timing remain pending. A/B/C remain retired incomplete/PAUSED, D complete, E unused.
 No new financial action, mainnet deployment, IPFS publication, billing change or upstream push.
 
 # Current implementation — 29 October2026, Asia/Bangkok

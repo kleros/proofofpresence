@@ -1,0 +1,412 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { makePublicEventSearchFixture } from "./fixtures/public-event-search-fixture.mjs";
+
+// TEST ONLY. The sole writable route is a local fake DELETE /api/session.
+// Provider .on callbacks are simulated; every provider.request is forbidden.
+const root = fileURLToPath(new URL("../", import.meta.url));
+const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const mime = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
+};
+function allowed(origin, url, method, body, names) {
+  const parsed = new URL(url);
+  if (parsed.origin !== origin || parsed.search || body) return false;
+  if (method === "DELETE") return parsed.pathname === "/api/session";
+  return (
+    method === "GET" &&
+    (["/", "/api/bootstrap", "/api/public-catalog"].includes(parsed.pathname) ||
+      names.has(parsed.pathname.slice(1)))
+  );
+}
+async function readAssets(directory, prefix = "", assets = new Map()) {
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const name = prefix + entry.name;
+    if (entry.isDirectory())
+      await readAssets(path.join(directory, entry.name), name + "/", assets);
+    else if (mime[path.extname(name)])
+      assets.set(name, await fs.readFile(path.join(directory, entry.name)));
+  }
+  return assets;
+}
+function catalogFrom(fixture) {
+  const fields = [
+    "id",
+    "title",
+    "startsAt",
+    "endsAt",
+    "timezone",
+    "depositWei",
+    "chainId",
+    "contract",
+    "contractVersion",
+    "abiVersion",
+    "visibility",
+    "editorialStatus",
+  ];
+  return {
+    schemaVersion: 1,
+    kind: "public-catalog",
+    mode: "hosted-production",
+    instanceId: fixture.bootstrap.instanceId,
+    environment: { production: true, network: "ethereum-mainnet", chainId: 1 },
+    chain: structuredClone(fixture.bootstrap.chain),
+    generatedAt: new Date().toISOString(),
+    catalog: {
+      metadataOnly: true,
+      currentFinancialState: "not-loaded",
+      source: "recorded-adoption",
+    },
+    events: fixture.bootstrap.events
+      .filter(
+        (event) =>
+          event.visibility === "public" &&
+          event.editorialStatus === "published",
+      )
+      .map((event) => ({
+        ...Object.fromEntries(
+          fields
+            .filter((key) => Object.hasOwn(event, key))
+            .map((key) => [key, event[key]]),
+        ),
+        adoption: {
+          kind: "recorded-adoption",
+          txHash: "0x" + "a".repeat(64),
+          blockNumber: 100,
+          blockHash: "0x" + "b".repeat(64),
+        },
+      })),
+  };
+}
+function selfTest() {
+  const origin = "http://127.0.0.1:12345",
+    names = new Set(["app.js"]);
+  const cases = [
+    [origin + "/", "GET", null, true],
+    [origin + "/app.js", "GET", null, true],
+    [origin + "/api/session", "DELETE", null, true],
+    [origin + "/api/session", "DELETE", "{}", false],
+    [origin + "/api/session", "POST", null, false],
+    [origin + "/api/auth/verify", "POST", "{}", false],
+    [origin + "/api/bootstrap?wallet=foreign", "GET", null, false],
+    ["https://example.test/app.js", "GET", null, false],
+  ];
+  for (const [url, method, body, expected] of cases)
+    assert.equal(allowed(origin, url, method, body, names), expected);
+  console.log(
+    JSON.stringify({
+      status: "passed",
+      guards: cases.length,
+      requests: 0,
+      browserLaunches: 0,
+    }),
+  );
+}
+async function run(label) {
+  const { chromium, expect } = await import("@playwright/test");
+  const output = path.join(
+    root,
+    "artifacts/catalog-session",
+    label + "-" + new Date().toISOString().replaceAll(":", "-"),
+  );
+  await fs.mkdir(output, { recursive: true });
+  const assets = await readAssets(path.join(root, "public")),
+    names = new Set(assets.keys());
+  const signed = makePublicEventSearchFixture({ signedOwner: true }),
+    anonymous = makePublicEventSearchFixture();
+  const actor = signed.bootstrap.session.wallet;
+  signed.bootstrap.session.label = "STALE_SESSION_OWNER_MARKER";
+  const catalog = catalogFrom(anonymous);
+  const result = {
+    status: "running",
+    label,
+    harnessSha256: sha(await fs.readFile(fileURLToPath(import.meta.url))),
+    assetSha256: Object.fromEntries(
+      [...assets].map(([name, bytes]) => [name, sha(bytes)]),
+    ),
+    checks: [],
+    requests: [],
+    blocked: [],
+    errors: [],
+    providerRequests: [],
+    limits: [
+      "Synthetic bootstrap sessions are fixture state; no authentication or real cookie is used.",
+      "Only exact loopback fake DELETE /api/session is allowed; no external HTTP, auth POST, financial endpoint, provider request, RPC, key, signing or transaction.",
+      "These two groups are separate from the GET-only loading/performance proof.",
+    ],
+  };
+  await fs.copyFile(
+    fileURLToPath(import.meta.url),
+    path.join(output, "tested-harness.mjs.txt"),
+  );
+  let caseName = "none",
+    signedSession = true,
+    browser;
+  const server = http.createServer(async (req, res) => {
+    const body = Buffer.concat(await Array.fromAsync(req)).toString();
+    const url = new URL(req.url, "http://127.0.0.1"),
+      record = {
+        caseName,
+        method: req.method,
+        path: url.pathname,
+        query: url.search,
+        body,
+      };
+    result.requests.push(record);
+    if (
+      !allowed(
+        "http://" + req.headers.host,
+        "http://" + req.headers.host + req.url,
+        req.method,
+        body,
+        names,
+      )
+    ) {
+      result.blocked.push(record);
+      res.writeHead(405);
+      res.end();
+      return;
+    }
+    const send = (value) => {
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify(value));
+    };
+    if (url.pathname === "/api/session") {
+      signedSession = false;
+      record.ack = { ok: true };
+      send(record.ack);
+      return;
+    }
+    if (url.pathname === "/api/bootstrap") {
+      record.actor = signedSession ? actor : null;
+      send(signedSession ? signed.bootstrap : anonymous.bootstrap);
+      return;
+    }
+    if (url.pathname === "/api/public-catalog") {
+      send(catalog);
+      return;
+    }
+    const name = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
+    res.writeHead(200, {
+      "content-type": mime[path.extname(name)],
+      "cache-control": "no-store",
+    });
+    res.end(assets.get(name));
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const origin = "http://127.0.0.1:" + server.address().port;
+  try {
+    browser = await chromium.launch({ headless: true });
+    for (const eventName of ["accountsChanged", "chainChanged"]) {
+      caseName = eventName;
+      signedSession = true;
+      const start = result.requests.length;
+      const context = await browser.newContext({
+        viewport: { width: 1440, height: 900 },
+        reducedMotion: "reduce",
+        serviceWorkers: "block",
+      });
+      await context.route("**/*", (route) => {
+        const request = route.request();
+        if (
+          !allowed(
+            origin,
+            request.url(),
+            request.method(),
+            request.postData(),
+            names,
+          )
+        ) {
+          result.blocked.push({
+            caseName,
+            method: request.method(),
+            url: request.url(),
+          });
+          return route.abort("blockedbyclient");
+        }
+        return route.continue();
+      });
+      await context.routeWebSocket("**/*", (socket) => {
+        result.blocked.push({ caseName, type: "WebSocket" });
+        socket.close();
+      });
+      await context.addInitScript(() => {
+        const handlers = new Map();
+        window.__sessionProvider = { requests: [], registrations: [] };
+        window.ethereum = {
+          on(name, callback) {
+            const callbacks = handlers.get(name) ?? [];
+            callbacks.push(callback);
+            handlers.set(name, callbacks);
+            window.__sessionProvider.registrations.push(name);
+          },
+          async request(payload) {
+            window.__sessionProvider.requests.push(payload);
+            throw Error(
+              "Provider requests are forbidden in the catalog session fixture",
+            );
+          },
+        };
+        window.__emitSessionEvent = (name, payload) => {
+          for (const callback of handlers.get(name) ?? []) callback(payload);
+        };
+      });
+      const page = await context.newPage();
+      page.setDefaultTimeout(6000);
+      page.on("pageerror", (error) => result.errors.push(error.message));
+      await page.goto(origin + "/#setup=kickback", {
+        waitUntil: "domcontentloaded",
+      });
+      await expect(page.locator("#luma-setup")).toBeVisible();
+      await expect
+        .poll(() => page.evaluate(() => window.__sessionProvider.registrations))
+        .toContain(eventName);
+      assert.equal(
+        result.requests
+          .slice(start)
+          .filter((request) => request.path === "/api/bootstrap")[0].actor,
+        actor,
+      );
+      await page.locator(".mobile-brand").click();
+      await expect(page.locator("[data-public-catalog-screen]")).toBeVisible();
+      assert.equal(
+        result.requests
+          .slice(start)
+          .filter((request) => request.path === "/api/bootstrap").length,
+        1,
+      );
+      const beforeEvent = result.requests.length;
+      await page.evaluate(
+        ([name, payload]) => window.__emitSessionEvent(name, payload),
+        [
+          eventName,
+          eventName === "accountsChanged" ? ["0x" + "9".repeat(40)] : "0x2",
+        ],
+      );
+      await expect
+        .poll(
+          () =>
+            result.requests
+              .slice(beforeEvent)
+              .filter((request) => request.method === "DELETE").length,
+        )
+        .toBe(1);
+      await expect
+        .poll(
+          () =>
+            result.requests
+              .slice(beforeEvent)
+              .filter((request) => request.path === "/api/public-catalog")
+              .length,
+        )
+        .toBe(1);
+      await expect(page.locator("[data-public-catalog-screen]")).toBeVisible();
+      assert.deepEqual(
+        result.requests
+          .slice(beforeEvent)
+          .filter((request) => request.path.startsWith("/api/"))
+          .map(({ method, path, body }) => [method, path, body]),
+        [
+          ["DELETE", "/api/session", ""],
+          ["GET", "/api/public-catalog", ""],
+        ],
+      );
+      await page.locator('a[href="#setup=kickback"]').click();
+      await expect(page.locator("#luma-setup")).toBeVisible();
+      assert.equal(
+        result.requests
+          .slice(start)
+          .filter((request) => request.path === "/api/bootstrap")
+          .at(-1).actor,
+        null,
+      );
+      await expect(page.locator("#top-identity")).toContainText(
+        "Connect wallet",
+      );
+      assert(!(await page.locator("body").textContent()).includes(actor));
+      assert(
+        !(await page.locator("body").textContent()).includes(
+          "STALE_SESSION_OWNER_MARKER",
+        ),
+      );
+      await page.evaluate(
+        ([name, payload]) => window.__emitSessionEvent(name, payload),
+        [eventName, []],
+      );
+      await page.waitForTimeout(100);
+      const writes = result.requests
+        .slice(start)
+        .filter((request) => request.method !== "GET");
+      assert.deepEqual(
+        writes.map(({ method, path, body }) => [method, path, body]),
+        [["DELETE", "/api/session", ""]],
+      );
+      result.providerRequests.push(
+        ...(await page.evaluate(() => window.__sessionProvider.requests)),
+      );
+      result.checks.push(
+        eventName +
+          ": known signed bootstrap then catalog retains invalidation duty; one acknowledged signout precedes anonymous fresh setup, with no provider request or repeated logout",
+      );
+      await context.close();
+    }
+    assert.deepEqual(result.blocked, []);
+    assert.deepEqual(result.errors, []);
+    assert.deepEqual(result.providerRequests, []);
+    result.status = "passed";
+  } catch (error) {
+    result.status = "failed";
+    result.failure = { message: error.message, stack: error.stack };
+    throw error;
+  } finally {
+    if (browser) await browser.close();
+    await new Promise((resolve) => server.close(resolve));
+    await fs.writeFile(
+      path.join(output, "results.json"),
+      JSON.stringify(result, null, 2) + "\n",
+    );
+    console.log(
+      JSON.stringify(
+        {
+          status: result.status,
+          groups: result.checks.length,
+          fakeSessionDeletes: result.requests.filter(
+            (request) => request.method === "DELETE",
+          ).length,
+          providerRequests: result.providerRequests.length,
+          output,
+        },
+        null,
+        2,
+      ),
+    );
+  }
+}
+const args = process.argv.slice(2);
+if (args.length === 1 && args[0] === "--self-test") selfTest();
+else if (
+  args.length === 3 &&
+  args[0] === "--run-loopback" &&
+  args[1] === "--label" &&
+  /^[a-z0-9][a-z0-9-]{0,63}$/.test(args[2])
+)
+  await run(args[2]);
+else if (!args.length)
+  console.log(
+    "Prepared isolated session guard. --self-test is offline; --run-loopback --label <source-label> only uses a local synthetic server.",
+  );
+else
+  throw Error(
+    "Only --self-test or --run-loopback --label <lowercase-slug> is accepted. No public origin is configurable.",
+  );

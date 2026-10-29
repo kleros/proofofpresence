@@ -1,0 +1,72 @@
+{
+  "status": "passed-local-ui-checks",
+  "branch": "codex/kleros-ui-ux-speed-audit",
+  "worktree": "/Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros projects",
+  "performanceStartingCommit": "04bf04ba60338e72176b4d8490a719c5571eb706",
+  "sourceSha256": {
+    "public/app.js": "3b121b188de579b418b3b7df63c0764a190dbe46d14529570d93082b6c17769f",
+    "public/event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "public/index.html": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
+    "public/loading.css": "5ac82bfa51a50bc954b9646a142a8340a44a068f6184f2ef02a6bc38c087feec",
+    "public/luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    "test/public-catalog-ui.test.mjs": "3924394efbd5c74ec1148d5c83fca2e91a773bc7013c22bede012f1c8e29cabc",
+    "test/portal-loading.e2e.mjs": "8e2329dfd18aba7a54e1fa59dc91b11e17713f34a2a7842846926d3cb651b1d2",
+    "test/catalog-session.e2e.mjs": "1aaae2dd6613e8da707ccfc7f6806acdbffea92f4e037ae5f598508366532160"
+  },
+  "results": {
+    "before": "artifacts/portal-loading/before-public-catalog-2026-10-29T12-53-35.868Z/results.json",
+    "beforeSha256": "3ca7d4a6f3604a4cd01783287ef73aa106c7c000b61f031bbde50b36ddb6d84d",
+    "after": "artifacts/portal-loading/after-public-catalog-2026-10-29T12-59-10.918Z/results.json",
+    "afterSha256": "73466e708a356e809d0df33a9cb3d30f6e3aba74dc7d5959865070db457299c8",
+    "final": "artifacts/portal-loading/final-public-catalog-2026-10-29T13-06-04.449Z/results.json",
+    "finalSha256": "9d07ff540be40e378f8f85d28017ecd5b4d474765ff5e1d081348e7a20391bf1",
+    "session": "artifacts/catalog-session/final-public-catalog-2026-10-29T13-05-48.885Z/results.json",
+    "sessionSha256": "48d0c9ce6832e9bbf93cc32d98b6c5103f63ffb0e396f8e8a89423027d985341",
+    "afterNote": "Preceding 291f UI checkpoint, retained; final source 3b121b18 is checked again in final result."
+  },
+  "commandsActuallyRun": [
+    {
+      "command": "node --test test/public-catalog-ui.test.mjs test/event-search.test.mjs",
+      "result": "12/12 passed"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "node scripts/build.mjs",
+      "result": "passed static syntax and pinned v7 ABI/build comparison; no contract recompilation"
+    },
+    {
+      "command": "node test/portal-loading.e2e.mjs --self-test",
+      "result": "13 offline guards passed (test worker)"
+    },
+    {
+      "command": "node test/portal-loading.e2e.mjs --run-loopback --label after-public-catalog",
+      "result": "8 focused browser groups passed (test worker)"
+    },
+    {
+      "command": "node test/catalog-session.e2e.mjs --run-loopback --label final-public-catalog",
+      "result": "2 focused synthetic wallet-change session groups passed; only exact fake loopback DELETE /api/session with body {} allowed"
+    },
+    {
+      "command": "node test/portal-loading.e2e.mjs --run-loopback --label final-public-catalog",
+      "result": "8 GET-only browser groups passed on final3b121b18"
+    },
+    {
+      "command": "node test/catalog-session.e2e.mjs --self-test",
+      "result": "8 offline session-test network guards passed (test worker)"
+    }
+  ],
+  "visualReview": "Root inspected mobile loading, mobile ready, desktop ready and 200% text component screenshots; no clipping/overflow found.",
+  "scope": "8 synthetic GET-only loopback UI groups plus 2 separate synthetic session-invalidation groups whose sole allowed write is fake local DELETE /api/session. No external provider, actual wallet, authentication signature, financial action, publication or schedule mutation.",
+  "livePerformance": "Pending primary backend integration/deployment and its sole live timing check. Local fixed 1500ms response delay is not live backend latency.",
+  "finalReview": "Independent read-only source review PASS. WalletSessionObserved is used only to invalidate a previously observed wallet session; catalog never grants authority.",
+  "primaryBeforeLiveTiming": {
+    "usableSeconds": 23.5568,
+    "fcpSeconds": 1.86,
+    "bootstrapResponseEndSeconds": 23.5478,
+    "source": "Primary-owned before proof artifacts/portal-performance-readonly/2026-10-29T13-05-55-843Z-baseline-2f1997f6-e33a-4616-97d7-58be1eb367ef/proof.json",
+    "scope": "One fresh-context anonymous browser visit, routed without route.fetch; backend already running. No browser warm-cache or field claim."
+  }
+}

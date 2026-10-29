@@ -1,0 +1,494 @@
+import assert from "node:assert/strict";
+import fs from "node:fs/promises";
+import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
+import { makePublicEventSearchFixture } from "./fixtures/public-event-search-fixture.mjs";
+
+// TEST ONLY: actual static UI, synthetic anonymous GET-only loopback bootstrap.
+// No production origin, provider, key, auth or writable endpoint is accepted.
+const root = fileURLToPath(new URL("../", import.meta.url));
+const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const delayMs = 1500;
+const mime = {
+  ".html": "text/html",
+  ".js": "application/javascript",
+  ".css": "text/css",
+  ".svg": "image/svg+xml",
+  ".woff2": "font/woff2",
+};
+function allowed(origin, url, method, assetNames) {
+  const parsed = new URL(url);
+  return (
+    method === "GET" &&
+    parsed.origin === origin &&
+    !parsed.search &&
+    (parsed.pathname === "/api/bootstrap" ||
+      parsed.pathname === "/" ||
+      assetNames.has(parsed.pathname.slice(1)))
+  );
+}
+async function readAssets(directory, prefix = "", assets = new Map()) {
+  for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    const name = prefix + entry.name;
+    if (entry.isDirectory())
+      await readAssets(path.join(directory, entry.name), name + "/", assets);
+    else if (mime[path.extname(name)])
+      assets.set(name, await fs.readFile(path.join(directory, entry.name)));
+  }
+  return assets;
+}
+function selfTest() {
+  const names = new Set(["app.js"]),
+    origin = "http://127.0.0.1:12345";
+  const tests = [
+    [origin + "/", "GET", true],
+    [origin + "/app.js", "GET", true],
+    [origin + "/api/bootstrap", "GET", true],
+    [origin + "/api/bootstrap", "POST", false],
+    [origin + "/api/auth/verify", "GET", false],
+    [origin + "/api/bootstrap?wallet=foreign", "GET", false],
+    ["https://example.test/app.js", "GET", false],
+    [origin + "/api/events/foreign", "GET", false],
+  ];
+  for (const [url, method, expected] of tests)
+    assert.equal(allowed(origin, url, method, names), expected);
+  assert.equal(makePublicEventSearchFixture().bootstrap.session, null);
+  console.log(
+    JSON.stringify({
+      status: "passed",
+      guards: tests.length + 1,
+      networkRequests: 0,
+      browserLaunches: 0,
+    }),
+  );
+}
+async function run(label) {
+  const { chromium, expect } = await import("@playwright/test");
+  const stamp = new Date().toISOString().replaceAll(":", "-");
+  const output = path.join(
+    root,
+    "artifacts/portal-loading",
+    label + "-" + stamp,
+  );
+  await fs.mkdir(output, { recursive: true });
+  const assets = await readAssets(path.join(root, "public"));
+  const fixture = makePublicEventSearchFixture();
+  assert.equal(fixture.bootstrap.session, null);
+  const evidence = {
+    status: "running",
+    label,
+    startedAt: new Date().toISOString(),
+    harnessSha256: hash(await fs.readFile(fileURLToPath(import.meta.url))),
+    fixtureSha256: hash(
+      await fs.readFile(
+        path.join(root, "test/fixtures/public-event-search-fixture.mjs"),
+      ),
+    ),
+    assetSha256: Object.fromEntries(
+      [...assets].map(([name, bytes]) => [name, hash(bytes)]),
+    ),
+    bootstrapDelayMs: delayMs,
+    browser: null,
+    measurements: [],
+    recovery: null,
+    checks: [],
+    requests: [],
+    blocked: [],
+    errors: [],
+    providerAccess: [],
+    screenshots: [],
+    limits: [
+      "Synthetic anonymous loopback bootstrap and unchanged actual static bytes. No backend/RPC latency or economic behavior is simulated.",
+      "Fresh Chromium contexts; unthrottled local network/CPU, no-store responses, viewport emulation only. Not field Core Web Vitals.",
+      "Browser request routing only checks GET/same-origin/allowlist then continues. No route.fetch, body/hash validation or substitution occurs in the request path.",
+      "FCP/LCP are separate from authoritative content usable. Usable is first animation frame with visible enabled public search, final public count and non-busy content.",
+      "Controlled503 recovery is counted separately from initial navigation readiness. No signing, auth, wallet methods, external HTTP, WebSocket or service worker is allowed.",
+    ],
+  };
+  let sample = "none",
+    responseStatus = 200,
+    browser;
+  const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url, "http://127.0.0.1");
+    const record = {
+      sample,
+      method: req.method,
+      path: url.pathname,
+      query: url.search,
+      receivedAt: Date.now(),
+    };
+    evidence.requests.push(record);
+    try {
+      if (req.method !== "GET" || url.search) {
+        evidence.blocked.push(record);
+        res.writeHead(405);
+        res.end();
+        return;
+      }
+      if (url.pathname === "/api/bootstrap") {
+        const status = responseStatus;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        record.status = status;
+        record.respondedAt = Date.now();
+        res.writeHead(status, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+          "x-fixture": "synthetic-loopback-only",
+        });
+        res.end(
+          JSON.stringify(
+            status === 200
+              ? fixture.bootstrap
+              : { error: "Synthetic bootstrap unavailable. Please retry." },
+          ),
+        );
+        return;
+      }
+      const name = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
+      if (!assets.has(name)) {
+        evidence.blocked.push(record);
+        res.writeHead(404);
+        res.end();
+        return;
+      }
+      res.writeHead(200, {
+        "content-type": mime[path.extname(name)],
+        "cache-control": "no-store",
+        "x-fixture": "synthetic-loopback-only",
+      });
+      res.end(assets.get(name));
+    } catch (error) {
+      evidence.errors.push(error.message);
+      res.writeHead(500);
+      res.end();
+    }
+  });
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const origin = "http://127.0.0.1:" + server.address().port;
+  try {
+    browser = await chromium.launch({ headless: true });
+    evidence.browser = browser.version();
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 1440, height: 900 },
+    ]) {
+      sample = viewport.width === 390 ? "mobile-cold" : "desktop-cold";
+      const context = await browser.newContext({
+        viewport,
+        deviceScaleFactor: 1,
+        reducedMotion: "reduce",
+        serviceWorkers: "block",
+      });
+      await context.route("**/*", (route) => {
+        const request = route.request();
+        if (
+          !allowed(
+            origin,
+            request.url(),
+            request.method(),
+            new Set(assets.keys()),
+          )
+        ) {
+          evidence.blocked.push({
+            sample,
+            method: request.method(),
+            url: request.url(),
+          });
+          return route.abort("blockedbyclient");
+        }
+        return route.continue();
+      });
+      await context.routeWebSocket("**/*", (socket) => {
+        evidence.blocked.push({ sample, type: "WebSocket" });
+        socket.close();
+      });
+      await context.addInitScript(() => {
+        window.__portalLoading = {
+          loadingMs: null,
+          usableMs: null,
+          lcp: null,
+          shifts: [],
+          providerAccess: [],
+        };
+        Object.defineProperty(window, "ethereum", {
+          configurable: false,
+          get() {
+            window.__portalLoading.providerAccess.push("get");
+            return undefined;
+          },
+          set() {
+            window.__portalLoading.providerAccess.push("set");
+          },
+        });
+        window.WebSocket = class {
+          constructor() {
+            throw Error("No WebSocket in local loading test");
+          }
+        };
+        const visible = (element) =>
+          element &&
+          !element.hidden &&
+          element.getClientRects().length > 0 &&
+          getComputedStyle(element).visibility !== "hidden";
+        let scheduled = false;
+        const probe = () => {
+          if (scheduled) return;
+          scheduled = true;
+          requestAnimationFrame(() => {
+            scheduled = false;
+            const trace = window.__portalLoading;
+            if (
+              trace.loadingMs === null &&
+              visible(document.querySelector("#loading"))
+            )
+              trace.loadingMs = performance.now();
+            const content = document.querySelector("#content"),
+              search = document.querySelector("[data-public-event-search]"),
+              status = document.querySelector("[data-public-event-status]");
+            if (
+              trace.usableMs === null &&
+              visible(content) &&
+              content.getAttribute("aria-busy") !== "true" &&
+              visible(search) &&
+              !search.disabled &&
+              status?.textContent === "2 public events."
+            )
+              trace.usableMs = performance.now();
+          });
+        };
+        new MutationObserver(probe).observe(document, {
+          subtree: true,
+          childList: true,
+          attributes: true,
+        });
+        try {
+          new PerformanceObserver((entries) => {
+            for (const entry of entries.getEntries())
+              window.__portalLoading.lcp = {
+                ms: entry.startTime,
+                tag: entry.element?.tagName ?? null,
+              };
+          }).observe({ type: "largest-contentful-paint", buffered: true });
+          new PerformanceObserver((entries) => {
+            for (const entry of entries.getEntries())
+              if (!entry.hadRecentInput)
+                window.__portalLoading.shifts.push({
+                  time: entry.startTime,
+                  value: entry.value,
+                });
+          }).observe({ type: "layout-shift", buffered: true });
+        } catch {}
+        probe();
+      });
+      const page = await context.newPage();
+      page.setDefaultTimeout(8000);
+      page.on("pageerror", (error) => evidence.errors.push(error.message));
+      await page.goto(origin + "/", {
+        waitUntil: "domcontentloaded",
+        timeout: 10000,
+      });
+      await expect(page.locator("#loading")).toBeVisible();
+      await expect(page.locator("#loading-status")).toHaveAttribute(
+        "role",
+        "status",
+      );
+      await expect(page.locator("#loading-status")).toHaveAttribute(
+        "aria-live",
+        "polite",
+      );
+      await expect(page.locator("#content")).toHaveAttribute(
+        "aria-busy",
+        "true",
+      );
+      await expect(page.locator("[data-public-event-row]")).toHaveCount(0);
+      await page.screenshot({
+        path: path.join(output, sample + "-loading.png"),
+      });
+      evidence.screenshots.push(sample + "-loading.png");
+      await expect(page.locator("[data-public-event-status]")).toHaveText(
+        "2 public events.",
+      );
+      await expect(page.locator("#loading")).toBeHidden();
+      await page.waitForFunction(
+        () => window.__portalLoading.usableMs !== null,
+      );
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await new Promise((done) =>
+          requestAnimationFrame(() => requestAnimationFrame(done)),
+        );
+      });
+      await page.waitForTimeout(100);
+      const metrics = await page.evaluate(() => {
+        const trace = window.__portalLoading,
+          boot = performance
+            .getEntriesByType("resource")
+            .filter(
+              (entry) => new URL(entry.name).pathname === "/api/bootstrap",
+            );
+        let cls = 0,
+          sum = 0,
+          first = 0,
+          last = 0;
+        for (const shift of trace.shifts) {
+          if (shift.time - last > 1000 || shift.time - first > 5000) {
+            sum = 0;
+            first = shift.time;
+          }
+          sum += shift.value;
+          cls = Math.max(cls, sum);
+          last = shift.time;
+        }
+        return {
+          fcpMs:
+            performance.getEntriesByName("first-contentful-paint")[0]
+              ?.startTime ?? null,
+          loadingMs: trace.loadingMs,
+          usableMs: trace.usableMs,
+          lcp: trace.lcp,
+          cls,
+          providerAccess: trace.providerAccess,
+          bootstrap: boot.map((entry) => ({
+            startMs: entry.startTime,
+            requestMs: entry.requestStart,
+            firstByteMs: entry.responseStart,
+            bodyEndMs: entry.responseEnd,
+            durationMs: entry.duration,
+            bytes: entry.decodedBodySize,
+          })),
+          navigation: performance
+            .getEntriesByType("navigation")
+            .map((entry) => ({
+              firstByteMs: entry.responseStart,
+              domContentLoadedMs: entry.domContentLoadedEventEnd,
+            })),
+          horizontalOverflow:
+            document.documentElement.scrollWidth > innerWidth ||
+            document.body.scrollWidth > innerWidth,
+        };
+      });
+      assert.equal(metrics.bootstrap.length, 1);
+      assert.equal(metrics.horizontalOverflow, false);
+      assert.equal(typeof metrics.fcpMs, "number");
+      assert(metrics.fcpMs < metrics.bootstrap[0].bodyEndMs);
+      assert(metrics.loadingMs < metrics.bootstrap[0].bodyEndMs);
+      assert(metrics.usableMs >= metrics.bootstrap[0].bodyEndMs);
+      metrics.renderAfterBootstrapMs =
+        metrics.usableMs - metrics.bootstrap[0].bodyEndMs;
+      evidence.measurements.push({ sample, viewport, ...metrics });
+      evidence.providerAccess.push(...metrics.providerAccess);
+      await page.screenshot({ path: path.join(output, sample + "-ready.png") });
+      evidence.screenshots.push(sample + "-ready.png");
+      evidence.checks.push(
+        sample +
+          ": painted announced loading precedes authoritative public content; one bootstrap, no overflow",
+      );
+      if (viewport.width === 1440) {
+        sample = "desktop-recovery";
+        const before = evidence.requests.length;
+        responseStatus = 503;
+        await page.locator("#refresh").focus();
+        await page.locator("#refresh").click();
+        await expect(page.locator('[role="alert"]')).toContainText(
+          "Synthetic bootstrap unavailable",
+        );
+        await expect(page.locator("[data-public-event-row]")).toHaveCount(0);
+        await expect(page.locator("[data-reload]")).toBeFocused();
+        assert.equal(
+          evidence.requests
+            .slice(before)
+            .filter((entry) => entry.path === "/api/bootstrap").length,
+          1,
+        );
+        responseStatus = 200;
+        await page.keyboard.press("Enter");
+        await expect(page.locator("[data-public-event-status]")).toHaveText(
+          "2 public events.",
+        );
+        await expect(page.locator('[role="alert"]')).toHaveCount(0);
+        const reads = evidence.requests
+          .slice(before)
+          .filter((entry) => entry.path === "/api/bootstrap");
+        assert.deepEqual(
+          reads.map((entry) => entry.status),
+          [503, 200],
+        );
+        evidence.recovery = {
+          bootstrapRequests: reads.length,
+          statuses: reads.map((entry) => entry.status),
+          automaticRetries: 0,
+          errorAnnounced: true,
+          retryFocusedAndKeyboardActivated: true,
+        };
+        evidence.checks.push(
+          "Controlled503 announces failure, clears stale rows and focuses explicit retry; one fresh keyboard retry restores public content",
+        );
+      }
+      await context.close();
+    }
+    assert.deepEqual(evidence.blocked, []);
+    assert.deepEqual(evidence.errors, []);
+    assert.deepEqual(evidence.providerAccess, []);
+    evidence.status = "passed";
+  } catch (error) {
+    evidence.status = "failed";
+    evidence.failure = { message: error.message, stack: error.stack };
+    throw error;
+  } finally {
+    if (browser) await browser.close();
+    await new Promise((resolve) => server.close(resolve));
+    evidence.completedAt = new Date().toISOString();
+    await fs.writeFile(
+      path.join(output, "results.json"),
+      JSON.stringify(evidence, null, 2) + "\n",
+    );
+    console.log(
+      JSON.stringify(
+        {
+          status: evidence.status,
+          output,
+          checks: evidence.checks.length,
+          measurements: evidence.measurements.map(
+            ({
+              sample,
+              fcpMs,
+              loadingMs,
+              usableMs,
+              renderAfterBootstrapMs,
+              cls,
+            }) => ({
+              sample,
+              fcpMs,
+              loadingMs,
+              usableMs,
+              renderAfterBootstrapMs,
+              cls,
+            }),
+          ),
+          recovery: evidence.recovery,
+        },
+        null,
+        2,
+      ),
+    );
+  }
+}
+const args = process.argv.slice(2);
+if (args.length === 1 && args[0] === "--self-test") selfTest();
+else if (
+  args.length === 3 &&
+  args[0] === "--run-loopback" &&
+  args[1] === "--label" &&
+  /^[a-z0-9][a-z0-9-]{0,63}$/.test(args[2])
+)
+  await run(args[2]);
+else if (!args.length)
+  console.log(
+    "Prepared loopback-only test. --self-test is offline; --run-loopback --label <reviewed-source-label> records a unique local evidence directory.",
+  );
+else
+  throw Error(
+    "Only --self-test or --run-loopback --label <lowercase-slug> is accepted. No public origin is configurable.",
+  );

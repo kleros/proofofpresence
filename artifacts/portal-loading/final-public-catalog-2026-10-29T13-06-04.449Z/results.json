@@ -1,0 +1,1550 @@
+{
+  "status": "passed",
+  "label": "final-public-catalog",
+  "startedAt": "2026-10-29T13:06:04.453Z",
+  "harnessSha256": "8e2329dfd18aba7a54e1fa59dc91b11e17713f34a2a7842846926d3cb651b1d2",
+  "fixtureSha256": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+  "assetSha256": {
+    "app.js": "3b121b188de579b418b3b7df63c0764a190dbe46d14529570d93082b6c17769f",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "index.html": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
+    "loading.css": "5ac82bfa51a50bc954b9646a142a8340a44a068f6184f2ef02a6bc38c087feec",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "luma-launch.css": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "catalogDelayMs": 1500,
+  "browser": "145.0.7632.6",
+  "measurements": [
+    {
+      "sample": "mobile-cold",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fcpMs": 28,
+      "loadingMs": 22.600000023841858,
+      "usableMs": 1559.800000011921,
+      "lcp": {
+        "ms": 1564,
+        "tag": "H3"
+      },
+      "cls": 0.062219913601165744,
+      "providerAccess": [],
+      "catalog": [
+        {
+          "startMs": 34.60000002384186,
+          "requestMs": 44.30000001192093,
+          "firstByteMs": 1545.4000000357628,
+          "bodyEndMs": 1546,
+          "durationMs": 1511.3999999761581,
+          "bytes": 5931
+        }
+      ],
+      "navigation": [
+        {
+          "firstByteMs": 5,
+          "domContentLoadedMs": 34.700000047683716
+        }
+      ],
+      "horizontalOverflow": false,
+      "renderAfterResponseMs": 13.800000011920929
+    },
+    {
+      "sample": "desktop-cold",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fcpMs": 20,
+      "loadingMs": 14.300000011920929,
+      "usableMs": 1550.199999988079,
+      "lcp": {
+        "ms": 1560,
+        "tag": "H1"
+      },
+      "cls": 0.00673511646412037,
+      "providerAccess": [],
+      "catalog": [
+        {
+          "startMs": 28,
+          "requestMs": 31.69999998807907,
+          "firstByteMs": 1533.800000011921,
+          "bodyEndMs": 1534.8999999761581,
+          "durationMs": 1506.8999999761581,
+          "bytes": 5931
+        }
+      ],
+      "navigation": [
+        {
+          "firstByteMs": 1.5,
+          "domContentLoadedMs": 28.19999998807907
+        }
+      ],
+      "horizontalOverflow": false,
+      "renderAfterResponseMs": 15.300000011920929
+    }
+  ],
+  "recovery": {
+    "catalogRequests": 2,
+    "statuses": [
+      503,
+      200
+    ],
+    "automaticRetries": 0,
+    "errorAnnounced": true,
+    "retryFocusedAndKeyboardActivated": true
+  },
+  "checks": [
+    "mobile-cold: painted announced loading precedes metadata-only public content; one catalog GET, zero bootstrap, no overflow",
+    "desktop-cold: painted announced loading precedes metadata-only public content; one catalog GET, zero bootstrap, no overflow",
+    "Controlled503 announces failure, clears stale rows and focuses explicit retry; one fresh keyboard retry restores public content",
+    "Catalog search and clear retain local behavior with no new GET",
+    "Malformed catalog fails closed with no bootstrap fallback or stale public rows",
+    "Exactly404 permits one legacy bootstrap fallback; other catalog failures do not",
+    "Setup and selected event each fetch fresh scoped bootstrap; metadata-only catalog is never financial authority",
+    "A late catalog response cannot repaint setup even when the test transport ignores abort"
+  ],
+  "requests": [
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279164730
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279164737
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279164738
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279164739
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279164739
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279164740
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279164741
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279164741
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279164742
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279164743
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279164749
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279164750
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279164750
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279164751
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279164751
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279164751
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279164751
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279164752
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279164753
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279164753
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279164753
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279164753
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279164754
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279164754
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279164758
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279164758
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279164770,
+      "status": 200,
+      "respondedAt": 1793279166271
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279166945
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279166950
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279166950
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279166951
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279166951
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279166951
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279166952
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279166952
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279166953
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279166954
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279166962
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279166963
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279166964
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279166964
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279166965
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279166965
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279166965
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279166965
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279166965
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279166965
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279166966
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279166967
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279166967
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279166967
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279166968
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279166969
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279166975,
+      "status": 200,
+      "respondedAt": 1793279168477
+    },
+    {
+      "sample": "desktop-recovery",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279169117,
+      "status": 503,
+      "respondedAt": 1793279170617
+    },
+    {
+      "sample": "desktop-recovery",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279170986,
+      "status": 200,
+      "respondedAt": 1793279172486
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279172877
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279172881
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279172882
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279172882
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279172883
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279172883
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279172883
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279172883
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279172883
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279172883
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279172891
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279172891
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279172893
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279172893
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279172893
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279172893
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279172893
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279172893
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279172895
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279172895
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279172895
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279172895
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279172895
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279172896
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279172898
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279172898
+    },
+    {
+      "sample": "desktop-malformed-catalog",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279172902,
+      "status": 200,
+      "respondedAt": 1793279172922
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279173007
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279173010
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279173011
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279173012
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279173012
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279173012
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279173012
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279173012
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279173013
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279173013
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279173018
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279173018
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279173018
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279173018
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279173018
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279173019
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279173019
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279173020
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279173020
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279173021
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279173021
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279173021
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279173021
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279173022
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279173024
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279173026
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279173029,
+      "status": 404,
+      "respondedAt": 1793279173051
+    },
+    {
+      "sample": "desktop-404-fallback",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "receivedAt": 1793279173052,
+      "status": 200,
+      "respondedAt": 1793279173074
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279173134
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279173139
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279173139
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279173139
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279173140
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279173140
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279173140
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279173140
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279173140
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279173142
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279173147
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279173149
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279173149
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279173149
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279173149
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279173149
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279173151
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279173151
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279173151
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279173151
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279173151
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279173151
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279173152
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279173152
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279173154
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279173154
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279173158,
+      "status": 200,
+      "respondedAt": 1793279173179
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "receivedAt": 1793279173282,
+      "status": 200,
+      "respondedAt": 1793279173303
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279173378
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279173382
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279173383
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279173383
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279173384
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279173384
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279173384
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279173384
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279173384
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279173385
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279173390
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279173392
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279173393
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279173393
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279173393
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279173393
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279173393
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279173394
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279173394
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279173394
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279173394
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279173395
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279173395
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279173395
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279173398
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279173398
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279173402,
+      "status": 200,
+      "respondedAt": 1793279173422
+    },
+    {
+      "sample": "desktop-fresh-navigation",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event",
+      "receivedAt": 1793279173523,
+      "status": 200,
+      "respondedAt": 1793279173544
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "receivedAt": 1793279173619
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "receivedAt": 1793279173623
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "receivedAt": 1793279173624
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "receivedAt": 1793279173624
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "receivedAt": 1793279173624
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "receivedAt": 1793279173624
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "receivedAt": 1793279173625
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "receivedAt": 1793279173625
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "receivedAt": 1793279173625
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "receivedAt": 1793279173626
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "receivedAt": 1793279173631
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "receivedAt": 1793279173633
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "receivedAt": 1793279173633
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "receivedAt": 1793279173634
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "receivedAt": 1793279173634
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "receivedAt": 1793279173634
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "receivedAt": 1793279173634
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "receivedAt": 1793279173635
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "receivedAt": 1793279173636
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "receivedAt": 1793279173636
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "receivedAt": 1793279173636
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "receivedAt": 1793279173636
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "receivedAt": 1793279173636
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "receivedAt": 1793279173637
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "receivedAt": 1793279173638
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "receivedAt": 1793279173639
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279173642,
+      "status": 200,
+      "respondedAt": 1793279173662
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "receivedAt": 1793279173758,
+      "status": 200,
+      "respondedAt": 1793279174359
+    },
+    {
+      "sample": "desktop-late-catalog",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "receivedAt": 1793279173866,
+      "status": 200,
+      "respondedAt": 1793279173887
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "providerAccess": [],
+  "screenshots": [
+    "mobile-cold-loading.png",
+    "mobile-cold-ready.png",
+    "mobile-200-text-component.png",
+    "desktop-cold-loading.png",
+    "desktop-cold-ready.png"
+  ],
+  "limits": [
+    "Synthetic anonymous loopback catalog/bootstrap and unchanged actual static bytes. No backend/RPC latency or economic behavior is simulated.",
+    "Fresh Chromium contexts; unthrottled local network/CPU, no-store responses, viewport emulation only. Not field Core Web Vitals.",
+    "Browser request routing only checks GET/same-origin/allowlist then continues. No route.fetch, body/hash validation or substitution occurs in the request path.",
+    "FCP/LCP are separate from authoritative content usable. Usable is first animation frame with visible enabled public search, final public count and non-busy content.",
+    "Controlled503 recovery is counted separately from initial navigation readiness. No signing, auth, wallet methods, external HTTP, WebSocket or service worker is allowed."
+  ],
+  "completedAt": "2026-10-29T13:06:14.641Z"
+}

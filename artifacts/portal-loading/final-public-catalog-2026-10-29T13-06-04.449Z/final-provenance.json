@@ -1,0 +1,203 @@
+{
+  "status": "passed",
+  "scope": "Final session-guarded metadata catalog UI; local synthetic evidence only",
+  "frozenSourceSha256": {
+    "app.js": "3b121b188de579b418b3b7df63c0764a190dbe46d14529570d93082b6c17769f",
+    "event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "index.html": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
+    "loading.css": "5ac82bfa51a50bc954b9646a142a8340a44a068f6184f2ef02a6bc38c087feec",
+    "luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6"
+  },
+  "inputSha256": {
+    "test/portal-loading.e2e.mjs": "8e2329dfd18aba7a54e1fa59dc91b11e17713f34a2a7842846926d3cb651b1d2",
+    "test/catalog-session.e2e.mjs": "1aaae2dd6613e8da707ccfc7f6806acdbffea92f4e037ae5f598508366532160",
+    "test/fixtures/public-event-search-fixture.mjs": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+    "test/fixtures/production-ui-fixture.mjs": "69cf2f4fd7e664a6bd0c61b89a5f61ecdb784adbc33cb7b35b4e3d895a654fce"
+  },
+  "loading": {
+    "groups": 8,
+    "offlineGuards": 13,
+    "result": "artifacts/portal-loading/final-public-catalog-2026-10-29T13-06-04.449Z/results.json",
+    "method": "GET-only",
+    "beforeResult": "artifacts/portal-loading/before-public-catalog-2026-10-29T12-53-35.868Z/results.json",
+    "precedingCandidateResult": "artifacts/portal-loading/after-public-catalog-2026-10-29T12-59-10.918Z/results.json",
+    "beforeMeasurements": [
+      {
+        "sample": "mobile-cold",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "fcpMs": 60,
+        "loadingMs": 50.19999998807907,
+        "usableMs": 1606.1000000238419,
+        "lcp": {
+          "ms": 1616,
+          "tag": "H3"
+        },
+        "cls": 0.5644438684834123,
+        "providerAccess": [],
+        "bootstrap": [
+          {
+            "startMs": 63.39999997615814,
+            "requestMs": 65.69999998807907,
+            "firstByteMs": 1570.5,
+            "bodyEndMs": 1571.300000011921,
+            "durationMs": 1507.9000000357628,
+            "bytes": 15072
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 8.199999988079071,
+            "domContentLoadedMs": 63.69999998807907
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterBootstrapMs": 34.80000001192093
+      },
+      {
+        "sample": "desktop-cold",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "fcpMs": 32,
+        "loadingMs": 25.5,
+        "usableMs": 1556.8999999761581,
+        "lcp": {
+          "ms": 1572,
+          "tag": "H1"
+        },
+        "cls": 0.43051215277777777,
+        "providerAccess": [],
+        "bootstrap": [
+          {
+            "startMs": 28.399999976158142,
+            "requestMs": 31.5,
+            "firstByteMs": 1533.5,
+            "bodyEndMs": 1534.3999999761581,
+            "durationMs": 1506,
+            "bytes": 15072
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 1.399999976158142,
+            "domContentLoadedMs": 28.399999976158142
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterBootstrapMs": 22.5
+      }
+    ],
+    "finalMeasurements": [
+      {
+        "sample": "mobile-cold",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "fcpMs": 28,
+        "loadingMs": 22.600000023841858,
+        "usableMs": 1559.800000011921,
+        "lcp": {
+          "ms": 1564,
+          "tag": "H3"
+        },
+        "cls": 0.062219913601165744,
+        "providerAccess": [],
+        "catalog": [
+          {
+            "startMs": 34.60000002384186,
+            "requestMs": 44.30000001192093,
+            "firstByteMs": 1545.4000000357628,
+            "bodyEndMs": 1546,
+            "durationMs": 1511.3999999761581,
+            "bytes": 5931
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 5,
+            "domContentLoadedMs": 34.700000047683716
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterResponseMs": 13.800000011920929
+      },
+      {
+        "sample": "desktop-cold",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "fcpMs": 20,
+        "loadingMs": 14.300000011920929,
+        "usableMs": 1550.199999988079,
+        "lcp": {
+          "ms": 1560,
+          "tag": "H1"
+        },
+        "cls": 0.00673511646412037,
+        "providerAccess": [],
+        "catalog": [
+          {
+            "startMs": 28,
+            "requestMs": 31.69999998807907,
+            "firstByteMs": 1533.800000011921,
+            "bodyEndMs": 1534.8999999761581,
+            "durationMs": 1506.8999999761581,
+            "bytes": 5931
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 1.5,
+            "domContentLoadedMs": 28.19999998807907
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterResponseMs": 15.300000011920929
+      }
+    ]
+  },
+  "sessionInvalidation": {
+    "groups": 2,
+    "offlineGuards": 8,
+    "result": "artifacts/catalog-session/final-public-catalog-2026-10-29T13-05-48.885Z/results.json",
+    "mockWrites": [
+      {
+        "method": "DELETE",
+        "path": "/api/session",
+        "body": "{}",
+        "count": 2
+      }
+    ],
+    "providerRequests": 0,
+    "coverage": [
+      "known signed setup bootstrap \u2192 metadata catalog \u2192 accountsChanged \u2192 exactly one acknowledged fake logout \u2192 anonymous setup",
+      "same sequence for chainChanged",
+      "a second provider event after confirmed anonymous does not issue another logout"
+    ],
+    "firstTestFailure": {
+      "result": "artifacts/catalog-session/final-public-catalog-2026-10-29T13-05-05.460Z/results.json",
+      "cause": "New fixture initially rejected the existing exact sign-out body {}. Corrected only its allowlist/expected body; app was unchanged."
+    }
+  },
+  "commands": [
+    "node test/catalog-session.e2e.mjs --self-test",
+    "node test/catalog-session.e2e.mjs --run-loopback --label final-public-catalog",
+    "node test/portal-loading.e2e.mjs --run-loopback --label final-public-catalog"
+  ],
+  "screenshots": "artifacts/portal-loading/final-public-catalog-2026-10-29T13-06-04.449Z",
+  "visualReview": "Final layout matches preceding inspected candidate; neutral loading, desktop/390px catalog and full390px doubled-text component captures are preserved. No signing/finance authority is claimed by catalog.",
+  "limits": [
+    "All timing samples use a forced1500ms local GET delay, fresh Chromium contexts and unthrottled CPU. This does not measure actual public backend speed or field Web Vitals.",
+    "The two session cases alone allow exact synthetic DELETE /api/session with body {}. They are separate from the eight entirely GET-only performance groups.",
+    "No public HTTP, RPC, wallet method, auth POST, key, signing, financial endpoint, upload, real cookie or broadcast was used.",
+    "Old8 candidate app291f proof and old bootstrap baseline app152b proof remain unchanged. Existing29/6/14 and historical financial proofs were not rerun."
+  ],
+  "sessionsRunning": false
+}

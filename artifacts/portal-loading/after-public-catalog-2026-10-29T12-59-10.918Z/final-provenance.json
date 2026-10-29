@@ -1,0 +1,185 @@
+{
+  "status": "passed",
+  "scope": "Focused local public-catalog loading/freshness regression only",
+  "browserGroups": 8,
+  "offlineGuards": 13,
+  "commands": [
+    "node test/portal-loading.e2e.mjs --self-test",
+    "node test/portal-loading.e2e.mjs --run-loopback --label before-public-catalog",
+    "node test/portal-loading.e2e.mjs --run-loopback --label after-public-catalog"
+  ],
+  "before": "artifacts/portal-loading/before-public-catalog-2026-10-29T12-53-35.868Z/results.json",
+  "after": "artifacts/portal-loading/after-public-catalog-2026-10-29T12-59-10.918Z/results.json",
+  "harnessSha256": "8e2329dfd18aba7a54e1fa59dc91b11e17713f34a2a7842846926d3cb651b1d2",
+  "fixtureSha256": {
+    "test/fixtures/public-event-search-fixture.mjs": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+    "test/fixtures/production-ui-fixture.mjs": "69cf2f4fd7e664a6bd0c61b89a5f61ecdb784adbc33cb7b35b4e3d895a654fce"
+  },
+  "frozenCandidateSha256": {
+    "app.js": "291f0e8583a9fabf368d4bcb3bc31839d8d970a44064e9ad52e4867baf50d64f",
+    "event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "index.html": "f90409518c1ac895d1578f9a6b0a1778cba828d223aebda18553ed3ab21c19e6",
+    "loading.css": "5ac82bfa51a50bc954b9646a142a8340a44a068f6184f2ef02a6bc38c087feec",
+    "luma-setup.js": "390aac988b6eb37bc5a6d0549961c74749486c3125211559b8771ec2c61a5cd6"
+  },
+  "measurements": {
+    "before": [
+      {
+        "sample": "mobile-cold",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "fcpMs": 60,
+        "loadingMs": 50.19999998807907,
+        "usableMs": 1606.1000000238419,
+        "lcp": {
+          "ms": 1616,
+          "tag": "H3"
+        },
+        "cls": 0.5644438684834123,
+        "providerAccess": [],
+        "bootstrap": [
+          {
+            "startMs": 63.39999997615814,
+            "requestMs": 65.69999998807907,
+            "firstByteMs": 1570.5,
+            "bodyEndMs": 1571.300000011921,
+            "durationMs": 1507.9000000357628,
+            "bytes": 15072
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 8.199999988079071,
+            "domContentLoadedMs": 63.69999998807907
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterBootstrapMs": 34.80000001192093
+      },
+      {
+        "sample": "desktop-cold",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "fcpMs": 32,
+        "loadingMs": 25.5,
+        "usableMs": 1556.8999999761581,
+        "lcp": {
+          "ms": 1572,
+          "tag": "H1"
+        },
+        "cls": 0.43051215277777777,
+        "providerAccess": [],
+        "bootstrap": [
+          {
+            "startMs": 28.399999976158142,
+            "requestMs": 31.5,
+            "firstByteMs": 1533.5,
+            "bodyEndMs": 1534.3999999761581,
+            "durationMs": 1506,
+            "bytes": 15072
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 1.399999976158142,
+            "domContentLoadedMs": 28.399999976158142
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterBootstrapMs": 22.5
+      }
+    ],
+    "after": [
+      {
+        "sample": "mobile-cold",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "fcpMs": 36,
+        "loadingMs": 28.80000001192093,
+        "usableMs": 1579.5,
+        "lcp": {
+          "ms": 1588,
+          "tag": "H3"
+        },
+        "cls": 0.062219913601165744,
+        "providerAccess": [],
+        "catalog": [
+          {
+            "startMs": 44.5,
+            "requestMs": 46.700000047683716,
+            "firstByteMs": 1551.1000000238419,
+            "bodyEndMs": 1552.7000000476837,
+            "durationMs": 1508.2000000476837,
+            "bytes": 5931
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 5.5,
+            "domContentLoadedMs": 44.700000047683716
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterResponseMs": 26.799999952316284
+      },
+      {
+        "sample": "desktop-cold",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "fcpMs": 28,
+        "loadingMs": 20,
+        "usableMs": 1548.699999988079,
+        "lcp": {
+          "ms": 1564,
+          "tag": "H1"
+        },
+        "cls": 0.00673511646412037,
+        "providerAccess": [],
+        "catalog": [
+          {
+            "startMs": 22.80000001192093,
+            "requestMs": 25.899999976158142,
+            "firstByteMs": 1529.6000000238419,
+            "bodyEndMs": 1531,
+            "durationMs": 1508.199999988079,
+            "bytes": 5931
+          }
+        ],
+        "navigation": [
+          {
+            "firstByteMs": 1.199999988079071,
+            "domContentLoadedMs": 22.80000001192093
+          }
+        ],
+        "horizontalOverflow": false,
+        "renderAfterResponseMs": 17.69999998807907
+      }
+    ]
+  },
+  "visualReview": {
+    "inspected": [
+      "mobile-cold-loading.png",
+      "mobile-cold-ready.png",
+      "desktop-cold-ready.png",
+      "mobile-200-text-component.png"
+    ],
+    "result": "Readable neutral initial compact shell; catalog disclaimer and check-on-open badges visible; long escaped titles and controls reflow without horizontal clipping at390px and doubled computed text. No WCAG conformance claim."
+  },
+  "limits": [
+    "Both local versions use the same artificial1500ms primary GET delay. The endpoint changed from authoritative bootstrap to metadata-only catalog; no real backend latency reduction is measured here.",
+    "Each device is a single fresh-context laboratory sample. Do not report field Core Web Vitals, statistically established improvement, cache benefit or live portal speed.",
+    "Initial paint and layout shifted less in this controlled snapshot. Catalog content is not current financial state or signing authority.",
+    "No financial suites rerun. Existing29browser/6pure/14fixture evidence remains a separate preserved checkpoint.",
+    "No publicHTTP, RPC, provider method/access, auth, keys, signup, upload, signing or broadcast occurred."
+  ],
+  "sessionsRunning": false
+}

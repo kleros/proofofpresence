@@ -9,6 +9,7 @@ import { createBatchPendingJournal } from "./batch-pending.js";
 import {
   publicEventSearchEntries,
   searchPublicEvents,
+  validatePublicCatalog,
 } from "./event-search.js";
 import {
   lumaReturnUrl,
@@ -566,6 +567,12 @@ function mountOwnerContractInbox() {
 }
 let toastTimer;
 const publicSearch = { scope: "", query: "", entries: Object.freeze([]) };
+let displayCatalog = null;
+// Negative-only invalidation hint: the display-only catalog has no session DTO.
+let walletSessionObserved = false;
+const publicCatalogScreen = () =>
+  displayCatalog !== null && !app.route.eventId && !app.route.setup;
+const publicHomePresentation = () => publicCatalogScreen() || isProduction();
 let caseArtifactReview = null;
 let caseArtifactGeneration = 0;
 const caseUploadAttempts = new Set();
@@ -797,6 +804,7 @@ function disableUnreadyProductionActions() {
 }
 
 function updateHostedDemoNotice() {
+  document.body.classList.remove("initial-shell");
   const selectedEvent = app.bootstrap?.events?.find(
     (event) => event.id === readRoute().eventId,
   );
@@ -925,7 +933,10 @@ async function api(path, options = {}) {
   try {
     data = await result.json();
   } catch {
-    throw new Error(`The application returned HTTP ${result.status}.`);
+    throw Object.assign(
+      new Error(`The application returned HTTP ${result.status}.`),
+      { status: result.status },
+    );
   }
   if (!result.ok)
     throw Object.assign(
@@ -1081,6 +1092,7 @@ function sidebar() {
     $(".topbar-actions").insertBefore(identity, $("#refresh"));
   }
   identity.disabled = false;
+  identity.hidden = false;
   identity.textContent = isProduction()
     ? currentIdentity()?.wallet
       ? `Wallet ${short(currentIdentity().wallet)}`
@@ -1136,6 +1148,7 @@ async function signOutSession() {
     throw new Error(
       "Sign-out could not be confirmed. Refresh your authentication state before continuing.",
     );
+  walletSessionObserved = false;
 }
 async function switchIdentity(id) {
   if (id === "connected-wallet") return;
@@ -1172,7 +1185,7 @@ function installWalletSessionListeners(provider) {
   if (!provider?.on || provider.__klerosListeners) return;
   provider.__klerosListeners = true;
   const invalidateSession = async () => {
-    if (currentIdentity()?.mode !== "wallet") return;
+    if (currentIdentity()?.mode !== "wallet" && !walletSessionObserved) return;
     cancelRead();
     disposeContractInbox();
     invalidateDraft();
@@ -1291,6 +1304,7 @@ async function connectWallet() {
     await post("/api/auth/verify", { nonce, signature }),
     accounts[0],
   );
+  walletSessionObserved = true;
   await load({ silent: true, acknowledgedWallet });
   installWalletSessionListeners(provider);
   toast(
@@ -1401,6 +1415,9 @@ function mayRestoreFocus(record) {
   );
 }
 async function loadView(record, silent) {
+  const preserveCatalog =
+    publicCatalogScreen() && !record.route.eventId && !record.route.setup;
+  if (record.route.eventId || record.route.setup) displayCatalog = null;
   app.batchRegistrationSelection = null;
   app.submittedRecovery = null;
   $("[data-submitted-recovery]")?.remove();
@@ -1408,7 +1425,7 @@ async function loadView(record, silent) {
   const generation = record.generation;
   invalidateDraft();
   app.route = record.route;
-  if (!silent) {
+  if (!silent && !preserveCatalog) {
     loadingStage(
       "Checking your event network…",
       app.route.eventId ? "Opening your event" : "Opening your events",
@@ -1417,6 +1434,45 @@ async function loadView(record, silent) {
     $("#content").hidden = true;
   }
   try {
+    if (!record.route.eventId && !record.route.setup) {
+      app.bootstrap = null;
+      app.detail = null;
+      const identity = $("#top-identity");
+      identity.hidden = true;
+      identity.disabled = true;
+      identity.onclick = null;
+      let rawCatalog;
+      try {
+        rawCatalog = await readForLoad("/api/public-catalog", record);
+      } catch (error) {
+        if (error.status !== 404) throw error;
+        // An older/demo server has no catalog endpoint. Fall back once only.
+      }
+      if (generation !== app.generation) return;
+      if (rawCatalog !== undefined) {
+        const catalog = validatePublicCatalog(rawCatalog);
+        const sameScope =
+          publicSearch.scope ===
+          JSON.stringify([catalog.mode, catalog.instanceId]);
+        displayCatalog = catalog;
+        // Public metadata must never become a wallet session or signing context.
+        app.bootstrap = null;
+        app.detail = null;
+        setPublicSearchScope(catalog.mode, catalog.instanceId);
+        publicSearch.entries = catalog.events;
+        renderPublicCatalogChrome();
+        if (preserveCatalog && sameScope && $("[data-public-catalog-screen]"))
+          updatePublicEventResults();
+        else $("#content").innerHTML = renderLaunchHome();
+        $("#loading").hidden = true;
+        $("#content").hidden = false;
+        if (mayRestoreFocus(record) && record.focusIntent)
+          $(record.focusIntent.selector)?.focus();
+        document.title = "Find your event · Kleros";
+        return;
+      }
+      displayCatalog = null;
+    }
     const bootstrapPath = app.route.eventId
       ? `/api/bootstrap?${new URLSearchParams({ selectedEventId: app.route.eventId })}`
       : "/api/bootstrap";
@@ -1424,18 +1480,15 @@ async function loadView(record, silent) {
     if (generation !== app.generation) return;
     record.readBootstrap = bootstrap;
     app.bootstrap = bootstrap;
-    const searchScope = JSON.stringify([bootstrap.mode, bootstrap.instanceId]);
-    if (publicSearch.scope !== searchScope) {
-      publicSearch.scope = searchScope;
-      publicSearch.query = "";
-      publicSearch.entries = Object.freeze([]);
-    }
+    setPublicSearchScope(bootstrap.mode, bootstrap.instanceId);
     if (!isSandbox() && !isTestnet() && !isGuardedV9()) {
       updateHostedDemoNotice();
       throw new Error(
         "This application environment is unsupported. Wallet connection and financial review are unavailable.",
       );
     }
+    if (Object.hasOwn(bootstrap, "session"))
+      walletSessionObserved = bootstrap.session?.mode === "wallet";
     if (bootstrap.session?.mode === "wallet")
       installWalletSessionListeners(/** @type {any} */ (window).ethereum);
     updateHostedDemoNotice();
@@ -1575,6 +1628,7 @@ async function loadView(record, silent) {
     if (generation !== app.generation || record.controller.signal.aborted)
       return;
     const restoreError = mayRestoreFocus(record);
+    displayCatalog = null;
     $("#loading").hidden = true;
     $("#content").hidden = false;
     app.detail = null;
@@ -1587,7 +1641,7 @@ async function loadView(record, silent) {
 }
 
 function renderHome() {
-  if (isProduction()) return renderLaunchHome();
+  if (publicHomePresentation()) return renderLaunchHome();
   const events = app.bootstrap.events;
   return `<div class="page-header"><div><div class="eyebrow">GOOD EVENTS. KEPT PROMISES.</div><h1>Events, with commitment.</h1><p class="intro">Find your event. Reserve a place. Show up.<br>Follow your kickback from attendance to payout.</p></div>${isSandbox() ? '<div class="header-actions"><button class="button button-primary" data-create-event><span aria-hidden="true">＋</span> Create local event</button></div>' : ""}</div>
     <ol class="quick-start" aria-label="How event commitments work"><li><span class="step-number">1</span><div><strong>Choose an event</strong><p>Each event keeps its own guest list and money.</p></div></li><li><span class="step-number">2</span><div><strong>Reserve your place</strong><p>Choose free entry or review a deposit. The host approves admission.</p></div></li><li><span class="step-number">3</span><div><strong>Attend & get a kickback</strong><p>Check in, review the attendance list and challenge a mistake if needed.</p></div></li></ol>
@@ -1597,12 +1651,40 @@ function renderHome() {
     ${renderDemoControls()}`;
 }
 
+function setPublicSearchScope(mode, instanceId) {
+  const scope = JSON.stringify([mode, instanceId]);
+  if (publicSearch.scope === scope) return;
+  publicSearch.scope = scope;
+  publicSearch.query = "";
+  publicSearch.entries = Object.freeze([]);
+}
+function renderPublicCatalogChrome() {
+  document.body.classList.remove("initial-shell");
+  document.body.classList.add("launch-mode");
+  document.body.classList.remove("hosted-shared-demo");
+  hostedNoticeObserver?.disconnect();
+  for (const notice of $$(
+    "#hosted-demo-banner,#testnet-banner,#production-banner,#v9-testnet-banner",
+  ))
+    notice.remove();
+  document.documentElement.style.removeProperty("--hosted-demo-notice-height");
+  $("#sidebar-events").replaceChildren();
+  $("#event-count").textContent = "—";
+  $("#environment").textContent = "EVENT DIRECTORY";
+  $("#breadcrumb").textContent = "Find your event";
+  const identity = $("#top-identity");
+  identity.hidden = true;
+  identity.disabled = true;
+  identity.onclick = null;
+}
 function renderLaunchHome() {
   if (app.route.setup)
     return '<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"></div></section>';
-  publicSearch.entries = publicEventSearchEntries(app.bootstrap?.events);
+  publicSearch.entries = publicCatalogScreen()
+    ? displayCatalog.events
+    : publicEventSearchEntries(app.bootstrap?.events);
   const matches = searchPublicEvents(publicSearch.entries, publicSearch.query);
-  return `<section class="luma-launch" data-launch-root><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Find your event, review its deposit and return to Luma.</p></div><section class="luma-launch-card public-event-search"><h2>Find your event</h2><label for="public-event-search">Search by event name</label><div class="public-event-controls"><input id="public-event-search" type="search" data-public-event-search maxlength="120" autocomplete="off" placeholder="Event name" value="${escape(publicSearch.query)}" aria-controls="public-event-results"><button class="button button-secondary" type="button" data-public-event-clear ${publicSearch.query ? "" : "hidden"}>Clear search</button></div><p class="public-event-status" data-public-event-status role="status" aria-live="polite" aria-atomic="true">${escape(publicSearchStatus(matches.length))}</p><div id="public-event-results" data-public-event-results>${renderPublicEventResults(matches)}</div></section><section class="luma-launch-card"><h2>Organizing an event?</h2><p>Connect your Luma event to its own reviewed kickback contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></section>`;
+  return `<section class="luma-launch" data-launch-root ${publicCatalogScreen() ? "data-public-catalog-screen" : ""}><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Find your event, review its deposit and return to Luma.</p></div><section class="luma-launch-card public-event-search"><h2>Find your event</h2>${publicCatalogScreen() ? '<p class="field-help" data-public-catalog-note>Recorded event details only. Current status and wallet actions are checked when you open an event.</p>' : ""}<label for="public-event-search">Search by event name</label><div class="public-event-controls"><input id="public-event-search" type="search" data-public-event-search maxlength="120" autocomplete="off" placeholder="Event name" value="${escape(publicSearch.query)}" aria-controls="public-event-results"><button class="button button-secondary" type="button" data-public-event-clear ${publicSearch.query ? "" : "hidden"}>Clear search</button></div><p class="public-event-status" data-public-event-status role="status" aria-live="polite" aria-atomic="true">${escape(publicSearchStatus(matches.length))}</p><div id="public-event-results" data-public-event-results>${renderPublicEventResults(matches)}</div></section><section class="luma-launch-card"><h2>Organizing an event?</h2><p>Connect your Luma event to its own reviewed kickback contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></section>`;
 }
 function publicSearchStatus(count) {
   if (!publicSearch.entries.length) return "No public events yet.";
@@ -1619,11 +1701,15 @@ function renderPublicEventResults(entries) {
 }
 function updatePublicEventResults() {
   if (
-    !isProduction() ||
+    !publicHomePresentation() ||
     app.route.eventId ||
     app.route.setup ||
     publicSearch.scope !==
-      JSON.stringify([app.bootstrap?.mode, app.bootstrap?.instanceId])
+      JSON.stringify(
+        publicCatalogScreen()
+          ? [displayCatalog.mode, displayCatalog.instanceId]
+          : [app.bootstrap?.mode, app.bootstrap?.instanceId],
+      )
   )
     return;
   const results = $("[data-public-event-results]"),
@@ -3552,7 +3638,7 @@ document.addEventListener("click", async (event) => {
   try {
     if ("publicEventClear" in data) {
       const field = $("[data-public-event-search]");
-      if (isProduction() && field) {
+      if (publicHomePresentation() && field) {
         publicSearch.query = "";
         field.value = "";
         updatePublicEventResults();
@@ -3779,7 +3865,7 @@ document.addEventListener("input", (event) => {
     event.target instanceof HTMLInputElement &&
     event.target.matches("[data-public-event-search]") &&
     event.target === $("[data-public-event-search]") &&
-    isProduction()
+    publicHomePresentation()
   ) {
     publicSearch.query = event.target.value.slice(0, 120);
     updatePublicEventResults();
