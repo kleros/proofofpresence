@@ -1,3 +1,19 @@
+# Lean-startup candidate integrated — 29 October2026
+
+Candidate4UIproducts fromea35a1b are integrated; entry3f8cb009/public-homeeb514495/app89e32090/
+indexa93c649e, widget829 andCSS38ff unchanged. Roottype/staticbuildPASS, isolated10lean+12actual
+selected-v7/v8 groupsPASS. New rootactualv7/v8 ROOTfallbackPASS:1catalog404+1bootstrap perversion,
+2events,0browserfinancial/session/wallet/offorigin. Initialinspector404bodyabort assumptionfixed
+withoutproductchange; bothproofs retained. 2legacy snapshot startup wiring edits syntax/HTMLtested
+only; fullhistoricalsnapshot generation/modecompatibilitynotclaimed. Exactcombined evidence:
+artifacts/mainnet-release/lean-integration-checks.json.
+
+Optimizationnotpublishedyet; productionremains9cac/402. RecentredactedHTTPmetadata shows
+organizerjobPOSTs202 at14:21:16 and14:21:21UTC, so doNOTcutoverbackend during humanwalletflow.
+Frontend-onlyrelease canproceed withoutbackendrestart; bothnewmodulesareNetlifystaticfiles.
+Prepare/freezeconcretebackendpackage thencoordinate safetime. No forcedrefresh orauthimpersonation.
+Matchingnewbefore2.6021s source9cac stayscomparator; oneafterstillpending.
+
 # Active next optimization phase — 29 October2026
 
 Direct human authorization independently read in UI chat turn01a187e9-f8f2-7eb3-a3cb-c5ada8012f6d

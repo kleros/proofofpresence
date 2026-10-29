@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#120E1C" />
+    <meta
+      name="description"
+      content="Independent events. Verifiable commitments. Manage event deposits, trusted attendance and Kleros disputes."
+    />
+    <title>Kleros · Events & commitments</title>
+    <link
+      rel="preload"
+      href="/assets/geist-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/assets/instrument-serif-regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="icon" href="/assets/kleros-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/contract-inbox.css" />
+    <link rel="stylesheet" href="/batch-actions.css" />
+    <link rel="stylesheet" href="/loading.css" />
+    <link rel="stylesheet" href="/luma-launch.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body class="initial-shell">
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Workspace navigation">
+        <a class="brand" href="#" aria-label="Kleros events home"
+          ><img src="/assets/kleros-logo.svg" alt="" width="128" height="48" />
+          <span class="brand-sub">EVENTS & COMMITMENTS</span></a
+        >
+        <div class="workspace-label">WORKSPACE</div>
+        <a class="nav-link active" href="#" id="all-events-link"
+          ><span aria-hidden="true">◫</span> All events
+          <span id="event-count" class="nav-count">—</span></a
+        >
+        <div class="sidebar-events" id="sidebar-events"></div>
+        <div class="sidebar-foot">
+          <div class="network-pip"><i></i> Connecting…</div>
+          <p>
+            Checking your event network.<br />Your wallet stays in your control.
+          </p>
+          <button class="text-link" id="demo-help" type="button">
+            How it works <span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </aside>
+      <div class="main-shell">
+        <header class="topbar">
+          <a class="mobile-brand" href="#" aria-label="All events"
+            ><img
+              src="/assets/kleros-logo.svg"
+              alt="Kleros"
+              width="96"
+              height="36"
+          /></a>
+          <div class="breadcrumb" id="breadcrumb">
+            Workspace <span>/</span> All events
+          </div>
+          <div class="topbar-actions">
+            <span class="environment" id="environment"><i></i> CONNECTING</span
+            ><button
+              class="button button-small button-secondary"
+              id="top-identity"
+              type="button"
+              disabled
+            >
+              Checking account…</button
+            ><button
+              class="button button-small button-quiet"
+              id="refresh"
+              type="button"
+              title="Refresh authoritative chain state"
+            >
+              ↻ <span>Refresh</span>
+            </button>
+          </div>
+        </header>
+        <main id="main" tabindex="-1">
+          <div class="page-loading" id="loading">
+            <div class="loading-shell">
+              <div class="loading-heading">
+                <span class="spinner" aria-hidden="true"></span>
+                <div>
+                  <div class="eyebrow">KLEROS EVENTS</div>
+                  <h2 id="loading-title">Loading event details</h2>
+                </div>
+              </div>
+              <p id="loading-status" role="status" aria-live="polite">
+                Checking your event network…
+              </p>
+              <div class="loading-skeleton" aria-hidden="true">
+                <div class="loading-context">
+                  <span class="loading-bar loading-bar-title"></span
+                  ><span class="loading-bar loading-bar-short"></span>
+                </div>
+                <div class="loading-grid">
+                  <div class="loading-card">
+                    <span class="loading-bar loading-bar-title"></span
+                    ><span class="loading-bar"></span
+                    ><span class="loading-bar loading-bar-short"></span>
+                  </div>
+                  <div class="loading-card">
+                    <span class="loading-bar loading-bar-title"></span
+                    ><span class="loading-bar"></span
+                    ><span class="loading-bar loading-bar-short"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="content" hidden></div>
+        </main>
+        <footer class="footer">
+          <span>Built on verifiable attendance.</span
+          ><span>Independent event funds · Kleros attendance disputes</span>
+        </footer>
+      </div>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <dialog id="review-dialog" aria-labelledby="dialog-title">
+      <form method="dialog">
+        <button class="dialog-close" aria-label="Close review" value="cancel">
+          ×
+        </button>
+      </form>
+      <div id="dialog-body"></div>
+    </dialog>
+  </body>
+</html>

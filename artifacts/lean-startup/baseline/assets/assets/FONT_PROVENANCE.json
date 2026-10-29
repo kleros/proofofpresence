@@ -1,0 +1,26 @@
+[
+  {
+    "file": "geist-latin.woff2",
+    "url": "https://kleros-events.vercel.app/_next/static/media/22a5144ee8d83bca-s.p.woff2",
+    "bytes": 29288,
+    "sha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608"
+  },
+  {
+    "file": "instrument-serif-regular.woff2",
+    "url": "https://kleros-events.vercel.app/_next/static/media/e6099e249fd938cc-s.p.woff2",
+    "bytes": 15040,
+    "sha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d"
+  },
+  {
+    "file": "instrument-serif-italic.woff2",
+    "url": "https://kleros-events.vercel.app/_next/static/media/9cc5b37ab1350db7-s.p.woff2",
+    "bytes": 15684,
+    "sha256": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702"
+  },
+  {
+    "file": "geist-mono-latin.woff2",
+    "url": "https://kleros-events.vercel.app/_next/static/media/7d4881bb7e1bf84d-s.p.woff2",
+    "bytes": 23108,
+    "sha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b"
+  }
+]

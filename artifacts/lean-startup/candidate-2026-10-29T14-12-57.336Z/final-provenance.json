@@ -1,0 +1,1622 @@
+{
+  "status": "passed",
+  "scope": "Lean anonymous home startup and deferred full-app handoff; synthetic local only",
+  "groups": 10,
+  "baselineGroups": 2,
+  "commands": [
+    "node test/lean-startup.e2e.mjs --baseline",
+    "node test/lean-startup.e2e.mjs --candidate"
+  ],
+  "baselineSource": "b0208ea4a0c902637a6d2a51ec453347e5b157cb; root-confirmed exact LIVE9cac8df public bytes",
+  "baselineResult": "artifacts/lean-startup/baseline-run-2026-10-29T14-05-23.830Z/results.json",
+  "candidateResult": "artifacts/lean-startup/candidate-2026-10-29T14-12-57.336Z/results.json",
+  "protocol": {
+    "catalogDelayMs": 1500,
+    "staticDelayMs": 80,
+    "viewport": [
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 1440,
+        "height": 900
+      }
+    ],
+    "deviceScaleFactor": 1,
+    "reducedMotion": "reduce",
+    "cpu": "unthrottled",
+    "compression": "none",
+    "cache": "no-store"
+  },
+  "sharedProtocolSha256": "9f7b8c3fae176bdf8df71da6bf7f3923264b6873c765daccde5ba7b99e493dd5",
+  "harnessSha256": {
+    "baseline": "d2583f7ab5d0fffd81b454ca48881c8e01ee2267fd3af3c5247d57ea98a1c565",
+    "candidate": "d244a83007f98f648077928b61db66b74edc1022759325868b33d799483e3ec3"
+  },
+  "harnessNote": "Each tested harness is archived verbatim. Candidate adds focused guard cases and explicit filtered-status/deep-screen assertions; initial metric observer, modeled delays, readiness and device protocol remain identical.",
+  "candidateSourceSha256": {
+    "entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "app.js": "89e320901b964d7585427b10a45bdbd27607e73dc6e7c646c7818b5c69c87cf6",
+    "index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509"
+  },
+  "inputSha256": {
+    "test/lean-startup.e2e.mjs": "d244a83007f98f648077928b61db66b74edc1022759325868b33d799483e3ec3",
+    "test/fixtures/public-event-search-fixture.mjs": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+    "test/fixtures/production-ui-fixture.mjs": "69cf2f4fd7e664a6bd0c61b89a5f61ecdb784adbc33cb7b35b4e3d895a654fce",
+    "public/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af"
+  },
+  "initialGraph": {
+    "before": {
+      "rawJSBytes": 455516,
+      "offlineGzipLevel9Bytes": 120445,
+      "modules": [
+        {
+          "path": "app.js",
+          "rawBytes": 235647,
+          "gzipLevel9Bytes": 58521,
+          "sha256": "a61e10c9efea45615f382eebb3d9043a817fdd2f706a62dab98fc552fb2e8630"
+        },
+        {
+          "path": "ui-keyboard.js",
+          "rawBytes": 3793,
+          "gzipLevel9Bytes": 1449,
+          "sha256": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+        },
+        {
+          "path": "selected-event.js",
+          "rawBytes": 4773,
+          "gzipLevel9Bytes": 1538,
+          "sha256": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18"
+        },
+        {
+          "path": "reconciliation.js",
+          "rawBytes": 11027,
+          "gzipLevel9Bytes": 3656,
+          "sha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402"
+        },
+        {
+          "path": "hosted-wallet.js",
+          "rawBytes": 856,
+          "gzipLevel9Bytes": 517,
+          "sha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015"
+        },
+        {
+          "path": "contract-inbox.js",
+          "rawBytes": 28916,
+          "gzipLevel9Bytes": 8092,
+          "sha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a"
+        },
+        {
+          "path": "batch-actions.js",
+          "rawBytes": 49217,
+          "gzipLevel9Bytes": 11566,
+          "sha256": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661"
+        },
+        {
+          "path": "batch-pending.js",
+          "rawBytes": 5210,
+          "gzipLevel9Bytes": 1851,
+          "sha256": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8"
+        },
+        {
+          "path": "event-search.js",
+          "rawBytes": 6635,
+          "gzipLevel9Bytes": 2083,
+          "sha256": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37"
+        },
+        {
+          "path": "luma-launch.js",
+          "rawBytes": 4083,
+          "gzipLevel9Bytes": 1454,
+          "sha256": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4"
+        },
+        {
+          "path": "case-publication.js",
+          "rawBytes": 8267,
+          "gzipLevel9Bytes": 2792,
+          "sha256": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca"
+        },
+        {
+          "path": "environment.js",
+          "rawBytes": 8730,
+          "gzipLevel9Bytes": 2672,
+          "sha256": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20"
+        },
+        {
+          "path": "luma-setup.js",
+          "rawBytes": 47940,
+          "gzipLevel9Bytes": 12585,
+          "sha256": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509"
+        },
+        {
+          "path": "contract-profiles.js",
+          "rawBytes": 4576,
+          "gzipLevel9Bytes": 1204,
+          "sha256": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881"
+        },
+        {
+          "path": "transaction-context.js",
+          "rawBytes": 16447,
+          "gzipLevel9Bytes": 4819,
+          "sha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af"
+        },
+        {
+          "path": "batch-selection.js",
+          "rawBytes": 8665,
+          "gzipLevel9Bytes": 2462,
+          "sha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6"
+        },
+        {
+          "path": "luma-factory.js",
+          "rawBytes": 10734,
+          "gzipLevel9Bytes": 3184,
+          "sha256": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0"
+        }
+      ]
+    },
+    "candidate": {
+      "rawJSBytes": 29394,
+      "offlineGzipLevel9Bytes": 9645,
+      "modules": [
+        {
+          "path": "entry.js",
+          "rawBytes": 3897,
+          "gzipLevel9Bytes": 1464,
+          "sha256": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64"
+        },
+        {
+          "path": "public-home.js",
+          "rawBytes": 10493,
+          "gzipLevel9Bytes": 3445,
+          "sha256": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c"
+        },
+        {
+          "path": "event-search.js",
+          "rawBytes": 6635,
+          "gzipLevel9Bytes": 2083,
+          "sha256": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37"
+        },
+        {
+          "path": "ui-keyboard.js",
+          "rawBytes": 3793,
+          "gzipLevel9Bytes": 1449,
+          "sha256": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+        },
+        {
+          "path": "contract-profiles.js",
+          "rawBytes": 4576,
+          "gzipLevel9Bytes": 1204,
+          "sha256": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881"
+        }
+      ]
+    }
+  },
+  "beforeMetrics": [
+    {
+      "sample": "mobile-cold",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fcpMs": 288,
+      "loadingMs": 281.30000001192093,
+      "usableMs": 2095.300000011921,
+      "lcp": {
+        "ms": 2104,
+        "tag": "H3"
+      },
+      "cls": 0.062219913601165744,
+      "resources": [
+        {
+          "path": "/assets/geist-latin.woff2",
+          "startMs": 97.10000002384186,
+          "firstByteMs": 182.9000000357628,
+          "bodyEndMs": 183.30000001192093,
+          "durationMs": 86.19999998807907,
+          "decodedBytes": 29288,
+          "transferBytes": 29588
+        },
+        {
+          "path": "/assets/instrument-serif-regular.woff2",
+          "startMs": 97.5,
+          "firstByteMs": 183.5,
+          "bodyEndMs": 183.80000001192093,
+          "durationMs": 86.30000001192093,
+          "decodedBytes": 15040,
+          "transferBytes": 15340
+        },
+        {
+          "path": "/styles.css",
+          "startMs": 97.60000002384186,
+          "firstByteMs": 183,
+          "bodyEndMs": 183.30000001192093,
+          "durationMs": 85.69999998807907,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/contract-inbox.css",
+          "startMs": 97.60000002384186,
+          "firstByteMs": 183.19999998807907,
+          "bodyEndMs": 183.5,
+          "durationMs": 85.89999997615814,
+          "decodedBytes": 11506,
+          "transferBytes": 11806
+        },
+        {
+          "path": "/batch-actions.css",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 183.69999998807907,
+          "bodyEndMs": 183.9000000357628,
+          "durationMs": 86.20000004768372,
+          "decodedBytes": 8893,
+          "transferBytes": 9193
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 183.9000000357628,
+          "bodyEndMs": 184.19999998807907,
+          "durationMs": 86.5,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 264.30000001192093,
+          "bodyEndMs": 264.5,
+          "durationMs": 166.80000001192093,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        },
+        {
+          "path": "/app.js",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 264.4000000357628,
+          "bodyEndMs": 264.9000000357628,
+          "durationMs": 167.20000004768372,
+          "decodedBytes": 235647,
+          "transferBytes": 235947
+        },
+        {
+          "path": "/assets/kleros-logo.svg",
+          "startMs": 97.80000001192093,
+          "firstByteMs": 264.60000002384186,
+          "bodyEndMs": 265.10000002384186,
+          "durationMs": 167.30000001192093,
+          "decodedBytes": 4891,
+          "transferBytes": 5191
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371,
+          "bodyEndMs": 371.30000001192093,
+          "durationMs": 83.69999998807907,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/selected-event.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371.10000002384186,
+          "bodyEndMs": 371.4000000357628,
+          "durationMs": 83.80000001192093,
+          "decodedBytes": 4773,
+          "transferBytes": 5073
+        },
+        {
+          "path": "/reconciliation.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371.60000002384186,
+          "bodyEndMs": 372.10000002384186,
+          "durationMs": 84.5,
+          "decodedBytes": 11027,
+          "transferBytes": 11327
+        },
+        {
+          "path": "/hosted-wallet.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371.80000001192093,
+          "bodyEndMs": 372.10000002384186,
+          "durationMs": 84.5,
+          "decodedBytes": 856,
+          "transferBytes": 1156
+        },
+        {
+          "path": "/contract-inbox.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 372,
+          "bodyEndMs": 372.4000000357628,
+          "durationMs": 84.80000001192093,
+          "decodedBytes": 28916,
+          "transferBytes": 29216
+        },
+        {
+          "path": "/batch-actions.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 372.10000002384186,
+          "bodyEndMs": 372.60000002384186,
+          "durationMs": 85,
+          "decodedBytes": 49217,
+          "transferBytes": 49517
+        },
+        {
+          "path": "/batch-pending.js",
+          "startMs": 287.69999998807907,
+          "firstByteMs": 453.80000001192093,
+          "bodyEndMs": 454.19999998807907,
+          "durationMs": 166.5,
+          "decodedBytes": 5210,
+          "transferBytes": 5510
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 287.69999998807907,
+          "firstByteMs": 453.80000001192093,
+          "bodyEndMs": 454.19999998807907,
+          "durationMs": 166.5,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/luma-launch.js",
+          "startMs": 287.69999998807907,
+          "firstByteMs": 454,
+          "bodyEndMs": 454.69999998807907,
+          "durationMs": 167,
+          "decodedBytes": 4083,
+          "transferBytes": 4383
+        },
+        {
+          "path": "/case-publication.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 454.10000002384186,
+          "bodyEndMs": 455.10000002384186,
+          "durationMs": 167.30000001192093,
+          "decodedBytes": 8267,
+          "transferBytes": 8567
+        },
+        {
+          "path": "/environment.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 454.19999998807907,
+          "bodyEndMs": 455.19999998807907,
+          "durationMs": 167.39999997615814,
+          "decodedBytes": 8730,
+          "transferBytes": 9030
+        },
+        {
+          "path": "/luma-setup.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 454.10000002384186,
+          "bodyEndMs": 454.80000001192093,
+          "durationMs": 167,
+          "decodedBytes": 47940,
+          "transferBytes": 48240
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 535.6000000238419,
+          "bodyEndMs": 536.1999999880791,
+          "durationMs": 248.39999997615814,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        },
+        {
+          "path": "/transaction-context.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 535.6000000238419,
+          "bodyEndMs": 536.3000000119209,
+          "durationMs": 248.5,
+          "decodedBytes": 16447,
+          "transferBytes": 16747
+        },
+        {
+          "path": "/batch-selection.js",
+          "startMs": 373.60000002384186,
+          "firstByteMs": 536,
+          "bodyEndMs": 536.6000000238419,
+          "durationMs": 163,
+          "decodedBytes": 8665,
+          "transferBytes": 8965
+        },
+        {
+          "path": "/luma-factory.js",
+          "startMs": 458.69999998807907,
+          "firstByteMs": 540.3000000119209,
+          "bodyEndMs": 540.6000000238419,
+          "durationMs": 81.90000003576279,
+          "decodedBytes": 10734,
+          "transferBytes": 11034
+        },
+        {
+          "path": "/api/public-catalog",
+          "startMs": 553.1000000238419,
+          "firstByteMs": 2062.300000011921,
+          "bodyEndMs": 2063.300000011921,
+          "durationMs": 1510.199999988079,
+          "decodedBytes": 5931,
+          "transferBytes": 6231
+        }
+      ],
+      "longTasks": [],
+      "providerAccess": 0,
+      "storageReads": [],
+      "overflow": false,
+      "renderAfterCatalogMs": 32,
+      "catalog": {
+        "path": "/api/public-catalog",
+        "startMs": 553.1000000238419,
+        "firstByteMs": 2062.300000011921,
+        "bodyEndMs": 2063.300000011921,
+        "durationMs": 1510.199999988079,
+        "decodedBytes": 5931,
+        "transferBytes": 6231
+      },
+      "js": [
+        {
+          "path": "/app.js",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 264.4000000357628,
+          "bodyEndMs": 264.9000000357628,
+          "durationMs": 167.20000004768372,
+          "decodedBytes": 235647,
+          "transferBytes": 235947
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371,
+          "bodyEndMs": 371.30000001192093,
+          "durationMs": 83.69999998807907,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/selected-event.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371.10000002384186,
+          "bodyEndMs": 371.4000000357628,
+          "durationMs": 83.80000001192093,
+          "decodedBytes": 4773,
+          "transferBytes": 5073
+        },
+        {
+          "path": "/reconciliation.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371.60000002384186,
+          "bodyEndMs": 372.10000002384186,
+          "durationMs": 84.5,
+          "decodedBytes": 11027,
+          "transferBytes": 11327
+        },
+        {
+          "path": "/hosted-wallet.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 371.80000001192093,
+          "bodyEndMs": 372.10000002384186,
+          "durationMs": 84.5,
+          "decodedBytes": 856,
+          "transferBytes": 1156
+        },
+        {
+          "path": "/contract-inbox.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 372,
+          "bodyEndMs": 372.4000000357628,
+          "durationMs": 84.80000001192093,
+          "decodedBytes": 28916,
+          "transferBytes": 29216
+        },
+        {
+          "path": "/batch-actions.js",
+          "startMs": 287.60000002384186,
+          "firstByteMs": 372.10000002384186,
+          "bodyEndMs": 372.60000002384186,
+          "durationMs": 85,
+          "decodedBytes": 49217,
+          "transferBytes": 49517
+        },
+        {
+          "path": "/batch-pending.js",
+          "startMs": 287.69999998807907,
+          "firstByteMs": 453.80000001192093,
+          "bodyEndMs": 454.19999998807907,
+          "durationMs": 166.5,
+          "decodedBytes": 5210,
+          "transferBytes": 5510
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 287.69999998807907,
+          "firstByteMs": 453.80000001192093,
+          "bodyEndMs": 454.19999998807907,
+          "durationMs": 166.5,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/luma-launch.js",
+          "startMs": 287.69999998807907,
+          "firstByteMs": 454,
+          "bodyEndMs": 454.69999998807907,
+          "durationMs": 167,
+          "decodedBytes": 4083,
+          "transferBytes": 4383
+        },
+        {
+          "path": "/case-publication.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 454.10000002384186,
+          "bodyEndMs": 455.10000002384186,
+          "durationMs": 167.30000001192093,
+          "decodedBytes": 8267,
+          "transferBytes": 8567
+        },
+        {
+          "path": "/environment.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 454.19999998807907,
+          "bodyEndMs": 455.19999998807907,
+          "durationMs": 167.39999997615814,
+          "decodedBytes": 8730,
+          "transferBytes": 9030
+        },
+        {
+          "path": "/luma-setup.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 454.10000002384186,
+          "bodyEndMs": 454.80000001192093,
+          "durationMs": 167,
+          "decodedBytes": 47940,
+          "transferBytes": 48240
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 535.6000000238419,
+          "bodyEndMs": 536.1999999880791,
+          "durationMs": 248.39999997615814,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        },
+        {
+          "path": "/transaction-context.js",
+          "startMs": 287.80000001192093,
+          "firstByteMs": 535.6000000238419,
+          "bodyEndMs": 536.3000000119209,
+          "durationMs": 248.5,
+          "decodedBytes": 16447,
+          "transferBytes": 16747
+        },
+        {
+          "path": "/batch-selection.js",
+          "startMs": 373.60000002384186,
+          "firstByteMs": 536,
+          "bodyEndMs": 536.6000000238419,
+          "durationMs": 163,
+          "decodedBytes": 8665,
+          "transferBytes": 8965
+        },
+        {
+          "path": "/luma-factory.js",
+          "startMs": 458.69999998807907,
+          "firstByteMs": 540.3000000119209,
+          "bodyEndMs": 540.6000000238419,
+          "durationMs": 81.90000003576279,
+          "decodedBytes": 10734,
+          "transferBytes": 11034
+        }
+      ],
+      "css": [
+        {
+          "path": "/styles.css",
+          "startMs": 97.60000002384186,
+          "firstByteMs": 183,
+          "bodyEndMs": 183.30000001192093,
+          "durationMs": 85.69999998807907,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/contract-inbox.css",
+          "startMs": 97.60000002384186,
+          "firstByteMs": 183.19999998807907,
+          "bodyEndMs": 183.5,
+          "durationMs": 85.89999997615814,
+          "decodedBytes": 11506,
+          "transferBytes": 11806
+        },
+        {
+          "path": "/batch-actions.css",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 183.69999998807907,
+          "bodyEndMs": 183.9000000357628,
+          "durationMs": 86.20000004768372,
+          "decodedBytes": 8893,
+          "transferBytes": 9193
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 183.9000000357628,
+          "bodyEndMs": 184.19999998807907,
+          "durationMs": 86.5,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 97.69999998807907,
+          "firstByteMs": 264.30000001192093,
+          "bodyEndMs": 264.5,
+          "durationMs": 166.80000001192093,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        }
+      ],
+      "jsBytes": 455516,
+      "cssBytes": 83709
+    },
+    {
+      "sample": "desktop-cold",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fcpMs": 280,
+      "loadingMs": 264.69999998807907,
+      "usableMs": 2065.399999976158,
+      "lcp": {
+        "ms": 2080,
+        "tag": "H1"
+      },
+      "cls": 0.00673511646412037,
+      "resources": [
+        {
+          "path": "/styles.css",
+          "startMs": 84.80000001192093,
+          "firstByteMs": 169.39999997615814,
+          "bodyEndMs": 169.89999997615814,
+          "durationMs": 85.09999996423721,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/assets/geist-latin.woff2",
+          "startMs": 84.80000001192093,
+          "firstByteMs": 169.39999997615814,
+          "bodyEndMs": 170.0999999642372,
+          "durationMs": 85.29999995231628,
+          "decodedBytes": 29288,
+          "transferBytes": 29588
+        },
+        {
+          "path": "/assets/instrument-serif-regular.woff2",
+          "startMs": 84.80000001192093,
+          "firstByteMs": 169.5999999642372,
+          "bodyEndMs": 170.89999997615814,
+          "durationMs": 86.09999996423721,
+          "decodedBytes": 15040,
+          "transferBytes": 15340
+        },
+        {
+          "path": "/contract-inbox.css",
+          "startMs": 84.89999997615814,
+          "firstByteMs": 169.69999998807907,
+          "bodyEndMs": 170.30000001192093,
+          "durationMs": 85.40000003576279,
+          "decodedBytes": 11506,
+          "transferBytes": 11806
+        },
+        {
+          "path": "/batch-actions.css",
+          "startMs": 84.89999997615814,
+          "firstByteMs": 169.69999998807907,
+          "bodyEndMs": 170.5999999642372,
+          "durationMs": 85.69999998807907,
+          "decodedBytes": 8893,
+          "transferBytes": 9193
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 84.89999997615814,
+          "firstByteMs": 169.69999998807907,
+          "bodyEndMs": 170.69999998807907,
+          "durationMs": 85.80000001192093,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 85,
+          "firstByteMs": 252.0999999642372,
+          "bodyEndMs": 253,
+          "durationMs": 168,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        },
+        {
+          "path": "/app.js",
+          "startMs": 85,
+          "firstByteMs": 252.30000001192093,
+          "bodyEndMs": 253.80000001192093,
+          "durationMs": 168.80000001192093,
+          "decodedBytes": 235647,
+          "transferBytes": 235947
+        },
+        {
+          "path": "/assets/kleros-logo.svg",
+          "startMs": 85.09999996423721,
+          "firstByteMs": 253.5,
+          "bodyEndMs": 254.5999999642372,
+          "durationMs": 169.5,
+          "decodedBytes": 4891,
+          "transferBytes": 5191
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 269.39999997615814,
+          "firstByteMs": 361.0999999642372,
+          "bodyEndMs": 361.5999999642372,
+          "durationMs": 92.19999998807907,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/selected-event.js",
+          "startMs": 269.5,
+          "firstByteMs": 361.19999998807907,
+          "bodyEndMs": 362.39999997615814,
+          "durationMs": 92.89999997615814,
+          "decodedBytes": 4773,
+          "transferBytes": 5073
+        },
+        {
+          "path": "/reconciliation.js",
+          "startMs": 269.5,
+          "firstByteMs": 361.30000001192093,
+          "bodyEndMs": 362.5,
+          "durationMs": 93,
+          "decodedBytes": 11027,
+          "transferBytes": 11327
+        },
+        {
+          "path": "/hosted-wallet.js",
+          "startMs": 269.5999999642372,
+          "firstByteMs": 361.80000001192093,
+          "bodyEndMs": 362.80000001192093,
+          "durationMs": 93.20000004768372,
+          "decodedBytes": 856,
+          "transferBytes": 1156
+        },
+        {
+          "path": "/contract-inbox.js",
+          "startMs": 269.5999999642372,
+          "firstByteMs": 361.89999997615814,
+          "bodyEndMs": 363.30000001192093,
+          "durationMs": 93.70000004768372,
+          "decodedBytes": 28916,
+          "transferBytes": 29216
+        },
+        {
+          "path": "/batch-actions.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 361.89999997615814,
+          "bodyEndMs": 363.39999997615814,
+          "durationMs": 93.69999998807907,
+          "decodedBytes": 49217,
+          "transferBytes": 49517
+        },
+        {
+          "path": "/batch-pending.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 443.80000001192093,
+          "bodyEndMs": 445,
+          "durationMs": 175.30000001192093,
+          "decodedBytes": 5210,
+          "transferBytes": 5510
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 443.89999997615814,
+          "bodyEndMs": 445.0999999642372,
+          "durationMs": 175.39999997615814,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/luma-launch.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 444,
+          "bodyEndMs": 445.19999998807907,
+          "durationMs": 175.5,
+          "decodedBytes": 4083,
+          "transferBytes": 4383
+        },
+        {
+          "path": "/case-publication.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 444.80000001192093,
+          "bodyEndMs": 446,
+          "durationMs": 176.19999998807907,
+          "decodedBytes": 8267,
+          "transferBytes": 8567
+        },
+        {
+          "path": "/environment.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 444.80000001192093,
+          "bodyEndMs": 446.0999999642372,
+          "durationMs": 176.29999995231628,
+          "decodedBytes": 8730,
+          "transferBytes": 9030
+        },
+        {
+          "path": "/luma-setup.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 444.69999998807907,
+          "bodyEndMs": 445.89999997615814,
+          "durationMs": 176.0999999642372,
+          "decodedBytes": 47940,
+          "transferBytes": 48240
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 527.0999999642372,
+          "bodyEndMs": 527.6999999880791,
+          "durationMs": 257.89999997615814,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        },
+        {
+          "path": "/transaction-context.js",
+          "startMs": 269.89999997615814,
+          "firstByteMs": 527.3000000119209,
+          "bodyEndMs": 527.8999999761581,
+          "durationMs": 258,
+          "decodedBytes": 16447,
+          "transferBytes": 16747
+        },
+        {
+          "path": "/batch-selection.js",
+          "startMs": 365.19999998807907,
+          "firstByteMs": 529.8000000119209,
+          "bodyEndMs": 530.1999999880791,
+          "durationMs": 165,
+          "decodedBytes": 8665,
+          "transferBytes": 8965
+        },
+        {
+          "path": "/luma-factory.js",
+          "startMs": 448.0999999642372,
+          "firstByteMs": 531.5,
+          "bodyEndMs": 531.8000000119209,
+          "durationMs": 83.70000004768372,
+          "decodedBytes": 10734,
+          "transferBytes": 11034
+        },
+        {
+          "path": "/api/public-catalog",
+          "startMs": 538.1999999880791,
+          "firstByteMs": 2048.300000011921,
+          "bodyEndMs": 2049,
+          "durationMs": 1510.800000011921,
+          "decodedBytes": 5931,
+          "transferBytes": 6231
+        }
+      ],
+      "longTasks": [],
+      "providerAccess": 0,
+      "storageReads": [],
+      "overflow": false,
+      "renderAfterCatalogMs": 16.399999976158142,
+      "catalog": {
+        "path": "/api/public-catalog",
+        "startMs": 538.1999999880791,
+        "firstByteMs": 2048.300000011921,
+        "bodyEndMs": 2049,
+        "durationMs": 1510.800000011921,
+        "decodedBytes": 5931,
+        "transferBytes": 6231
+      },
+      "js": [
+        {
+          "path": "/app.js",
+          "startMs": 85,
+          "firstByteMs": 252.30000001192093,
+          "bodyEndMs": 253.80000001192093,
+          "durationMs": 168.80000001192093,
+          "decodedBytes": 235647,
+          "transferBytes": 235947
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 269.39999997615814,
+          "firstByteMs": 361.0999999642372,
+          "bodyEndMs": 361.5999999642372,
+          "durationMs": 92.19999998807907,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/selected-event.js",
+          "startMs": 269.5,
+          "firstByteMs": 361.19999998807907,
+          "bodyEndMs": 362.39999997615814,
+          "durationMs": 92.89999997615814,
+          "decodedBytes": 4773,
+          "transferBytes": 5073
+        },
+        {
+          "path": "/reconciliation.js",
+          "startMs": 269.5,
+          "firstByteMs": 361.30000001192093,
+          "bodyEndMs": 362.5,
+          "durationMs": 93,
+          "decodedBytes": 11027,
+          "transferBytes": 11327
+        },
+        {
+          "path": "/hosted-wallet.js",
+          "startMs": 269.5999999642372,
+          "firstByteMs": 361.80000001192093,
+          "bodyEndMs": 362.80000001192093,
+          "durationMs": 93.20000004768372,
+          "decodedBytes": 856,
+          "transferBytes": 1156
+        },
+        {
+          "path": "/contract-inbox.js",
+          "startMs": 269.5999999642372,
+          "firstByteMs": 361.89999997615814,
+          "bodyEndMs": 363.30000001192093,
+          "durationMs": 93.70000004768372,
+          "decodedBytes": 28916,
+          "transferBytes": 29216
+        },
+        {
+          "path": "/batch-actions.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 361.89999997615814,
+          "bodyEndMs": 363.39999997615814,
+          "durationMs": 93.69999998807907,
+          "decodedBytes": 49217,
+          "transferBytes": 49517
+        },
+        {
+          "path": "/batch-pending.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 443.80000001192093,
+          "bodyEndMs": 445,
+          "durationMs": 175.30000001192093,
+          "decodedBytes": 5210,
+          "transferBytes": 5510
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 443.89999997615814,
+          "bodyEndMs": 445.0999999642372,
+          "durationMs": 175.39999997615814,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/luma-launch.js",
+          "startMs": 269.69999998807907,
+          "firstByteMs": 444,
+          "bodyEndMs": 445.19999998807907,
+          "durationMs": 175.5,
+          "decodedBytes": 4083,
+          "transferBytes": 4383
+        },
+        {
+          "path": "/case-publication.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 444.80000001192093,
+          "bodyEndMs": 446,
+          "durationMs": 176.19999998807907,
+          "decodedBytes": 8267,
+          "transferBytes": 8567
+        },
+        {
+          "path": "/environment.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 444.80000001192093,
+          "bodyEndMs": 446.0999999642372,
+          "durationMs": 176.29999995231628,
+          "decodedBytes": 8730,
+          "transferBytes": 9030
+        },
+        {
+          "path": "/luma-setup.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 444.69999998807907,
+          "bodyEndMs": 445.89999997615814,
+          "durationMs": 176.0999999642372,
+          "decodedBytes": 47940,
+          "transferBytes": 48240
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 269.80000001192093,
+          "firstByteMs": 527.0999999642372,
+          "bodyEndMs": 527.6999999880791,
+          "durationMs": 257.89999997615814,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        },
+        {
+          "path": "/transaction-context.js",
+          "startMs": 269.89999997615814,
+          "firstByteMs": 527.3000000119209,
+          "bodyEndMs": 527.8999999761581,
+          "durationMs": 258,
+          "decodedBytes": 16447,
+          "transferBytes": 16747
+        },
+        {
+          "path": "/batch-selection.js",
+          "startMs": 365.19999998807907,
+          "firstByteMs": 529.8000000119209,
+          "bodyEndMs": 530.1999999880791,
+          "durationMs": 165,
+          "decodedBytes": 8665,
+          "transferBytes": 8965
+        },
+        {
+          "path": "/luma-factory.js",
+          "startMs": 448.0999999642372,
+          "firstByteMs": 531.5,
+          "bodyEndMs": 531.8000000119209,
+          "durationMs": 83.70000004768372,
+          "decodedBytes": 10734,
+          "transferBytes": 11034
+        }
+      ],
+      "css": [
+        {
+          "path": "/styles.css",
+          "startMs": 84.80000001192093,
+          "firstByteMs": 169.39999997615814,
+          "bodyEndMs": 169.89999997615814,
+          "durationMs": 85.09999996423721,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/contract-inbox.css",
+          "startMs": 84.89999997615814,
+          "firstByteMs": 169.69999998807907,
+          "bodyEndMs": 170.30000001192093,
+          "durationMs": 85.40000003576279,
+          "decodedBytes": 11506,
+          "transferBytes": 11806
+        },
+        {
+          "path": "/batch-actions.css",
+          "startMs": 84.89999997615814,
+          "firstByteMs": 169.69999998807907,
+          "bodyEndMs": 170.5999999642372,
+          "durationMs": 85.69999998807907,
+          "decodedBytes": 8893,
+          "transferBytes": 9193
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 84.89999997615814,
+          "firstByteMs": 169.69999998807907,
+          "bodyEndMs": 170.69999998807907,
+          "durationMs": 85.80000001192093,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 85,
+          "firstByteMs": 252.0999999642372,
+          "bodyEndMs": 253,
+          "durationMs": 168,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        }
+      ],
+      "jsBytes": 455516,
+      "cssBytes": 83709
+    }
+  ],
+  "candidateMetrics": [
+    {
+      "sample": "mobile-cold",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fcpMs": 188,
+      "loadingMs": 182,
+      "usableMs": 1705.300000011921,
+      "lcp": {
+        "ms": 1712,
+        "tag": "H3"
+      },
+      "cls": 0.062219913601165744,
+      "resources": [
+        {
+          "path": "/assets/geist-latin.woff2",
+          "startMs": 86.80000001192093,
+          "firstByteMs": 172.4000000357628,
+          "bodyEndMs": 172.69999998807907,
+          "durationMs": 85.89999997615814,
+          "decodedBytes": 29288,
+          "transferBytes": 29588
+        },
+        {
+          "path": "/styles.css",
+          "startMs": 86.90000003576279,
+          "firstByteMs": 172.69999998807907,
+          "bodyEndMs": 173.10000002384186,
+          "durationMs": 86.19999998807907,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 86.90000003576279,
+          "firstByteMs": 172.69999998807907,
+          "bodyEndMs": 173.4000000357628,
+          "durationMs": 86.5,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/assets/instrument-serif-regular.woff2",
+          "startMs": 86.90000003576279,
+          "firstByteMs": 172.60000002384186,
+          "bodyEndMs": 173,
+          "durationMs": 86.09999996423721,
+          "decodedBytes": 15040,
+          "transferBytes": 15340
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 87,
+          "firstByteMs": 172.69999998807907,
+          "bodyEndMs": 173.4000000357628,
+          "durationMs": 86.40000003576279,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        },
+        {
+          "path": "/entry.js",
+          "startMs": 87,
+          "firstByteMs": 172.80000001192093,
+          "bodyEndMs": 173.60000002384186,
+          "durationMs": 86.60000002384186,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/assets/kleros-logo.svg",
+          "startMs": 87,
+          "firstByteMs": 254.69999998807907,
+          "bodyEndMs": 254.80000001192093,
+          "durationMs": 167.80000001192093,
+          "decodedBytes": 4891,
+          "transferBytes": 5191
+        },
+        {
+          "path": "/api/public-catalog",
+          "startMs": 176.30000001192093,
+          "firstByteMs": 1688.4000000357628,
+          "bodyEndMs": 1689.199999988079,
+          "durationMs": 1512.8999999761581,
+          "decodedBytes": 5931,
+          "transferBytes": 6231
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 176.4000000357628,
+          "firstByteMs": 267.4000000357628,
+          "bodyEndMs": 267.60000002384186,
+          "durationMs": 91.19999998807907,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 268.19999998807907,
+          "firstByteMs": 350.4000000357628,
+          "bodyEndMs": 350.69999998807907,
+          "durationMs": 82.5,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 268.19999998807907,
+          "firstByteMs": 350.5,
+          "bodyEndMs": 350.69999998807907,
+          "durationMs": 82.5,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 351.19999998807907,
+          "firstByteMs": 434,
+          "bodyEndMs": 434.19999998807907,
+          "durationMs": 83,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "longTasks": [],
+      "providerAccess": 0,
+      "storageReads": [],
+      "overflow": false,
+      "renderAfterCatalogMs": 16.100000023841858,
+      "catalog": {
+        "path": "/api/public-catalog",
+        "startMs": 176.30000001192093,
+        "firstByteMs": 1688.4000000357628,
+        "bodyEndMs": 1689.199999988079,
+        "durationMs": 1512.8999999761581,
+        "decodedBytes": 5931,
+        "transferBytes": 6231
+      },
+      "js": [
+        {
+          "path": "/entry.js",
+          "startMs": 87,
+          "firstByteMs": 172.80000001192093,
+          "bodyEndMs": 173.60000002384186,
+          "durationMs": 86.60000002384186,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 176.4000000357628,
+          "firstByteMs": 267.4000000357628,
+          "bodyEndMs": 267.60000002384186,
+          "durationMs": 91.19999998807907,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 268.19999998807907,
+          "firstByteMs": 350.4000000357628,
+          "bodyEndMs": 350.69999998807907,
+          "durationMs": 82.5,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 268.19999998807907,
+          "firstByteMs": 350.5,
+          "bodyEndMs": 350.69999998807907,
+          "durationMs": 82.5,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 351.19999998807907,
+          "firstByteMs": 434,
+          "bodyEndMs": 434.19999998807907,
+          "durationMs": 83,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "css": [
+        {
+          "path": "/styles.css",
+          "startMs": 86.90000003576279,
+          "firstByteMs": 172.69999998807907,
+          "bodyEndMs": 173.10000002384186,
+          "durationMs": 86.19999998807907,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 86.90000003576279,
+          "firstByteMs": 172.69999998807907,
+          "bodyEndMs": 173.4000000357628,
+          "durationMs": 86.5,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 87,
+          "firstByteMs": 172.69999998807907,
+          "bodyEndMs": 173.4000000357628,
+          "durationMs": 86.40000003576279,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        }
+      ],
+      "jsBytes": 29394,
+      "cssBytes": 63310
+    },
+    {
+      "sample": "desktop-cold",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fcpMs": 188,
+      "loadingMs": 177.89999997615814,
+      "usableMs": 1698.3999999761581,
+      "lcp": {
+        "ms": 1712,
+        "tag": "H1"
+      },
+      "cls": 0.00673511646412037,
+      "resources": [
+        {
+          "path": "/assets/geist-latin.woff2",
+          "startMs": 83.5,
+          "firstByteMs": 168,
+          "bodyEndMs": 168.69999998807907,
+          "durationMs": 85.19999998807907,
+          "decodedBytes": 29288,
+          "transferBytes": 29588
+        },
+        {
+          "path": "/styles.css",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.0999999642372,
+          "bodyEndMs": 168.39999997615814,
+          "durationMs": 84.69999998807907,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.0999999642372,
+          "bodyEndMs": 168.5,
+          "durationMs": 84.80000001192093,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.30000001192093,
+          "bodyEndMs": 169.0999999642372,
+          "durationMs": 85.39999997615814,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        },
+        {
+          "path": "/assets/instrument-serif-regular.woff2",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.30000001192093,
+          "bodyEndMs": 169.19999998807907,
+          "durationMs": 85.5,
+          "decodedBytes": 15040,
+          "transferBytes": 15340
+        },
+        {
+          "path": "/entry.js",
+          "startMs": 83.80000001192093,
+          "firstByteMs": 168.30000001192093,
+          "bodyEndMs": 169.19999998807907,
+          "durationMs": 85.39999997615814,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/assets/kleros-logo.svg",
+          "startMs": 83.80000001192093,
+          "firstByteMs": 251.5999999642372,
+          "bodyEndMs": 253.69999998807907,
+          "durationMs": 169.89999997615814,
+          "decodedBytes": 4891,
+          "transferBytes": 5191
+        },
+        {
+          "path": "/api/public-catalog",
+          "startMs": 171.5999999642372,
+          "firstByteMs": 1679,
+          "bodyEndMs": 1680,
+          "durationMs": 1508.4000000357628,
+          "decodedBytes": 5931,
+          "transferBytes": 6231
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 171.80000001192093,
+          "firstByteMs": 257.80000001192093,
+          "bodyEndMs": 257.89999997615814,
+          "durationMs": 86.09999996423721,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 258.30000001192093,
+          "firstByteMs": 340.5999999642372,
+          "bodyEndMs": 340.89999997615814,
+          "durationMs": 82.59999996423721,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 258.39999997615814,
+          "firstByteMs": 340.69999998807907,
+          "bodyEndMs": 340.89999997615814,
+          "durationMs": 82.5,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 341.5,
+          "firstByteMs": 423.80000001192093,
+          "bodyEndMs": 424.30000001192093,
+          "durationMs": 82.80000001192093,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "longTasks": [],
+      "providerAccess": 0,
+      "storageReads": [],
+      "overflow": false,
+      "renderAfterCatalogMs": 18.399999976158142,
+      "catalog": {
+        "path": "/api/public-catalog",
+        "startMs": 171.5999999642372,
+        "firstByteMs": 1679,
+        "bodyEndMs": 1680,
+        "durationMs": 1508.4000000357628,
+        "decodedBytes": 5931,
+        "transferBytes": 6231
+      },
+      "js": [
+        {
+          "path": "/entry.js",
+          "startMs": 83.80000001192093,
+          "firstByteMs": 168.30000001192093,
+          "bodyEndMs": 169.19999998807907,
+          "durationMs": 85.39999997615814,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 171.80000001192093,
+          "firstByteMs": 257.80000001192093,
+          "bodyEndMs": 257.89999997615814,
+          "durationMs": 86.09999996423721,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 258.30000001192093,
+          "firstByteMs": 340.5999999642372,
+          "bodyEndMs": 340.89999997615814,
+          "durationMs": 82.59999996423721,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 258.39999997615814,
+          "firstByteMs": 340.69999998807907,
+          "bodyEndMs": 340.89999997615814,
+          "durationMs": 82.5,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 341.5,
+          "firstByteMs": 423.80000001192093,
+          "bodyEndMs": 424.30000001192093,
+          "durationMs": 82.80000001192093,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "css": [
+        {
+          "path": "/styles.css",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.0999999642372,
+          "bodyEndMs": 168.39999997615814,
+          "durationMs": 84.69999998807907,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.0999999642372,
+          "bodyEndMs": 168.5,
+          "durationMs": 84.80000001192093,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 83.69999998807907,
+          "firstByteMs": 168.30000001192093,
+          "bodyEndMs": 169.0999999642372,
+          "durationMs": 85.39999997615814,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        }
+      ],
+      "jsBytes": 29394,
+      "cssBytes": 63310
+    }
+  ],
+  "methodCounts": {
+    "GET /api/public-catalog": 17,
+    "GET /api/bootstrap": 7,
+    "DELETE /api/session": 1
+  },
+  "providerRequests": 0,
+  "financialEndpoints": 0,
+  "publicRequests": 0,
+  "visualReview": {
+    "inspected": [
+      "mobile-cold-loading.png",
+      "mobile-cold-ready.png",
+      "desktop-cold-ready.png",
+      "mobile-200-text-component.png"
+    ],
+    "result": "Neutral early loading and readable unchanged public directory. Both complete escaped titles/date/status/Open controls remain readable at390px doubled computed text, without horizontal overflow. No WCAG conformance claim."
+  },
+  "guards": [
+    "mobile-cold: exact enabled-search/catalog/status readiness, one catalog, no bootstrap/provider/journal; source-bound graph and timings captured",
+    "desktop-cold: exact enabled-search/catalog/status readiness, one catalog, no bootstrap/provider/journal; source-bound graph and timings captured",
+    "Lean public projection excludes private/malformed entries and markup; Skip/query/clear/caret/focus work locally; same-scope refresh retains input and enlarged mobile text reflows",
+    "503 and malformed catalog errors never import full app or fall back; explicit keyboard retry restores search focus",
+    "404 consumes one legacy hint and one full-app bootstrap; later refresh retries catalog without persistent skip or repeated app import",
+    "One native setup handoff initializes recovery before creation, preserves pending hash privately, carries only same-context query and retains negative wallet invalidation with one fake logout",
+    "Cold selected-event and setup URLs load full app directly once, with one fresh scoped bootstrap, no catalog request and no lean catalog screen",
+    "Sticky handoff uses latest hash while app import is held; late aborted home response cannot repaint selected event",
+    "Full-app import failure exposes explicit reload without bootstrap, signing or automatic retry; user reload safely resumes setup",
+    "The35s deadline covers a held JSON body after200headers; clock-driven expiry exposes explicit retry with no bootstrap fallback"
+  ],
+  "earlierCandidateFailures": [
+    {
+      "result": "artifacts/lean-startup/candidate-2026-10-29T14-09-40.520Z/results.json",
+      "reason": "Harness expected unfiltered status after intentionally preserving query; explicit query expectation corrected, product unchanged."
+    },
+    {
+      "result": "artifacts/lean-startup/candidate-2026-10-29T14-11-09.647Z/results.json",
+      "reason": "Harness incorrectly forbade shared pure public-home render-helper import on full deep routes; replaced with actual no lean screen mounted while retaining exact API/one-app checks, product unchanged."
+    }
+  ],
+  "limits": [
+    "1500ms catalog and80ms EVERY static response are modeled local waits; measurements do not establish live backend speed or field Core Web Vitals. Each device is one fresh-context observation.",
+    "Gzip figures are independently compressed source bytes using level9/mtime0 per module, not observed HTTP transfer or production Brotli. Local timing responses are uncompressed/no-store.",
+    "No auth POST, provider method, RPC, key, signature, financial endpoint, upload, actual cookie or broadcast occurred. Only one exact fake local DELETEsession supports negative invalidation coverage.",
+    "Journal test reads preseeded synthetic recovery state and blocks new creation; it does not exercise economic rules, actual reconciliation or the new backend review pipeline.",
+    "Core owns public paired measurements: current live before baseline2.6021s ready/FCP1.172s; historical3.3589s is not the before comparator.",
+    "No broad financial suite or old source proof was rerun or relabeled."
+  ],
+  "sessionsRunning": false
+}

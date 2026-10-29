@@ -119,7 +119,7 @@ try {
   await fs.cp(path.join(root, "public"), output, { recursive: true });
   const index = (await fs.readFile(path.join(output, "index.html"), "utf8"))
     .replace(
-      '<script type="module" src="/app.js"></script>',
+      /<script type="module" src="\/(?:app|entry)\.js"><\/script>/,
       '<script type="module" src="/preview.js"></script>',
     )
     .replace(

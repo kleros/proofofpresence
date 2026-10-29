@@ -1,0 +1,56 @@
+{
+  "status": "passed-local-combined-lean-integration",
+  "checkedAt": "2026-10-29T14:29:18.155Z",
+  "uiSource": "ea35a1b7aa23b34ce4233cd983537bd28a5aef03",
+  "backendReuseCheckpoint": "359d94c",
+  "productSha256": {
+    "public/entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "public/public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "public/app.js": "89e320901b964d7585427b10a45bdbd27607e73dc6e7c646c7818b5c69c87cf6",
+    "public/index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "public/luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509",
+    "public/loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef"
+  },
+  "checks": [
+    {
+      "command": "npm run typecheck",
+      "status": "passed"
+    },
+    {
+      "command": "node scripts/build.mjs",
+      "status": "passed"
+    },
+    {
+      "command": "node test/lean-startup.e2e.mjs --candidate",
+      "status": "passed",
+      "groups": 10,
+      "runner": "isolatedUIsourceowner",
+      "proof": "artifacts/lean-startup/candidate-2026-10-29T14-12-57.336Z/final-provenance.json"
+    },
+    {
+      "command": "node test/selected-bootstrap-ui.e2e.mjs",
+      "status": "passed",
+      "groups": 12,
+      "runner": "isolatedUIsourceowner",
+      "proof": "artifacts/ui-ux-audit/integrated/joint-browser/2026-10-29T14-11-28-307Z/results.json"
+    },
+    {
+      "command": "node test/legacy-entry-root.e2e.mjs --run-loopback",
+      "status": "passed",
+      "actualLocalVersions": [
+        "truth-pays-v7",
+        "kleros-event-v8"
+      ],
+      "proof": "artifacts/legacy-entry-root/2026-10-29T14-25-56-184Z-db5af5d3-eb0e-4432-987a-747f6c62d484/proof.json",
+      "note": "Initial inspector failed to read an intentionally aborted404 body; corrected exactpath/status inspection. Both immutable runs retained; product unchanged."
+    },
+    {
+      "command": "node --check scripts/build-netlify-preview.mjs && node --check scripts/netlify-preview-client.js",
+      "status": "passed",
+      "note": "Only entry-script/explicit-start wiring updated. Actual new index replacement verified. Full historical snapshot generation/mode compatibility was not rerun or claimed."
+    }
+  ],
+  "backendGuards": "All closing/history/current/EOA/source checks unchanged; only2within-phase value reuses.",
+  "financialActions": 0,
+  "deployments": "pending; recentliveorganizer activity requires carefulbackend timing. Frontendonlypublication doesnotrestartbackend orforceoldtabreload."
+}

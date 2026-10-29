@@ -1,0 +1,2173 @@
+{
+  "status": "failed",
+  "baseline": false,
+  "protocol": {
+    "catalogDelayMs": 1500,
+    "staticDelayMs": 80,
+    "viewport": [
+      {
+        "width": 390,
+        "height": 844
+      },
+      {
+        "width": 1440,
+        "height": 900
+      }
+    ],
+    "deviceScaleFactor": 1,
+    "reducedMotion": "reduce",
+    "cpu": "unthrottled",
+    "compression": "none",
+    "cache": "no-store"
+  },
+  "protocolSha256": "9f7b8c3fae176bdf8df71da6bf7f3923264b6873c765daccde5ba7b99e493dd5",
+  "harnessSha256": "1c5371a7aa49eeb05d221cb685e1406768dafd6c44bb40d479ffc071e5ad9103",
+  "assetSha256": {
+    "app.js": "89e320901b964d7585427b10a45bdbd27607e73dc6e7c646c7818b5c69c87cf6",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "event-search.js": "9fdc15b2d851c2176f5490c2aee7a94acb3abccd012247434fb0eebb24f50e37",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "loading.css": "38ff0705b55c3d273ed8b2d74850d5a02ed760e33c033c18d06039f677c875ef",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "luma-launch.css": "47e0874cb063eb8cbcecfef80a4e99524b6ebee0f668b60033cc8b48119d37e5",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509",
+    "public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "checks": [
+    "mobile-cold: exact enabled-search/catalog/status readiness, one catalog, no bootstrap/provider/journal; source-bound graph and timings captured",
+    "desktop-cold: exact enabled-search/catalog/status readiness, one catalog, no bootstrap/provider/journal; source-bound graph and timings captured",
+    "Lean public projection excludes private/malformed entries and markup; Skip/query/clear/caret/focus work locally; same-scope refresh retains input and enlarged mobile text reflows",
+    "503 and malformed catalog errors never import full app or fall back; explicit keyboard retry restores search focus",
+    "404 consumes one legacy hint and one full-app bootstrap; later refresh retries catalog without persistent skip or repeated app import",
+    "One native setup handoff initializes recovery before creation, preserves pending hash privately, carries only same-context query and retains negative wallet invalidation with one fake logout"
+  ],
+  "metrics": [
+    {
+      "sample": "mobile-cold",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fcpMs": 212,
+      "loadingMs": 205,
+      "usableMs": 1726.6000000238419,
+      "lcp": {
+        "ms": 1736,
+        "tag": "H3"
+      },
+      "cls": 0.062219913601165744,
+      "resources": [
+        {
+          "path": "/assets/geist-latin.woff2",
+          "startMs": 95.80000001192093,
+          "firstByteMs": 180.9000000357628,
+          "bodyEndMs": 181.10000002384186,
+          "durationMs": 85.30000001192093,
+          "decodedBytes": 29288,
+          "transferBytes": 29588
+        },
+        {
+          "path": "/styles.css",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.10000002384186,
+          "bodyEndMs": 181.4000000357628,
+          "durationMs": 85.30000001192093,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.10000002384186,
+          "bodyEndMs": 181.5,
+          "durationMs": 85.39999997615814,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.10000002384186,
+          "bodyEndMs": 181.60000002384186,
+          "durationMs": 85.5,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        },
+        {
+          "path": "/entry.js",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.20000004768372,
+          "bodyEndMs": 181.60000002384186,
+          "durationMs": 85.5,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/assets/instrument-serif-regular.woff2",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 180.9000000357628,
+          "bodyEndMs": 181.20000004768372,
+          "durationMs": 85.10000002384186,
+          "decodedBytes": 15040,
+          "transferBytes": 15340
+        },
+        {
+          "path": "/assets/kleros-logo.svg",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 261.80000001192093,
+          "bodyEndMs": 262,
+          "durationMs": 165.89999997615814,
+          "decodedBytes": 4891,
+          "transferBytes": 5191
+        },
+        {
+          "path": "/api/public-catalog",
+          "startMs": 186.70000004768372,
+          "firstByteMs": 1692.7000000476837,
+          "bodyEndMs": 1694.1000000238419,
+          "durationMs": 1507.3999999761581,
+          "decodedBytes": 5931,
+          "transferBytes": 6231
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 187.10000002384186,
+          "firstByteMs": 272.10000002384186,
+          "bodyEndMs": 272.10000002384186,
+          "durationMs": 85,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 272.80000001192093,
+          "firstByteMs": 353.7000000476837,
+          "bodyEndMs": 354.10000002384186,
+          "durationMs": 81.30000001192093,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 272.9000000357628,
+          "firstByteMs": 353.80000001192093,
+          "bodyEndMs": 354.10000002384186,
+          "durationMs": 81.19999998807907,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 354.5,
+          "firstByteMs": 436.80000001192093,
+          "bodyEndMs": 437,
+          "durationMs": 82.5,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "longTasks": [],
+      "providerAccess": 0,
+      "storageReads": [],
+      "overflow": false,
+      "renderAfterCatalogMs": 32.5,
+      "catalog": {
+        "path": "/api/public-catalog",
+        "startMs": 186.70000004768372,
+        "firstByteMs": 1692.7000000476837,
+        "bodyEndMs": 1694.1000000238419,
+        "durationMs": 1507.3999999761581,
+        "decodedBytes": 5931,
+        "transferBytes": 6231
+      },
+      "js": [
+        {
+          "path": "/entry.js",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.20000004768372,
+          "bodyEndMs": 181.60000002384186,
+          "durationMs": 85.5,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 187.10000002384186,
+          "firstByteMs": 272.10000002384186,
+          "bodyEndMs": 272.10000002384186,
+          "durationMs": 85,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 272.80000001192093,
+          "firstByteMs": 353.7000000476837,
+          "bodyEndMs": 354.10000002384186,
+          "durationMs": 81.30000001192093,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 272.9000000357628,
+          "firstByteMs": 353.80000001192093,
+          "bodyEndMs": 354.10000002384186,
+          "durationMs": 81.19999998807907,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 354.5,
+          "firstByteMs": 436.80000001192093,
+          "bodyEndMs": 437,
+          "durationMs": 82.5,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "css": [
+        {
+          "path": "/styles.css",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.10000002384186,
+          "bodyEndMs": 181.4000000357628,
+          "durationMs": 85.30000001192093,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.10000002384186,
+          "bodyEndMs": 181.5,
+          "durationMs": 85.39999997615814,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 96.10000002384186,
+          "firstByteMs": 181.10000002384186,
+          "bodyEndMs": 181.60000002384186,
+          "durationMs": 85.5,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        }
+      ],
+      "jsBytes": 29394,
+      "cssBytes": 63310
+    },
+    {
+      "sample": "desktop-cold",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fcpMs": 192,
+      "loadingMs": 181.5999999642372,
+      "usableMs": 1701.0999999642372,
+      "lcp": {
+        "ms": 1712,
+        "tag": "H1"
+      },
+      "cls": 0.00673511646412037,
+      "resources": [
+        {
+          "path": "/assets/geist-latin.woff2",
+          "startMs": 84.5,
+          "firstByteMs": 170.19999998807907,
+          "bodyEndMs": 170.80000001192093,
+          "durationMs": 86.30000001192093,
+          "decodedBytes": 29288,
+          "transferBytes": 29588
+        },
+        {
+          "path": "/styles.css",
+          "startMs": 84.59999996423721,
+          "firstByteMs": 170.30000001192093,
+          "bodyEndMs": 170.69999998807907,
+          "durationMs": 86.10000002384186,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/assets/instrument-serif-regular.woff2",
+          "startMs": 84.59999996423721,
+          "firstByteMs": 170.5,
+          "bodyEndMs": 171.19999998807907,
+          "durationMs": 86.60000002384186,
+          "decodedBytes": 15040,
+          "transferBytes": 15340
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 84.69999998807907,
+          "firstByteMs": 170.5,
+          "bodyEndMs": 171.39999997615814,
+          "durationMs": 86.69999998807907,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 84.69999998807907,
+          "firstByteMs": 170.5999999642372,
+          "bodyEndMs": 171.5,
+          "durationMs": 86.80000001192093,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        },
+        {
+          "path": "/entry.js",
+          "startMs": 84.69999998807907,
+          "firstByteMs": 170.5999999642372,
+          "bodyEndMs": 171.5999999642372,
+          "durationMs": 86.89999997615814,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/assets/kleros-logo.svg",
+          "startMs": 84.80000001192093,
+          "firstByteMs": 254.30000001192093,
+          "bodyEndMs": 264.5,
+          "durationMs": 179.69999998807907,
+          "decodedBytes": 4891,
+          "transferBytes": 5191
+        },
+        {
+          "path": "/api/public-catalog",
+          "startMs": 174.30000001192093,
+          "firstByteMs": 1682.5999999642372,
+          "bodyEndMs": 1683.699999988079,
+          "durationMs": 1509.3999999761581,
+          "decodedBytes": 5931,
+          "transferBytes": 6231
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 174.39999997615814,
+          "firstByteMs": 262.30000001192093,
+          "bodyEndMs": 264.5,
+          "durationMs": 90.10000002384186,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 265.5999999642372,
+          "firstByteMs": 347.30000001192093,
+          "bodyEndMs": 347.5999999642372,
+          "durationMs": 82,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 265.69999998807907,
+          "firstByteMs": 347.39999997615814,
+          "bodyEndMs": 347.5999999642372,
+          "durationMs": 81.89999997615814,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 348.0999999642372,
+          "firstByteMs": 430.5999999642372,
+          "bodyEndMs": 431.19999998807907,
+          "durationMs": 83.10000002384186,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "longTasks": [],
+      "providerAccess": 0,
+      "storageReads": [],
+      "overflow": false,
+      "renderAfterCatalogMs": 17.399999976158142,
+      "catalog": {
+        "path": "/api/public-catalog",
+        "startMs": 174.30000001192093,
+        "firstByteMs": 1682.5999999642372,
+        "bodyEndMs": 1683.699999988079,
+        "durationMs": 1509.3999999761581,
+        "decodedBytes": 5931,
+        "transferBytes": 6231
+      },
+      "js": [
+        {
+          "path": "/entry.js",
+          "startMs": 84.69999998807907,
+          "firstByteMs": 170.5999999642372,
+          "bodyEndMs": 171.5999999642372,
+          "durationMs": 86.89999997615814,
+          "decodedBytes": 3897,
+          "transferBytes": 4197
+        },
+        {
+          "path": "/public-home.js",
+          "startMs": 174.39999997615814,
+          "firstByteMs": 262.30000001192093,
+          "bodyEndMs": 264.5,
+          "durationMs": 90.10000002384186,
+          "decodedBytes": 10493,
+          "transferBytes": 10793
+        },
+        {
+          "path": "/event-search.js",
+          "startMs": 265.5999999642372,
+          "firstByteMs": 347.30000001192093,
+          "bodyEndMs": 347.5999999642372,
+          "durationMs": 82,
+          "decodedBytes": 6635,
+          "transferBytes": 6935
+        },
+        {
+          "path": "/ui-keyboard.js",
+          "startMs": 265.69999998807907,
+          "firstByteMs": 347.39999997615814,
+          "bodyEndMs": 347.5999999642372,
+          "durationMs": 81.89999997615814,
+          "decodedBytes": 3793,
+          "transferBytes": 4093
+        },
+        {
+          "path": "/contract-profiles.js",
+          "startMs": 348.0999999642372,
+          "firstByteMs": 430.5999999642372,
+          "bodyEndMs": 431.19999998807907,
+          "durationMs": 83.10000002384186,
+          "decodedBytes": 4576,
+          "transferBytes": 4876
+        }
+      ],
+      "css": [
+        {
+          "path": "/styles.css",
+          "startMs": 84.59999996423721,
+          "firstByteMs": 170.30000001192093,
+          "bodyEndMs": 170.69999998807907,
+          "durationMs": 86.10000002384186,
+          "decodedBytes": 46792,
+          "transferBytes": 47092
+        },
+        {
+          "path": "/loading.css",
+          "startMs": 84.69999998807907,
+          "firstByteMs": 170.5,
+          "bodyEndMs": 171.39999997615814,
+          "durationMs": 86.69999998807907,
+          "decodedBytes": 6576,
+          "transferBytes": 6876
+        },
+        {
+          "path": "/luma-launch.css",
+          "startMs": 84.69999998807907,
+          "firstByteMs": 170.5999999642372,
+          "bodyEndMs": 171.5,
+          "durationMs": 86.80000001192093,
+          "decodedBytes": 9942,
+          "transferBytes": 10242
+        }
+      ],
+      "jsBytes": 29394,
+      "cssBytes": 63310
+    }
+  ],
+  "requests": [
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070142,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283070222
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070233,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283070315
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070234,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283070315
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070234,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283070315
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070234,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283070315
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070235,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283070315
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070235,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283070315
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070316,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283070396
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070325,
+      "status": 200,
+      "respondedAt": 1793283071826
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070326,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283070406
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070408,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283070488
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070408,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283070488
+    },
+    {
+      "sample": "mobile-cold",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283070490,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283070571
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072455,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283072535
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072542,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283072623
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072543,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283072624
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072543,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283072624
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072543,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283072624
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072543,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283072624
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072543,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283072624
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072626,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283072707
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072634,
+      "status": 200,
+      "respondedAt": 1793283074136
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072635,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283072716
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072720,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283072801
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072720,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283072801
+    },
+    {
+      "sample": "desktop-cold",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283072803,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283072884
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074825,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283074906
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074912,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283074992
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074913,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283074992
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074913,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283074992
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074913,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283074992
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074913,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283074992
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074913,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283074993
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283074994,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283075075
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075002,
+      "status": 200,
+      "respondedAt": 1793283075013
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075002,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283075082
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075085,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283075167
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075085,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283075167
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075173,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283075253
+    },
+    {
+      "sample": "privacy-keyboard-search",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075422,
+      "status": 200,
+      "respondedAt": 1793283075524
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283075956,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283076037
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076042,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283076122
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076043,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283076122
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076043,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283076122
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076043,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283076122
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076043,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283076122
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076043,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283076123
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076125,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283076205
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076132,
+      "status": 200,
+      "respondedAt": 1793283076142
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076132,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283076213
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076216,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283076297
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076216,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283076297
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076302,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283076383
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076523,
+      "status": 503,
+      "respondedAt": 1793283076535
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076631,
+      "status": 200,
+      "respondedAt": 1793283076641
+    },
+    {
+      "sample": "errors-retry",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076746,
+      "status": 200,
+      "respondedAt": 1793283076756
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076903,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283076984
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076989,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283077069
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076989,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283077070
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076989,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283077070
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076989,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283077070
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076989,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283077070
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283076989,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283077070
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077072,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283077153
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077078,
+      "status": 404,
+      "respondedAt": 1793283077088
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077078,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283077159
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077161,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283077242
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077161,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283077242
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077246,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283077326
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077334,
+      "status": 200,
+      "bytes": 235902,
+      "respondedAt": 1793283077414
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077334,
+      "status": 200,
+      "bytes": 11506,
+      "respondedAt": 1793283077415
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077334,
+      "status": 200,
+      "bytes": 8893,
+      "respondedAt": 1793283077415
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077425,
+      "status": 200,
+      "bytes": 4773,
+      "respondedAt": 1793283077505
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077425,
+      "status": 200,
+      "bytes": 11027,
+      "respondedAt": 1793283077505
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077426,
+      "status": 200,
+      "bytes": 856,
+      "respondedAt": 1793283077507
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077426,
+      "status": 200,
+      "bytes": 28916,
+      "respondedAt": 1793283077507
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077426,
+      "status": 200,
+      "bytes": 49217,
+      "respondedAt": 1793283077507
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077427,
+      "status": 200,
+      "bytes": 5210,
+      "respondedAt": 1793283077507
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077507,
+      "status": 200,
+      "bytes": 4083,
+      "respondedAt": 1793283077587
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077507,
+      "status": 200,
+      "bytes": 47940,
+      "respondedAt": 1793283077588
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077509,
+      "status": 200,
+      "bytes": 8267,
+      "respondedAt": 1793283077589
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077509,
+      "status": 200,
+      "bytes": 8730,
+      "respondedAt": 1793283077589
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077510,
+      "status": 200,
+      "bytes": 16447,
+      "respondedAt": 1793283077590
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077512,
+      "status": 200,
+      "bytes": 8665,
+      "respondedAt": 1793283077593
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077595,
+      "status": 200,
+      "bytes": 10734,
+      "respondedAt": 1793283077675
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077683,
+      "actor": null,
+      "status": 200,
+      "respondedAt": 1793283077684
+    },
+    {
+      "sample": "404-one-shot",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283077968,
+      "status": 200,
+      "respondedAt": 1793283077979
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078044,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283078125
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078135,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283078216
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078135,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283078216
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078136,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283078216
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078136,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283078216
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078136,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283078216
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078136,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283078217
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078219,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283078299
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078227,
+      "status": 200,
+      "respondedAt": 1793283078238
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078227,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283078307
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078309,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283078391
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078310,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283078391
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078394,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283078475
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078653,
+      "status": 200,
+      "bytes": 11506,
+      "respondedAt": 1793283078735
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078653,
+      "status": 200,
+      "bytes": 235902,
+      "respondedAt": 1793283078735
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078654,
+      "status": 200,
+      "bytes": 8893,
+      "respondedAt": 1793283078735
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078741,
+      "status": 200,
+      "bytes": 4773,
+      "respondedAt": 1793283078823
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078741,
+      "status": 200,
+      "bytes": 11027,
+      "respondedAt": 1793283078823
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078742,
+      "status": 200,
+      "bytes": 856,
+      "respondedAt": 1793283078823
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078742,
+      "status": 200,
+      "bytes": 28916,
+      "respondedAt": 1793283078823
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078742,
+      "status": 200,
+      "bytes": 49217,
+      "respondedAt": 1793283078823
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078742,
+      "status": 200,
+      "bytes": 5210,
+      "respondedAt": 1793283078824
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078825,
+      "status": 200,
+      "bytes": 4083,
+      "respondedAt": 1793283078906
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078825,
+      "status": 200,
+      "bytes": 47940,
+      "respondedAt": 1793283078907
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078825,
+      "status": 200,
+      "bytes": 8267,
+      "respondedAt": 1793283078907
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078827,
+      "status": 200,
+      "bytes": 8730,
+      "respondedAt": 1793283078907
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078827,
+      "status": 200,
+      "bytes": 16447,
+      "respondedAt": 1793283078907
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078829,
+      "status": 200,
+      "bytes": 8665,
+      "respondedAt": 1793283078910
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283078913,
+      "status": 200,
+      "bytes": 10734,
+      "respondedAt": 1793283078994
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079001,
+      "actor": "0x1111111111111111111111111111111111111111",
+      "status": 200,
+      "respondedAt": 1793283079001
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/assets/geist-mono-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079022,
+      "status": 200,
+      "bytes": 23108,
+      "respondedAt": 1793283079104
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079504,
+      "status": 200,
+      "respondedAt": 1793283079515
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "DELETE",
+      "path": "/api/session",
+      "query": "",
+      "body": "{}",
+      "receivedAt": 1793283079619,
+      "status": 200,
+      "respondedAt": 1793283079619
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/api/public-catalog",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079621,
+      "status": 200,
+      "respondedAt": 1793283079633
+    },
+    {
+      "sample": "journal-session-handoff",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079737,
+      "actor": null,
+      "status": 200,
+      "respondedAt": 1793283079737
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079884,
+      "status": 200,
+      "bytes": 5247,
+      "respondedAt": 1793283079965
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/assets/geist-latin.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079970,
+      "status": 200,
+      "bytes": 29288,
+      "respondedAt": 1793283080052
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/styles.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079971,
+      "status": 200,
+      "bytes": 46792,
+      "respondedAt": 1793283080052
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/assets/instrument-serif-regular.woff2",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079971,
+      "status": 200,
+      "bytes": 15040,
+      "respondedAt": 1793283080052
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/loading.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079971,
+      "status": 200,
+      "bytes": 6576,
+      "respondedAt": 1793283080052
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/luma-launch.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079971,
+      "status": 200,
+      "bytes": 9942,
+      "respondedAt": 1793283080052
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/entry.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283079971,
+      "status": 200,
+      "bytes": 3897,
+      "respondedAt": 1793283080052
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/assets/kleros-logo.svg",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080055,
+      "status": 200,
+      "bytes": 4891,
+      "respondedAt": 1793283080135
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/contract-inbox.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080059,
+      "status": 200,
+      "bytes": 11506,
+      "respondedAt": 1793283080140
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/app.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080059,
+      "status": 200,
+      "bytes": 235902,
+      "respondedAt": 1793283080140
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/batch-actions.css",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080061,
+      "status": 200,
+      "bytes": 8893,
+      "respondedAt": 1793283080140
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/ui-keyboard.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080147,
+      "status": 200,
+      "bytes": 3793,
+      "respondedAt": 1793283080229
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/public-home.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080147,
+      "status": 200,
+      "bytes": 10493,
+      "respondedAt": 1793283080229
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/selected-event.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080149,
+      "status": 200,
+      "bytes": 4773,
+      "respondedAt": 1793283080229
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/reconciliation.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080149,
+      "status": 200,
+      "bytes": 11027,
+      "respondedAt": 1793283080229
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/hosted-wallet.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080150,
+      "status": 200,
+      "bytes": 856,
+      "respondedAt": 1793283080229
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/contract-inbox.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080150,
+      "status": 200,
+      "bytes": 28916,
+      "respondedAt": 1793283080229
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/batch-actions.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080230,
+      "status": 200,
+      "bytes": 49217,
+      "respondedAt": 1793283080311
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/batch-pending.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080230,
+      "status": 200,
+      "bytes": 5210,
+      "respondedAt": 1793283080311
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/event-search.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080231,
+      "status": 200,
+      "bytes": 6635,
+      "respondedAt": 1793283080311
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/luma-launch.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080232,
+      "status": 200,
+      "bytes": 4083,
+      "respondedAt": 1793283080313
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/luma-setup.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080232,
+      "status": 200,
+      "bytes": 47940,
+      "respondedAt": 1793283080313
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/case-publication.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080232,
+      "status": 200,
+      "bytes": 8267,
+      "respondedAt": 1793283080313
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/environment.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080313,
+      "status": 200,
+      "bytes": 8730,
+      "respondedAt": 1793283080394
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/contract-profiles.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080314,
+      "status": 200,
+      "bytes": 4576,
+      "respondedAt": 1793283080394
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/transaction-context.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080314,
+      "status": 200,
+      "bytes": 16447,
+      "respondedAt": 1793283080394
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/batch-selection.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080317,
+      "status": 200,
+      "bytes": 8665,
+      "respondedAt": 1793283080396
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/luma-factory.js",
+      "query": "",
+      "body": "",
+      "receivedAt": 1793283080317,
+      "status": 200,
+      "bytes": 10734,
+      "respondedAt": 1793283080397
+    },
+    {
+      "sample": "cold-deep-links",
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "query": "?selectedEventId=luma-launch-synthetic-event",
+      "body": "",
+      "receivedAt": 1793283080403,
+      "actor": null,
+      "status": 200,
+      "respondedAt": 1793283080404
+    }
+  ],
+  "blocked": [],
+  "errors": [],
+  "providerRequests": [],
+  "screenshots": [
+    "mobile-cold-loading.png",
+    "mobile-cold-ready.png",
+    "desktop-cold-loading.png",
+    "desktop-cold-ready.png",
+    "mobile-200-text-component.png"
+  ],
+  "limits": [
+    "Synthetic source-bound loopback only.1500ms catalog and80ms EVERY static response are fixed server wait models, not real network/provider latency, throughput, cache or field Web Vitals.",
+    "Ordinary browser route.continue; no route.fetch or source/body replacement in browser transport.",
+    "No wallet request, auth POST, financial endpoint, RPC, key, signature, upload or broadcast is allowed. Only exact fake local DELETEsession is permitted in the isolated invalidation case.",
+    "Baseline uses immutable exact tracked public bytes fromb0208ea/LIVE9cac8df includingwidget829d8c31. No older timing sample substitutes for it."
+  ],
+  "browser": "145.0.7632.6",
+  "failure": {
+    "message": "Expected values to be strictly equal:\n\n1 !== 0\n",
+    "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at run (file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/lean-startup.e2e.mjs:842:16)\n    at async file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/lean-startup.e2e.mjs:1023:58"
+  },
+  "completedAt": "2026-10-29T14:11:20.449Z"
+}

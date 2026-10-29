@@ -330,3 +330,14 @@ Files: `public/app.js`, `public/loading.css`. Updated29October2026, using the im
 Stages distinguish wallet sign-in from Ethereum/session verification. Errors never restore a cached
 signed-in form. Normal retry performs a fresh read; a changed server instance explicitly asks the
 user to reload. No automatic reload or transaction resend. Preserve saved transaction journals.
+
+### Shared public directory startup
+
+Files: `public/entry.js`, `public/public-home.js`, `public/app.js`. Updated29October2026.
+The existing public directory pattern is now rendered by one shared pure helper in lean and full
+startup. No token changes: surface cards,1px line border,20px radius,24px padding, Instrument Serif
+headings, Geist copy, teal primary/outlined secondary controls and existing44px minimum targets.
+Loading stays neutral until context arrives. Metadata status remains Check status on open. Retry/error
+uses the same alert/button patterns and restores keyboard focus when owned; same-scope refresh keeps
+the input/caret. CSS for contract inbox and batch controls loads only with the full app before it starts.
+No duplicated visual system, wallet prompt, storage initialization or financial controls on cold home.

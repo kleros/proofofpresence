@@ -1,5 +1,10 @@
 // @ts-check
 import { focusMain, trapDialogTab } from "./ui-keyboard.js";
+import {
+  renderPublicHome,
+  renderPublicResults,
+  publicResultStatus,
+} from "./public-home.js";
 import { selectedEventResult } from "./selected-event.js";
 import { analyzeImport } from "./reconciliation.js";
 import { assertDemoChainInstance } from "./hosted-wallet.js";
@@ -8,7 +13,6 @@ import { mountBatchActions } from "./batch-actions.js";
 import { createBatchPendingJournal } from "./batch-pending.js";
 import {
   publicEventSearchEntries,
-  searchPublicEvents,
   validatePublicCatalog,
 } from "./event-search.js";
 import {
@@ -40,10 +44,12 @@ import {
   submitWalletDraft,
 } from "./transaction-context.js";
 let transactionJournal;
-try {
-  transactionJournal = createTransactionJournal(localStorage);
-} catch {
-  transactionJournal = null;
+function initializeTransactionJournal() {
+  try {
+    transactionJournal = createTransactionJournal(localStorage);
+  } catch {
+    transactionJournal = null;
+  }
 }
 /** @param {string} selector @param {ParentNode} [parent] @returns {any} DOM selectors have element types determined by their HTML IDs. */
 const $ = (selector, parent = document) => parent.querySelector(selector);
@@ -173,21 +179,23 @@ const app = {
   batchRegistrationSelection: null,
 };
 let batchPendingJournal;
-try {
-  batchPendingJournal = createBatchPendingJournal(localStorage, {
-    origin: location.origin,
-  });
-} catch {
-  const unavailable = () => {
-    throw new Error(
-      "Durable batch recovery storage is unavailable. Saving is locked.",
-    );
-  };
-  batchPendingJournal = {
-    load: unavailable,
-    save: unavailable,
-    remove: unavailable,
-  };
+function initializeBatchPendingJournal() {
+  try {
+    batchPendingJournal = createBatchPendingJournal(localStorage, {
+      origin: location.origin,
+    });
+  } catch {
+    const unavailable = () => {
+      throw new Error(
+        "Durable batch recovery storage is unavailable. Saving is locked.",
+      );
+    };
+    batchPendingJournal = {
+      load: unavailable,
+      save: unavailable,
+      remove: unavailable,
+    };
+  }
 }
 const batchControllers = new Map();
 const batchFilterRevisions = { "approve-admission": 0, "check-in": 0 };
@@ -567,6 +575,7 @@ function mountOwnerContractInbox() {
 }
 let toastTimer;
 const publicSearch = { scope: "", query: "", entries: Object.freeze([]) };
+let pendingPublicSearch = null;
 let displayCatalog = null;
 // Negative-only invalidation hint: the display-only catalog has no session DTO.
 let walletSessionObserved = false;
@@ -1540,6 +1549,7 @@ function load({
   silent = false,
   coalesce = false,
   acknowledgedWallet = undefined,
+  legacyCatalogMissing = false,
 } = {}) {
   const route = readRoute();
   const key = JSON.stringify(route);
@@ -1556,6 +1566,8 @@ function load({
   const record = {
     key,
     route,
+    skipInitialCatalog:
+      legacyCatalogMissing === true && !route.eventId && !route.setup,
     controller: new AbortController(),
     generation: ++app.generation,
     // Only a successful session mutation supplies this explicit actor. Do not
@@ -1630,11 +1642,13 @@ async function loadView(record, silent) {
       identity.disabled = true;
       identity.onclick = null;
       let rawCatalog;
-      try {
-        rawCatalog = await readForLoad("/api/public-catalog", record);
-      } catch (error) {
-        if (error.status !== 404) throw error;
-        // An older/demo server has no catalog endpoint. Fall back once only.
+      if (!record.skipInitialCatalog) {
+        try {
+          rawCatalog = await readForLoad("/api/public-catalog", record);
+        } catch (error) {
+          if (error.status !== 404) throw error;
+          // An older/demo server has no catalog endpoint. Fall back once only.
+        }
       }
       if (generation !== app.generation) return;
       if (rawCatalog !== undefined) {
@@ -1848,7 +1862,12 @@ function setPublicSearchScope(mode, instanceId) {
   const scope = JSON.stringify([mode, instanceId]);
   if (publicSearch.scope === scope) return;
   publicSearch.scope = scope;
-  publicSearch.query = "";
+  publicSearch.query =
+    pendingPublicSearch?.mode === mode &&
+    pendingPublicSearch?.instanceId === instanceId
+      ? pendingPublicSearch.query
+      : "";
+  pendingPublicSearch = null;
   publicSearch.entries = Object.freeze([]);
 }
 function renderPublicCatalogChrome() {
@@ -1876,21 +1895,11 @@ function renderLaunchHome() {
   publicSearch.entries = publicCatalogScreen()
     ? displayCatalog.events
     : publicEventSearchEntries(app.bootstrap?.events);
-  const matches = searchPublicEvents(publicSearch.entries, publicSearch.query);
-  return `<section class="luma-launch" data-launch-root ${publicCatalogScreen() ? "data-public-catalog-screen" : ""}><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Find your event, review its deposit and return to Luma.</p></div><section class="luma-launch-card public-event-search"><h2>Find your event</h2>${publicCatalogScreen() ? '<p class="field-help" data-public-catalog-note>Recorded event details only. Current status and wallet actions are checked when you open an event.</p>' : ""}<label for="public-event-search">Search by event name</label><div class="public-event-controls"><input id="public-event-search" type="search" data-public-event-search maxlength="120" autocomplete="off" placeholder="Event name" value="${escape(publicSearch.query)}" aria-controls="public-event-results"><button class="button button-secondary" type="button" data-public-event-clear ${publicSearch.query ? "" : "hidden"}>Clear search</button></div><p class="public-event-status" data-public-event-status role="status" aria-live="polite" aria-atomic="true">${escape(publicSearchStatus(matches.length))}</p><div id="public-event-results" data-public-event-results>${renderPublicEventResults(matches)}</div></section><section class="luma-launch-card"><h2>Organizing an event?</h2><p>Connect your Luma event to its own reviewed kickback contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></section>`;
-}
-function publicSearchStatus(count) {
-  if (!publicSearch.entries.length) return "No public events yet.";
-  return publicSearch.query.trim()
-    ? `${count} matching public ${count === 1 ? "event" : "events"}.`
-    : `${count} public ${count === 1 ? "event" : "events"}.`;
-}
-function renderPublicEventResults(entries) {
-  if (!publicSearch.entries.length)
-    return '<p class="public-event-empty">No public events yet.</p>';
-  if (!entries.length)
-    return `<p class="public-event-empty">No events match “${escape(publicSearch.query)}”. Try another name or clear your search.</p>`;
-  return `<ul class="public-event-list">${entries.map((event) => `<li class="public-event-row" data-public-event-row><div class="public-event-copy"><h3>${escape(event.title)}</h3><p class="public-event-date">${event.startsAt && event.timezone ? escape(formatTime(event.startsAt, event.timezone)) : "Date unavailable"}</p><div class="public-event-meta"><span>${event.depositWei === null ? "Deposit unavailable" : `Event deposit: ${eth(event.depositWei)} ETH`}</span><span class="badge">${escape(event.statusLabel)}</span></div></div><a class="button button-secondary" data-public-event-open href="#${new URLSearchParams({ event: event.id, view: "participant" })}" aria-label="Open event: ${escape(event.title)}">Open event</a></li>`).join("")}</ul>`;
+  return renderPublicHome({
+    entries: publicSearch.entries,
+    query: publicSearch.query,
+    metadataOnly: publicCatalogScreen(),
+  });
 }
 function updatePublicEventResults() {
   if (
@@ -1908,9 +1917,14 @@ function updatePublicEventResults() {
   const results = $("[data-public-event-results]"),
     status = $("[data-public-event-status]");
   if (!results || !status) return;
-  const entries = searchPublicEvents(publicSearch.entries, publicSearch.query);
-  results.innerHTML = renderPublicEventResults(entries);
-  status.textContent = publicSearchStatus(entries.length);
+  results.innerHTML = renderPublicResults(
+    publicSearch.entries,
+    publicSearch.query,
+  );
+  status.textContent = publicResultStatus(
+    publicSearch.entries,
+    publicSearch.query,
+  );
   $("[data-public-event-clear]").hidden = !publicSearch.query;
 }
 function mountLaunchSetup() {
@@ -3704,650 +3718,690 @@ function showDemoHelp() {
   );
 }
 
-document.addEventListener("change", async (event) => {
-  const target = event.target;
-  if (
-    !(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)
-  )
-    return;
-  try {
+function installAppHandlers() {
+  document.addEventListener("change", async (event) => {
+    const target = event.target;
     if (
-      target instanceof HTMLInputElement &&
-      target.matches("[data-case-publication-consent]")
-    ) {
-      const review = caseArtifactReview,
-        button = $("[data-case-publication=publish]");
-      if (button)
-        button.disabled =
-          !review ||
-          !caseArtifactCurrent(review) ||
-          review.working ||
-          !target.checked ||
-          !publicationActions(review.record?.publication).canPublish ||
-          caseUploadAttempts.has(caseAttemptKey(review.record));
+      !(
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLSelectElement
+      )
+    )
       return;
-    }
-    if (target.id === "event-switch") {
-      invalidateDraft();
-      navigate(target.value, app.route.view, "#event-switch");
-      return;
-    }
-    if (target.closest('[data-form="import"]')) {
-      app.importReview = null;
-      if ($("#import-preview")) $("#import-preview").innerHTML = "";
-    }
-    if (target.matches("[data-identity]")) {
-      await switchIdentity(target.value);
-    }
-    if (target.matches("[data-admission]")) {
-      const select = target;
-      select.disabled = true;
-      await api(
-        eventPath(
-          `/participants/${encodeURIComponent(select.dataset.admission)}`,
-        ),
-        { method: "PATCH", body: JSON.stringify({ admission: select.value }) },
-      );
-      await load({ silent: true });
-      toast(
-        "Admission decision saved. Contract registration remains a separate reviewed action.",
-      );
-    }
-    if (
-      target instanceof HTMLInputElement &&
-      target.matches("[data-csv-file]") &&
-      target.files[0]
-    ) {
-      if (target.files[0].size > 2 * 1024 * 1024)
-        throw new Error("Use a CSV smaller than 2 MB.");
-      const generation = app.generation,
-        token = ++app.csvReadToken;
-      const file = target.files[0],
-        field = $("#import-csv"),
-        preview = $("[data-import-preview]");
-      if (preview) preview.disabled = true;
-      try {
-        const contents = await file.text();
-        if (
-          generation !== app.generation ||
-          token !== app.csvReadToken ||
-          !field?.isConnected ||
-          target.files[0] !== file
-        )
-          return;
+    try {
+      if (
+        target instanceof HTMLInputElement &&
+        target.matches("[data-case-publication-consent]")
+      ) {
+        const review = caseArtifactReview,
+          button = $("[data-case-publication=publish]");
+        if (button)
+          button.disabled =
+            !review ||
+            !caseArtifactCurrent(review) ||
+            review.working ||
+            !target.checked ||
+            !publicationActions(review.record?.publication).canPublish ||
+            caseUploadAttempts.has(caseAttemptKey(review.record));
+        return;
+      }
+      if (target.id === "event-switch") {
+        invalidateDraft();
+        navigate(target.value, app.route.view, "#event-switch");
+        return;
+      }
+      if (target.closest('[data-form="import"]')) {
         app.importReview = null;
         if ($("#import-preview")) $("#import-preview").innerHTML = "";
-        field.value = contents;
-      } finally {
-        if (token === app.csvReadToken && preview?.isConnected)
-          preview.disabled = false;
       }
-    }
-    if (
-      target instanceof HTMLInputElement &&
-      target.matches("[data-evidence-file]") &&
-      target.files[0]
-    ) {
-      if (isProduction())
-        throw new Error(
-          "File uploads are unavailable in production. Enter an evidence URI and review its submission instead.",
+      if (target.matches("[data-identity]")) {
+        await switchIdentity(target.value);
+      }
+      if (target.matches("[data-admission]")) {
+        const select = target;
+        select.disabled = true;
+        await api(
+          eventPath(
+            `/participants/${encodeURIComponent(select.dataset.admission)}`,
+          ),
+          {
+            method: "PATCH",
+            body: JSON.stringify({ admission: select.value }),
+          },
         );
-      if (target.files[0].size > 256 * 1024)
-        throw new Error("Local evidence is limited to a single 256 KiB block.");
-      const body = new FormData();
-      body.set("data", target.files[0]);
-      const response = await fetch("/local-upload", {
-        method: "POST",
-        body,
-        credentials: "same-origin",
-      });
-      const result = await response.json();
-      if (!response.ok)
-        throw new Error(result.error ?? "Local evidence storage failed.");
-      const form = target.closest("form");
-      if (form) $('[name="uri"]', form).value = result.path;
-      toast(
-        "Evidence file stored on this server. Review the resolver transaction to submit its URI; this does not publish it to IPFS.",
-      );
-    }
-  } catch (error) {
-    toast(error.message, true);
-    if (target.matches("[data-admission]")) await load({ silent: true });
-  }
-});
-
-document.addEventListener("click", async (event) => {
-  if (!(event.target instanceof Element)) return;
-  const workflow = event.target.closest("[data-workflow]");
-  if (workflow) {
-    event.preventDefault();
-    const target = $(`#${workflow.getAttribute("data-workflow")}`);
-    target?.scrollIntoView({ block: "start" });
-    target?.focus();
-    return;
-  }
-  const button = event.target.closest("button");
-  if (!button || button.disabled) return;
-  const data = button.dataset;
-  try {
-    if ("setupReload" in data) {
-      if (productionSetupRoute()) window.location.reload();
-      return;
-    }
-    if ("setupRetry" in data) {
-      if (productionSetupRoute()) await load({ silent: true });
-      return;
-    }
-    if ("publicEventClear" in data) {
-      const field = $("[data-public-event-search]");
-      if (publicHomePresentation() && field) {
-        publicSearch.query = "";
-        field.value = "";
-        updatePublicEventResults();
-        field.focus();
-      }
-      return;
-    }
-    if ("caseArtifact" in data) {
-      button.disabled = true;
-      try {
-        await openCaseArtifact(data.caseWallet, data.caseArtifact);
-      } finally {
-        if (button.isConnected) button.disabled = false;
-      }
-      return;
-    }
-    if ("casePublication" in data) {
-      await casePublicationAction(data.casePublication);
-      return;
-    }
-    if ("launchRegister" in data) {
-      const person = app.detail?.participants?.find(
-        (person) =>
-          person.id === data.launchParticipant &&
-          person.eventId === app.route.eventId &&
-          same(person.wallet, data.launchRegister),
-      );
-      if (
-        !isProduction() ||
-        !isOwner() ||
-        !person ||
-        person.admission !== "approved" ||
-        !person.deposit?.verified ||
-        person.registered
-      )
-        throw new Error(
-          "Review this wallet's current host approval and canonical deposit before registration.",
-        );
-      await prepareTransaction("register", { wallets: [person.wallet] });
-      return;
-    }
-    if ("launchCopy" in data) {
-      const field = $("[data-launch-hash]");
-      if (!field || !/^0x[0-9a-f]{64}$/i.test(field.value))
-        throw new Error("A verified transaction reference is unavailable.");
-      try {
-        await navigator.clipboard.writeText(field.value);
-        toast("Transaction ID copied. Paste it into your Luma registration.");
-      } catch {
-        field.focus();
-        field.select();
-        toast("Select and copy the transaction ID shown here.");
-      }
-      return;
-    }
-    if ("reconcileSubmission" in data) {
-      await reconcileSubmittedRecovery(data.reconcileSubmission, button);
-      return;
-    }
-    if ("startRegistration" in data) {
-      $("#reg-name")?.focus();
-      return;
-    }
-    if ("reviewImport" in data) {
-      reviewImportConsequences();
-      return;
-    }
-    if ("importCommit" in data) {
-      await commitReviewedImport(button);
-      return;
-    }
-    if ("close" in data) {
-      invalidateDraft();
-      return;
-    }
-    if ("batchRegister" in data) {
-      await prepareBatchRegistration();
-      return;
-    }
-    if ("reload" in data) {
-      await load();
-      return;
-    }
-    if ("chooseIdentity" in data) {
-      showIdentityDialog();
-      return;
-    }
-    if ("connectWallet" in data) {
-      if (walletConnectionPending) {
+        await load({ silent: true });
         toast(
-          "Complete or cancel the existing wallet sign-in request before trying again.",
+          "Admission decision saved. Contract registration remains a separate reviewed action.",
+        );
+      }
+      if (
+        target instanceof HTMLInputElement &&
+        target.matches("[data-csv-file]") &&
+        target.files[0]
+      ) {
+        if (target.files[0].size > 2 * 1024 * 1024)
+          throw new Error("Use a CSV smaller than 2 MB.");
+        const generation = app.generation,
+          token = ++app.csvReadToken;
+        const file = target.files[0],
+          field = $("#import-csv"),
+          preview = $("[data-import-preview]");
+        if (preview) preview.disabled = true;
+        try {
+          const contents = await file.text();
+          if (
+            generation !== app.generation ||
+            token !== app.csvReadToken ||
+            !field?.isConnected ||
+            target.files[0] !== file
+          )
+            return;
+          app.importReview = null;
+          if ($("#import-preview")) $("#import-preview").innerHTML = "";
+          field.value = contents;
+        } finally {
+          if (token === app.csvReadToken && preview?.isConnected)
+            preview.disabled = false;
+        }
+      }
+      if (
+        target instanceof HTMLInputElement &&
+        target.matches("[data-evidence-file]") &&
+        target.files[0]
+      ) {
+        if (isProduction())
+          throw new Error(
+            "File uploads are unavailable in production. Enter an evidence URI and review its submission instead.",
+          );
+        if (target.files[0].size > 256 * 1024)
+          throw new Error(
+            "Local evidence is limited to a single 256 KiB block.",
+          );
+        const body = new FormData();
+        body.set("data", target.files[0]);
+        const response = await fetch("/local-upload", {
+          method: "POST",
+          body,
+          credentials: "same-origin",
+        });
+        const result = await response.json();
+        if (!response.ok)
+          throw new Error(result.error ?? "Local evidence storage failed.");
+        const form = target.closest("form");
+        if (form) $('[name="uri"]', form).value = result.path;
+        toast(
+          "Evidence file stored on this server. Review the resolver transaction to submit its URI; this does not publish it to IPFS.",
+        );
+      }
+    } catch (error) {
+      toast(error.message, true);
+      if (target.matches("[data-admission]")) await load({ silent: true });
+    }
+  });
+
+  document.addEventListener("click", async (event) => {
+    if (!(event.target instanceof Element)) return;
+    const workflow = event.target.closest("[data-workflow]");
+    if (workflow) {
+      event.preventDefault();
+      const target = $(`#${workflow.getAttribute("data-workflow")}`);
+      target?.scrollIntoView({ block: "start" });
+      target?.focus();
+      return;
+    }
+    const button = event.target.closest("button");
+    if (!button || button.disabled) return;
+    const data = button.dataset;
+    try {
+      if ("setupReload" in data) {
+        if (productionSetupRoute()) window.location.reload();
+        return;
+      }
+      if ("setupRetry" in data) {
+        if (productionSetupRoute()) await load({ silent: true });
+        return;
+      }
+      if ("publicEventClear" in data) {
+        const field = $("[data-public-event-search]");
+        if (publicHomePresentation() && field) {
+          publicSearch.query = "";
+          field.value = "";
+          updatePublicEventResults();
+          field.focus();
+        }
+        return;
+      }
+      if ("caseArtifact" in data) {
+        button.disabled = true;
+        try {
+          await openCaseArtifact(data.caseWallet, data.caseArtifact);
+        } finally {
+          if (button.isConnected) button.disabled = false;
+        }
+        return;
+      }
+      if ("casePublication" in data) {
+        await casePublicationAction(data.casePublication);
+        return;
+      }
+      if ("launchRegister" in data) {
+        const person = app.detail?.participants?.find(
+          (person) =>
+            person.id === data.launchParticipant &&
+            person.eventId === app.route.eventId &&
+            same(person.wallet, data.launchRegister),
+        );
+        if (
+          !isProduction() ||
+          !isOwner() ||
+          !person ||
+          person.admission !== "approved" ||
+          !person.deposit?.verified ||
+          person.registered
+        )
+          throw new Error(
+            "Review this wallet's current host approval and canonical deposit before registration.",
+          );
+        await prepareTransaction("register", { wallets: [person.wallet] });
+        return;
+      }
+      if ("launchCopy" in data) {
+        const field = $("[data-launch-hash]");
+        if (!field || !/^0x[0-9a-f]{64}$/i.test(field.value))
+          throw new Error("A verified transaction reference is unavailable.");
+        try {
+          await navigator.clipboard.writeText(field.value);
+          toast("Transaction ID copied. Paste it into your Luma registration.");
+        } catch {
+          field.focus();
+          field.select();
+          toast("Select and copy the transaction ID shown here.");
+        }
+        return;
+      }
+      if ("reconcileSubmission" in data) {
+        await reconcileSubmittedRecovery(data.reconcileSubmission, button);
+        return;
+      }
+      if ("startRegistration" in data) {
+        $("#reg-name")?.focus();
+        return;
+      }
+      if ("reviewImport" in data) {
+        reviewImportConsequences();
+        return;
+      }
+      if ("importCommit" in data) {
+        await commitReviewedImport(button);
+        return;
+      }
+      if ("close" in data) {
+        invalidateDraft();
+        return;
+      }
+      if ("batchRegister" in data) {
+        await prepareBatchRegistration();
+        return;
+      }
+      if ("reload" in data) {
+        await load();
+        return;
+      }
+      if ("chooseIdentity" in data) {
+        showIdentityDialog();
+        return;
+      }
+      if ("connectWallet" in data) {
+        if (walletConnectionPending) {
+          toast(
+            "Complete or cancel the existing wallet sign-in request before trying again.",
+          );
+          return;
+        }
+        button.disabled = true;
+        await connectWallet();
+        return;
+      }
+      if ("fundWallet" in data) {
+        if (!isSandbox())
+          throw new Error(
+            "Local faucet controls are available only in the sandbox.",
+          );
+        button.disabled = true;
+        const result = await post("/api/demo/fund", {});
+        await load({ silent: true });
+        toast(
+          `Received 1 local ETH. Confirmed local faucet transaction ${short(result.hash)}.`,
         );
         return;
       }
-      button.disabled = true;
-      await connectWallet();
-      return;
-    }
-    if ("fundWallet" in data) {
-      if (!isSandbox())
-        throw new Error(
-          "Local faucet controls are available only in the sandbox.",
-        );
-      button.disabled = true;
-      const result = await post("/api/demo/fund", {});
-      await load({ silent: true });
-      toast(
-        `Received 1 local ETH. Confirmed local faucet transaction ${short(result.hash)}.`,
-      );
-      return;
-    }
-    if ("logout" in data) {
-      await switchIdentity("");
-      return;
-    }
-    if ("createEvent" in data) {
-      showCreateEvent();
-      return;
-    }
-    if ("view" in data) {
-      navigate(app.route.eventId, data.view, `[data-view="${data.view}"]`);
-      return;
-    }
-    if ("demoHelp" in data) {
-      showDemoHelp();
-      return;
-    }
-    if ("execute" in data) {
-      await executeTransaction();
-      return;
-    }
-    if ("recovery" in data) {
-      showRecovery(data.recovery);
-      return;
-    }
-    if ("correction" in data) {
-      showCorrection();
-      return;
-    }
-    if ("editEvent" in data) {
-      showEventSettings();
-      return;
-    }
-    if ("checkin" in data) {
-      showCheckin(data.checkin);
-      return;
-    }
-    if ("tx" in data) {
-      await prepareTransaction(data.tx, {
-        ...(data.wallet ? { wallet: data.wallet } : {}),
-        ...(data.tx === "appealRewards" ? { sides: [0, 1, 2] } : {}),
-      });
-      return;
-    }
-    if ("personal" in data) {
-      if (isProduction())
-        throw new Error(
-          "Event registration and personal history stay outside this deposit page.",
-        );
-      button.disabled = true;
-      await post(eventPath("/personal"), { attended: true });
-      await load({ silent: true });
-      toast("Personal attendance saved. Financial eligibility is unchanged.");
-      return;
-    }
-    if ("advance" in data) {
-      if (!isSandbox())
-        throw new Error("Only the sandbox clock can be advanced here.");
-      invalidateDraft();
-      button.disabled = true;
-      await post("/api/demo/advance", { seconds: Number(data.advance) });
-      await load({ silent: true });
-      toast("Local chain time advanced. Transaction drafts cleared.");
-      return;
-    }
-    if ("publish" in data) {
-      if (isProduction())
-        throw new Error(
-          "Review and consent to the exact production artifact before publication.",
-        );
-      button.disabled = true;
-      const result = await post(
-        eventPath(`/cases/${encodeURIComponent(data.publish)}/publish`),
-        {},
-      );
-      await load({ silent: true });
-      toast(
-        `Exact case bytes verified and stored on this server (${result.status}). IPFS network publication is not enabled.`,
-      );
-      return;
-    }
-    if ("ruling" in data) {
-      if (!isSandbox())
-        throw new Error(
-          "Mock Court rulings are available only in the sandbox.",
-        );
-      button.disabled = true;
-      await post(eventPath("/demo/ruling"), {
-        wallet: data.wallet,
-        ruling: Number(data.ruling),
-      });
-      await load({ silent: true });
-      toast(
-        "Mock Court ruling recorded. Review “Settle final / unmatched case” to apply it to the event contract.",
-      );
-      return;
-    }
-    if ("openAppeal" in data) {
-      if (!isSandbox())
-        throw new Error(
-          "Mock appeal controls are available only in the sandbox.",
-        );
-      button.disabled = true;
-      await post(eventPath("/demo/appeal"), {
-        wallet: data.openAppeal,
-        ruling: 1,
-        duration: 3600,
-      });
-      await load({ silent: true });
-      toast("Mock appeal period opened for one local hour.");
-    }
-  } catch (error) {
-    toast(error.message, true);
-    if (!button.matches("[data-execute]")) button.disabled = false;
-  }
-});
-
-document.addEventListener("input", (event) => {
-  if (
-    event.target instanceof HTMLInputElement &&
-    event.target.matches("[data-public-event-search]") &&
-    event.target === $("[data-public-event-search]") &&
-    publicHomePresentation()
-  ) {
-    publicSearch.query = event.target.value.slice(0, 120);
-    updatePublicEventResults();
-    return;
-  }
-  if (
-    event.target instanceof Element &&
-    event.target.closest('[data-form="import"]')
-  ) {
-    app.importReview = null;
-    if ($("#import-preview")) $("#import-preview").innerHTML = "";
-  }
-});
-document.addEventListener("submit", async (event) => {
-  if (!(event.target instanceof Element)) return;
-  const form = event.target.closest("form[data-form]");
-  if (!(form instanceof HTMLFormElement)) return;
-  event.preventDefault();
-  const values = Object.fromEntries(new FormData(form));
-  const submit = $("[type=submit],button:not([type])", form);
-  if (submit) submit.disabled = true;
-  try {
-    switch (form.dataset.form) {
-      case "registration":
+      if ("logout" in data) {
+        await switchIdentity("");
+        return;
+      }
+      if ("createEvent" in data) {
+        showCreateEvent();
+        return;
+      }
+      if ("view" in data) {
+        navigate(app.route.eventId, data.view, `[data-view="${data.view}"]`);
+        return;
+      }
+      if ("demoHelp" in data) {
+        showDemoHelp();
+        return;
+      }
+      if ("execute" in data) {
+        await executeTransaction();
+        return;
+      }
+      if ("recovery" in data) {
+        showRecovery(data.recovery);
+        return;
+      }
+      if ("correction" in data) {
+        showCorrection();
+        return;
+      }
+      if ("editEvent" in data) {
+        showEventSettings();
+        return;
+      }
+      if ("checkin" in data) {
+        showCheckin(data.checkin);
+        return;
+      }
+      if ("tx" in data) {
+        await prepareTransaction(data.tx, {
+          ...(data.wallet ? { wallet: data.wallet } : {}),
+          ...(data.tx === "appealRewards" ? { sides: [0, 1, 2] } : {}),
+        });
+        return;
+      }
+      if ("personal" in data) {
         if (isProduction())
           throw new Error(
-            "Complete registration on Luma. This page does not collect registration details.",
+            "Event registration and personal history stay outside this deposit page.",
           );
-        await post(eventPath("/participants"), values);
+        button.disabled = true;
+        await post(eventPath("/personal"), { attended: true });
+        await load({ silent: true });
+        toast("Personal attendance saved. Financial eligibility is unchanged.");
+        return;
+      }
+      if ("advance" in data) {
+        if (!isSandbox())
+          throw new Error("Only the sandbox clock can be advanced here.");
+        invalidateDraft();
+        button.disabled = true;
+        await post("/api/demo/advance", { seconds: Number(data.advance) });
+        await load({ silent: true });
+        toast("Local chain time advanced. Transaction drafts cleared.");
+        return;
+      }
+      if ("publish" in data) {
+        if (isProduction())
+          throw new Error(
+            "Review and consent to the exact production artifact before publication.",
+          );
+        button.disabled = true;
+        const result = await post(
+          eventPath(`/cases/${encodeURIComponent(data.publish)}/publish`),
+          {},
+        );
         await load({ silent: true });
         toast(
-          "Registration linked to your authenticated wallet for this event. Organizer admission is pending.",
+          `Exact case bytes verified and stored on this server (${result.status}). IPFS network publication is not enabled.`,
         );
-        break;
-      case "receipt":
-        await post(eventPath("/deposits"), values);
-        await load({ silent: true });
-        toast("Receipt and deposit log verified against this event.");
-        break;
-      case "checkin":
-        await post(eventPath("/checkins"), {
-          participantId: form.dataset.participant,
-          nonce: crypto.randomUUID(),
-          source: "staff-door",
-          note: values.note,
+        return;
+      }
+      if ("ruling" in data) {
+        if (!isSandbox())
+          throw new Error(
+            "Mock Court rulings are available only in the sandbox.",
+          );
+        button.disabled = true;
+        await post(eventPath("/demo/ruling"), {
+          wallet: data.wallet,
+          ruling: Number(data.ruling),
         });
         await load({ silent: true });
-        toast("Trusted event check-in recorded with reviewer and nonce.");
-        break;
-      case "import": {
-        invalidateDraft();
-        const input = {
-          kind: String(values.kind),
-          csv: String(values.csv),
-          ...(values.sourceEventId
-            ? { sourceEventId: String(values.sourceEventId) }
-            : {}),
-          ...(values.reviewConfirmed
-            ? {
-                review: {
-                  confirmed: true,
-                  note: String(values.reviewNote ?? ""),
-                },
-              }
-            : {}),
-        };
-        const sourceValues = JSON.stringify([...new FormData(form)]);
-        const analysis = analyzeImport(input, app.detail);
-        const scope = {
-          eventId: app.route.eventId,
-          generation: app.generation,
-          wallet: currentIdentity()?.wallet,
-          unsignedReviewVersion: app.unsignedReviewVersion,
-        };
-        const projection = importProjection(app.detail);
-        const bytes = await crypto.subtle.digest(
-          "SHA-256",
-          new TextEncoder().encode(input.csv),
+        toast(
+          "Mock Court ruling recorded. Review “Settle final / unmatched case” to apply it to the event contract.",
         );
-        const sourceHash = [...new Uint8Array(bytes)]
-          .map((n) => n.toString(16).padStart(2, "0"))
-          .join("");
-        if (
-          sourceValues !== JSON.stringify([...new FormData(form)]) ||
-          scope.generation !== app.generation ||
-          scope.unsignedReviewVersion !== app.unsignedReviewVersion ||
-          scope.eventId !== app.route.eventId ||
-          !same(scope.wallet, currentIdentity()?.wallet)
-        )
-          return;
-        let serverPreview = null;
-        if (!analysis.errors.length) {
-          serverPreview = await post(
-            `/api/events/${encodeURIComponent(scope.eventId)}/imports/preview`,
-            input,
+        return;
+      }
+      if ("openAppeal" in data) {
+        if (!isSandbox())
+          throw new Error(
+            "Mock appeal controls are available only in the sandbox.",
           );
+        button.disabled = true;
+        await post(eventPath("/demo/appeal"), {
+          wallet: data.openAppeal,
+          ruling: 1,
+          duration: 3600,
+        });
+        await load({ silent: true });
+        toast("Mock appeal period opened for one local hour.");
+      }
+    } catch (error) {
+      toast(error.message, true);
+      if (!button.matches("[data-execute]")) button.disabled = false;
+    }
+  });
+
+  document.addEventListener("input", (event) => {
+    if (
+      event.target instanceof HTMLInputElement &&
+      event.target.matches("[data-public-event-search]") &&
+      event.target === $("[data-public-event-search]") &&
+      publicHomePresentation()
+    ) {
+      publicSearch.query = event.target.value.slice(0, 120);
+      updatePublicEventResults();
+      return;
+    }
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-form="import"]')
+    ) {
+      app.importReview = null;
+      if ($("#import-preview")) $("#import-preview").innerHTML = "";
+    }
+  });
+  document.addEventListener("submit", async (event) => {
+    if (!(event.target instanceof Element)) return;
+    const form = event.target.closest("form[data-form]");
+    if (!(form instanceof HTMLFormElement)) return;
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(form));
+    const submit = $("[type=submit],button:not([type])", form);
+    if (submit) submit.disabled = true;
+    try {
+      switch (form.dataset.form) {
+        case "registration":
+          if (isProduction())
+            throw new Error(
+              "Complete registration on Luma. This page does not collect registration details.",
+            );
+          await post(eventPath("/participants"), values);
+          await load({ silent: true });
+          toast(
+            "Registration linked to your authenticated wallet for this event. Organizer admission is pending.",
+          );
+          break;
+        case "receipt":
+          await post(eventPath("/deposits"), values);
+          await load({ silent: true });
+          toast("Receipt and deposit log verified against this event.");
+          break;
+        case "checkin":
+          await post(eventPath("/checkins"), {
+            participantId: form.dataset.participant,
+            nonce: crypto.randomUUID(),
+            source: "staff-door",
+            note: values.note,
+          });
+          await load({ silent: true });
+          toast("Trusted event check-in recorded with reviewer and nonce.");
+          break;
+        case "import": {
+          invalidateDraft();
+          const input = {
+            kind: String(values.kind),
+            csv: String(values.csv),
+            ...(values.sourceEventId
+              ? { sourceEventId: String(values.sourceEventId) }
+              : {}),
+            ...(values.reviewConfirmed
+              ? {
+                  review: {
+                    confirmed: true,
+                    note: String(values.reviewNote ?? ""),
+                  },
+                }
+              : {}),
+          };
+          const sourceValues = JSON.stringify([...new FormData(form)]);
+          const analysis = analyzeImport(input, app.detail);
+          const scope = {
+            eventId: app.route.eventId,
+            generation: app.generation,
+            wallet: currentIdentity()?.wallet,
+            unsignedReviewVersion: app.unsignedReviewVersion,
+          };
+          const projection = importProjection(app.detail);
+          const bytes = await crypto.subtle.digest(
+            "SHA-256",
+            new TextEncoder().encode(input.csv),
+          );
+          const sourceHash = [...new Uint8Array(bytes)]
+            .map((n) => n.toString(16).padStart(2, "0"))
+            .join("");
           if (
+            sourceValues !== JSON.stringify([...new FormData(form)]) ||
             scope.generation !== app.generation ||
             scope.unsignedReviewVersion !== app.unsignedReviewVersion ||
             scope.eventId !== app.route.eventId ||
-            !same(scope.wallet, currentIdentity()?.wallet) ||
-            sourceValues !== JSON.stringify([...new FormData(form)])
+            !same(scope.wallet, currentIdentity()?.wallet)
           )
             return;
-          if (serverPreview.sourceHash !== sourceHash)
-            throw new Error(
-              "Server source hash differs. Reload and review this source again.",
+          let serverPreview = null;
+          if (!analysis.errors.length) {
+            serverPreview = await post(
+              `/api/events/${encodeURIComponent(scope.eventId)}/imports/preview`,
+              input,
             );
-        }
-        app.importReview = {
-          serverPreview,
-          sourceValues,
-          projection,
-          input,
-          analysis,
-          sourceHash,
-          eventId: app.route.eventId,
-          wallet: currentIdentity()?.wallet,
-          fingerprint: app.detail.state.fingerprint,
-          blockNumber: app.detail.state.blockNumber,
-          generation: app.generation,
-        };
-        $("#import-preview").innerHTML = renderImportPreview(app.importReview);
-        enhanceTables();
-        $("#import-preview").focus();
-        toast(
-          analysis.errors.length
-            ? "Import blocked. Correct every exception before reviewing."
-            : "Source preview ready. Review consequences before applying any rows.",
-          analysis.errors.length > 0,
-        );
-        break;
-      }
-      case "recovery":
-        await prepareTransaction(form.dataset.action, {
-          to: values.to,
-          ...(values.amount ? { amountWei: toWei(values.amount) } : {}),
-        });
-        break;
-      case "event-settings":
-        await api(eventPath(""), {
-          method: "PATCH",
-          body: JSON.stringify(values),
-        });
-        await load({ silent: true });
-        toast(
-          "Event settings saved. Financial terms remain bound to their original deployment.",
-        );
-        break;
-      case "correction":
-        await prepareTransaction("addAttendees", {
-          wallets: addressList(values.wallets),
-        });
-        break;
-      case "evidence":
-        await prepareTransaction("evidence", {
-          wallet: form.dataset.wallet,
-          uri: values.uri,
-        });
-        break;
-      case "appeal":
-        await prepareTransaction("fundAppeal", {
-          wallet: form.dataset.wallet,
-          side: Number(values.side),
-          amountWei: toWei(values.amount),
-        });
-        break;
-      case "create-event": {
-        if (!isSandbox())
-          throw new Error(
-            "Demonstration event deployment is available only in the sandbox.",
+            if (
+              scope.generation !== app.generation ||
+              scope.unsignedReviewVersion !== app.unsignedReviewVersion ||
+              scope.eventId !== app.route.eventId ||
+              !same(scope.wallet, currentIdentity()?.wallet) ||
+              sourceValues !== JSON.stringify([...new FormData(form)])
+            )
+              return;
+            if (serverPreview.sourceHash !== sourceHash)
+              throw new Error(
+                "Server source hash differs. Reload and review this source again.",
+              );
+          }
+          app.importReview = {
+            serverPreview,
+            sourceValues,
+            projection,
+            input,
+            analysis,
+            sourceHash,
+            eventId: app.route.eventId,
+            wallet: currentIdentity()?.wallet,
+            fingerprint: app.detail.state.fingerprint,
+            blockNumber: app.detail.state.blockNumber,
+            generation: app.generation,
+          };
+          $("#import-preview").innerHTML = renderImportPreview(
+            app.importReview,
           );
-        const created = await post("/api/events", {
-          ...values,
-          startsAt: new Date(`${values.startsAt}:00Z`).toISOString(),
-          endsAt: new Date(`${values.endsAt}:00Z`).toISOString(),
-        });
-        invalidateDraft();
-        toast("Independent local event and event contract created.");
-        navigate(created.id ?? created.event?.id);
-        break;
+          enhanceTables();
+          $("#import-preview").focus();
+          toast(
+            analysis.errors.length
+              ? "Import blocked. Correct every exception before reviewing."
+              : "Source preview ready. Review consequences before applying any rows.",
+            analysis.errors.length > 0,
+          );
+          break;
+        }
+        case "recovery":
+          await prepareTransaction(form.dataset.action, {
+            to: values.to,
+            ...(values.amount ? { amountWei: toWei(values.amount) } : {}),
+          });
+          break;
+        case "event-settings":
+          await api(eventPath(""), {
+            method: "PATCH",
+            body: JSON.stringify(values),
+          });
+          await load({ silent: true });
+          toast(
+            "Event settings saved. Financial terms remain bound to their original deployment.",
+          );
+          break;
+        case "correction":
+          await prepareTransaction("addAttendees", {
+            wallets: addressList(values.wallets),
+          });
+          break;
+        case "evidence":
+          await prepareTransaction("evidence", {
+            wallet: form.dataset.wallet,
+            uri: values.uri,
+          });
+          break;
+        case "appeal":
+          await prepareTransaction("fundAppeal", {
+            wallet: form.dataset.wallet,
+            side: Number(values.side),
+            amountWei: toWei(values.amount),
+          });
+          break;
+        case "create-event": {
+          if (!isSandbox())
+            throw new Error(
+              "Demonstration event deployment is available only in the sandbox.",
+            );
+          const created = await post("/api/events", {
+            ...values,
+            startsAt: new Date(`${values.startsAt}:00Z`).toISOString(),
+            endsAt: new Date(`${values.endsAt}:00Z`).toISOString(),
+          });
+          invalidateDraft();
+          toast("Independent local event and event contract created.");
+          navigate(created.id ?? created.event?.id);
+          break;
+        }
+      }
+    } catch (error) {
+      toast(error.message, true);
+    } finally {
+      if (submit?.isConnected) submit.disabled = false;
+    }
+  });
+
+  $("#review-dialog").addEventListener("close", () => {
+    closeCaseArtifactReview();
+    app.draft = null;
+    app.draftParams = null;
+    app.importReview = null;
+    const restore = dialogReturnFocus;
+    dialogReturnFocus = null;
+    if (
+      isProduction() &&
+      app.detail?.event.id === app.route.eventId &&
+      readRoute().eventId === app.route.eventId &&
+      app.route.view !== "organizer" &&
+      !$("#review-dialog").open
+    ) {
+      const card = $("[data-luma-launch] [data-launch-state]");
+      if (card) {
+        const template = document.createElement("template");
+        template.innerHTML = renderLaunchParticipant();
+        const refreshed = template.content.querySelector("[data-launch-state]");
+        if (refreshed) card.replaceWith(refreshed);
+        disableUnreadyProductionActions();
       }
     }
-  } catch (error) {
-    toast(error.message, true);
-  } finally {
-    if (submit?.isConnected) submit.disabled = false;
-  }
-});
-
-$("#review-dialog").addEventListener("close", () => {
-  closeCaseArtifactReview();
-  app.draft = null;
-  app.draftParams = null;
-  app.importReview = null;
-  const restore = dialogReturnFocus;
-  dialogReturnFocus = null;
-  if (
-    isProduction() &&
-    app.detail?.event.id === app.route.eventId &&
-    readRoute().eventId === app.route.eventId &&
-    app.route.view !== "organizer" &&
-    !$("#review-dialog").open
-  ) {
-    const card = $("[data-luma-launch] [data-launch-state]");
-    if (card) {
-      const template = document.createElement("template");
-      template.innerHTML = renderLaunchParticipant();
-      const refreshed = template.content.querySelector("[data-launch-state]");
-      if (refreshed) card.replaceWith(refreshed);
-      disableUnreadyProductionActions();
+    if (restore?.element?.isConnected) restore.element.focus();
+    else if (restore?.selector) $(restore.selector)?.focus();
+    if (
+      isProduction() &&
+      document.activeElement === document.body &&
+      $("#launch-state-title")
+    ) {
+      $("#launch-state-title").tabIndex = -1;
+      $("#launch-state-title").focus();
     }
+  });
+  document.addEventListener("keydown", (event) => {
+    const dialog = $("#review-dialog");
+    if (dialog.open && event.key === "Tab") {
+      trapDialogTab(event, dialog);
+      return;
+    }
+    if (
+      !(event.target instanceof Element) ||
+      !event.target.matches('[role="tab"]')
+    )
+      return;
+    const tabs = $$('.tabs [role="tab"]');
+    const index = tabs.indexOf(event.target);
+    let next;
+    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft")
+      next = (index + tabs.length - 1) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    navigate(
+      app.route.eventId,
+      tabs[next].dataset.view,
+      `[data-view="${tabs[next].dataset.view}"]`,
+    );
+  });
+  $("#refresh").addEventListener("click", () => load({ coalesce: true }));
+  $(".skip").addEventListener("click", (event) => focusMain(event, $("#main")));
+  $("#demo-help").addEventListener("click", showDemoHelp);
+  // A filter creates a new review context; durable unresolved saves stay locked.
+  function resetBatchFilterContext(event) {
+    if (
+      !(event.target instanceof Element) ||
+      !event.target.matches("[data-contract-search], [data-contract-filter]")
+    )
+      return;
+    disposeBatchActions("approve-admission");
+    batchFilterRevisions["approve-admission"]++;
+    app.batchRegistrationSelection = null;
+    renderBatchRegistrationFollowup();
+    invalidateDraft();
+    queueMicrotask(() => mountOrganizerBatchActions());
   }
-  if (restore?.element?.isConnected) restore.element.focus();
-  else if (restore?.selector) $(restore.selector)?.focus();
-  if (
-    isProduction() &&
-    document.activeElement === document.body &&
-    $("#launch-state-title")
-  ) {
-    $("#launch-state-title").tabIndex = -1;
-    $("#launch-state-title").focus();
-  }
-});
-document.addEventListener("keydown", (event) => {
-  const dialog = $("#review-dialog");
-  if (dialog.open && event.key === "Tab") {
-    trapDialogTab(event, dialog);
-    return;
-  }
-  if (
-    !(event.target instanceof Element) ||
-    !event.target.matches('[role="tab"]')
-  )
-    return;
-  const tabs = $$('.tabs [role="tab"]');
-  const index = tabs.indexOf(event.target);
-  let next;
-  if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
-  else if (event.key === "ArrowLeft")
-    next = (index + tabs.length - 1) % tabs.length;
-  else if (event.key === "Home") next = 0;
-  else if (event.key === "End") next = tabs.length - 1;
-  else return;
-  event.preventDefault();
-  navigate(
-    app.route.eventId,
-    tabs[next].dataset.view,
-    `[data-view="${tabs[next].dataset.view}"]`,
-  );
-});
-$("#refresh").addEventListener("click", () => load({ coalesce: true }));
-$(".skip").addEventListener("click", (event) => focusMain(event, $("#main")));
-$("#demo-help").addEventListener("click", showDemoHelp);
-// A filter creates a new review context; durable unresolved saves stay locked.
-function resetBatchFilterContext(event) {
-  if (
-    !(event.target instanceof Element) ||
-    !event.target.matches("[data-contract-search], [data-contract-filter]")
-  )
-    return;
-  disposeBatchActions("approve-admission");
-  batchFilterRevisions["approve-admission"]++;
-  app.batchRegistrationSelection = null;
-  renderBatchRegistrationFollowup();
-  invalidateDraft();
-  queueMicrotask(() => mountOrganizerBatchActions());
-}
-document.addEventListener("input", resetBatchFilterContext, true);
-document.addEventListener("change", resetBatchFilterContext, true);
+  document.addEventListener("input", resetBatchFilterContext, true);
+  document.addEventListener("change", resetBatchFilterContext, true);
 
-window.addEventListener("hashchange", () => {
-  invalidateDraft();
-  load();
-  window.scrollTo({ top: 0 });
-});
-load();
+  window.addEventListener("hashchange", () => {
+    invalidateDraft();
+    load();
+    window.scrollTo({ top: 0 });
+  });
+}
+
+let appStartPromise = null;
+export function startApp({
+  legacyCatalogMissing = false,
+  publicSearch: transferredSearch = null,
+} = {}) {
+  if (appStartPromise) return appStartPromise;
+  appStartPromise = Promise.resolve().then(() => {
+    initializeTransactionJournal();
+    initializeBatchPendingJournal();
+    installAppHandlers();
+    if (
+      transferredSearch?.mode === "hosted-production" &&
+      typeof transferredSearch.instanceId === "string" &&
+      transferredSearch.instanceId.length > 0 &&
+      transferredSearch.instanceId.length <= 200 &&
+      !/[\u0000-\u001f\u007f]/.test(transferredSearch.instanceId) &&
+      typeof transferredSearch.query === "string" &&
+      transferredSearch.query.length <= 120
+    )
+      pendingPublicSearch = Object.freeze({
+        mode: transferredSearch.mode,
+        instanceId: transferredSearch.instanceId,
+        query: transferredSearch.query,
+      });
+    return load({ legacyCatalogMissing: legacyCatalogMissing === true });
+  });
+  return appStartPromise;
+}

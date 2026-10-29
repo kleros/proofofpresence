@@ -1,0 +1,490 @@
+/* Compact Luma launch presentation only; legacy layouts retain their own tokens. */
+body.launch-mode {
+  --launch-accent: var(--teal);
+}
+.launch-mode .app-shell {
+  grid-template-columns: minmax(0, 1fr);
+}
+.launch-mode .sidebar,
+.launch-mode .breadcrumb {
+  display: none;
+}
+.launch-mode .topbar,
+.launch-mode #main,
+.launch-mode .footer {
+  width: 100%;
+  max-width: 900px;
+  margin-inline: auto;
+}
+.launch-mode .topbar {
+  min-height: 80px;
+  padding: 16px 24px;
+  flex-wrap: nowrap;
+}
+.launch-mode .mobile-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 44px;
+}
+.launch-mode .mobile-brand img {
+  width: 80px;
+  height: 30px;
+}
+.launch-mode .topbar-actions {
+  flex: 1 1 auto;
+  width: auto;
+  justify-content: flex-end;
+}
+.launch-mode .environment {
+  margin-right: auto;
+}
+.launch-mode #main {
+  padding: 32px 24px 56px;
+}
+.launch-mode .footer {
+  padding: 20px 24px;
+  font-size: 12px;
+}
+.luma-launch,
+.luma-setup {
+  min-width: 0;
+  max-width: 100%;
+}
+.luma-launch > *,
+.luma-setup > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.launch-mode :is(.luma-launch, .luma-setup, .luma-setup-review) [hidden] {
+  display: none !important;
+}
+.luma-launch h1,
+.luma-setup h1 {
+  margin: 0 0 12px;
+  font-size: clamp(34px, 5vw, 48px);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+.luma-launch h2,
+.luma-setup h2 {
+  margin-bottom: 12px;
+  font-size: 28px;
+}
+.luma-launch p,
+.luma-setup p {
+  color: var(--muted);
+}
+.luma-launch-card,
+.luma-launch-event,
+.luma-launch-state,
+.luma-launch-receipt,
+.luma-launch-recovery,
+.luma-setup-share {
+  min-width: 0;
+  margin: 20px 0;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+}
+.luma-launch-card > :last-child,
+.luma-launch-event > :last-child,
+.luma-launch-state > :last-child,
+.luma-launch-receipt > :last-child,
+.luma-launch-recovery > :last-child,
+.luma-setup-share > :last-child {
+  margin-bottom: 0;
+}
+.luma-launch-card {
+  box-shadow: var(--shadow);
+}
+.luma-launch-event {
+  background: var(--deep);
+  box-shadow: none;
+}
+.luma-launch-state,
+.luma-launch-receipt,
+.luma-setup-share {
+  border-color: var(--launch-accent, var(--purple));
+}
+.luma-launch-recovery,
+.luma-setup-recovery {
+  border-color: var(--amber);
+}
+.luma-launch-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding: 0;
+  margin: 20px 0;
+  list-style: none;
+}
+.luma-launch-steps li {
+  flex: 1 1 150px;
+  min-width: 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.luma-launch-steps strong {
+  display: block;
+  color: var(--heading);
+}
+.luma-launch-actions,
+.luma-setup-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.luma-launch :is(button, .button),
+.luma-setup :is(button, .button),
+.luma-setup-review :is(button, .button) {
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.luma-launch :is(a, button, input, select, textarea, summary):focus-visible,
+.luma-setup :is(a, button, input, select, textarea, summary):focus-visible,
+.luma-setup-review
+  :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 3px;
+}
+.luma-launch :is(code, .mono),
+.luma-setup :is(code, .mono),
+.luma-setup-review :is(code, .mono) {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.luma-launch-receipt code,
+.luma-launch-recovery code {
+  display: block;
+  margin: 10px 0;
+}
+.luma-launch-muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+.luma-launch-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.luma-setup-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.luma-setup-form > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.luma-setup-form .full,
+.luma-setup-form > .luma-setup-actions {
+  grid-column: 1 / -1;
+}
+.luma-setup-form label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 550;
+}
+.luma-setup-form :is(input, select) {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 46px;
+}
+.luma-setup-form input[readonly] {
+  color: var(--muted);
+  background: var(--raised);
+}
+.luma-setup-form .field-help {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+.luma-setup-notice,
+.luma-setup-error,
+.luma-setup-recovery {
+  min-width: 0;
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  background: var(--deep);
+  overflow-wrap: anywhere;
+}
+.luma-setup-error {
+  color: var(--red);
+  border-color: var(--red);
+  background: var(--red-soft);
+}
+.luma-setup-recovery {
+  border-color: var(--amber);
+}
+.luma-setup-recovery h2 {
+  font-size: 24px;
+}
+.luma-setup-review {
+  width: min(720px, calc(100vw - 32px));
+  max-width: 100%;
+  max-height: calc(100svh - 32px);
+  padding: 24px;
+  border: 1px solid var(--boundary);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-y: auto;
+}
+.luma-setup-review > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.luma-setup-review header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.luma-setup-review h2 {
+  flex: 1 1 240px;
+  margin: 0;
+  font-size: 30px;
+  overflow-wrap: anywhere;
+}
+.luma-setup-terms {
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.6fr);
+  gap: 0 20px;
+}
+.luma-setup-terms > :is(dt, dd) {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.luma-setup-terms dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+.luma-setup-terms dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.luma-setup-terms dd small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.luma-setup-share input {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 8px;
+}
+.luma-setup-share h2 {
+  color: var(--heading);
+}
+.luma-setup-share code,
+.luma-setup-recovery code {
+  display: block;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.luma-setup-capacity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--deep);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+.luma-setup-capacity strong {
+  color: var(--ink);
+}
+@media (max-width: 600px) {
+  .launch-mode .topbar {
+    min-height: 76px;
+    padding: 16px;
+  }
+  .launch-mode #main {
+    padding: 24px 16px 40px;
+  }
+  .luma-launch-event h1 {
+    font-size: clamp(26px, 7.2vw, 32px);
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .luma-launch-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .luma-launch-steps li {
+    padding: 8px 0;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .launch-mode .footer {
+    padding: 16px;
+  }
+  .luma-launch-card,
+  .luma-launch-event,
+  .luma-launch-state,
+  .luma-launch-receipt,
+  .luma-launch-recovery,
+  .luma-setup-share {
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .luma-setup-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .luma-setup-form :is(input, select) {
+    font-size: 16px;
+  }
+  .luma-setup-actions > .button-primary,
+  .luma-launch-actions > .button-primary {
+    flex: 1 1 100%;
+  }
+  .luma-setup-review {
+    padding: 20px;
+  }
+  .luma-setup-terms {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .luma-launch *,
+  .luma-setup *,
+  .luma-setup-review * {
+    scroll-behavior: auto;
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Keep the amount and its label distinct at narrow widths and enlarged text. */
+.luma-launch-terms {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.luma-launch-terms > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.luma-launch-receipt input {
+  display: block;
+  width: 100%;
+  margin: 8px 0 10px;
+}
+:is(.luma-launch, .luma-setup) summary {
+  min-height: 44px;
+  padding-block: 8px;
+  overflow-wrap: anywhere;
+}
+
+.launch-mode .public-event-search label {
+  display: block;
+  margin-bottom: 8px;
+}
+.launch-mode .public-event-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.launch-mode .public-event-controls input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+}
+.launch-mode .public-event-controls .button,
+.launch-mode .public-event-row .button {
+  min-height: 44px;
+  flex: 0 0 auto;
+}
+.launch-mode .public-event-status {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+.launch-mode .public-event-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.launch-mode .public-event-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.launch-mode .public-event-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.launch-mode .public-event-copy,
+.launch-mode .public-event-copy > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.launch-mode .public-event-copy h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+.launch-mode .public-event-date {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+.launch-mode .public-event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+  font-size: 14px;
+}
+.launch-mode .public-event-empty {
+  margin: 20px 0 0;
+}
+@media (max-width: 600px) {
+  .launch-mode .public-event-controls {
+    flex-wrap: wrap;
+  }
+  .launch-mode .public-event-controls input {
+    flex-basis: 100%;
+    font-size: 16px;
+  }
+  .launch-mode .public-event-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .launch-mode .public-event-row .button {
+    justify-self: start;
+    max-width: 100%;
+    white-space: normal;
+  }
+}

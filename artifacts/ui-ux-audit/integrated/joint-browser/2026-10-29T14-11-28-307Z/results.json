@@ -1,0 +1,232 @@
+{
+  "status": "passed",
+  "scope": "Real local v7/v8 selected-bootstrap UI integration; no browser financial action or wallet signing",
+  "setup": "Isolated Ganache initial contract deployment only; no public chain or external service",
+  "sourceSha256": {
+    "src/server.mjs": "ee73895312893d84bca37563bb8a13c69e835043dc451a25ade5ae2d9ac39cad",
+    "src/workbench.mjs": "30d7d6f722bb5eb83b3c6a54a5b62d09d93f1530323bea6674ac93188742d609",
+    "public/index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "public/app.js": "89e320901b964d7585427b10a45bdbd27607e73dc6e7c646c7818b5c69c87cf6",
+    "public/selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18"
+  },
+  "versions": [
+    {
+      "contractVersion": "truth-pays-v7",
+      "checks": [
+        "Initial anonymous real bundle renders with one selected GET, no fallback and no protected records",
+        "Actual Alice session acknowledgement binds the new actor, own wallet and only her participant records",
+        "Arrow/Home/End tab navigation keeps one bundled read, selected route and focused tab",
+        "Event changes retain actor and selector focus while binding independent real event contracts",
+        "Owner acknowledgement yields legitimate privileged synthetic contacts and owner authority without a financial action",
+        "Logout returns a private anonymous bundle; mobile skip/focus works with zero browser financial, RPC, wallet or off-origin attempts"
+      ],
+      "loads": [
+        {
+          "label": "anonymous arrival",
+          "eventId": "event-a",
+          "actor": null,
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 0
+        },
+        {
+          "label": "Alice session acknowledgement",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 1
+        },
+        {
+          "label": "keyboard organizer",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 1
+        },
+        {
+          "label": "keyboard cases",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 1
+        },
+        {
+          "label": "keyboard participant",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 1
+        },
+        {
+          "label": "event B navigation",
+          "eventId": "event-b",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 1
+        },
+        {
+          "label": "return to event A",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 1
+        },
+        {
+          "label": "owner session acknowledgement",
+          "eventId": "event-a",
+          "actor": "organizer-a",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 3
+        },
+        {
+          "label": "logout acknowledgement",
+          "eventId": "event-a",
+          "actor": null,
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "b2b7fc2d-dbdb-4d18-a0c1-0efc7b461b5b",
+          "participantCount": 0
+        }
+      ],
+      "sessionChanges": [
+        {
+          "method": "POST",
+          "identity": "alice"
+        },
+        {
+          "method": "POST",
+          "identity": "organizer-a"
+        },
+        {
+          "method": "DELETE",
+          "identity": null
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "contractVersion": "kleros-event-v8",
+      "checks": [
+        "Initial anonymous real bundle renders with one selected GET, no fallback and no protected records",
+        "Actual Alice session acknowledgement binds the new actor, own wallet and only her participant records",
+        "Arrow/Home/End tab navigation keeps one bundled read, selected route and focused tab",
+        "Event changes retain actor and selector focus while binding independent real event contracts",
+        "Owner acknowledgement yields legitimate privileged synthetic contacts and owner authority without a financial action",
+        "Logout returns a private anonymous bundle; mobile skip/focus works with zero browser financial, RPC, wallet or off-origin attempts"
+      ],
+      "loads": [
+        {
+          "label": "anonymous arrival",
+          "eventId": "event-a",
+          "actor": null,
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 0
+        },
+        {
+          "label": "Alice session acknowledgement",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 1
+        },
+        {
+          "label": "keyboard organizer",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 1
+        },
+        {
+          "label": "keyboard cases",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 1
+        },
+        {
+          "label": "keyboard participant",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 1
+        },
+        {
+          "label": "event B navigation",
+          "eventId": "event-b",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 1
+        },
+        {
+          "label": "return to event A",
+          "eventId": "event-a",
+          "actor": "alice",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 1
+        },
+        {
+          "label": "owner session acknowledgement",
+          "eventId": "event-a",
+          "actor": "organizer-a",
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 3
+        },
+        {
+          "label": "logout acknowledgement",
+          "eventId": "event-a",
+          "actor": null,
+          "apiReads": 1,
+          "fallbackEventReads": 0,
+          "instanceId": "f8fd1743-4397-489c-931d-cfe65bea17b4",
+          "participantCount": 0
+        }
+      ],
+      "sessionChanges": [
+        {
+          "method": "POST",
+          "identity": "alice"
+        },
+        {
+          "method": "POST",
+          "identity": "organizer-a"
+        },
+        {
+          "method": "DELETE",
+          "identity": null
+        }
+      ],
+      "status": "passed"
+    }
+  ]
+}

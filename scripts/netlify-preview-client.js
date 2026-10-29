@@ -308,7 +308,11 @@ try {
   snapshots = clone(data);
   const at = new Date(data.capturedAt);
   captured.textContent = `Captured synthetic local v7 data · ${Number.isFinite(at.valueOf()) ? at.toISOString().replace("T", " ").replace(".000Z", " UTC") : "capture time unavailable"}`;
-  await import("/app.js");
+  const app = await import("/app.js");
+  // Current bundles start explicitly; historical bundles start on import.
+  // All snapshot transport and capture-phase guards are installed above first.
+  if (typeof app.startApp === "function")
+    await app.startApp({ legacyCatalogMissing: true });
   guards();
 } catch (error) {
   captured.textContent = "Preview unavailable";

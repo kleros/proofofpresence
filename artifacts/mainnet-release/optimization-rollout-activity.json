@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-29T14:26:32.050Z",
+  "exitCode": 0,
+  "kind": "recent-activity-metadata-only",
+  "window": "last10minutes",
+  "rows": [
+    {
+      "timestamp": "2026-10-29T14:21:16.426064735Z",
+      "kind": "organizer-job",
+      "httpStatus": 202,
+      "totalDuration": 6
+    },
+    {
+      "timestamp": "2026-10-29T14:21:21.945245331Z",
+      "kind": "organizer-job",
+      "httpStatus": 202,
+      "totalDuration": 6
+    }
+  ],
+  "limits": [
+    "No bodies, cookies, identifiers, IPs or signatures saved.",
+    "Absence of logs does not prove absence of an open wallet prompt; preserve all sessions/journals."
+  ]
+}

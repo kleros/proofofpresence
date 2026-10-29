@@ -1,0 +1,70 @@
+{
+  "status": "passed-local-ready-for-primary",
+  "branch": "codex/kleros-ui-ux-speed-audit",
+  "worktree": "/Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros projects",
+  "startingCommit": "b0208ea4a0c902637a6d2a51ec453347e5b157cb",
+  "baselinePublicSource": "9cac8df641ec0d3d8ac66531bfaa48936282e4f5",
+  "sourceSha256": {
+    "public/entry.js": "3f8cb0090277c7eea69675380ec141502f14f4f427ec262e9d179f3dd2652e64",
+    "public/public-home.js": "eb51449536d9780ba0e907b0d04b92d43e3334a44ff7963b9e2e7257c722939c",
+    "public/app.js": "89e320901b964d7585427b10a45bdbd27607e73dc6e7c646c7818b5c69c87cf6",
+    "public/index.html": "a93c649e591cd0cec4806c160caaee108c4416ddab2b759a08a02ad4ac0501f1",
+    "public/luma-setup.js": "829d8c31bc2f8d7cef55960002b5bdf8d60ec268ef21394148da1b6f9589e509"
+  },
+  "productFiles": [
+    "public/entry.js",
+    "public/public-home.js",
+    "public/app.js",
+    "public/index.html"
+  ],
+  "dependenciesOnly": {
+    "widget": "Core-owned829d8c31 baseline, unchanged by optimization",
+    "staticAllowlist": "Isolated src/server.mjs has only Core-approved /entry.js and /public-home.js test dependency; EXCLUDED from UI commit. Core359d94c already owns it."
+  },
+  "commandsActuallyRun": [
+    {
+      "command": "node test/lean-startup.e2e.mjs --baseline",
+      "result": "2 controlled immutable baseline metrics passed"
+    },
+    {
+      "command": "node test/lean-startup.e2e.mjs --candidate",
+      "result": "10 focused candidate groups passed"
+    },
+    {
+      "command": "node test/selected-bootstrap-ui.e2e.mjs",
+      "result": "Real isolated v7/v8 compatibility:12 groups,18 single selected GET loads,6 synthetic session changes; no browser financial or wallet/RPC/off-origin action"
+    },
+    {
+      "command": "npm run typecheck",
+      "result": "passed"
+    },
+    {
+      "command": "node --check public/entry.js; node --check public/public-home.js; node scripts/build.mjs; git diff --check",
+      "result": "passed syntax/static historical pinned ABI/build/whitespace checks; no contract recompilation or broad financial suites"
+    }
+  ],
+  "proofs": {
+    "focused": "artifacts/lean-startup/candidate-2026-10-29T14-12-57.336Z/final-provenance.json",
+    "focusedSha256": "c577df2aa43ff8cdb8f797c0588f8866f1a43f1030334c67285fe604b8952e7a",
+    "legacy": "artifacts/ui-ux-audit/integrated/joint-browser/2026-10-29T14-11-28-307Z/results.json",
+    "legacySha256": "662f3771cca24dad41e16246db77ab4d967067088d91b7b5b26379d9afd597ed"
+  },
+  "review": "Independent bounded read-only frontend/backend review PASS; root inspected saved desktop/mobile/200% component images, no clipping.",
+  "payloads": {
+    "baselineJsDecodedBytes": 455516,
+    "candidateJsDecodedBytes": 29394,
+    "baselineJsModules": 17,
+    "candidateJsModules": 5,
+    "baselineCssDecodedBytes": 83709,
+    "candidateCssDecodedBytes": 63310,
+    "baselineCssFiles": 5,
+    "candidateCssFiles": 3,
+    "offlineIndividuallyGzippedBaselineJsBytes": 120445,
+    "offlineIndividuallyGzippedCandidateJsBytes": 9645
+  },
+  "limits": [
+    "Local metrics use1500ms API and80ms per-static response delay model, not live network/field/cache evidence.",
+    "Primary alone ran current matched live BEFORE2.6021s; AFTER pending deployment. Older3.3589s is historical and must not be substituted.",
+    "Financial/source/canonical/sender checks remain fresh; widget/job flow unchanged. No hosting/billing/provider configuration or real financial action by this UI chat."
+  ]
+}
