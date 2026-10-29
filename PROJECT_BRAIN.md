@@ -1,5 +1,85 @@
 # Current implementation — 29 October2026, Asia/Bangkok
 
+## Final requested portal/search release LIVE and verified — 29 October 2026
+
+Live URL: https://kleros-luma-ethereum.netlify.app. Branch `codex/core-application`.
+Frontend checkpoint `50a7e9f38795c1e62deeacc0f07ccd84bb7a1c55`, production Netlify deployment
+`6ae33baabb014155c2c1cac6`. Stable backend remains `ae63380642173ebd92afbf76a97d827a3aaa06f3`,
+Railway deployment `d112f94a-0027-41be-b9c4-99e81064f95a`. The frontend-only catalog release did
+not restart the backend, reload the human's active organizer tab or change their drafts/session.
+
+The manual paste-link popup is removed. Home now searches only explicitly PUBLIC/PUBLISHED,
+verified chain1-v9 event summaries; unknown/private/draft/owner-only records are excluded before
+indexing, counts or display. Search/clear stays local. Organizer setup, canonical generated Copy/Open
+deposit URLs, direct participant links, palette, signing reviews, receipts and Return to Luma remain.
+No new backend API or financial rule was needed. A local static allowlist entry supports the new
+module in future/local app runs; the live Netlify module is served directly without a backend restart.
+
+Final focused public check PASSED: one anonymous page visit,26 source-verified assets, one bootstrap,
+two same-page desktop/mobile viewport captures, zero errors/auth/wallet/financial operations and
+zero additional requests for search/clear. Public-event count was truthfully0 at12:29:56UTC;
+do not erase or overlook any real event the human subsequently creates. Final proof
+`artifacts/catalog-hosting-readonly/2026-10-29T12-29-32-093Z-e68b478e-7d01-4ab5-9d90-5040c8bd873a/proof.json`,
+SHA256 `6e36e817d5acaed0a51eb1cbfc13dd46a0239b77e2de4592a918a0c242b9e297`.
+Both screenshots were visually inspected. The exact checker sources are archived with the proof.
+Primary release record: `artifacts/mainnet-release/mainnet-portal-release.json`.
+
+The accepted local UI source930fdf25/proof04bf04ba passed29 browser groups,6 pure tests,14 offline
+fixtures, v7/v8 compatibility and type/build checks. Root repeated only the necessary6 pure tests,
+typecheck and one final public visit, honoring the human's ASAP/no-redundant-tests instruction.
+The prior B2 full9-group/four-screen setup/security proof and concurrent two-request21-second pass
+remain valid backend evidence. No contract/fork/financial suite or mainnet financial action was rerun.
+
+All four approved mainnet infrastructure deployments and the once-published policy remain verified.
+No mainnet selected-child deposit/dispute/kickback or public jury outcome is established by this
+launch; those require the human's actual event and separate evidence. Preserve all new real user
+state. A/B/C remain retired incomplete and PAUSED, D stays complete, old sites/journals/funds remain
+untouched. No billing upgrade, upstream push, forced refresh or further approval is pending.
+The requested deployment/UI integration is complete; optional polish is deferred.
+
+## Current hosted candidate and new public search scope — 29 October 2026
+
+Core branch `codex/core-application`, combined checkpoint
+`ae63380642173ebd92afbf76a97d827a3aaa06f3`. Backend deployment
+`d112f94a-0027-41be-b9c4-99e81064f95a` is healthy/SUCCESS, image
+`sha256:9ed03464b0b69547b650604be429ac5329976fa60367474b3373505c1a898746`.
+The exact reviewed popup removal (UI39b4c4c, app219d4d1b) is published at
+https://kleros-luma-ethereum.netlify.app, Netlify deployment `6ae336408158bfe89ac675f1`, production.
+Two concurrent anonymous bootstrap requests passed with the exact verified factory/policy/owner,
+chain1 and no events in21.053/21.046seconds. Proof `public-bootstrap-concurrent-ae63380.json`.
+The B2 public operator check passed9 groups and4 desktop/mobile screenshots, with no wallet/auth/
+financial actions or errors. Proof `artifacts/mainnet-hosting-readonly/2026-10-29T12-08-18-360Z-ee530ef0-37c2-48b2-a9f7-3eb22589d6ee/proof.json`,
+SHA256 `3e4fa113ace399d2f4f2ad58a2e78f83c98e1695af2271e968cee4c3bc1cf99c`.
+Its exact checker source is archived beside the proof. B2 is verified live; the later search-catalog
+request below still requires integration/publication/final checks.
+
+Only overlapping public-bootstrap factory verification is shared. Each complete canonical/source/
+history pass is awaited, later requests verify afresh, failures remove trust, and financial draft
+verification remains independent. Five focused guards plus ten actual local application checks passed
+15/15; root typecheck passed. The earlier504 after30.817seconds remains recorded without asserting
+an unproven fixed platform limit. A separate isolated request passed21.579seconds.
+
+The human explicitly approved Netlify Free's build/functions/runtime scopes for the app-only gateway
+secret in core (`call_2113454998734beab6af6ebd084a3cd0`, “Approve free-plan scopes”). This resolved
+automatic review's rejection of the additional scopes. Actual API readback now verifies both origins
+and the protected production secret, excluded from post-processing; no billing upgrade or credential
+exposure. Earlier zero-output CLI attempts did NOT establish saved settings and are superseded.
+The new site's injected badge script was disabled through its owner setting. Only one exact reviewed
+non-executable hosting comment is permitted in source comparisons, with raw/normalized hashes.
+
+LATEST UI steering independently read in **Implement Option B UI redesign**: offer a searchable list
+of PUBLIC/PUBLISHED events instead of generic guest-link guidance. This supersedes earlier blanket
+hide-directory scope; private, draft, unknown-visibility and owner-only events must never enter this
+public list/search/count. Use the existing authoritative `bootstrap.events` summaries, explicit
+visibility/editorial flags and client-side title filtering; no new API/per-keystroke RPC is required.
+The registry genuinely has zero events, so show an honest empty list without synthetic production
+fixtures. Preserve organizer setup, canonical generated Copy/Open links, direct guest URLs and all
+financial behavior. UI owns the isolated candidate; root will integrate/publish after its handoff.
+New module `/event-search.js` requires root's minimal static allowlist addition for all supported modes.
+The report-only UI follow-up must wait for this latest search UI and final public checks.
+No further user approval is pending. A/B/C remain retired incomplete and PAUSED; their assets/funds/
+contracts/journals and D's completed evidence remain preserved. No new mainnet financial action.
+
 ## Free authenticated RPC configured; pacing verified locally — 29 October 2026
 
 The human approved free Infura activation in the management chat and confirmed "RPC configured"

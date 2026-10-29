@@ -1,5 +1,36 @@
 # Mainnet hosting checkpoint — 29 October 2026
 
+## Final live release
+
+**LIVE, verified:** https://kleros-luma-ethereum.netlify.app.
+Frontend `50a7e9f38795c1e62deeacc0f07ccd84bb7a1c55`, Netlify production deployment
+`6ae33baabb014155c2c1cac6`. Backend stays `ae63380642173ebd92afbf76a97d827a3aaa06f3`, deployment
+`d112f94a-0027-41be-b9c4-99e81064f95a`, image
+`sha256:9ed03464b0b69547b650604be429ac5329976fa60367474b3373505c1a898746`.
+The backend and the human's active setup tab/session were not restarted for the catalog update.
+
+The exact reviewed UI adds public-event title search and removes manual link entry; existing APIs,
+financial behavior and generated participant links remain unchanged. Final assets:
+app152b30c3/helperbf5ac5f3/CSS47e0874c. Actual API readback verified production settings only after
+the human approved Netlify Free's build/functions/runtime scopes for the protected gateway secret.
+Post-processing excludes that secret. Earlier functions-only403 and zero-output CLI attempts are
+preserved as failed configuration attempts, not successful settings. No paid plan was enabled.
+
+Paced full verification passed143HTTP200. B2 public setup/security checks passed9 groups/four captures;
+two simultaneous bootstraps passed21.053/21.046seconds after bootstrap-only overlapping-read sharing.
+For the final frontend-only change, one focused public visit passed26 exact-source loaded assets,
+one real anonymous bootstrap, local search/clear with no extra requests, and two responsive captures.
+No wallet/auth/selected-child/financial actions occurred. The actual catalog was empty at12:29:56UTC;
+the human may create a real event afterward, and all resulting state must be preserved.
+
+Final public proof and archived checker sources:
+`artifacts/catalog-hosting-readonly/2026-10-29T12-29-32-093Z-e68b478e-7d01-4ab5-9d90-5040c8bd873a/`.
+Proof SHA256 `6e36e817d5acaed0a51eb1cbfc13dd46a0239b77e2de4592a918a0c242b9e297`.
+Machine-readable release pointer: `artifacts/mainnet-release/mainnet-portal-release.json`.
+Real selected-child load and mainnet financial/jury outcomes remain unclaimed; local controlled
+financial evidence is separate. No further launch work or user approval is pending. The following
+sections retain the earlier diagnosis chronology and are superseded by this final checkpoint.
+
 ## Current update: authenticated RPC and pacing
 
 The human approved free Infura access and confirmed the endpoint is configured. Management submitted

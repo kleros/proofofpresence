@@ -1,0 +1,87 @@
+{
+  "status": "failed",
+  "kind": "anonymous-factory-only-hosting-readonly",
+  "startedAt": "2026-10-29T11:46:09.389Z",
+  "source": "81b8f501de58a5bb62cd780db2b9b8b862567463",
+  "origin": "https://kleros-luma-ethereum.netlify.app",
+  "backend": "https://luma-mainnet-backend-production.up.railway.app",
+  "checkerSha256": "5562145c567efb0603173b50b648338a691b7b3e1dd95662ba9c5552d63bae12",
+  "registry": "registry/ethereum-v9-luma-mainnet.json",
+  "registrySha256": "f614af5b1318343d9d252944e401dae4cae9dfab1cff5d670ad158ecad595f06",
+  "expectedPublicAssetCount": 35,
+  "assetComparisonPolicy": {
+    "default": "Exact source bytes",
+    "indexOnlyException": {
+      "siteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
+      "offset": 71,
+      "anchor": "<meta charset=\"utf-8\" />\n",
+      "bytes": 326,
+      "sha256": "e9b89dd339418b6be291663a028b2f9613075ad5f33038ca6e57beea2fd9c0dc",
+      "maximumOccurrences": 1
+    },
+    "responseDelivered": "Original HTTP response unchanged"
+  },
+  "publicSourcePins": {
+    "app.js": "6aef1590d728f746ef300274e0be4f3b540c6146290125ccf53567736a5e5de4",
+    "assets/ASSET_PROVENANCE.md": "fe03990a05ef0350c12b6b904d3ca2eb27f43d4eaf228ea9c7e10399feaf8ee3",
+    "assets/FONT_PROVENANCE.json": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a",
+    "assets/GEIST_MONO_OFL.txt": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691",
+    "assets/GEIST_OFL.txt": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691",
+    "assets/INSTRUMENT_SERIF_OFL.txt": "b6b2292aa580937fb63796878d65a027a27f8c3db2d97601d0c34d9031f4ca17",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "luma-launch.css": "28778fc773590dbf8f5175da9d62aa0191edf6d75dd62c40ba9d42d1d694b2b5",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "policies/v8-test15m.md": "d8df68ee6438a490569a6391a205913107d24beb90e4f5b4b3278cf92acb7e09",
+    "policies/v8-testnet.md": "e9e36be8e8bb1741bda4413820d0c4691cc31df0767d41ca269200424b5ea542",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "checks": [],
+  "requests": [
+    {
+      "check": "PUBLIC_BOOTSTRAP",
+      "method": "GET",
+      "target": "/api/bootstrap",
+      "status": 504,
+      "sha256": "7fe38dcad8016218afa981e6f3c439dda23849ab82d51fcd23820de5faa44b2a",
+      "bytes": 265
+    }
+  ],
+  "assets": [],
+  "devices": [],
+  "errors": [
+    {
+      "check": "PUBLIC_BOOTSTRAP",
+      "code": "BOOTSTRAP_HTTP_STATUS"
+    }
+  ],
+  "limitations": [
+    "Factory-only release with zero events: no claim of actual private-event isolation or participant/owner financial behavior.",
+    "Fresh anonymous desktop/mobile presentation only; no wallet extension, authentication, event creation, deposit or transaction.",
+    "Only GET/HEAD HTTP. No RPC, upload, signature, broadcast, financial test, deployment or cloud configuration change.",
+    "Policy gateway byte availability is checked at this observation only; no permanent availability guarantee."
+  ],
+  "completedAt": "2026-10-29T11:46:40.206Z"
+}

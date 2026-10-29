@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "observedAt": "2026-10-29T12:11:12Z",
+  "origin": "https://kleros-luma-ethereum.netlify.app",
+  "route": "#setup=kickback",
+  "releaseCheckpointAtObservation": "ae63380642173ebd92afbf76a97d827a3aaa06f3",
+  "method": "Native Brave accessibility observation through cua_repl",
+  "observed": {
+    "ethereumMainnetBanner": true,
+    "organizerSetupHeading": true,
+    "walletButton": true,
+    "fields": ["Event title", "Luma event URL", "Starts", "Ends", "Your time zone", "Deposit per guest ETH"],
+    "reviewEventSetupButton": true,
+    "capacity": 150,
+    "claimPeriodDays": 7,
+    "challengeAndResponseDaysEach": 1
+  },
+  "humanActivity": "The human independently connected a wallet and was entering event details; their form was left untouched",
+  "managementActions": {
+    "newPortalTabNavigations": 1,
+    "formEdits": 0,
+    "walletConnectionOrAuthenticationActions": 0,
+    "signatures": 0,
+    "broadcasts": 0
+  },
+  "privateFormValuesRecorded": false,
+  "limitations": [
+    "This observes the organizer entry on the B2 release, before the separately requested searchable catalog release",
+    "It does not establish event creation, a participant deposit, a dispute or a mainnet payout",
+    "Final catalog source and anonymous desktop/mobile checks remain owned by the deployment chat"
+  ]
+}

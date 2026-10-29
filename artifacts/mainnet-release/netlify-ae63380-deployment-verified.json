@@ -1,0 +1,10 @@
+{
+  "sourceCommit": "ae63380642173ebd92afbf76a97d827a3aaa06f3",
+  "siteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
+  "deployId": "6ae336408158bfe89ac675f1",
+  "status": "ready-published-production-verified",
+  "context": "production",
+  "publishedDeployId": "6ae336408158bfe89ac675f1",
+  "badgeEnabled": false,
+  "observedAt": "2026-10-29T12:05:48.689Z"
+}

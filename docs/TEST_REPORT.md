@@ -1,5 +1,29 @@
 # Verification report
 
+## Final public catalog release — 29 October 2026
+
+Frontend50a7e9f / Netlify6ae33baabb014155c2c1cac6 is LIVE at
+https://kleros-luma-ethereum.netlify.app. Backendae63380 / Railwayd112f94a stays unchanged and
+healthy; no restart or forced reload interrupted the human's active event form.
+
+Only necessary final command:
+`node test/catalog-hosting-readonly.e2e.mjs --execute-readonly --source 50a7e9f38795c1e62deeacc0f07ccd84bb7a1c55`
+PASSED in24.843seconds: one real anonymous page/bootstrap,26 source-verified loaded assets,
+strict public/published projection, correct links/status/amounts, local search+clear without additional
+requests, and the same page at1440x900 then390x844. Two captures were visually inspected; zero
+blocked requests, page/response errors, auth, wallet, RPC, upload or financial actions. No selected
+event link was opened. Actual public events0 at12:29:56UTC is a snapshot, not a claim about later user
+activity. Exact Netlify hosting-comment bytes alone are normalized for comparison; original browser
+responses remain unchanged and injected scripts are rejected.
+
+Proof `artifacts/catalog-hosting-readonly/2026-10-29T12-29-32-093Z-e68b478e-7d01-4ab5-9d90-5040c8bd873a/proof.json`,
+SHA256 `6e36e817d5acaed0a51eb1cbfc13dd46a0239b77e2de4592a918a0c242b9e297`.
+Both checker sources are archived with it. Live source/published pointer/production context/backend
+health are independently recorded in `netlify-catalog-deployment-verified.json`; the release summary
+is `mainnet-portal-release.json`. Stable B2 setup/security and local financial evidence are reused;
+the completed contract/fork/full financial suites were not repeated for this frontend-only release.
+No actual mainnet participant financial cycle or independent jury result is claimed.
+
 ## Public-event search frontend integration — 29 October 2026
 
 The latest human request replaces generic guest-link guidance with a searchable PUBLIC event list.

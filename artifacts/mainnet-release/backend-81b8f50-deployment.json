@@ -1,0 +1,12 @@
+{
+  "sourceCommit": "81b8f501de58a5bb62cd780db2b9b8b862567463",
+  "deploymentId": "9e440c33-a219-44aa-a434-a0abd41f8912",
+  "status": "SUCCESS",
+  "imageDigest": "sha256:0d6956d7893836abe504d826e1140a011d617da72722e5cb36a1c4ae54fd13fd",
+  "startCommand": "node src/container.mjs",
+  "healthcheckPath": "/healthz",
+  "healthcheckTimeout": 300,
+  "numReplicas": 1,
+  "observedAt": "2026-10-29T11:20:41.569Z",
+  "credentialValuesRecorded": false
+}

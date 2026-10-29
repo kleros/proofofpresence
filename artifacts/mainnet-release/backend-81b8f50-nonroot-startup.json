@@ -1,0 +1,13 @@
+{
+  "status": "verified-cloud-startup",
+  "sourceCommit": "81b8f501de58a5bb62cd780db2b9b8b862567463",
+  "deploymentId": "9e440c33-a219-44aa-a434-a0abd41f8912",
+  "runtime": {
+    "status": "listening",
+    "uid": 1000,
+    "mode": "hosted-production",
+    "durableStateEnvironment": "ethereum-mainnet"
+  },
+  "rawLogsRecorded": false,
+  "credentialValuesRecorded": false
+}
