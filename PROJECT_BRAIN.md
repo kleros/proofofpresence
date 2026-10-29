@@ -1142,3 +1142,47 @@ All references below are pinned to the inspected commits. Review newer commits b
 [B6]: https://github.com/weiwei-ooi/kleros-devcon-checkin/blob/169220bb41787b8aabdec5190ab85379328f143f/site/config.js
 [B7]: https://github.com/weiwei-ooi/kleros-devcon-checkin/blob/169220bb41787b8aabdec5190ab85379328f143f/site/connect.html
 
+### D setup/recovery checkpoint — 29October2026, before any child
+
+Integration source is committed on `codex/core-application` at7bdd40a; recovery guards at
+a20ed47/3332f67. All three1e13wei role grants and the fast factory are canonical:
+
+- Owner grant `0x6d425b5297201b5397829bb6c16ea220dea8f323a2692f533637fe8d81935307`, block23739241.
+- Alice grant `0x52522106bf1215fab830d95eb6e0847effd83597aa3b5b6d17e3a6d3fcca0332`, block23739248.
+- Bob grant `0x02f3ab1d25a421d1139e2e64e8a9d745e9fd5fd7fa64548229b8e5688f8e7e92`, block23739255.
+- Factory `0x0947D4438489f159E4B1BdC8BA63A1C07D642465`, birth
+  `0x4c978ac1e6e2c0e2285f893ae8838595d765b18c7054987d6a7e39126ce71c5c`, block23739261,
+  runtime hash `0xa9180dc69fe79ca800e5e8bde34b3729da08f7e003d0f2dd3b4e756fd1807024`.
+
+No D child hash, contract, public manifest, deposit or payment exists. Original generic stop occurred
+after the factory; fresh read-only factory verification and child gas estimate5311210 passed, but its
+initial exception cause remains unproven. Subsequent retries stopped before signing on operational
+lead-time guards; none of the four transactions was replayed. Canonical setup proof:
+`artifacts/ui-d-setup-receipts-independent.json`; diagnostic `ui-d-deployment-diagnostic.json`.
+The reviewed helper now skips all completed setup calls, globally prevents any signing if a child
+hash exists and verifies every canonical setup receipt/nonce/key/fee again before an unseen child.
+Final focused8/8 passed38.81seconds after replacing a test-only Ganache snapshot rewind that had
+timed out; the pure boundary/replay checks also passed. Original contract times are never rewritten.
+
+Actual Linux build passed on isolated Railway preparation deployment
+`1a2d78d2-94bd-4f1d-9253-3cc0dbebdd9d`, image
+`sha256:b1603702571b564c340f903a9293da0e829745deef89990fe4e21fb4c2a1a8f3`.
+It intentionally has no canonical D manifest and is not a working app: startup reports that exact
+missing file. The reviewed frontend/gateway is published only to D, Netlify deploy
+`6ae2a28034076e4185468d63`, source7bdd40a. See `artifacts/ui-d-backend-build-preparation.json`.
+
+The original09:24:20Bangkok D plan is still untouched and has no child. A bounded pre-child planning
+revision is being implemented/tested, not yet applied: same stable event/roles/factory/key/policy/source
+and budget, changing only event start/end/claim timestamps to **29October10:30Bangkok** and its
+corresponding12-hour/seven-day offsets. Exact proposal `artifacts/ui-d-start-revision-proposal.json`:
+SHA2690bb4088e4ab7da792b9886265730b81a52e417784417c1ec14e8b2a9c9cdd;
+proposed fingerprint `2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1`,
+budget approval `0bfc044588f0fac2d4fd6b164fc08bd0276054512448d44fcad4c5b97331a209`.
+Independent proposal review passed; preserve original raw plan/journal snapshots and every transaction
+entry, append revision metadata and fail closed on partial writes or any child hash. The latest verified
+human full-test authorization covers scheduling this still-undeployed synthetic test; no human fixed
+the original D time, no public D terms exist, no additional funds/recipients or ABC terms change.
+No new user question was sent. Root alone may apply after migration tests/read-only review.
+D2 was considered and rejected as extra scope; any parent D2 observer/tests/docs are unused and must
+not be mistaken for a prepared plan, active operator or public event. No D2 keys/plans/journals exist.
+

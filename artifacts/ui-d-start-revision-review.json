@@ -1,0 +1,38 @@
+{
+  "status": "ready-read-only",
+  "proposalSha256": "2690bb4088e4ab7da792b9886265730b81a52e417784417c1ec14e8b2a9c9cdd",
+  "humanReference": "read-only-review",
+  "originalPlanFingerprint": "23529f6b0418f310d0aed84444d444759ed7c5187291c0a07df07eacf0d427f8",
+  "revisedPlanFingerprint": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+  "originalPlanSha256": "23529f6b0418f310d0aed84444d444759ed7c5187291c0a07df07eacf0d427f8",
+  "originalJournalSha256": "cae1c4fcbf9c500a16e2d10bce869333d668fc144e0185d0c7537028f9a885cb",
+  "revisedPlanSha256": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+  "revisedJournalSha256": "bdd9a3978c5d4ae74d7fa876603ddacb04965905404e4f226cbb1ce5689b0924",
+  "proposedBudgetApproval": "0bfc044588f0fac2d4fd6b164fc08bd0276054512448d44fcad4c5b97331a209",
+  "retainedTransactionHashes": [
+    "0x6d425b5297201b5397829bb6c16ea220dea8f323a2692f533637fe8d81935307",
+    "0x52522106bf1215fab830d95eb6e0847effd83597aa3b5b6d17e3a6d3fcca0332",
+    "0x02f3ab1d25a421d1139e2e64e8a9d745e9fd5fd7fa64548229b8e5688f8e7e92",
+    "0x4c978ac1e6e2c0e2285f893ae8838595d765b18c7054987d6a7e39126ce71c5c"
+  ],
+  "eventStart": 1793244600,
+  "archive": ".runtime/testnet/ui-d-revisions/2690bb4088e4ab7da792b9886265730b81a52e417784417c1ec14e8b2a9c9cdd",
+  "canonicalWrites": 0,
+  "chain": {
+    "status": "verified-read-only",
+    "chainId": 10200,
+    "blockNumber": 23739947,
+    "blockHash": "0x6033044a901c34be48fe45258d7e6996117dfb8d7f43dbf462bbc9a6a0079142",
+    "timestamp": 1793241455,
+    "setupReceipts": 4,
+    "latestOwnerNonce": 1,
+    "pendingOwnerNonce": 1,
+    "eventKeyUnused": true,
+    "selectedProvenanceSha256": "6a3c62e0d9cca202bab65acf9d0bcc3cace543bac77e4b5229aeb11b5f915394"
+  },
+  "signingFilesRead": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "performedAt": "2026-10-29T02:37:40.714Z"
+}
+

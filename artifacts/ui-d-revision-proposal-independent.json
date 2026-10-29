@@ -1,0 +1,31 @@
+{
+  "kind": "independent-D-pre-child-revision-proposal-review",
+  "checkedAt": "2026-10-29T02:20:32.678Z",
+  "status": "passed-public-proposal-no-mutation",
+  "basePlanFingerprint": "23529f6b0418f310d0aed84444d444759ed7c5187291c0a07df07eacf0d427f8",
+  "proposedPlanFingerprint": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+  "proposedBudgetApproval": "0bfc044588f0fac2d4fd6b164fc08bd0276054512448d44fcad4c5b97331a209",
+  "changes": [
+    {
+      "path": "event.eventStart",
+      "old": 1793240660,
+      "new": 1793244600
+    },
+    {
+      "path": "event.eventEnd",
+      "old": 1793283860,
+      "new": 1793287800
+    },
+    {
+      "path": "event.claimDeadline",
+      "old": 1793845460,
+      "new": 1793849400
+    }
+  ],
+  "rolesBudgetPolicySourceFactoryKeyUnchanged": true,
+  "retainedCanonicalSetupHashesUnchanged": true,
+  "privateFilesRead": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "conditions": "Metadata migration still requires immutable original snapshots, crash-safe append-only revision record, unchanged transaction entries, zero child hash and fresh canonical nonce/factory checks. No private mutation or public transaction performed by this review."
+}
