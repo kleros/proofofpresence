@@ -21,6 +21,7 @@ import { IMPLEMENTATION_SLOT, verifyV9FactoryDeployment } from "./upgrade-verifi
 import { createFactoryOnboardingService } from "./factory-onboarding.mjs";
 import { eventV9LumaTemplate, V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
 import { createProductionCasePublicationService } from "./production-case-publication.mjs";
+import { createFactoryRefresh } from "./shared-factory-refresh.mjs";
 import {
   hash,
   id,
@@ -93,16 +94,9 @@ export async function createWorkbench({
     ? testnetStateStore(testnet.stateFile, externalConfig.manifest)
     : null;
   const factoryDeployment = production ? production.manifest.factoryDeployment ?? Reflect.get(chain, "factoryDeployment") : null;
-  async function refreshFactory() {
-    if (!factoryDeployment) return;
-    try {
-      Reflect.set(chain, "factoryTrust", await verifyV9FactoryDeployment(chain, factoryDeployment));
-      Reflect.set(chain, "verifiedFactory", true);
-    } catch {
-      Reflect.set(chain, "factoryTrust", null);
-      Reflect.set(chain, "verifiedFactory", false);
-    }
-  }
+  // Overlapping public bootstrap requests share one complete factory read. There
+  // is no TTL or saved-result shortcut; financial draft checks remain separate.
+  const refreshFactory = createFactoryRefresh(chain, factoryDeployment, verifyV9FactoryDeployment);
   async function assertWallet(wallet) {
     if (!production) return null;
     requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,

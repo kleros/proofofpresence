@@ -1,0 +1,33 @@
+bigint: Failed to load bindings, pure JS will be used (try npm run rebuild?)
+This version of µWS is not compatible with your Node.js build:
+
+Error: Cannot find module '../binaries/uws_darwin_arm64_141.node'
+Require stack:
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/node_modules/@trufflesuite/uws-js-unofficial/src/uws.js
+- /Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/ganache/dist/node/core.js
+Falling back to a NodeJS implementation; performance may be degraded.
+
+
+✔ actual production bootstrap and detail DTOs satisfy the verified UI profile contract (2194.594792ms)
+✔ an unreviewed private A cannot deny valid B or disclose private A in production bootstrap (2004.59725ms)
+✔ proxy-backed production workbench completes deposits to held share to same-wallet paid settlement (32396.014083ms)
+✔ private case export rechecks current owner after a canonical historical snapshot (1977.78975ms)
+✔ new private financial owner can export a case before cached access is hydrated (2527.106167ms)
+✔ code acquired during final provenance await rejects unsigned production create and validate (2069.308458ms)
+✔ already signed canonical hash reconciles for now-coded wallet without invoking EOA signing guard (1234.411542ms)
+✔ production recovery identities disclose only the current wallet's own saved reviews (3719.552542ms)
+✔ reusable launch fixture starts without children and requires an exact Node-held wallet review (2830.625ms)
+✔ partial plain-transfer credit is topped up exactly and remains an admissible aggregate receipt (6272.381791ms)
+✔ overlapping bootstrap refreshes await one complete verification, then the next request verifies afresh (0.635083ms)
+✔ shared failure closes factory trust without reflecting errors and permits a fresh retry (0.743458ms)
+✔ synchronous verifier failure also clears singleflight for a later request (0.139833ms)
+✔ independent workbench or factory closures never coalesce across boundaries (0.13275ms)
+✔ an absent deployment is a no-op without verifier calls or trust mutation (0.184666ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57737.808125

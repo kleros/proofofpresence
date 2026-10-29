@@ -1,0 +1,59 @@
+{
+  "status": "passed",
+  "sourceBaseCommit": "fd99afb3cac0dfaf71c6f852564fc0dbb043377c",
+  "commands": [
+    "LUMA_LAUNCH_ARTIFACT_DIR=artifacts/luma-link-entry-removal node test/luma-launch.e2e.mjs --self-test",
+    "LUMA_LAUNCH_ARTIFACT_DIR=artifacts/luma-link-entry-removal node test/luma-launch.e2e.mjs --run-loopback"
+  ],
+  "browserGroups": 26,
+  "offlineFixtureCases": 14,
+  "testSha256": "a6955257acb4b53cccbf680f1799d2f4958260dd13012951d418f8e1ead0a23c",
+  "fixtureSha256": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+  "frontendAssetSha256": {
+    "index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "app.js": "219d4d1b17e19c3214ad4be71cdde0ad4db58a11c3c015e011b1ef586864d2eb",
+    "luma-launch.css": "28778fc773590dbf8f5175da9d62aa0191edf6d75dd62c40ba9d42d1d694b2b5",
+    "hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0"
+  },
+  "sourceChangedAfterRun": [],
+  "removedSourceTokens": [
+    "data-launch-open-link",
+    "launchOpenLink",
+    "case \"launch-link\""
+  ],
+  "historicalLumaArtifactsUnmodified": true,
+  "visualInspection": [
+    "1440px root: Luma registration guidance, setup link, no manual opener",
+    "390px root: readable guidance and setup link, no manual link input"
+  ],
+  "scope": "Full existing26-group synthetic Luma regression with only homepage-entry expectations and generated Copy/Open URL assertions added. Direct participant cold URL and same2fakewalletattempts retained. Copy is exercised with the deterministic full URL; Open anchor href is verified and direct event navigation is independently exercised in the cold-link flow.",
+  "syntheticWalletAttempts": 2,
+  "syntheticSubmittedHashes": 1,
+  "realFinancialSends": 0,
+  "publicRequests": 0,
+  "forbiddenRequests": 0,
+  "externalRequests": 0,
+  "pageErrors": 0,
+  "limits": [
+    "Synthetic loopback projections only; Core's actual proxy/backend integration test remains a separate acceptance requirement.",
+    "Fake wallet authentication uses a non-cryptographic signature literal. No real provider, Luma API, RPC, public request or transaction execution is available."
+  ]
+}

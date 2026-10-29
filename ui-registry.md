@@ -283,3 +283,9 @@ context and exact recorded hash; offer one explicit receipt check. Keep all new 
 absent while event verification is unavailable. Confirmed means the original receipt was verified,
 not that payout delivery or event trust is established. Malformed responses retain the hash; changed
 actor, event, backend instance or mode cannot inherit the panel or signing authority.
+# Luma guest entry correction — 29 October 2026
+
+The generic root page gives guests plain guidance to follow the event-specific deposit link from
+Luma; it has no manual paste-link opener or popup. Organizer setup stays directly reachable.
+After confirmed event creation, preserve canonical Copy deposit link and Open deposit page actions.
+Keep direct participant URLs, wallet review/receipt recovery, Return to Luma and the existing palette.

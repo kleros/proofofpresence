@@ -1589,7 +1589,7 @@ function renderHome() {
 function renderLaunchHome() {
   if (app.route.setup)
     return '<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"></div></section>';
-  return `<section class="luma-launch" data-launch-root><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Keep registration on Luma. Use this page for the event deposit and kickback.</p></div><div class="luma-launch-choices"><section class="luma-launch-card"><h2>Deposit for your event</h2><p>Open the deposit link provided with your Luma registration.</p><button class="button button-primary" data-launch-open-link>Open an event deposit link</button></section><section class="luma-launch-card"><h2>Set up kickback</h2><p>Organizers can connect a Luma event to its own reviewed contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></div></section>`;
+  return `<section class="luma-launch" data-launch-root><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Keep registration on Luma. Use this page for the event deposit and kickback.</p></div><div class="luma-launch-choices"><section class="luma-launch-card"><h2>Deposit for your event</h2><p>Open the event-specific deposit link from your Luma registration. It takes you straight to your event.</p></section><section class="luma-launch-card"><h2>Set up kickback</h2><p>Organizers can connect a Luma event to its own reviewed contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></div></section>`;
 }
 function mountLaunchSetup() {
   const host = $("#luma-setup");
@@ -3541,12 +3541,6 @@ document.addEventListener("click", async (event) => {
       await prepareTransaction("register", { wallets: [person.wallet] });
       return;
     }
-    if ("launchOpenLink" in data) {
-      showDialog(
-        '<div class="dialog-eyebrow">EVENT DEPOSIT LINK</div><h2 class="dialog-title" id="dialog-title">Open your event deposit</h2><p>Use the deposit link provided with your Luma registration.</p><form data-form="launch-link"><label for="launch-event-link">Deposit link</label><input id="launch-event-link" name="link" required type="url" placeholder="https://this-site/#event=…&view=participant"><div class="dialog-buttons"><button class="button button-secondary" type="button" data-close>Cancel</button><button class="button button-primary" type="submit">Open deposit page</button></div></form>',
-      );
-      return;
-    }
     if ("launchCopy" in data) {
       const field = $("[data-launch-hash]");
       if (!field || !/^0x[0-9a-f]{64}$/i.test(field.value))
@@ -3746,21 +3740,6 @@ document.addEventListener("submit", async (event) => {
   if (submit) submit.disabled = true;
   try {
     switch (form.dataset.form) {
-      case "launch-link": {
-        const url = new URL(String(values.link));
-        const eventId = new URLSearchParams(url.hash.slice(1)).get("event");
-        if (
-          url.origin !== location.origin ||
-          !eventId ||
-          !/^[a-zA-Z0-9_-]{1,200}$/.test(eventId)
-        )
-          throw new Error(
-            "Use a deposit link for a specific event on this site.",
-          );
-        invalidateDraft();
-        navigate(eventId, "participant");
-        break;
-      }
       case "registration":
         if (isProduction())
           throw new Error(
