@@ -1,0 +1,28 @@
+{
+  "kind": "v10-eip7702-local-protocol-custody",
+  "schemaVersion": 1,
+  "runId": "2026-10-29T16-39-04.737Z-a9834bb5-c9b9-4d33-a15f-aaa33fd92b1e",
+  "startedAt": "2026-10-29T16:39:04.738Z",
+  "passed": false,
+  "chainId": 1,
+  "environment": "fresh-loopback-anvil-prague-no-fork",
+  "publicNetworkRequests": 0,
+  "keysPersisted": false,
+  "walletCodeFixtureShortcut": false,
+  "frameworkSourceVerified": false,
+  "source": {},
+  "fixtures": [],
+  "checks": [],
+  "transactions": [],
+  "limits": [
+    "Framework contract code is installed from observed public runtime; this does not itself prove its source.",
+    "No mainnet transaction, current user wallet, live state adoption, app authorization or financial activation is performed.",
+    "Only pending native deposits/recovery are exercised; the separate contract suite covers adjudication and held-share economics."
+  ],
+  "stopped": {
+    "stage": "reviewed-local-inputs",
+    "code": "LOCAL_ASSERTION_OR_PROTOCOL_FAILURE"
+  },
+  "finishedAt": "2026-10-29T16:39:04.738Z",
+  "actualBroadcasts": 0
+}

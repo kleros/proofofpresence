@@ -1,3 +1,25 @@
+# V10 four-CREATE deployment preparation — 29 October 2026, 23:51 Bangkok
+
+Active branch `codex/core-application`; preceding integrated HEAD `7841d6e032384a4524c04574e8b45e5856e6c4ea`.
+Frozen V10 contracts and finite UI projections are integrated locally; existing live V9 remains09ac3a9.
+Human explicitly prioritized finishing wallet checks and preparing four fresh mainnet setup transactions
+and a new gas cap while app integration continues. The contract chat will present ONE approval;
+do not duplicate the question here. No V10 mainnet send, policy upload or hosting cutover yet.
+
+Exact current proposal `artifacts/v10-release/user-2bb-nonce6-reviewed-account-proposed.json`, canonical
+SHA2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37, nonces6–9, total8.75Mgas,
+maxfee0.75gwei/tip0.01gwei, proposed maximum0.0065625ETH UNAPPROVED. Preliminary canonical public
+read found nonce6 latest=pending and balance0.009129904262762008ETH. Source-reproduced3framework
+runtimes PASS; actual localPrague37checks/14tx PASS including true7702 then4directCREATEs and native
+custody. Opt-in preflight narrows account compatibility to those4directtype2CREATEs; application
+financial eligibility stays false. Unknown code remains blocked. No V9 permission/cap reuse.
+
+See `docs/V10_DEPLOYMENT_REVIEW.md` for exact addresses, interfaces, proofs, checks and remaining work.
+Next source-freeze, exact sequential local gas rehearsal, fresh canonical account/framework/address
+preflight and concrete V10 wallet handoff review precede human approval/signing. Keep A/B/C paused
+and untouched; old V9 events/policy/records remain separate. App auth/dispatch/public adoption/hosting
+are still incomplete and must not be described as launched.
+
 # Recovery repair LIVE; broader registration remains open — 29October2026,22:44Bangkok
 
 Source09ac3a9134fc0cf04cd0179774154df5cfe08df4 oncodex/core-application is LIVE: Netlify
@@ -39,8 +61,20 @@ NEWdirecthumancontractchatsteeringindependentlyread:01a1885a-6a8c-7ce0-838c-4e55
 ContractlanepreparesisolatedV10candidate/buildonly. DoNOTmigrate/retireV9orchangeitspolicy/controller,
 rootHEAD/buildorcurrent09acrelease. Newfactoryalonewillnotfixwallet7702compatibility. Coremust
 reviewexplicitversionedwallet/envelopesupportalongsideV10handoffbeforeanynewfinancialsend.
-Corelocalplanprepared: docs/V10_WALLET_COMPATIBILITY_PLAN.md; noV10appcode/transaction/publication
-yet. Contractlanehandofffrozencommitstillawaited; itslocaltestclaimsarenotCoreintegrationproof.
+Core local plan: docs/V10_WALLET_COMPATIBILITY_PLAN.md. Contract candidate `60a841f` is frozen on
+isolated `codex/instant-upgrades-v10` (base `09ac3a9`), with distinct `build/contracts-v10` output.
+Contract lane reports 20 focused tests (5 basic, 8 independent security, 7 unsigned release), build,
+typecheck and 17 additional read-only planner probes passed. This is local contract/planner evidence,
+not Core application integration or mainnet readiness. Handoff: docs/contracts/V10_IMMEDIATE_UPGRADES_HANDOFF.md
+and V10_TEST_REPORT.md in the candidate. Local four-CREATE gas is 7,194,866, NOT a mainnet fee quote;
+proof artifacts/v10-release/local-setup-measured-2026-10-29T16-07-19-937Z.json has SHA256
+3a56bce25315ac1fe36cbcbccbc4663ba9e3753dac99e9baafe095a7df78a11f.
+V10 policy remains an unpublished draft, URI null, SHA256
+525453aee59b7d3f48e96f6ad5ea6aa9807fc6cfef8a495f5f645e3e3ca231a4.
+Core is reviewing/integrating explicit VERSION10 application dispatch and wallet/envelope support.
+Fresh canonical/account/nonce/balance/fees checks, exact four new transactions and a NEW human-approved
+gas cap remain required before signing. The old V9 permission/cap is not reusable. No V10 mainnet
+deployment, policy upload, finalization or hosting cutover is established by this candidate milestone.
 A/B/Cretiredincomplete/PAUSED,Dcomplete,Eunused; noreplay/adoption/financialsend/upstreampush/billing.
 
 # Active original mainnet creation recovery — 29 October2026, 22:07 Bangkok

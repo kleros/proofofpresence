@@ -1,0 +1,1428 @@
+{
+  "schemaVersion": 1,
+  "kind": "metamask-v1.3-source-runtime-verification",
+  "status": "verified",
+  "checkedAt": "2026-10-29T16:42:58.563Z",
+  "sourceVerified": true,
+  "financialEligible": false,
+  "chainId": 1,
+  "officialSourceCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+  "observedAnchor": {
+    "number": 26299637,
+    "hash": "0xf8730b94827db9b34bd35b83ed8fed967a2d43d64f297409fcd8829338fd8350"
+  },
+  "canonicalRpcReadByThisScript": false,
+  "compiler": "0.8.23+commit.f704f362.Emscripten.clang",
+  "contracts": [
+    {
+      "name": "manager",
+      "address": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+      "sourceVerified": true,
+      "compiler": "0.8.23+commit.f704f362.Emscripten.clang",
+      "sourceInputSha256": "7f14ee9af48460731954f33038324fc2e421281451e7eac0d555a2f23fe47782",
+      "compilationInputSha256": "44ff65940a99d8408adfa8279301a1e6d9ab09a3aa55c8845c4166b70065de23",
+      "sourceCount": 46,
+      "sourcePins": [
+        {
+          "compilerPath": "src/utils/Types.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/utils/Types.sol",
+          "gitBlobSha1": "50bff062c9cbce684cbe33634f182cb6279deb2d",
+          "sha256": "48c14a9ddfa6e040dd530d3a961a2d1520655771d02e230569540ccd94e6047c",
+          "keccak256": "0xda4094eb4839087157f34750fb4d1a2d6241fbb8ee0d41fd1f2905209e6a05b0"
+        },
+        {
+          "compilerPath": "src/utils/Constants.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/utils/Constants.sol",
+          "gitBlobSha1": "9dab2aca59685ac6b9c7bf68772e50f253e08042",
+          "sha256": "0afcc9f627c79d7ab98ae7c17e5b09eac334eb28b96092644e442a129ebc1dd2",
+          "keccak256": "0x5f1e2913a96b7f88bc7fbd2de329465822ae0d438ff212883c6dd3bd5e9609a5"
+        },
+        {
+          "compilerPath": "@erc7579/lib/ModeLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ModeLib.sol",
+          "gitBlobSha1": "9c6778f8fa701745031a1c3bad9190b65019518b",
+          "sha256": "c79a0cb6aeaa3247d4f294eee3afa0b989e8f1fa77c634d511ff2064aae96670",
+          "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185"
+        },
+        {
+          "compilerPath": "src/DelegationManager.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/DelegationManager.sol",
+          "gitBlobSha1": "4d6a9811aeb9219fe69ad2fd21fe6cbc97496437",
+          "sha256": "69c01bf2b2dc0e0291d13fa81c731152b2ee241f6a329a1854f903f9112bb387",
+          "keccak256": "0x6ddec7ef02bfad40e406454a93e2be18a92799313273a22dc5aa0c25add16378"
+        },
+        {
+          "compilerPath": "src/libraries/ERC1271Lib.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/libraries/ERC1271Lib.sol",
+          "gitBlobSha1": "382d9cc5f4dc1ff6b4c8d53a2bc3fd6dc624edbe",
+          "sha256": "b850bb2ec9eacf1c9925e77d92156102c39e685943809a95166d4e79cd32fbb4",
+          "keccak256": "0xce0205a4a3bd1823b54ddd06c13aedd24df3212e46e1d6a96589bf839ea255da"
+        },
+        {
+          "compilerPath": "src/libraries/EncoderLib.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/libraries/EncoderLib.sol",
+          "gitBlobSha1": "fb97745d86f052d7bfa709755f523ca69e1728b9",
+          "sha256": "a4a49c3e58fdf7e31e70a3d9152280a1f26f89ef18fa54e8b6eb0261ac37efba",
+          "keccak256": "0xd41033cfb79e05c1541854ebad6b9f625a2f98c95feb0191b7bc2d57b287964b"
+        },
+        {
+          "compilerPath": "src/interfaces/IDeleGatorCore.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/IDeleGatorCore.sol",
+          "gitBlobSha1": "9790052c8b3568d5a6577f3cf862438b3d8fc11e",
+          "sha256": "ef828b80805df17c27f3d55eb92a7f5493e00352c6e5b7788468093cac4c2618",
+          "keccak256": "0xcf54104878e5f3d0855441db4465714fb91e23e7a1b6a08400bffcaed682ed61"
+        },
+        {
+          "compilerPath": "src/interfaces/ICaveatEnforcer.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/ICaveatEnforcer.sol",
+          "gitBlobSha1": "326f9f5cf49197000f5e0901e5502f9888ce7478",
+          "sha256": "e17a7899babbfab8f0bc1ca1dbbe04e2bd6315a589e36601b3585ebc69c091f8",
+          "keccak256": "0x61c2d69cb8cc4b04d5ce786ff1b38c07009a262b64900e58a109239942bfad16"
+        },
+        {
+          "compilerPath": "src/interfaces/IDelegationManager.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/IDelegationManager.sol",
+          "gitBlobSha1": "2adc8ddba85fea6a1bdf85517e263fbad3d027b9",
+          "sha256": "993950a14df88fb423509e255cd624ff16c6184af5d68cea59b19a3d28d07a8d",
+          "keccak256": "0x6ba56a87c8770c9ee74142a23a82b476c63024734c92df1b0541da846d4d7fd5"
+        },
+        {
+          "compilerPath": "@erc7579/interfaces/IERC7579Account.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/interfaces/IERC7579Account.sol",
+          "gitBlobSha1": "6ab3b0f179e4a29f3fbff75234499a01c0dc2255",
+          "sha256": "4afeb14a8cbdcf8af1ace98e43cebf1283c7198bf60a018289a55fe293734cfd",
+          "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/Panic.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Panic.sol",
+          "gitBlobSha1": "b6443035cf551671ee2836c510255e361bd32047",
+          "sha256": "6c99a6444ce4fd4b3e3e1fb7219f08c0b36694fbd0559f74be334a4630264452",
+          "keccak256": "0x29074fe5a74bb024c57b3570abf6c74d8bceed3438694d470fd0166a3ecd196a"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/Context.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Context.sol",
+          "gitBlobSha1": "4e535fe03c243f864568b8f4430c17c25dbadb47",
+          "sha256": "847fda5460fee70f56f4200f59b82ae622bb03c79c77e67af010e31b7e2cc5b6",
+          "keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/Strings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Strings.sol",
+          "gitBlobSha1": "b2c0a40fb2a900056d77c4f84d4c121f188e61aa",
+          "sha256": "0519199dbc635f98ce2e4537986604ee618bca665c65e9a1738702dfacf72010",
+          "keccak256": "0x55f102ea785d8399c0e58d1108e2d289506dde18abc6db1b7f68c1f9f9bc5792"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/access/Ownable.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/access/Ownable.sol",
+          "gitBlobSha1": "bd96f6661dcbf7b2d4948823ac0e7bfb4ba31fb1",
+          "sha256": "38578bd71c0a909840e67202db527cc6b4e6b437e0f39f0c909da32c1e30cb81",
+          "keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/Pausable.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Pausable.sol",
+          "gitBlobSha1": "312f1cb90fe763f222b93c564308f466bf9ef51e",
+          "sha256": "6543160582b3c0319a180f31660faf6ba0a8444acbdb03357c09790a96256835",
+          "keccak256": "0xb2e5f50762c27fb4b123e3619c3c02bdcba5e515309382e5bfb6f7d6486510bd"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/math/Math.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/Math.sol",
+          "gitBlobSha1": "8edbf1ef8d9bd4e70bac8730bebc8090a1c0022e",
+          "sha256": "84505fad17c82801d8bb0f1af87154fe7cc0ad2f6f09abe4d679866fd9bdf12d",
+          "keccak256": "0xc3a38f6236b9f11703164f1c52a5d423f02f01ee689d58d5a35d1a48ad5b9d88"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/StorageSlot.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/StorageSlot.sol",
+          "gitBlobSha1": "4e02bfe746d22c4468e38f22924df75bec82be39",
+          "sha256": "95a2c2bb66f0797b3fcd463df71b78bcd4c8272a9eefb34369ce29b0445068b6",
+          "keccak256": "0x70d9a9cf8d5cc830d7396505ef8eb9686bd0c60a29c6644bd6cc278f9bab8ebe"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/ShortStrings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/ShortStrings.sol",
+          "gitBlobSha1": "fdfe774d635276cb9fbf6e5177ea2c5386091413",
+          "sha256": "ddd52921d2996abf2e3d9c1c4f6d00194a3e3b278a164948f995862371444a55",
+          "keccak256": "0x18a7171df639a934592915a520ecb97c5bbc9675a1105607aac8a94e72bf62c6"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/lib/ModeLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ModeLib.sol",
+          "gitBlobSha1": "9c6778f8fa701745031a1c3bad9190b65019518b",
+          "sha256": "c79a0cb6aeaa3247d4f294eee3afa0b989e8f1fa77c634d511ff2064aae96670",
+          "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/access/Ownable2Step.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/access/Ownable2Step.sol",
+          "gitBlobSha1": "46765c4daa8a095fec653d43f51b68436b3f1b63",
+          "sha256": "c696b0d098360d10654a8e04a26fe39a8602e63926c24bf15e9976ceb9cc2714",
+          "keccak256": "0x08b074ae1b12e70ce24d1335086ec5a418934311a6771d9f61fe24d392050e12"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/interfaces/IERC1271.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC1271.sol",
+          "gitBlobSha1": "5f5b326336e337ed998b50a30662e3c8db309ae6",
+          "sha256": "04cafdfbdd1295c841e9642828a4febe71e6cb1d27631733ff6793be43c5291d",
+          "keccak256": "0x0a7e89ffa57127a2e75931be926a11094b6ee2955632a5dce0228f3d8e98eb02"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/interfaces/IERC5267.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC5267.sol",
+          "gitBlobSha1": "47a9fd5885563f1d65a77f0847bdd91bfed9d17a",
+          "sha256": "efd1ebd1e04b6ef9c3b8781a097588f83da954323f438d54a71dc06508e6c7b8",
+          "keccak256": "0x92aa1df62dc3d33f1656d63bede0923e0df0b706ad4137c8b10b0a8fe549fd92"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SafeCast.sol",
+          "gitBlobSha1": "d8de2e17c4963daea975cf3e6635b9d9e03a03db",
+          "sha256": "18558506998b6faa2c7a3c1d61638ad4c2ce706e9d60285dae5df27dc543611c",
+          "keccak256": "0x8cd59334ed58b8884cd1f775afc9400db702e674e5d6a7a438c655b9de788d7e"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/math/SignedMath.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SignedMath.sol",
+          "gitBlobSha1": "535d757616f83d47c55b621e5f5d0c8bf513221a",
+          "sha256": "eb5dc6db1d250e32c98b282ac64e00fb277ecc7cd4efbf769da7bbf272eeb33c",
+          "keccak256": "0x519e2c9d9c4dfd63311fb98663e55ba465772897cd4a98e3a5406a1f5959811f"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/ECDSA.sol",
+          "gitBlobSha1": "864c8ee8766a370e516b67d16ed4f97199e0d5cd",
+          "sha256": "f68050ca9abcb7d6ccd78db8957b61f6e22375b0bba92fc8f3e71c2cc00c4fd4",
+          "keccak256": "0xa548dd62e9e17616ae80a1e7ac7b1447ae377efc27fb9f7b4f4fbf5c0b0a1dfb"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/Panic.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Panic.sol",
+          "gitBlobSha1": "b6443035cf551671ee2836c510255e361bd32047",
+          "sha256": "6c99a6444ce4fd4b3e3e1fb7219f08c0b36694fbd0559f74be334a4630264452",
+          "keccak256": "0x29074fe5a74bb024c57b3570abf6c74d8bceed3438694d470fd0166a3ecd196a"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/EIP712.sol",
+          "gitBlobSha1": "77c4c8990fe0a0859e84b6cde32439ac065fbbd5",
+          "sha256": "910cfc54bdde11ab4ae6184f320a0a1a690fd8d63b5373e452e2eb6f2a99e1fb",
+          "keccak256": "0xa67f5e17d65eea22581382bd8c2804025f1029bfbd80908dc77b218fad29fb1d"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/Context.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Context.sol",
+          "gitBlobSha1": "4e535fe03c243f864568b8f4430c17c25dbadb47",
+          "sha256": "847fda5460fee70f56f4200f59b82ae622bb03c79c77e67af010e31b7e2cc5b6",
+          "keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/Strings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Strings.sol",
+          "gitBlobSha1": "b2c0a40fb2a900056d77c4f84d4c121f188e61aa",
+          "sha256": "0519199dbc635f98ce2e4537986604ee618bca665c65e9a1738702dfacf72010",
+          "keccak256": "0x55f102ea785d8399c0e58d1108e2d289506dde18abc6db1b7f68c1f9f9bc5792"
+        },
+        {
+          "compilerPath": "@account-abstraction/interfaces/PackedUserOperation.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/PackedUserOperation.sol",
+          "gitBlobSha1": "fe20de56573fe205a20f7133734b577d5255f321",
+          "sha256": "40fcd99da0814312f0353417de64f70805f4cd7ec4cb4573c8b4c4d48540f562",
+          "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/access/Ownable.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/access/Ownable.sol",
+          "gitBlobSha1": "bd96f6661dcbf7b2d4948823ac0e7bfb4ba31fb1",
+          "sha256": "38578bd71c0a909840e67202db527cc6b4e6b437e0f39f0c909da32c1e30cb81",
+          "keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/Pausable.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Pausable.sol",
+          "gitBlobSha1": "312f1cb90fe763f222b93c564308f466bf9ef51e",
+          "sha256": "6543160582b3c0319a180f31660faf6ba0a8444acbdb03357c09790a96256835",
+          "keccak256": "0xb2e5f50762c27fb4b123e3619c3c02bdcba5e515309382e5bfb6f7d6486510bd"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/math/Math.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/Math.sol",
+          "gitBlobSha1": "8edbf1ef8d9bd4e70bac8730bebc8090a1c0022e",
+          "sha256": "84505fad17c82801d8bb0f1af87154fe7cc0ad2f6f09abe4d679866fd9bdf12d",
+          "keccak256": "0xc3a38f6236b9f11703164f1c52a5d423f02f01ee689d58d5a35d1a48ad5b9d88"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/StorageSlot.sol",
+          "gitBlobSha1": "4e02bfe746d22c4468e38f22924df75bec82be39",
+          "sha256": "95a2c2bb66f0797b3fcd463df71b78bcd4c8272a9eefb34369ce29b0445068b6",
+          "keccak256": "0x70d9a9cf8d5cc830d7396505ef8eb9686bd0c60a29c6644bd6cc278f9bab8ebe"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/ShortStrings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/ShortStrings.sol",
+          "gitBlobSha1": "fdfe774d635276cb9fbf6e5177ea2c5386091413",
+          "sha256": "ddd52921d2996abf2e3d9c1c4f6d00194a3e3b278a164948f995862371444a55",
+          "keccak256": "0x18a7171df639a934592915a520ecb97c5bbc9675a1105607aac8a94e72bf62c6"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/access/Ownable2Step.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/access/Ownable2Step.sol",
+          "gitBlobSha1": "46765c4daa8a095fec653d43f51b68436b3f1b63",
+          "sha256": "c696b0d098360d10654a8e04a26fe39a8602e63926c24bf15e9976ceb9cc2714",
+          "keccak256": "0x08b074ae1b12e70ce24d1335086ec5a418934311a6771d9f61fe24d392050e12"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/interfaces/IERC1271.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC1271.sol",
+          "gitBlobSha1": "5f5b326336e337ed998b50a30662e3c8db309ae6",
+          "sha256": "04cafdfbdd1295c841e9642828a4febe71e6cb1d27631733ff6793be43c5291d",
+          "keccak256": "0x0a7e89ffa57127a2e75931be926a11094b6ee2955632a5dce0228f3d8e98eb02"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/interfaces/IERC5267.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC5267.sol",
+          "gitBlobSha1": "47a9fd5885563f1d65a77f0847bdd91bfed9d17a",
+          "sha256": "efd1ebd1e04b6ef9c3b8781a097588f83da954323f438d54a71dc06508e6c7b8",
+          "keccak256": "0x92aa1df62dc3d33f1656d63bede0923e0df0b706ad4137c8b10b0a8fe549fd92"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SafeCast.sol",
+          "gitBlobSha1": "d8de2e17c4963daea975cf3e6635b9d9e03a03db",
+          "sha256": "18558506998b6faa2c7a3c1d61638ad4c2ce706e9d60285dae5df27dc543611c",
+          "keccak256": "0x8cd59334ed58b8884cd1f775afc9400db702e674e5d6a7a438c655b9de788d7e"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/interfaces/IERC7579Account.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/interfaces/IERC7579Account.sol",
+          "gitBlobSha1": "6ab3b0f179e4a29f3fbff75234499a01c0dc2255",
+          "sha256": "4afeb14a8cbdcf8af1ace98e43cebf1283c7198bf60a018289a55fe293734cfd",
+          "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SignedMath.sol",
+          "gitBlobSha1": "535d757616f83d47c55b621e5f5d0c8bf513221a",
+          "sha256": "eb5dc6db1d250e32c98b282ac64e00fb277ecc7cd4efbf769da7bbf272eeb33c",
+          "keccak256": "0x519e2c9d9c4dfd63311fb98663e55ba465772897cd4a98e3a5406a1f5959811f"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/MessageHashUtils.sol",
+          "gitBlobSha1": "45c2421ad965008ca9be3bdc709d527e055fd965",
+          "sha256": "c0c706ebdea33ed6e49966d629d62ff3c7d125960104c2e5b7d925f703cd0648",
+          "keccak256": "0x3f1998a2904792ff2a576827876638b4917573186537f878d30b23277a3b8d38"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/ECDSA.sol",
+          "gitBlobSha1": "864c8ee8766a370e516b67d16ed4f97199e0d5cd",
+          "sha256": "f68050ca9abcb7d6ccd78db8957b61f6e22375b0bba92fc8f3e71c2cc00c4fd4",
+          "keccak256": "0xa548dd62e9e17616ae80a1e7ac7b1447ae377efc27fb9f7b4f4fbf5c0b0a1dfb"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/EIP712.sol",
+          "gitBlobSha1": "77c4c8990fe0a0859e84b6cde32439ac065fbbd5",
+          "sha256": "910cfc54bdde11ab4ae6184f320a0a1a690fd8d63b5373e452e2eb6f2a99e1fb",
+          "keccak256": "0xa67f5e17d65eea22581382bd8c2804025f1029bfbd80908dc77b218fad29fb1d"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/PackedUserOperation.sol",
+          "gitBlobSha1": "fe20de56573fe205a20f7133734b577d5255f321",
+          "sha256": "40fcd99da0814312f0353417de64f70805f4cd7ec4cb4573c8b4c4d48540f562",
+          "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/MessageHashUtils.sol",
+          "gitBlobSha1": "45c2421ad965008ca9be3bdc709d527e055fd965",
+          "sha256": "c0c706ebdea33ed6e49966d629d62ff3c7d125960104c2e5b7d925f703cd0648",
+          "keccak256": "0x3f1998a2904792ff2a576827876638b4917573186537f878d30b23277a3b8d38"
+        }
+      ],
+      "metadataUrl": "https://sourcify.dev/server/v2/contract/1/0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3?fields=all",
+      "metadataVerificationChain": 1,
+      "actualObservedChain": 1,
+      "crossChainAddressAssumptionUsed": false,
+      "runtimeCodeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3",
+      "runtimeByteLength": 11503,
+      "immutablePatches": [
+        {
+          "id": "7354",
+          "name": "_cachedDomainSeparator",
+          "start": 6809,
+          "length": 32,
+          "value": "0xe787aa44f0f1f6dc6e8298b61d43d7ce553210e2276f628ff277081e74c9c144"
+        },
+        {
+          "id": "7356",
+          "name": "_cachedChainId",
+          "start": 6767,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000000000000000000000000000000000001"
+        },
+        {
+          "id": "7358",
+          "name": "_cachedThis",
+          "start": 6725,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "7360",
+          "name": "_hashedName",
+          "start": 6890,
+          "length": 32,
+          "value": "0x604240e1ed005b9ba256cb7011059bf4ae645812b834bbcb5b22c93e2d1185cc"
+        },
+        {
+          "id": "7362",
+          "name": "_hashedVersion",
+          "start": 6930,
+          "length": 32,
+          "value": "0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6"
+        },
+        {
+          "id": "7365",
+          "name": "_name",
+          "start": 7085,
+          "length": 32,
+          "value": "0x44656c65676174696f6e4d616e61676572000000000000000000000000000011"
+        },
+        {
+          "id": "7368",
+          "name": "_version",
+          "start": 7130,
+          "length": 32,
+          "value": "0x3100000000000000000000000000000000000000000000000000000000000001"
+        }
+      ],
+      "officialBirthTransaction": "0x523333c027e7481493b83f8c5d8969dfd14ca429cb99db79acb3d8ef9b330881",
+      "broadcastRecordedCommit": "2125bb6",
+      "constructorArguments": [
+        "0xB0403B32f54d0Bd752113f4009e8B534C6669f44"
+      ],
+      "compiledTemplateMatches": true,
+      "fullObservedRuntimeMatches": true
+    },
+    {
+      "name": "delegate",
+      "address": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+      "sourceVerified": true,
+      "compiler": "0.8.23+commit.f704f362.Emscripten.clang",
+      "sourceInputSha256": "c95db4a4a020dca57dafaa9a0f98180094503cd9c7c3ef3f2b85f5c30f803bf3",
+      "compilationInputSha256": "879157ce0e02948d2f381441e5e3f202e77af0b65f34a228eca1f2aab7aaf67f",
+      "sourceCount": 53,
+      "sourcePins": [
+        {
+          "compilerPath": "src/utils/Types.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/utils/Types.sol",
+          "gitBlobSha1": "50bff062c9cbce684cbe33634f182cb6279deb2d",
+          "sha256": "48c14a9ddfa6e040dd530d3a961a2d1520655771d02e230569540ccd94e6047c",
+          "keccak256": "0xda4094eb4839087157f34750fb4d1a2d6241fbb8ee0d41fd1f2905209e6a05b0"
+        },
+        {
+          "compilerPath": "src/utils/Constants.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/utils/Constants.sol",
+          "gitBlobSha1": "9dab2aca59685ac6b9c7bf68772e50f253e08042",
+          "sha256": "0afcc9f627c79d7ab98ae7c17e5b09eac334eb28b96092644e442a129ebc1dd2",
+          "keccak256": "0x5f1e2913a96b7f88bc7fbd2de329465822ae0d438ff212883c6dd3bd5e9609a5"
+        },
+        {
+          "compilerPath": "@erc7579/lib/ModeLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ModeLib.sol",
+          "gitBlobSha1": "9c6778f8fa701745031a1c3bad9190b65019518b",
+          "sha256": "c79a0cb6aeaa3247d4f294eee3afa0b989e8f1fa77c634d511ff2064aae96670",
+          "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185"
+        },
+        {
+          "compilerPath": "src/interfaces/IERC7821.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/IERC7821.sol",
+          "gitBlobSha1": "789c255dfbe9cff1146e0715f2e7bedb350df117",
+          "sha256": "6c5e1a0af00e75bc2b2efecad3017832b04c0a0e82bebddd988534287d3e48d9",
+          "keccak256": "0x4428c7745161273263d8bce835ae7a7d3672500f2e5ad474a1100e5c29cca64c"
+        },
+        {
+          "compilerPath": "src/libraries/ERC1271Lib.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/libraries/ERC1271Lib.sol",
+          "gitBlobSha1": "382d9cc5f4dc1ff6b4c8d53a2bc3fd6dc624edbe",
+          "sha256": "b850bb2ec9eacf1c9925e77d92156102c39e685943809a95166d4e79cd32fbb4",
+          "keccak256": "0xce0205a4a3bd1823b54ddd06c13aedd24df3212e46e1d6a96589bf839ea255da"
+        },
+        {
+          "compilerPath": "@erc7579/lib/ExecutionLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ExecutionLib.sol",
+          "gitBlobSha1": "e88e96b2077dc65ed39e5526f34eed88e0a060af",
+          "sha256": "665c613c2bec394bb176a0fb426aa62a27cd5e8ad708c8d74fa813cd2833f4e5",
+          "keccak256": "0xb436732367ed8a45ddfaa95c9c977ee7674ff5755353c3792a38608640406126"
+        },
+        {
+          "compilerPath": "@erc7579/core/ExecutionHelper.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/core/ExecutionHelper.sol",
+          "gitBlobSha1": "00aa5f00604bf89504dfa35ecd7e861fe583ac71",
+          "sha256": "6af49794a724e4dc482b91d53f03e4a30b2ba4878cd287697b507e88e939a7ae",
+          "keccak256": "0xa8ccc4cdddbcbb51594644a6a3b96657bae861da6461a149ca8e4c2678da0b20"
+        },
+        {
+          "compilerPath": "src/interfaces/IDeleGatorCore.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/IDeleGatorCore.sol",
+          "gitBlobSha1": "9790052c8b3568d5a6577f3cf862438b3d8fc11e",
+          "sha256": "ef828b80805df17c27f3d55eb92a7f5493e00352c6e5b7788468093cac4c2618",
+          "keccak256": "0xcf54104878e5f3d0855441db4465714fb91e23e7a1b6a08400bffcaed682ed61"
+        },
+        {
+          "compilerPath": "src/EIP7702/EIP7702DeleGatorCore.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/EIP7702/EIP7702DeleGatorCore.sol",
+          "gitBlobSha1": "37f2c57afa19f64d85e635cd0be1e915175b2500",
+          "sha256": "02dfadfd49a854613a3d7553508ac719c43e803ffaa6f052dd5b15005afb31a4",
+          "keccak256": "0x4c29c051361f02fcc30204127469d6e2fc3e43aa11b5d6eacd6b6594e1d78a4c"
+        },
+        {
+          "compilerPath": "src/interfaces/IDelegationManager.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/IDelegationManager.sol",
+          "gitBlobSha1": "2adc8ddba85fea6a1bdf85517e263fbad3d027b9",
+          "sha256": "993950a14df88fb423509e255cd624ff16c6184af5d68cea59b19a3d28d07a8d",
+          "keccak256": "0x6ba56a87c8770c9ee74142a23a82b476c63024734c92df1b0541da846d4d7fd5"
+        },
+        {
+          "compilerPath": "@erc7579/interfaces/IERC7579Account.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/interfaces/IERC7579Account.sol",
+          "gitBlobSha1": "6ab3b0f179e4a29f3fbff75234499a01c0dc2255",
+          "sha256": "4afeb14a8cbdcf8af1ace98e43cebf1283c7198bf60a018289a55fe293734cfd",
+          "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/Panic.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Panic.sol",
+          "gitBlobSha1": "b6443035cf551671ee2836c510255e361bd32047",
+          "sha256": "6c99a6444ce4fd4b3e3e1fb7219f08c0b36694fbd0559f74be334a4630264452",
+          "keccak256": "0x29074fe5a74bb024c57b3570abf6c74d8bceed3438694d470fd0166a3ecd196a"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/Strings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Strings.sol",
+          "gitBlobSha1": "b2c0a40fb2a900056d77c4f84d4c121f188e61aa",
+          "sha256": "0519199dbc635f98ce2e4537986604ee618bca665c65e9a1738702dfacf72010",
+          "keccak256": "0x55f102ea785d8399c0e58d1108e2d289506dde18abc6db1b7f68c1f9f9bc5792"
+        },
+        {
+          "compilerPath": "src/EIP7702/EIP7702StatelessDeleGator.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/EIP7702/EIP7702StatelessDeleGator.sol",
+          "gitBlobSha1": "ad7fd27e9b76a14c08156e302cefd4994af39d81",
+          "sha256": "9c02aaeca33ac6c703979f416850b90851604ca824c27b3cc4fa63f6ed8a58e1",
+          "keccak256": "0x3467022b16e2ff7cd32b93b30a9e5ce398b6e43fc82dbc4f97d9a2ea9631fddc"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/math/Math.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/Math.sol",
+          "gitBlobSha1": "8edbf1ef8d9bd4e70bac8730bebc8090a1c0022e",
+          "sha256": "84505fad17c82801d8bb0f1af87154fe7cc0ad2f6f09abe4d679866fd9bdf12d",
+          "keccak256": "0xc3a38f6236b9f11703164f1c52a5d423f02f01ee689d58d5a35d1a48ad5b9d88"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/StorageSlot.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/StorageSlot.sol",
+          "gitBlobSha1": "4e02bfe746d22c4468e38f22924df75bec82be39",
+          "sha256": "95a2c2bb66f0797b3fcd463df71b78bcd4c8272a9eefb34369ce29b0445068b6",
+          "keccak256": "0x70d9a9cf8d5cc830d7396505ef8eb9686bd0c60a29c6644bd6cc278f9bab8ebe"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/ShortStrings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/ShortStrings.sol",
+          "gitBlobSha1": "fdfe774d635276cb9fbf6e5177ea2c5386091413",
+          "sha256": "ddd52921d2996abf2e3d9c1c4f6d00194a3e3b278a164948f995862371444a55",
+          "keccak256": "0x18a7171df639a934592915a520ecb97c5bbc9675a1105607aac8a94e72bf62c6"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/lib/ModeLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ModeLib.sol",
+          "gitBlobSha1": "9c6778f8fa701745031a1c3bad9190b65019518b",
+          "sha256": "c79a0cb6aeaa3247d4f294eee3afa0b989e8f1fa77c634d511ff2064aae96670",
+          "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185"
+        },
+        {
+          "compilerPath": "@account-abstraction/interfaces/IEntryPoint.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/IEntryPoint.sol",
+          "gitBlobSha1": "28c26f98e6cbaf0fbb2e7ff623e7d5c9cb6d2eae",
+          "sha256": "06f97dfe27d09b478a1e82855ab57485b11ea68e3804b03e879f184bbc667fb7",
+          "keccak256": "0x1972a5fcb3a808b58c85af5741949ef6af11ab0debd3ae8c708171ae1ae0d0c4"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/interfaces/IERC1271.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC1271.sol",
+          "gitBlobSha1": "5f5b326336e337ed998b50a30662e3c8db309ae6",
+          "sha256": "04cafdfbdd1295c841e9642828a4febe71e6cb1d27631733ff6793be43c5291d",
+          "keccak256": "0x0a7e89ffa57127a2e75931be926a11094b6ee2955632a5dce0228f3d8e98eb02"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/interfaces/IERC5267.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC5267.sol",
+          "gitBlobSha1": "47a9fd5885563f1d65a77f0847bdd91bfed9d17a",
+          "sha256": "efd1ebd1e04b6ef9c3b8781a097588f83da954323f438d54a71dc06508e6c7b8",
+          "keccak256": "0x92aa1df62dc3d33f1656d63bede0923e0df0b706ad4137c8b10b0a8fe549fd92"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/math/SafeCast.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SafeCast.sol",
+          "gitBlobSha1": "d8de2e17c4963daea975cf3e6635b9d9e03a03db",
+          "sha256": "18558506998b6faa2c7a3c1d61638ad4c2ce706e9d60285dae5df27dc543611c",
+          "keccak256": "0x8cd59334ed58b8884cd1f775afc9400db702e674e5d6a7a438c655b9de788d7e"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/math/SignedMath.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SignedMath.sol",
+          "gitBlobSha1": "535d757616f83d47c55b621e5f5d0c8bf513221a",
+          "sha256": "eb5dc6db1d250e32c98b282ac64e00fb277ecc7cd4efbf769da7bbf272eeb33c",
+          "keccak256": "0x519e2c9d9c4dfd63311fb98663e55ba465772897cd4a98e3a5406a1f5959811f"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/lib/ExecutionLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ExecutionLib.sol",
+          "gitBlobSha1": "e88e96b2077dc65ed39e5526f34eed88e0a060af",
+          "sha256": "665c613c2bec394bb176a0fb426aa62a27cd5e8ad708c8d74fa813cd2833f4e5",
+          "keccak256": "0xb436732367ed8a45ddfaa95c9c977ee7674ff5755353c3792a38608640406126"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/ECDSA.sol",
+          "gitBlobSha1": "864c8ee8766a370e516b67d16ed4f97199e0d5cd",
+          "sha256": "f68050ca9abcb7d6ccd78db8957b61f6e22375b0bba92fc8f3e71c2cc00c4fd4",
+          "keccak256": "0xa548dd62e9e17616ae80a1e7ac7b1447ae377efc27fb9f7b4f4fbf5c0b0a1dfb"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/Panic.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Panic.sol",
+          "gitBlobSha1": "b6443035cf551671ee2836c510255e361bd32047",
+          "sha256": "6c99a6444ce4fd4b3e3e1fb7219f08c0b36694fbd0559f74be334a4630264452",
+          "keccak256": "0x29074fe5a74bb024c57b3570abf6c74d8bceed3438694d470fd0166a3ecd196a"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/EIP712.sol",
+          "gitBlobSha1": "77c4c8990fe0a0859e84b6cde32439ac065fbbd5",
+          "sha256": "910cfc54bdde11ab4ae6184f320a0a1a690fd8d63b5373e452e2eb6f2a99e1fb",
+          "keccak256": "0xa67f5e17d65eea22581382bd8c2804025f1029bfbd80908dc77b218fad29fb1d"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/Strings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/Strings.sol",
+          "gitBlobSha1": "b2c0a40fb2a900056d77c4f84d4c121f188e61aa",
+          "sha256": "0519199dbc635f98ce2e4537986604ee618bca665c65e9a1738702dfacf72010",
+          "keccak256": "0x55f102ea785d8399c0e58d1108e2d289506dde18abc6db1b7f68c1f9f9bc5792"
+        },
+        {
+          "compilerPath": "@account-abstraction/interfaces/PackedUserOperation.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/PackedUserOperation.sol",
+          "gitBlobSha1": "fe20de56573fe205a20f7133734b577d5255f321",
+          "sha256": "40fcd99da0814312f0353417de64f70805f4cd7ec4cb4573c8b4c4d48540f562",
+          "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/introspection/IERC165.sol",
+          "gitBlobSha1": "bfbdf5dda39a8f85bc68c7dbe67e7fca50cdca6c",
+          "sha256": "d5ec9a03c954d63b427a451c16abc99e1bfb7896725be8cc56c5d6d73040cb6f",
+          "keccak256": "0xc859863e3bda7ec3cddf6dafe2ffe91bcbe648d1395b856b839c32ee9617c44c"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/core/ExecutionHelper.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/core/ExecutionHelper.sol",
+          "gitBlobSha1": "00aa5f00604bf89504dfa35ecd7e861fe583ac71",
+          "sha256": "6af49794a724e4dc482b91d53f03e4a30b2ba4878cd287697b507e88e939a7ae",
+          "keccak256": "0xa8ccc4cdddbcbb51594644a6a3b96657bae861da6461a149ca8e4c2678da0b20"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/token/ERC721/IERC721Receiver.sol",
+          "gitBlobSha1": "a53d07774791d77df5ac9da0c927dbc09f525d0a",
+          "sha256": "1c1e73f63c8e256df84413973e54aa5cf6620acc7d41b8666a1080945519ad41",
+          "keccak256": "0xcac5b2622b9876529ca71f56b08a2786e960f0a738a9fcc456b2b8740170f89b"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/math/Math.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/Math.sol",
+          "gitBlobSha1": "8edbf1ef8d9bd4e70bac8730bebc8090a1c0022e",
+          "sha256": "84505fad17c82801d8bb0f1af87154fe7cc0ad2f6f09abe4d679866fd9bdf12d",
+          "keccak256": "0xc3a38f6236b9f11703164f1c52a5d423f02f01ee689d58d5a35d1a48ad5b9d88"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/token/ERC1155/IERC1155Receiver.sol",
+          "gitBlobSha1": "36ad4c75206524ac5aece06e1c9fb69ceb5a5816",
+          "sha256": "1d69b3dbea1338df574b9ba109e87aee3e93332c1a58057540ca85d835b149ee",
+          "keccak256": "0x0f8b8696348d5a57b13d44f5cc63894f0368038c06f6d00bdeda6f9aa13127e7"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/StorageSlot.sol",
+          "gitBlobSha1": "4e02bfe746d22c4468e38f22924df75bec82be39",
+          "sha256": "95a2c2bb66f0797b3fcd463df71b78bcd4c8272a9eefb34369ce29b0445068b6",
+          "keccak256": "0x70d9a9cf8d5cc830d7396505ef8eb9686bd0c60a29c6644bd6cc278f9bab8ebe"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/ShortStrings.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/ShortStrings.sol",
+          "gitBlobSha1": "fdfe774d635276cb9fbf6e5177ea2c5386091413",
+          "sha256": "ddd52921d2996abf2e3d9c1c4f6d00194a3e3b278a164948f995862371444a55",
+          "keccak256": "0x18a7171df639a934592915a520ecb97c5bbc9675a1105607aac8a94e72bf62c6"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/IAggregator.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/IAggregator.sol",
+          "gitBlobSha1": "070d8f27a2cef16127a4bbf7b93ceb5b81a67cde",
+          "sha256": "bc6df43d690bcaf2da8255748070e880eb7390e74ea98f6e36eb0a9f4b128ac1",
+          "keccak256": "0xf100d6fcc0c3b450b13e979b6a42c628c292a1bc340eccc2e7796b80e3975588"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/IEntryPoint.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/IEntryPoint.sol",
+          "gitBlobSha1": "28c26f98e6cbaf0fbb2e7ff623e7d5c9cb6d2eae",
+          "sha256": "06f97dfe27d09b478a1e82855ab57485b11ea68e3804b03e879f184bbc667fb7",
+          "keccak256": "0x1972a5fcb3a808b58c85af5741949ef6af11ab0debd3ae8c708171ae1ae0d0c4"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/interfaces/IERC1271.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC1271.sol",
+          "gitBlobSha1": "5f5b326336e337ed998b50a30662e3c8db309ae6",
+          "sha256": "04cafdfbdd1295c841e9642828a4febe71e6cb1d27631733ff6793be43c5291d",
+          "keccak256": "0x0a7e89ffa57127a2e75931be926a11094b6ee2955632a5dce0228f3d8e98eb02"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/interfaces/IERC5267.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/interfaces/IERC5267.sol",
+          "gitBlobSha1": "47a9fd5885563f1d65a77f0847bdd91bfed9d17a",
+          "sha256": "efd1ebd1e04b6ef9c3b8781a097588f83da954323f438d54a71dc06508e6c7b8",
+          "keccak256": "0x92aa1df62dc3d33f1656d63bede0923e0df0b706ad4137c8b10b0a8fe549fd92"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/math/SafeCast.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SafeCast.sol",
+          "gitBlobSha1": "d8de2e17c4963daea975cf3e6635b9d9e03a03db",
+          "sha256": "18558506998b6faa2c7a3c1d61638ad4c2ce706e9d60285dae5df27dc543611c",
+          "keccak256": "0x8cd59334ed58b8884cd1f775afc9400db702e674e5d6a7a438c655b9de788d7e"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/interfaces/IERC7579Account.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/interfaces/IERC7579Account.sol",
+          "gitBlobSha1": "6ab3b0f179e4a29f3fbff75234499a01c0dc2255",
+          "sha256": "4afeb14a8cbdcf8af1ace98e43cebf1283c7198bf60a018289a55fe293734cfd",
+          "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/INonceManager.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/INonceManager.sol",
+          "gitBlobSha1": "2f993f6875ca974cc62364f98e260d5bfd677b79",
+          "sha256": "4a600598dca29462afaebf27de758c83344d9d9871a53c1cdbe448510491d0e3",
+          "keccak256": "0xd575af0f6ebbd5f0b2933307d44cd7b4e03a69f4b817a67db5409bd3c89aeecb"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/IStakeManager.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/IStakeManager.sol",
+          "gitBlobSha1": "69083e93f5af0225ac2717426c6e04b7d558eff4",
+          "sha256": "6334881d2273350b92fd4b0ecabbed9a844ef5d114832097ecd2b631010b6033",
+          "keccak256": "0xbe5ca9e7f254d031687419e7b96ef48c9c63e9398bbe992dc72ffc6dc14e0a04"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/math/SignedMath.sol",
+          "gitBlobSha1": "535d757616f83d47c55b621e5f5d0c8bf513221a",
+          "sha256": "eb5dc6db1d250e32c98b282ac64e00fb277ecc7cd4efbf769da7bbf272eeb33c",
+          "keccak256": "0x519e2c9d9c4dfd63311fb98663e55ba465772897cd4a98e3a5406a1f5959811f"
+        },
+        {
+          "compilerPath": "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/MessageHashUtils.sol",
+          "gitBlobSha1": "45c2421ad965008ca9be3bdc709d527e055fd965",
+          "sha256": "c0c706ebdea33ed6e49966d629d62ff3c7d125960104c2e5b7d925f703cd0648",
+          "keccak256": "0x3f1998a2904792ff2a576827876638b4917573186537f878d30b23277a3b8d38"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/ECDSA.sol",
+          "gitBlobSha1": "864c8ee8766a370e516b67d16ed4f97199e0d5cd",
+          "sha256": "f68050ca9abcb7d6ccd78db8957b61f6e22375b0bba92fc8f3e71c2cc00c4fd4",
+          "keccak256": "0xa548dd62e9e17616ae80a1e7ac7b1447ae377efc27fb9f7b4f4fbf5c0b0a1dfb"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/EIP712.sol",
+          "gitBlobSha1": "77c4c8990fe0a0859e84b6cde32439ac065fbbd5",
+          "sha256": "910cfc54bdde11ab4ae6184f320a0a1a690fd8d63b5373e452e2eb6f2a99e1fb",
+          "keccak256": "0xa67f5e17d65eea22581382bd8c2804025f1029bfbd80908dc77b218fad29fb1d"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/PackedUserOperation.sol",
+          "gitBlobSha1": "fe20de56573fe205a20f7133734b577d5255f321",
+          "sha256": "40fcd99da0814312f0353417de64f70805f4cd7ec4cb4573c8b4c4d48540f562",
+          "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/introspection/IERC165.sol",
+          "gitBlobSha1": "bfbdf5dda39a8f85bc68c7dbe67e7fca50cdca6c",
+          "sha256": "d5ec9a03c954d63b427a451c16abc99e1bfb7896725be8cc56c5d6d73040cb6f",
+          "keccak256": "0xc859863e3bda7ec3cddf6dafe2ffe91bcbe648d1395b856b839c32ee9617c44c"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/token/ERC721/IERC721Receiver.sol",
+          "gitBlobSha1": "a53d07774791d77df5ac9da0c927dbc09f525d0a",
+          "sha256": "1c1e73f63c8e256df84413973e54aa5cf6620acc7d41b8666a1080945519ad41",
+          "keccak256": "0xcac5b2622b9876529ca71f56b08a2786e960f0a738a9fcc456b2b8740170f89b"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155Receiver.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/token/ERC1155/IERC1155Receiver.sol",
+          "gitBlobSha1": "36ad4c75206524ac5aece06e1c9fb69ceb5a5816",
+          "sha256": "1d69b3dbea1338df574b9ba109e87aee3e93332c1a58057540ca85d835b149ee",
+          "keccak256": "0x0f8b8696348d5a57b13d44f5cc63894f0368038c06f6d00bdeda6f9aa13127e7"
+        },
+        {
+          "compilerPath": "lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol",
+          "officialRepository": "OpenZeppelin/openzeppelin-contracts",
+          "officialCommit": "105fa4e1b0832a6a40cb7ba6e545bb844f02a711",
+          "officialPath": "contracts/utils/cryptography/MessageHashUtils.sol",
+          "gitBlobSha1": "45c2421ad965008ca9be3bdc709d527e055fd965",
+          "sha256": "c0c706ebdea33ed6e49966d629d62ff3c7d125960104c2e5b7d925f703cd0648",
+          "keccak256": "0x3f1998a2904792ff2a576827876638b4917573186537f878d30b23277a3b8d38"
+        }
+      ],
+      "metadataUrl": "https://sourcify.dev/server/v2/contract/1/0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B?fields=all",
+      "metadataVerificationChain": 1,
+      "actualObservedChain": 1,
+      "crossChainAddressAssumptionUsed": false,
+      "runtimeCodeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab",
+      "runtimeByteLength": 11185,
+      "immutablePatches": [
+        {
+          "id": "7839",
+          "name": "_cachedDomainSeparator",
+          "start": 5843,
+          "length": 32,
+          "value": "0xa19b62214f2551ffb2d44413716fd580710b2992e6261b9e161e65847d90b77e"
+        },
+        {
+          "id": "7841",
+          "name": "_cachedChainId",
+          "start": 5801,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000000000000000000000000000000000001"
+        },
+        {
+          "id": "7843",
+          "name": "_cachedThis",
+          "start": 5759,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "7845",
+          "name": "_hashedName",
+          "start": 5924,
+          "length": 32,
+          "value": "0x87e2b3436f0f6d8494dfcb826d860322ea231814dba9eb086540f62b8561c57b"
+        },
+        {
+          "id": "7847",
+          "name": "_hashedVersion",
+          "start": 5964,
+          "length": 32,
+          "value": "0xc89efdaa54c0f20c7adf612882df0950f5a951637e0307cdcb4c672f298b8bc6"
+        },
+        {
+          "id": "7850",
+          "name": "_name",
+          "start": 6451,
+          "length": 32,
+          "value": "0x4549503737303253746174656c65737344656c654761746f7200000000000019"
+        },
+        {
+          "id": "7853",
+          "name": "_version",
+          "start": 6496,
+          "length": 32,
+          "value": "0x3100000000000000000000000000000000000000000000000000000000000001"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 1561,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 1850,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 1942,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 2111,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 2886,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 3495,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11636",
+          "name": "__self",
+          "start": 5665,
+          "length": 32,
+          "value": "0x00000000000000000000000063c0c19a282a1b52b07dd5a65b58948a07dae32b"
+        },
+        {
+          "id": "11640",
+          "name": "delegationManager",
+          "start": 1402,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "11640",
+          "name": "delegationManager",
+          "start": 2467,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "11640",
+          "name": "delegationManager",
+          "start": 2598,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "11640",
+          "name": "delegationManager",
+          "start": 2823,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "11640",
+          "name": "delegationManager",
+          "start": 3826,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "11640",
+          "name": "delegationManager",
+          "start": 4185,
+          "length": 32,
+          "value": "0x000000000000000000000000db9b1e94b5b69df7e401ddbede43491141047db3"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 1137,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 2039,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 2242,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 2368,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 2724,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 2970,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 3058,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 3188,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 3302,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 3600,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 3727,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 4117,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 4813,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        },
+        {
+          "id": "11644",
+          "name": "entryPoint",
+          "start": 5582,
+          "length": 32,
+          "value": "0x0000000000000000000000000000000071727de22e5e9d8baf0edac6f37da032"
+        }
+      ],
+      "officialBirthTransaction": "0xa5626441a9b3893e9d118160c593491647b875c02b3b6336e40fd1d1c68f2b57",
+      "broadcastRecordedCommit": "2125bb6",
+      "constructorArguments": [
+        "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+        "0x0000000071727De22E5E9d8BAf0edAc6f37da032"
+      ],
+      "compiledTemplateMatches": true,
+      "fullObservedRuntimeMatches": true
+    },
+    {
+      "name": "nativeBalanceEnforcer",
+      "address": "0xbD7B277507723490Cd50b12EaaFe87C616be6880",
+      "sourceVerified": true,
+      "compiler": "0.8.23+commit.f704f362.Emscripten.clang",
+      "sourceInputSha256": "448d59c0b3871d7f9fc5b1c1f410f6523904568cfa29e0bd1e50ddb3b517e388",
+      "compilationInputSha256": "d7cba1c1c30d5297df04237fa146dac4dd7957ca15d01a0a8d86803f347cbb22",
+      "sourceCount": 11,
+      "sourcePins": [
+        {
+          "compilerPath": "src/utils/Types.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/utils/Types.sol",
+          "gitBlobSha1": "50bff062c9cbce684cbe33634f182cb6279deb2d",
+          "sha256": "48c14a9ddfa6e040dd530d3a961a2d1520655771d02e230569540ccd94e6047c",
+          "keccak256": "0xda4094eb4839087157f34750fb4d1a2d6241fbb8ee0d41fd1f2905209e6a05b0"
+        },
+        {
+          "compilerPath": "src/utils/Constants.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/utils/Constants.sol",
+          "gitBlobSha1": "9dab2aca59685ac6b9c7bf68772e50f253e08042",
+          "sha256": "0afcc9f627c79d7ab98ae7c17e5b09eac334eb28b96092644e442a129ebc1dd2",
+          "keccak256": "0x5f1e2913a96b7f88bc7fbd2de329465822ae0d438ff212883c6dd3bd5e9609a5"
+        },
+        {
+          "compilerPath": "@erc7579/lib/ModeLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ModeLib.sol",
+          "gitBlobSha1": "9c6778f8fa701745031a1c3bad9190b65019518b",
+          "sha256": "c79a0cb6aeaa3247d4f294eee3afa0b989e8f1fa77c634d511ff2064aae96670",
+          "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185"
+        },
+        {
+          "compilerPath": "src/enforcers/CaveatEnforcer.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/enforcers/CaveatEnforcer.sol",
+          "gitBlobSha1": "c2c663a80c91504d6ad1381fe6965e20fc64de8d",
+          "sha256": "30a5ae0c712cbbb6be263861c25f40465be290f49938649be39380ad3d1a1648",
+          "keccak256": "0xe6e44a3dfcb667fba89d7dc73ba06327add01a9ef4ecd11f3627d97e337041d5"
+        },
+        {
+          "compilerPath": "src/interfaces/ICaveatEnforcer.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/interfaces/ICaveatEnforcer.sol",
+          "gitBlobSha1": "326f9f5cf49197000f5e0901e5502f9888ce7478",
+          "sha256": "e17a7899babbfab8f0bc1ca1dbbe04e2bd6315a589e36601b3585ebc69c091f8",
+          "keccak256": "0x61c2d69cb8cc4b04d5ce786ff1b38c07009a262b64900e58a109239942bfad16"
+        },
+        {
+          "compilerPath": "@erc7579/interfaces/IERC7579Account.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/interfaces/IERC7579Account.sol",
+          "gitBlobSha1": "6ab3b0f179e4a29f3fbff75234499a01c0dc2255",
+          "sha256": "4afeb14a8cbdcf8af1ace98e43cebf1283c7198bf60a018289a55fe293734cfd",
+          "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c"
+        },
+        {
+          "compilerPath": "src/enforcers/NativeBalanceChangeEnforcer.sol",
+          "officialRepository": "MetaMask/delegation-framework",
+          "officialCommit": "bfbdf9795a976833ed2fa000baf42fbb83958b03",
+          "officialPath": "src/enforcers/NativeBalanceChangeEnforcer.sol",
+          "gitBlobSha1": "4ee0853275449ffa767b45cf65cd16cde630d56f",
+          "sha256": "6aec7bb8c807fa1d20b41371566424075f18e91ccfef1638d6823f8304edc9dd",
+          "keccak256": "0xf8797a07e9edc5a98d24ec7885699b9a05ccdf7535c3e252887fa45506242280"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/lib/ModeLib.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/lib/ModeLib.sol",
+          "gitBlobSha1": "9c6778f8fa701745031a1c3bad9190b65019518b",
+          "sha256": "c79a0cb6aeaa3247d4f294eee3afa0b989e8f1fa77c634d511ff2064aae96670",
+          "keccak256": "0x02ce0fc8805d1427841f32e2335157e3fae18e99d5c49ba46d53e12fcd1a5185"
+        },
+        {
+          "compilerPath": "@account-abstraction/interfaces/PackedUserOperation.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/PackedUserOperation.sol",
+          "gitBlobSha1": "fe20de56573fe205a20f7133734b577d5255f321",
+          "sha256": "40fcd99da0814312f0353417de64f70805f4cd7ec4cb4573c8b4c4d48540f562",
+          "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359"
+        },
+        {
+          "compilerPath": "lib/erc7579-implementation/src/interfaces/IERC7579Account.sol",
+          "officialRepository": "erc7579/erc7579-implementation",
+          "officialCommit": "16138d1afd4e9711f6c1425133538837bd7787b5",
+          "officialPath": "src/interfaces/IERC7579Account.sol",
+          "gitBlobSha1": "6ab3b0f179e4a29f3fbff75234499a01c0dc2255",
+          "sha256": "4afeb14a8cbdcf8af1ace98e43cebf1283c7198bf60a018289a55fe293734cfd",
+          "keccak256": "0x08368aba5f1bb83eb57e9f8d31a04edee4be69159b4844a6443f65100917011c"
+        },
+        {
+          "compilerPath": "lib/account-abstraction/contracts/interfaces/PackedUserOperation.sol",
+          "officialRepository": "eth-infinitism/account-abstraction",
+          "officialCommit": "7af70c8993a6f42973f520ae0752386a5032abe7",
+          "officialPath": "contracts/interfaces/PackedUserOperation.sol",
+          "gitBlobSha1": "fe20de56573fe205a20f7133734b577d5255f321",
+          "sha256": "40fcd99da0814312f0353417de64f70805f4cd7ec4cb4573c8b4c4d48540f562",
+          "keccak256": "0x1129b46381db68eddbc5cb49e50664667b66b03c480453858e7b25eabe444359"
+        }
+      ],
+      "metadataUrl": "https://sourcify.dev/server/v2/contract/10/0xbD7B277507723490Cd50b12EaaFe87C616be6880?fields=all",
+      "metadataVerificationChain": 10,
+      "actualObservedChain": 1,
+      "crossChainAddressAssumptionUsed": false,
+      "runtimeCodeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76",
+      "runtimeByteLength": 2084,
+      "immutablePatches": [],
+      "officialBirthTransaction": "0x8e64cfa38ee3991eca146a7e2331868bf046678867219d2c6ec71c0325c47e32",
+      "broadcastRecordedCommit": "d38d53d",
+      "constructorArguments": [],
+      "compiledTemplateMatches": true,
+      "fullObservedRuntimeMatches": true
+    }
+  ],
+  "publicSourceFetches": [
+    {
+      "url": "https://api.github.com/repos/MetaMask/delegation-framework/git/trees/bfbdf9795a976833ed2fa000baf42fbb83958b03?recursive=1",
+      "sha256": "428052f00c1954a51604f2107bb9caaa78ea97c720ab4a6901c54c80cb11cd44",
+      "byteLength": 159807
+    },
+    {
+      "url": "https://api.github.com/repos/OpenZeppelin/openzeppelin-contracts/git/trees/105fa4e1b0832a6a40cb7ba6e545bb844f02a711?recursive=1",
+      "sha256": "497a4998c872b93136143fa98092e82d834fb4355657cde5e8f54615b9ecfc00",
+      "byteLength": 180793
+    },
+    {
+      "url": "https://api.github.com/repos/eth-infinitism/account-abstraction/git/trees/7af70c8993a6f42973f520ae0752386a5032abe7?recursive=1",
+      "sha256": "5727629d41a26dc012d6db97da725a4b5696f609ae92081040cdf4e55b614ee9",
+      "byteLength": 50659
+    },
+    {
+      "url": "https://api.github.com/repos/erc7579/erc7579-implementation/git/trees/16138d1afd4e9711f6c1425133538837bd7787b5?recursive=1",
+      "sha256": "0f600758c28697006176a5e49c387e8a9c4cb9759640b27195538400e1f70ca1",
+      "byteLength": 20726
+    },
+    {
+      "url": "https://sourcify.dev/server/v2/contract/1/0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3?fields=all",
+      "sha256": "7eeb0839253aeccfa98e39a99719742760a5cf7b1389cea50072ddaeeb938896",
+      "byteLength": 889444
+    },
+    {
+      "url": "https://raw.githubusercontent.com/MetaMask/delegation-framework/bfbdf9795a976833ed2fa000baf42fbb83958b03/broadcast/DeployDelegationFramework.s.sol/1/run-latest.json",
+      "sha256": "b618009927f8f2c8628e355b2b0731f5178d2d09a9216f4fb64c762d9a75dd9b",
+      "byteLength": 117666
+    },
+    {
+      "url": "https://sourcify.dev/server/v2/contract/1/0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B?fields=all",
+      "sha256": "89bf4ee1a2ffadc168afcb102facf0b7fe823240d4abaac2062b1be49523257a",
+      "byteLength": 982036
+    },
+    {
+      "url": "https://raw.githubusercontent.com/MetaMask/delegation-framework/bfbdf9795a976833ed2fa000baf42fbb83958b03/broadcast/DeployEIP7702StatelessDeleGator.s.sol/1/run-latest.json",
+      "sha256": "4cfa1d6e066b2f642e5bb66dc9711e637aa349899e16fb74492137fc84f8f0f1",
+      "byteLength": 28950
+    },
+    {
+      "url": "https://sourcify.dev/server/v2/contract/10/0xbD7B277507723490Cd50b12EaaFe87C616be6880?fields=all",
+      "sha256": "1b0e22ad529668bc5519a84a8809df56b3fa9c6457e729eb779eb5094e512b8e",
+      "byteLength": 168157
+    },
+    {
+      "url": "https://raw.githubusercontent.com/MetaMask/delegation-framework/bfbdf9795a976833ed2fa000baf42fbb83958b03/broadcast/DeployCaveatEnforcers.s.sol/1/run-latest.json",
+      "sha256": "e2c7c4620255b5d8632aa74dfe7e29e46cc454d227ab51d58b715262d3a6d5de",
+      "byteLength": 48943
+    }
+  ],
+  "limits": [
+    "No RPC, signing, authorization-context inspection, deployment or financial execution occurs.",
+    "Observed code/anchor is supplied by the operator; this script does not independently establish its canonical RPC provenance.",
+    "Exact runtime/source equality does not establish wallet authentication, permission freshness or actual EIP7702/native-value/custody compatibility."
+  ]
+}

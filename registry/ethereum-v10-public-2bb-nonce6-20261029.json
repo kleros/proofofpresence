@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "version": 10,
+  "chainId": 1,
+  "contractVersion": "kleros-event-v10-uups",
+  "deployer": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+  "deployerNonce": 6,
+  "governance": {
+    "kind": "single-owner-immediate",
+    "initialOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+    "upgradeDelaySeconds": 0,
+    "renounceable": true
+  },
+  "fees": {
+    "maxFeePerGasWei": "750000000",
+    "maxPriorityFeePerGasWei": "10000000"
+  },
+  "gasLimits": {
+    "KlerosUpgradeControllerV10": "850000",
+    "KlerosEventV10": "5600000",
+    "KlerosEventFactoryV10": "2000000",
+    "ERC1967Proxy": "300000"
+  },
+  "maxTotalGasCostWei": "6562500000000000"
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "observed-metamask-protected-self-checks",
+  "checkedAt": "2026-10-29T16:32:50.673Z",
+  "transactionHash": "0xef60cbf9c65883eb3a1daf6f250bd6cc8328ba655270e897ba17870b1d8a06dc",
+  "checks": {
+    "delegateIsWallet": true,
+    "delegatorIsWallet": true,
+    "outerFromIsWallet": true,
+    "rootAuthority": true,
+    "canonicalContext": true,
+    "signatureMatchesWallet": true,
+    "termsLength53": true,
+    "termsFlag1": true,
+    "recipientIsWallet": true,
+    "amountMatchesReviewedValue": true,
+    "caveatArgsEmpty": true,
+    "knownNativeBalanceEnforcer": true
+  },
+  "allMatched": true,
+  "financialEligibility": false,
+  "limits": [
+    "Only booleans are exported; signatures/context/terms/rawsignedbytes stayed in Node memory.",
+    "Observed matching self-protection terms do not replace runtime/source pins or actual local EIP7702/native-value/custody testing."
+  ]
+}

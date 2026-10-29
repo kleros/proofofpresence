@@ -228,7 +228,7 @@ export function prepareV10Release(raw, build) {
     compilation: { compiler: build.compiler, sourceHashes: build.sourceHashes },
     ownershipTransfer: { target: addresses.KlerosUpgradeControllerV10, steps: ["Current owner calls transferOwnership(newOwner)", "Proposed owner calls acceptOwnership()"] },
     renunciation: { target: addresses.KlerosUpgradeControllerV10, automatic: false, effect: "Permanently disables controller upgrades and future factory implementation selection" },
-    requiredBeforeHumanSigning: ["Fresh chain1 and canonical block checks", "Fresh empty-code EOA account and direct CREATE envelope checks",
+    requiredBeforeHumanSigning: ["Fresh chain1 and canonical block checks", "Fresh account-code and direct CREATE envelope checks; nonempty code requires the separate source-bound delegated-four-CREATE review",
       "Exact latest and pending nonce checks with all predicted addresses unused", "Fresh balance, fees and explicit gas-cap review",
       "Canonical source-bound preflight and complete exact-bundle deployment rehearsal by the deployment bridge"],
     limitations: ["Offline gas limits are unapproved proposals; local rehearsal is not a mainnet preflight",

@@ -6,10 +6,12 @@ import { ethers } from "ethers";
 import { hash, lower, requireThat } from "./utils.mjs";
 import { caseTemplate } from "../references/kickback/scripts/lib.mjs";
 import { verifyUpgradeableDeployment, IMPLEMENTATION_SLOT } from "./upgrade-verification.mjs";
+import { verifyV10Deployment, V10_MAINNET_SCOPE } from "./v10-upgrade-verification.mjs";
 import {
   EVENT_V8_VERSION,
   EVENT_V8_TEST15M_VERSION,
   EVENT_V9_VERSION,
+  EVENT_V10_VERSION,
   EVENT_V8_CAPACITY,
   eventV8Profile,
   isV8Version,
@@ -33,6 +35,9 @@ export const ABI = {
   },
   get "kleros-event-v9-uups"() {
     return loadV8Artifacts(EVENT_V9_VERSION).event;
+  },
+  get "kleros-event-v10-uups"() {
+    return loadV8Artifacts(EVENT_V10_VERSION).event;
   },
 };
 export const sourceCommit = "57fc1c8233c60e31c1b5988c631ef57d7c3f1b81";
@@ -442,7 +447,9 @@ export async function verifyDeployment(chain, d) {
   const profile = eventV8Profile(d.contractVersion);
   requireProfileChain(profile, d.chainId);
   if (profile?.upgradeable) {
-    const trust = await verifyUpgradeableDeployment(chain, d);
+    const trust = d.contractVersion === EVENT_V10_VERSION
+      ? await verifyV10Deployment(chain, d, V10_MAINNET_SCOPE)
+      : await verifyUpgradeableDeployment(chain, d);
     chain.deploymentTrust ??= new Map();
     chain.deploymentTrust.set(hash(d), trust);
     return contractFor(chain, d);

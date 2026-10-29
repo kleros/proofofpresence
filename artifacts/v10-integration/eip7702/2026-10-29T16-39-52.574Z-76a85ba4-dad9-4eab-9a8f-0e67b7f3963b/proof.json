@@ -1,0 +1,166 @@
+{
+  "kind": "v10-eip7702-local-protocol-custody",
+  "schemaVersion": 1,
+  "runId": "2026-10-29T16-39-52.574Z-76a85ba4-dad9-4eab-9a8f-0e67b7f3963b",
+  "startedAt": "2026-10-29T16:39:52.575Z",
+  "passed": false,
+  "chainId": 1,
+  "environment": "fresh-loopback-anvil-prague-no-fork",
+  "publicNetworkRequests": 0,
+  "keysPersisted": false,
+  "walletCodeFixtureShortcut": false,
+  "frameworkSourceVerified": false,
+  "source": {
+    "harnessSha256": "2ed9c34321cc426a7e24ac5769a5fb5648bbca23ddfbd4361a20a867716471fb",
+    "observedRuntimeFileSha256": "486913a5210ab05284468ce4a4efa2d9f279de44e120aadf3718d957678495eb",
+    "compatibilitySha256": "12a6d577b443e69c869b5bebec72863c809ea9cda35f5c4c6465d82f228c8485",
+    "v10BuildManifestSha256": "159da1bbb8a32fa0d98011a3b2e187807f6c124420f1933d594ddfa3970338b9",
+    "v10StandardInputSha256": "a19b7b236c2292222d8f6f090ba931a6c46d0205d213b3706e12635c700421d5"
+  },
+  "fixtures": [
+    {
+      "name": "manager",
+      "address": "0xdb9B1e94B5b69Df7e401DDbedE43491141047dB3",
+      "codeHash": "0x762a7ccac3fba1fce7751870298c097c0d050451d9b4a1f0935e65dc4078d1d3",
+      "bytes": 11503
+    },
+    {
+      "name": "delegate",
+      "address": "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B",
+      "codeHash": "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab",
+      "bytes": 11185
+    },
+    {
+      "name": "nativeBalanceEnforcer",
+      "address": "0xbD7B277507723490Cd50b12EaaFe87C616be6880",
+      "codeHash": "0x61f455a893e4dcb39599bfcd8f59000e438c52639b278b933e469610c7761b76",
+      "bytes": 2084
+    }
+  ],
+  "checks": [
+    "fresh official local Anvil1.7.1 chain1 Prague with no fork",
+    "synthetic authority begins as empty-code EOA",
+    "real EIP7702 self-authority type4 transaction succeeds",
+    "authority designation was installed by protocol, not setCode",
+    "self-authority consumes sender nonce and authorization nonce",
+    "canonical transaction is actual type4 with one authorization",
+    "delegated authority direct CREATE controller",
+    "delegated authority direct CREATE event implementation",
+    "delegated authority direct CREATE factory implementation",
+    "delegated authority direct CREATE factory proxy",
+    "actual delegated deployer controls immediate V10 controller",
+    "four setup CREATEs alone do not create an event",
+    "local Court fixture liquid",
+    "local Court fixture resolver"
+  ],
+  "transactions": [
+    {
+      "label": "real EIP7702 self-authority type4 transaction succeeds",
+      "hash": "0x556b862d2f412a7a3d35bfdb234518639a720f96b05830094b1380b74402d6cd",
+      "type": 4,
+      "blockNumber": 1,
+      "blockHash": "0x19d1bf71ff13de74f6f6acb9ee8a47b98c5c4abf78eaea7f3df8d0bfa12964af",
+      "status": 1,
+      "gasUsed": "36800",
+      "effectiveGasPriceWei": "2000000000",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": "0x32b672e3E59599AEcb0c2b2786FD97680D0BA83E",
+      "valueWei": "0"
+    },
+    {
+      "label": "delegated authority direct CREATE controller",
+      "hash": "0x8b4a6de9fc99db9d3d9fecccb42d7455cd78c079d99d80f779a37e2cb4fff453",
+      "type": 2,
+      "blockNumber": 2,
+      "blockHash": "0x0123766fc2fb80115c3ea170c8af009c97a4a7168e540f78652940a378a77f26",
+      "status": 1,
+      "gasUsed": "669185",
+      "effectiveGasPriceWei": "1875153334",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "delegated authority direct CREATE event implementation",
+      "hash": "0x6809c3e82a9ccb474395be4b712d4a8815fd4016d8bc53d9f51d07b8e3ee8cc2",
+      "type": 2,
+      "blockNumber": 3,
+      "blockHash": "0xacdd024e74e7909c39ab87b0d94da95b02c11d58d907553b236da1eb60ccb466",
+      "status": 1,
+      "gasUsed": "4641208",
+      "effectiveGasPriceWei": "1768199332",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "delegated authority direct CREATE factory implementation",
+      "hash": "0x0ae7a5454f186e6ebb141dc153a2482abf627a860e7a0e74553dfea221f6a2e8",
+      "type": 2,
+      "blockNumber": 4,
+      "blockHash": "0x8403240533763848b6aa3a00f12e1056f0e099a5d0511623c87d6a05dc1c0592",
+      "status": 1,
+      "gasUsed": "1654634",
+      "effectiveGasPriceWei": "1687030136",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "delegated authority direct CREATE factory proxy",
+      "hash": "0x6359b26350a4bc63b6fdf650141444da5d78880919cdfc4e855a05a941c3df97",
+      "type": 2,
+      "blockNumber": 5,
+      "blockHash": "0xa3608b86031bbdebd29bdcbcdd5d60566d046a9ad76231225ef6891c9bc0edb8",
+      "status": 1,
+      "gasUsed": "229827",
+      "effectiveGasPriceWei": "1605887967",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "local Court fixture liquid",
+      "hash": "0x57f8b71ea41eb90ffc426602b4031bce6c3504d145a4c30530abf6c81f130568",
+      "type": 2,
+      "blockNumber": 6,
+      "blockHash": "0x73567c2568b0a99d9244f80756552a9afc8665031c1fab2afe931c6cdb07ffce",
+      "status": 1,
+      "gasUsed": "1200883",
+      "effectiveGasPriceWei": "1530732178",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": null,
+      "valueWei": "0"
+    },
+    {
+      "label": "local Court fixture resolver",
+      "hash": "0xa947cb6326ed4ba7b1c8c66577fd724a56806a62f4761d443dba1e03b7c3d78f",
+      "type": 2,
+      "blockNumber": 7,
+      "blockHash": "0x87d29f570702855a4f1be039deda4e65c191da3244ddae4ebd0ea3e32434b863",
+      "status": 1,
+      "gasUsed": "1846213",
+      "effectiveGasPriceWei": "1467046270",
+      "from": "0xF979B5Aa38F256955F59c620f800824Bd4F6370D",
+      "to": null,
+      "valueWei": "0"
+    }
+  ],
+  "limits": [
+    "Framework contract code is installed from observed public runtime; this does not itself prove its source.",
+    "No mainnet transaction, current user wallet, live state adoption, app authorization or financial activation is performed.",
+    "Only pending native deposits/recovery are exercised; the separate contract suite covers adjudication and held-share economics."
+  ],
+  "anvil": {
+    "version": "1.7.1",
+    "binarySha256": "5c9f9aad323062b1c0421a63595741430acaea150da3611e38c45071e4cf4e28",
+    "hardfork": "prague",
+    "noFork": true
+  },
+  "stopped": {
+    "stage": "actual-protected-self-create",
+    "code": "V10_WALLET_SCOPE"
+  },
+  "finishedAt": "2026-10-29T16:39:52.859Z",
+  "actualBroadcasts": 7
+}

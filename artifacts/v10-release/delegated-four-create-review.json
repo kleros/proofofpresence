@@ -1,0 +1,14 @@
+{
+  "sourceProof": {
+    "file": "artifacts/v10-integration/metamask-source-verification-6ea176ca-3ea1-49eb-a290-1013d6492a15.json",
+    "sha256": "7108974bc07ca8b46964d855887d9c26c1891386d21c5cf1bdb3f628fb7cb17c"
+  },
+  "protocolProof": {
+    "file": "artifacts/v10-integration/eip7702/2026-10-29T16-40-03.581Z-d5123ece-de5d-4d69-a5a0-1d5a2236535c/proof.json",
+    "sha256": "11ac36fe9af1158934012175c453dd9056e55962b644090d6c065497beea9ad3"
+  },
+  "sourceScriptSha256": "ed5a6bdaff07ac3cbae55e8f58899df738dace1ce42b48fb018c709649cea50c",
+  "harnessSha256": "d668bcfeee47e8063386086664562e9da337868cc30328000fb5b0bf608d2522",
+  "compatibilitySha256": "12a6d577b443e69c869b5bebec72863c809ea9cda35f5c4c6465d82f228c8485",
+  "observedRuntimeSha256": "486913a5210ab05284468ce4a4efa2d9f279de44e120aadf3718d957678495eb"
+}

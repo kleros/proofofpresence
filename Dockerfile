@@ -14,6 +14,7 @@ COPY public/ ./public/
 COPY scripts/build.mjs ./scripts/build.mjs
 COPY scripts/compile-contracts.mjs ./scripts/compile-contracts.mjs
 COPY scripts/compile-contracts-v9.mjs ./scripts/compile-contracts-v9.mjs
+COPY scripts/compile-contracts-v10.mjs ./scripts/compile-contracts-v10.mjs
 COPY scripts/mainnet/ ./scripts/mainnet/
 COPY scripts/compile-contracts-test15m.mjs scripts/generate-contracts-test15m.mjs ./scripts/
 COPY contracts/ ./contracts/
