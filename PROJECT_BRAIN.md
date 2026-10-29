@@ -1,3 +1,26 @@
+# Active organizer setup timeout repair — 29 October 2026
+
+The human hit HTTP504 on Review event setup and explicitly confirmed MetaMask had not opened.
+Redacted Railway HTTP evidence shows POST/api/organizer/events/drafts cut off after29942ms with
+origin499 at2026-10-29T13:22:01.899UTC. No wallet transaction was requested by this Review action;
+backend work may have completed an UNSIGNED review after disconnection, so preserve all saved state.
+This is an observed request-lifetime cutoff, not proof of a general fixed Netlify plan limit.
+
+Core is adding production-only authenticated POST/api/organizer/events/jobs and GET/jobs/:requestId.
+Fast202 reserves a scoped once-only ID before existing slow prepare/validate/reconcile methods run.
+ALL full source/canonical/EOA/governance/simulation checks remain unchanged. GET does no RPC or
+re-execution; duplicate IDs never rerun, foreign/revoked sessions reveal no result, active/capacity
+limits fail closed. Validation results expire after at most5s and underlying review expiry; browser
+will recheck immediately before eth_sendTransaction. No server signing/broadcast was introduced.
+Root35 local routing/job/error checks passed, final module11 expiry/idempotency checks passed.
+No mainnet financial operation or user-form action performed. UI widget polling/once-only recovery
+and peer app-only connect skeleton are being finalized; original dates and journals stay preserved.
+
+Backend candidate is being checkpointed for normal rollout; frontend handoff/tests and final public
+source/anonymous security checks remain pending. Prior Restart now authorization plus this direct
+repair request covers the necessary normal backend rollout; do not force-refresh the open form or
+submit any event/transaction for the human. A/B/C retired incomplete/PAUSED, D complete, E unused.
+
 # Fast public portal LIVE — 29 October 2026, Asia/Bangkok
 
 Live: https://kleros-luma-ethereum.netlify.app. Branch `codex/core-application`.

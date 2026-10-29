@@ -1,0 +1,31 @@
+{
+  "status": "passed-local-backend-candidate",
+  "checkedAt": "2026-10-29T13:39:23.564Z",
+  "sourceSha256": {
+    "src/organizer-jobs.mjs": "00a4c35f685456d8dadb35d12b78c1e8b46a78d921d8b93bdb14c6693d561ba7",
+    "src/server.mjs": "0bb3a99e84a84727c20fe660d20d6ae9c142b255d08f19984d793dae9a6b0d10",
+    "src/production-errors.mjs": "72a678e463ebdd7d3a9127ff04284805df4f6485e9382e8e190edf720c7d8839",
+    "test/organizer-jobs.test.mjs": "b1b3ac6560f1e058434a3c246a5ec3e70b225cecc2f34738956be87be6237aa1",
+    "test/production-http.test.mjs": "d8a69a7785f059c86d2340b8b29558f102d98638511317adc0f7a5f24770e8da"
+  },
+  "checks": [
+    {
+      "command": "node --test --test-concurrency=1 test/organizer-jobs.test.mjs test/production-http.test.mjs",
+      "passed": 35,
+      "note": "Root initial service9+HTTP26; no production-errors.test.mjs exists, so do not count it as coverage."
+    },
+    {
+      "command": "node --test test/organizer-jobs.test.mjs",
+      "passed": 11,
+      "note": "Agent final expiry closure: strict boundaries, explicit expiresAt capped to original draft; changed module frozen00a4c35f."
+    },
+    {
+      "command": "node --check src/server.mjs +organizer-jobs.mjs +production-errors.mjs",
+      "status": "passed"
+    }
+  ],
+  "financialServiceChanged": false,
+  "financialActions": 0,
+  "liveDiagnosis": "artifacts/mainnet-release/organizer-504-route-diagnosis.json",
+  "frontend": "pending"
+}

@@ -10,6 +10,7 @@ import { assertDemoChainInstance } from "../public/hosted-wallet.js";
 import { createWorkbench } from "./workbench.mjs";
 import { createDepositInbox } from "./deposit-inbox.mjs";
 import { productionErrorResponse } from "./production-errors.mjs";
+import { createOrganizerJobService } from "./organizer-jobs.mjs";
 import {
   json,
   requireThat,
@@ -155,6 +156,24 @@ export async function startServer({
   requireThat(!isProduction || (w.chain.chainId === 1 && "production" in w.chain && w.chain.production === true &&
     Array.isArray(w.chain.signers) && w.chain.signers.length === 0),
     "Production runtime must be verified chain1 with no server signers", "WRONG_CHAIN", 409);
+  const organizerFactory = production?.manifest?.factoryDeployment?.factory ??
+    Reflect.get(w.chain, "factoryDeployment")?.factory;
+  const organizerJobs = isProduction && ethers.isAddress(organizerFactory)
+    ? createOrganizerJobService({ instanceId, factory: organizerFactory,
+      isSessionCurrent: (session) => [...sessions.values()].some((entry) =>
+        entry.session.id === session.id && entry.session.mode === "wallet" &&
+        entry.session.wallet.toLowerCase() === session.wallet.toLowerCase() && entry.expiry > Date.now()),
+      execute: async (operation, { session, input, draftId, hash: txHash }) => {
+        if (operation === "prepare") return w.createFactoryDraft(session, input);
+        if (operation === "validate") {
+          const draft = await w.validateFactoryDraft(session, draftId);
+          return { draft, transaction: draft.transaction };
+        }
+        const result = await w.reconcileFactorySubmission(session, draftId, txHash);
+        return { ...result, ...(result.status === "confirmed"
+          ? { participantUrl: `${publicUrl.origin}/#event=${encodeURIComponent(result.eventId)}&view=participant` } : {}) };
+      },
+    }) : null;
   const depositInbox = createDepositInbox(w, { environment: mode, instanceId });
   let instanceMarker = null;
   if (hosted && !external) {
@@ -450,6 +469,7 @@ export async function startServer({
               createEvents: false,
               timeControls: false,
               ...(isProduction ? {
+                organizerJobs: organizerJobs !== null,
                 production: true, walletTransactions: true, serverSigning: false,
                 lumaDepositPortal: true, walletFirstDeposits: true,
                 createEvents: bootstrap.factory?.verified === true && bootstrap.organizerSetup?.policyStatus === "verified",
@@ -567,6 +587,18 @@ export async function startServer({
           label: walletSession.label,
           mode: "wallet",
         });
+      }
+      const organizerJobRoute = p.match(/^\/api\/organizer\/events\/jobs(?:\/([a-zA-Z0-9_-]+))?$/);
+      if (organizerJobRoute) {
+        requireThat(organizerJobs, "Organizer checks are unavailable", "FACTORY_UNAVAILABLE", 503);
+        requireThat(s?.mode === "wallet", "Sign in with your wallet first", "UNAUTHENTICATED", 401);
+        requireThat(url.search === "", "Use an exact job request", "INVALID_INPUT", 400);
+        const requestId = organizerJobRoute[1];
+        if (!requestId && req.method === "POST")
+          return send(res, 202, organizerJobs.start(s, await body(req)));
+        if (requestId && req.method === "GET")
+          return send(res, 200, organizerJobs.status(s, requestId));
+        return send(res, 405, { error: "Method is not available", code: "METHOD_NOT_ALLOWED" });
       }
       const factoryRoute = p.match(/^\/api\/organizer\/events\/drafts(?:\/([a-zA-Z0-9_-]+)(?:\/(validate|submitted|reconcile))?)?$/);
       if (factoryRoute) {

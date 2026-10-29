@@ -114,11 +114,13 @@ function boundaryWorkbench(chainOverrides = {}) {
     privateWallet: null,
     caseContexts: [],
     caseHandler: null,
+    factoryJobHandler: null,
     chain: {
       chainId: 1,
       production: true,
       signers: [],
       provider,
+      factoryDeployment: { factory: "0x" + "ab".repeat(20) },
       ...chainOverrides,
     },
     provider,
@@ -129,6 +131,18 @@ function boundaryWorkbench(chainOverrides = {}) {
         instanceId: "synthetic-public-instance", environment: { production: true,
           network: "ethereum-mainnet", chainId: 1 }, catalog: { metadataOnly: true,
           currentFinancialState: "not-loaded", source: "recorded-adoption" }, events: [] };
+    },
+    async createFactoryDraft(session, input) {
+      track("createFactoryDraft", [session, input]);
+      return w.factoryJobHandler("prepare", { session, input });
+    },
+    async validateFactoryDraft(session, draftId) {
+      track("validateFactoryDraft", [session, draftId]);
+      return w.factoryJobHandler("validate", { session, draftId });
+    },
+    async reconcileFactorySubmission(session, draftId, hash) {
+      track("reconcileFactorySubmission", [session, draftId, hash]);
+      return w.factoryJobHandler("reconcile", { session, draftId, hash });
     },
     async assertWallet(wallet) {
       track("assertWallet", [wallet]);
@@ -521,6 +535,74 @@ test("public catalog uses the trusted gateway without bootstrap, RPC, session or
   assert.equal((await f.request("/api/public-catalog?selectedEventId=private")).status, 400);
   assert.equal((await f.post("/api/public-catalog")).status, 404);
   assert.deepEqual(f.w.calls.map((call) => call.method), ["publicCatalog", "publicCatalog"]);
+});
+
+const organizerTerms = { title: "Synthetic async event", lumaUrl: "https://luma.com/synthetic-async",
+  startsAt: "2030-01-01T12:00:00Z", endsAt: "2030-01-01T14:00:00Z", timezone: "UTC", depositEth: "0.001" };
+
+test("organizer jobs acknowledge before a slow review, deduplicate and poll without repeating verification", async (t) => {
+  const f = await fixture(t), { cookie } = await f.login(), gate = deferred();
+  f.w.factoryJobHandler = async () => gate.promise;
+  const input = { requestId: "synthetic-review-job", operation: "prepare", input: organizerTerms };
+  const started = await f.post("/api/organizer/events/jobs", input, { cookie });
+  assert.equal(started.status, 202);
+  assert.equal(started.data.state, "pending");
+  assert.equal(f.count("createFactoryDraft"), 1);
+  assert.equal((await f.post("/api/organizer/events/jobs", input, { cookie })).data.state, "pending");
+  for (let i = 0; i < 3; i++) assert.equal((await f.request("/api/organizer/events/jobs/synthetic-review-job", { cookie })).data.state, "pending");
+  assert.equal(f.count("createFactoryDraft"), 1);
+  assert.equal((await f.request("/api/organizer/events/jobs/synthetic-review-job")).status, 401);
+  const other = await f.login();
+  assert.equal((await f.request("/api/organizer/events/jobs/synthetic-review-job", { cookie: other.cookie })).status, 404);
+  assert.equal((await f.post("/api/organizer/events/jobs", { ...input, input: { ...organizerTerms, title: "Different" } }, { cookie })).status, 409);
+  const result = { id: "synthetic-review", transaction: { value: "0" } };
+  gate.resolve(result); await new Promise(setImmediate);
+  const ready = await f.request("/api/organizer/events/jobs/synthetic-review-job", { cookie });
+  assert.equal(ready.status, 200); assert.equal(ready.data.state, "ready");
+  assert.deepEqual(ready.data.result, result);
+  assert.equal(ready.data.instanceId, f.factories[0].serverInstanceId);
+  assert.equal(ready.headers["cache-control"], "no-store");
+  assert.equal(ready.headers["set-cookie"], undefined);
+  assert.equal(f.count("createFactoryDraft"), 1);
+  assert.equal(f.count("forwardedRPC"), 0);
+});
+
+test("organizer async validation and known-hash receipt checks preserve original method arguments and DTOs", async (t) => {
+  const f = await fixture(t), { cookie } = await f.login();
+  f.w.factoryJobHandler = async (operation, context) => operation === "validate"
+    ? { id: context.draftId, transaction: { value: "0" } }
+    : { status: "confirmed", eventId, hash: context.hash, contract };
+  const validation = { requestId: "synthetic-validation-job", operation: "validate", draftId: "original-draft" };
+  assert.equal((await f.post("/api/organizer/events/jobs", validation, { cookie })).status, 202);
+  const validated = await f.request("/api/organizer/events/jobs/synthetic-validation-job", { cookie });
+  assert.deepEqual(validated.data.result, { draft: { id: "original-draft", transaction: { value: "0" } }, transaction: { value: "0" } });
+  assert.equal(validated.data.state, "ready");
+  const receipt = { requestId: "synthetic-receipt-job", operation: "reconcile", draftId: "original-draft", hash: submittedHash };
+  assert.equal((await f.post("/api/organizer/events/jobs", receipt, { cookie })).status, 202);
+  const reconciled = await f.request("/api/organizer/events/jobs/synthetic-receipt-job", { cookie });
+  assert.equal(reconciled.data.result.hash, submittedHash);
+  assert.equal(reconciled.data.result.participantUrl, `${publicOrigin}/#event=${eventId}&view=participant`);
+  assert.equal(f.count("validateFactoryDraft"), 1); assert.equal(f.count("reconcileFactorySubmission"), 1);
+  assert.equal(f.w.calls.find((call) => call.method === "reconcileFactorySubmission").args[2], submittedHash);
+});
+
+test("organizer jobs suppress results after logout and reject revoked sessions while request bodies are awaited", async (t) => {
+  const f = await fixture(t), login = await f.login(), gate = deferred();
+  f.w.factoryJobHandler = async () => gate.promise;
+  const input = { requestId: "revoked-review-job", operation: "prepare", input: organizerTerms };
+  assert.equal((await f.post("/api/organizer/events/jobs", input, { cookie: login.cookie })).status, 202);
+  assert.equal((await f.request("/api/session", { method: "DELETE", payload: {}, cookie: login.cookie })).status, 200);
+  gate.resolve({ privateReview: privateCaseBody }); await new Promise(setImmediate);
+  assert.equal((await f.request("/api/organizer/events/jobs/revoked-review-job", { cookie: login.cookie })).status, 401);
+  const fresh = await f.login(login.wallet);
+  const unavailable = await f.request("/api/organizer/events/jobs/revoked-review-job", { cookie: fresh.cookie });
+  assert.equal(unavailable.status, 404); assert.equal(unavailable.raw.includes(privateCaseBody), false);
+  const bodyGate = deferred();
+  const awaiting = f.post("/api/organizer/events/jobs", { ...input, requestId: "late-revoked-job" }, { cookie: fresh.cookie, bodyGate: bodyGate.promise });
+  await new Promise(setImmediate);
+  await f.request("/api/session", { method: "DELETE", payload: {}, cookie: fresh.cookie });
+  bodyGate.resolve(); assert.equal((await awaiting).status, 401);
+  assert.equal(f.count("createFactoryDraft"), 1);
 });
 
 test("production startup rejects the wrong chain, unverified mode and any server signer before listening", async () => {

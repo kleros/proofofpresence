@@ -66,7 +66,11 @@ define(415, "Use the required content type for this request.", [
 define(413, "The request is too large.", ["TOO_LARGE"]);
 define(404, "The requested resource was not found or is unavailable.", [
   "NOT_FOUND",
+  "ORGANIZER_JOB_NOT_FOUND",
 ]);
+define(409, "This check belongs to different event terms. Preserve the original check.", ["ORGANIZER_JOB_CONFLICT"]);
+define(409, "An organizer check is already running. Check its status before starting another.", ["ORGANIZER_JOB_BUSY"]);
+define(503, "Organizer checks are at capacity. Keep your form and try again later.", ["ORGANIZER_JOB_CAPACITY"]);
 define(403, "This RPC operation is not permitted.", [
   "RPC_METHOD_FORBIDDEN",
   "RPC_TRANSACTION_FORBIDDEN",
