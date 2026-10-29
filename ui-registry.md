@@ -341,3 +341,17 @@ Loading stays neutral until context arrives. Metadata status remains Check statu
 uses the same alert/button patterns and restores keyboard focus when owned; same-scope refresh keeps
 the input/caret. CSS for contract inbox and batch controls loads only with the full app before it starts.
 No duplicated visual system, wallet prompt, storage initialization or financial controls on cold home.
+
+### Explicit setup transaction progress and owned-event summaries
+
+Files: `public/setup-progress.js`, `public/owned-events.js`, `public/luma-launch.css`.
+Updated29October2026. Reuse plum surface, teal1px outline,20px radius,24px padding (20pxmobile),
+Instrument Serif heading and Geist copy. Four compact stages use Review/Wallet/Confirm/Event page;
+only current step uses teal. Attention uses existing amber. Native full-value readonly fields retain
+selection, labels and44px controls; wrapped action rows fit mobile. Polite live status sits outside
+the busy stage subtree. No percentages, invented counts, auto-reload or send controls. Confirmation
+and event-page readiness are separate; ready links need the authoritative adapter's explicit verified
+result. Reuse existing directory rows for Your events, with title/date/Public-or-Private/Draft-or-
+Published and one Manage event link. Null/unavailable and verified empty are different states.
+Private titles require the fresh exact authenticated actor/environment before rendering. These pure
+components are unwired until Core's transaction/auth/route integration is approved and tested.

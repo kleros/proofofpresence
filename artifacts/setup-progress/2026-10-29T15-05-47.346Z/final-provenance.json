@@ -1,0 +1,60 @@
+{
+  "status": "passed",
+  "scope": "Pure progress label-only final verification; no application/backend/route wiring",
+  "progress": {
+    "browserGroups": 6,
+    "command": "node test/setup-progress.e2e.mjs --run-loopback",
+    "result": "artifacts/setup-progress/2026-10-29T15-05-47.346Z/results.json",
+    "moduleSha256": "ada969fc9d86c145fd01e87cfd453cbf165797c500f7c505714c869962b01209",
+    "stylesheetSha256": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+    "harnessSha256": "262eb15498c8b161dfbf2fb1ac9e09538404762a8a065c8ddf91239e42276a05",
+    "effects": {
+      "request": 0,
+      "provider": 0,
+      "storage": 0,
+      "clipboard": 0,
+      "timer": 0,
+      "beacon": 0
+    },
+    "staticGETRequests": 7,
+    "checks": [
+      "Supported progress phases remain distinct and live status stays outside busy visual content",
+      "Only supplied valid confirmation counts display; missing or invalid counts remain explicitly unavailable and unknown phases cannot expose ready links",
+      "A confirmed transaction with failed portal verification retains its exact hash and escaped reason without presenting a ready event",
+      "Ready accepts only the explicit verified/confirmed tuple and exact same-origin scoped deposit/manage links; malformed or foreign links fail closed",
+      "Copy/check invoke only their explicit callbacks on keyboard activation; updates, stale scope, absent callbacks and dispose never invoke actions",
+      "Full hash DOM/focus survives updates without stealing outside focus; desktop/mobile controls meet44px and reduced-motion disables decorative animation"
+    ]
+  },
+  "labelChange": "Timeline label Confirmation shortened to Confirm only; heading/status/phase semantics unchanged.",
+  "visualReview": {
+    "image": "mobile-progress.png",
+    "sha256": "8c94dcbc92df90705aa8525c7b81d1fd1881322d774e5a0fdf49481f5b9b5d7c",
+    "result": "390x844 mobile inspected: Confirm is one line and all four timeline labels remain readable; no midword split. Full-value hash and44px copy/check controls remain available."
+  },
+  "ownedEvents": {
+    "pureNodeTests": 4,
+    "command": "node --test test/owned-events.test.mjs",
+    "log": "artifacts/owned-events/unit-tests.log",
+    "moduleSha256": "4f57dbd42a55cdc5ccbc805e8f95eec64910781f1494d858581b1771c96ef286",
+    "effectsAsserted": {
+      "request": 0,
+      "provider": 0,
+      "storage": 0,
+      "dom": 0
+    },
+    "scope": "Ordinary-wallet synthetic bootstrap and expected context only. No MyEvents route, live owner lookup,7702 acceptance, auth session or receipt-panel integration is implemented/tested.",
+    "rerun": false,
+    "sourceStillMatches": true
+  },
+  "precedingProgressProof": "artifacts/setup-progress/2026-10-29T14-58-52.613Z/final-provenance.json",
+  "limits": [
+    "No real human transaction hash is used; progress reference is a synthetic repeated-c hash.",
+    "Only static loopback assets are fetched. Component/global fetch,XHR,provider,storage,timer,clipboard,beacon effects arezero. No API/auth/job/RPC/financial/upload request exists in the component fixture.",
+    "The Node owned projector trusts only an explicitly matching synthetic fresh context and server roleorganizer; it performs no ownership discovery or authentication.",
+    "Private/draft fixture rows are allowed only after context guards; creator, participant, duplicate and unsupported-profile rows are not projected.",
+    "App/entry/public-home/widget production wiring was not modified or exercised; existing lean and financial proofs were not rerun or relabeled.",
+    "No production-readiness, blockchain verification, live authentication or WCAG-conformance claim."
+  ],
+  "sessionsRunning": false
+}

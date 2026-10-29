@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "harnessSha256": "262eb15498c8b161dfbf2fb1ac9e09538404762a8a065c8ddf91239e42276a05",
+  "sourceSha256": {
+    "setup-progress.js": "d3979081818ea8c7a59c31770f761e49f01eb66605eb039459b9baea6313ec29",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "luma-launch.css": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "index.html": "07c8641a0597f83bb78251ba2718183c498c8497a5b866d8dca8cf88ad1a2b9e"
+  },
+  "checks": [
+    "Supported progress phases remain distinct and live status stays outside busy visual content",
+    "Only supplied valid confirmation counts display; missing or invalid counts remain explicitly unavailable and unknown phases cannot expose ready links",
+    "A confirmed transaction with failed portal verification retains its exact hash and escaped reason without presenting a ready event",
+    "Ready accepts only the explicit verified/confirmed tuple and exact same-origin scoped deposit/manage links; malformed or foreign links fail closed",
+    "Copy/check invoke only their explicit callbacks on keyboard activation; updates, stale scope, absent callbacks and dispose never invoke actions",
+    "Full hash DOM/focus survives updates without stealing outside focus; desktop/mobile controls meet44px and reduced-motion disables decorative animation"
+  ],
+  "staticRequests": [
+    "index.html",
+    "styles.css",
+    "luma-launch.css",
+    "setup-progress.js",
+    "assets/geist-latin.woff2",
+    "assets/instrument-serif-regular.woff2",
+    "assets/geist-mono-latin.woff2"
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "screenshots": [
+    "desktop-progress.png",
+    "mobile-progress.png"
+  ],
+  "effects": {
+    "request": 0,
+    "provider": 0,
+    "storage": 0,
+    "clipboard": 0,
+    "timer": 0,
+    "beacon": 0
+  },
+  "limits": [
+    "Only the real pure component and styles execute. All props/hashes/verified flags are synthetic; no backend, chain receipt, wallet support or ownership is established.",
+    "Static loopback GETs are allowed. Component fetch/XHR/provider/storage/clipboard/timer/beacon access is counted separately and must remain zero. Native links are inspected, not followed.",
+    "No real human transaction hash, API/job/session/auth route, RPC, signature, financial transaction or upload is used."
+  ]
+}

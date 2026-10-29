@@ -1,0 +1,12 @@
+✔ unavailable/mismatched context rejects before reading private inventory and exposes no count (3.368791ms)
+✔ matching current ordinary-wallet context exposes only supported organizer rows, including authorized private drafts (7.943208ms)
+✔ projection is frozen/detached and HTML escapes titles while generating exact stable manage links (2.231375ms)
+✔ empty and unavailable remain distinct; profile or later-session changes cannot reuse previous private rows (0.674875ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86.0555

@@ -1,0 +1,38 @@
+{
+  "status": "failed",
+  "harnessSha256": "93d33971f79795a0e3ea8d63a26ebadfd8299461af9476769c8a6812d71544e2",
+  "sourceSha256": {
+    "setup-progress.js": "d3979081818ea8c7a59c31770f761e49f01eb66605eb039459b9baea6313ec29",
+    "styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "luma-launch.css": "c6ee592c6c2d1bbd1be1207ae186bb1a281e0f1a635ffdf1c88974032e5b523d",
+    "assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "index.html": "07c8641a0597f83bb78251ba2718183c498c8497a5b866d8dca8cf88ad1a2b9e"
+  },
+  "checks": [
+    "Supported progress phases remain distinct and live status stays outside busy visual content"
+  ],
+  "staticRequests": [
+    "index.html",
+    "styles.css",
+    "luma-launch.css",
+    "setup-progress.js",
+    "assets/geist-latin.woff2",
+    "assets/instrument-serif-regular.woff2",
+    "assets/geist-mono-latin.woff2"
+  ],
+  "blocked": [],
+  "pageErrors": [],
+  "screenshots": [],
+  "effects": null,
+  "limits": [
+    "Only the real pure component and styles execute. All props/hashes/verified flags are synthetic; no backend, chain receipt, wallet support or ownership is established.",
+    "Static loopback GETs are allowed. Component fetch/XHR/provider/storage/clipboard/timer/beacon access is counted separately and must remain zero. Native links are inspected, not followed.",
+    "No real human transaction hash, API/job/session/auth route, RPC, signature, financial transaction or upload is used."
+  ],
+  "failure": {
+    "message": "expect(locator).toContainText(expected) failed\n\nLocator: locator('[data-setup-progress-status]')\nExpected substring: \"Confirmation count is not available yet.\"\nReceived string:    \"Checking the original transaction. Confirmation details may take a little time to appear. 1 confirmations reported; the required count is not available.\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for locator('[data-setup-progress-status]')\n    9 × locator resolved to <p role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" id=\"setup-progress-1-status\" data-setup-progress-status=\"\">Checking the original transaction. Confirmation d…</p>\n      - unexpected value \"Checking the original transaction. Confirmation details may take a little time to appear. 1 confirmations reported; the required count is not available.\"\n",
+    "stack": "Error: expect(locator).toContainText(expected) failed\n\nLocator: locator('[data-setup-progress-status]')\nExpected substring: \"Confirmation count is not available yet.\"\nReceived string:    \"Checking the original transaction. Confirmation details may take a little time to appear. 1 confirmations reported; the required count is not available.\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"to.have.text\" with timeout 5000ms\n  - waiting for locator('[data-setup-progress-status]')\n    9 × locator resolved to <p role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" id=\"setup-progress-1-status\" data-setup-progress-status=\"\">Checking the original transaction. Confirmation d…</p>\n      - unexpected value \"Checking the original transaction. Confirmation details may take a little time to appear. 1 confirmations reported; the required count is not available.\"\n\n    at Proxy.<anonymous> (/Users/hashmanansala/Documents/ChatGPT/Kleros projects/node_modules/playwright/lib/matchers/expect.js:213:24)\n    at run (file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/setup-progress.e2e.mjs:242:66)\n    at async file:///Users/hashmanansala/.codex/worktrees/kleros-ui-ux-speed-audit/Kleros%20projects/test/setup-progress.e2e.mjs:471:3"
+  }
+}

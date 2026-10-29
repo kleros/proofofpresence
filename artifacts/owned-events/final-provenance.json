@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "tests": 4,
+  "command": "node --test test/owned-events.test.mjs",
+  "sourceAndInputSha256": {
+    "test/setup-progress.e2e.mjs": "262eb15498c8b161dfbf2fb1ac9e09538404762a8a065c8ddf91239e42276a05",
+    "test/owned-events.test.mjs": "136a0e1adab7efba15a5a5b8eb5c30a5d75a7163e7838e07a2287a6aff7078e0",
+    "public/owned-events.js": "4f57dbd42a55cdc5ccbc805e8f95eec64910781f1494d858581b1771c96ef286",
+    "public/contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "test/fixtures/public-event-search-fixture.mjs": "43502e74b9de4a799093b321845e5b3f68702bf74ef6ecd73becb681b08b9688",
+    "test/fixtures/luma-launch-fixture.mjs": "7a009229004a8a4ecb4604751491f51fbf60b456815d5f68ea7e30a56586a884",
+    "test/fixtures/production-ui-fixture.mjs": "69cf2f4fd7e664a6bd0c61b89a5f61ecdb784adbc33cb7b35b4e3d895a654fce"
+  },
+  "combinedProof": "artifacts/setup-progress/2026-10-29T14-58-52.613Z/final-provenance.json",
+  "noIO": true,
+  "routingAnd7702Auth": "HOLD; not implemented or tested"
+}
