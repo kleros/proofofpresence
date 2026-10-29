@@ -1,0 +1,25 @@
+{
+  "endpoint": "https://eth.drpc.org",
+  "results": [
+    {
+      "label": "birth-single-block",
+      "httpStatus": 200,
+      "safeError": "",
+      "logs": 6
+    },
+    {
+      "label": "birth-to-fixed-no-topics",
+      "httpStatus": 400,
+      "rpcCode": 35,
+      "safeError": "ranges over 10000 blocks are not supported on free plan"
+    },
+    {
+      "label": "birth-to-fixed-or-topics",
+      "httpStatus": 400,
+      "rpcCode": 35,
+      "safeError": "ranges over 10000 blocks are not supported on free plan"
+    }
+  ],
+  "signatures": 0,
+  "broadcasts": 0
+}

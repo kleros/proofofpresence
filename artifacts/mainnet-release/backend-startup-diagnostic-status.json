@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "sourceCommit": "2f597662f846fb816a77bc6b2ea7ac003f25bcb9",
+  "deploymentId": "d33a4e05-bd16-4756-b404-96451c316635",
+  "build": "passed-Linux-Node22",
+  "startup": "failed-closed-RPC_NETWORK",
+  "frontendPublished": false,
+  "networkFailureSpecificCause": "not yet established; transport maps non200/JSON/fetch failures to same code",
+  "observerConfigAttempt": {
+    "committed": false,
+    "message": "No changes to apply",
+    "staged": false
+  },
+  "sourceCodeChanged": false,
+  "financialTransactions": 0,
+  "sshKeysCreated": 0,
+  "secretsLogged": false,
+  "initialPackagingAttemptPreserved": true
+}

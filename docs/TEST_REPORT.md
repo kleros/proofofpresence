@@ -1,5 +1,29 @@
 # Verification report
 
+## Mainnet hosting activation — 29 October 2026, 17:49 Bangkok
+
+The four separately approved human-signed infrastructure CREATEs and the one approved policy upload
+are verified; they are not a mainnet participant financial rehearsal. The final factory-only manifest
+has zero events. The current application/image source is `2f59766`.
+
+The closed111-file Railway image builds on Linux/Node22. The first missing-manifest context failure
+was fixed by one exact `.dockerignore` allowlist entry; no financial or UI source changed. Actual
+startup remains FAILED CLOSED, because PublicNode denies historical `eth_getCode` with HTTP403 and
+requires a personal archive token. UID1000 transport samples establish the real hosted failure.
+Alternative read-only checks did not establish a working replacement: dRPC rejects an actual475-block
+history query despite existing5000-block pagination, and Ankr requires authentication at chain-ID.
+No historical verification was weakened and no RPC/broadcast or wallet-signing capability was added.
+
+The final frontend/gateway match36 tracked release files and8 artifact pins; the Netlify function
+build passed. The exact new Netlify site identity was checked and its published deploy is still null.
+Production gateway-secret settings were completed only after the human's explicit approval for both
+new services. Normal startup and a `/healthz` probe are configured; a new successful deployment and
+actual health/bootstrap/trust/privacy/source/browser checks remain pending an authenticated archive
+RPC configured directly by the human. No public portal launch is claimed.
+
+See [hosting checkpoint](MAINNET_HOSTING_CHECKPOINT.md) for exact IDs, public diagnostics and resume
+order. A/B/C jobs are now human-retired and PAUSED; historical active-schedule prose below is superseded.
+
 ## Core release integration and later persistence hardening — 29 October 2026
 
 Integrated compact UI613c79a plus publication checkpointfd99afb, retaining exact app6aef1590/helper

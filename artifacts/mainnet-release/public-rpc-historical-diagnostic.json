@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "results": [
+    {
+      "endpoint": "https://ethereum-rpc.publicnode.com",
+      "label": "chain",
+      "method": "eth_chainId",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "chainId": "0x1",
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 342
+    },
+    {
+      "endpoint": "https://ethereum-rpc.publicnode.com",
+      "label": "timelock-latest",
+      "method": "eth_getCode",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "codeBytes": 6836,
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 311
+    },
+    {
+      "endpoint": "https://ethereum-rpc.publicnode.com",
+      "label": "timelock-birth",
+      "method": "eth_getCode",
+      "httpStatus": 403,
+      "contentType": "application/json",
+      "rpcCode": -32602,
+      "reasonFlags": {
+        "archive": true,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "safePublicError": "Archive requests require a personal token. Get one at: [public RPC]",
+      "elapsedMs": 233
+    },
+    {
+      "endpoint": "https://ethereum-rpc.publicnode.com",
+      "label": "factory-latest",
+      "method": "eth_getCode",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "codeBytes": 134,
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 235
+    },
+    {
+      "endpoint": "https://ethereum-rpc.publicnode.com",
+      "label": "factory-birth",
+      "method": "eth_getCode",
+      "httpStatus": 403,
+      "contentType": "application/json",
+      "rpcCode": -32602,
+      "reasonFlags": {
+        "archive": true,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "safePublicError": "Archive requests require a personal token. Get one at: [public RPC]",
+      "elapsedMs": 236
+    },
+    {
+      "endpoint": "https://eth.drpc.org",
+      "label": "chain",
+      "method": "eth_chainId",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "chainId": "0x1",
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 159
+    },
+    {
+      "endpoint": "https://eth.drpc.org",
+      "label": "timelock-latest",
+      "method": "eth_getCode",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "codeBytes": 6836,
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 271
+    },
+    {
+      "endpoint": "https://eth.drpc.org",
+      "label": "timelock-birth",
+      "method": "eth_getCode",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "codeBytes": 6836,
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 268
+    },
+    {
+      "endpoint": "https://eth.drpc.org",
+      "label": "factory-latest",
+      "method": "eth_getCode",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "codeBytes": 134,
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 231
+    },
+    {
+      "endpoint": "https://eth.drpc.org",
+      "label": "factory-birth",
+      "method": "eth_getCode",
+      "httpStatus": 200,
+      "contentType": "application/json",
+      "rpcCode": null,
+      "codeBytes": 134,
+      "reasonFlags": {
+        "archive": false,
+        "keyRequired": false,
+        "forbidden": false,
+        "rateLimit": false
+      },
+      "elapsedMs": 229
+    }
+  ],
+  "privateDataSent": false,
+  "signatures": 0,
+  "broadcasts": 0
+}

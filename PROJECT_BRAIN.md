@@ -1,5 +1,48 @@
 # Current implementation — 29 October2026, Asia/Bangkok
 
+## Hosting checkpoint — 29 October 2026, 17:49 Bangkok
+
+Application/image source is `2f597662f846fb816a77bc6b2ea7ac003f25bcb9` on
+`codex/core-application`. All four approved mainnet deployments and the exact policy publication
+are verified. The new services have the human-approved app-only gateway secret configured.
+**The portal is not live:** Linux/Node22 image builds, but the backend correctly fails closed when
+PublicNode refuses historical code reads. dRPC also rejects a valid475-block log query; the source
+already covers complete history in5000-block pages. Ankr now requires authentication. No source
+verification was weakened and no financial transaction was added. There is ONE pending core-chat
+request for the human to configure an authenticated archive `MAINNET_RPC_URL` directly in the new
+Railway service, keeping credentials out of chat. Normal startup and `/healthz` probe are restored;
+new Netlify site has no published deploy. Exact resources, diagnostics and ordered resume checks:
+[mainnet hosting checkpoint](docs/MAINNET_HOSTING_CHECKPOINT.md). Core remains sole hosting/operator.
+
+## Mainnet setup and public policy verified — 29 October 2026
+
+All FOUR human-approved Ethereum CREATE transactions are confirmed, one attempt/original hash each.
+The deployed owner timelock is `0xd895AD679c8bDd4B6782EbC5d5AfA2958cC1aFd7`; event implementation
+`0xE659A187f0b7B210CBa7F58bF4017Edf56800F92`; factory implementation
+`0xb99299166d31B008Bc4ED5a35c5b11e16D6786AD`; initialized factory proxy
+`0xEe049D03a007e150ec8ec46B066823043BAcf14E`. Actual total gas cost is
+`0.000466986018937392 ETH`, below the approved `0.0010174541274 ETH` cap. Core's same once-journal
+verified exact transactions/runtime, proxy slots/default, governance/history, owner `0x2bb0…5b55`,
+pending owner null, empty operation queues and 172800-second minimum delay. Final verification anchor
+is block26297509/hash`0x08acd17479cab2617938f5a4d4272820593bddbd7cfd1054c25a78f80766961a`.
+No more infrastructure wallet sends are needed; never reset/replay these submissions. The earlier
+step4 NONCE_CHANGED was correctly caused by the already-submitted final transaction and is resolved.
+Public receipt proofs are `artifacts/mainnet-release/user-2bb03593-step{1,2,3,4}-confirmed-*.json`.
+
+The human separately approved ONE exact generic-policy upload through the no-payment route. Core
+persisted the once-intent, posted once, and retrieved byte-identical public content:8246bytes/SHA256
+`24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308`, CID
+`QmYyofYYD211etbQAabmdoqLeoM5w54STNZW5yfQECYwG1`, URI
+`https://cdn.kleros.link/ipfs/QmYyofYYD211etbQAabmdoqLeoM5w54STNZW5yfQECYwG1`.
+Approval/upload/readback proofs are separate under `artifacts/mainnet-release/luma-v9-policy-*.json`;
+original drafts stay unchanged. No payment, other-file upload or retry was authorized/performed.
+
+Final registry is `registry/ethereum-v9-luma-mainnet.json`, factory-only with zero events. App checkpoint
+`fe476ee` includes final local actual-proxy/browser acceptance and narrow publication hardening.
+The NEW isolated production frontend/backend are being activated; **the public portal launch is not
+yet verified**. Core remains sole deployment/journal/hosting operator; management guides the human
+and verifies evidence. Preserve all historical deployments and the retired incomplete A/B/C records.
+
 ## Old A/B/C schedules retired by the human — 29 October 2026
 
 The human explicitly said "please retire them" in the UI chat after asking whether the old v8
@@ -12,6 +55,39 @@ their contracts, funds, plans, proofs, private once-journals and frozen operator
 or chain-state change was performed. D remains separately completed. V9/mainnet launch continues.
 
 ## Core integration and wallet review — 29 October 2026, 16:10 Bangkok
+
+Superseded by the mainnet deployment checkpoint immediately below; this section retains the earlier
+review progression and pending-state observations.
+
+### Mainnet deployment checkpoint — 29 October 2026, 16:46 Bangkok
+
+The tested app is saved at `fe476ee9907a2ea6cd7ea9590294ada039424aee` on `codex/core-application`.
+All four HUMAN-signed Ethereum infrastructure deployments are canonical and the real keyless mainnet
+runtime verifies factory/proxy slots/default, source provenance and owner-controller history:
+factory proxy `0xEe049D03a007e150ec8ec46B066823043BAcf14E`, initial upgrade owner
+`0x2bb03593892724d225071068E59ab1E48aF05b55`, no pending owner/operations, minimum172800seconds.
+Total gas466986018937392wei (0.000466986018937392ETH), below approved1017454127400000wei.
+Four attempts, four original hashes, no replacement/replay; operator signatures/broadcasts0. See
+`artifacts/mainnet-release/user-2bb03593-step4-confirmed-0b13cabf.json` and live-factory runtime proof.
+
+The human separately approved one exact8246-byte generic policy upload. Core saved its approval and
+durable once-intent, made ONE no-payment Kleros Netlify upload, and verified HTTP200 gateway bytes,
+SHA256 and CID exactly. Policy is PUBLIC at
+https://cdn.kleros.link/ipfs/QmYyofYYD211etbQAabmdoqLeoM5w54STNZW5yfQECYwG1,
+SHA256 `24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308`.
+`registry/ethereum-v9-luma-mainnet.json` binds the actual verified factory and published policy with
+events[]. Original draft and infrastructure-only manifest remain preserved. Policy proof files are
+`artifacts/mainnet-release/luma-v9-policy-{publication-approved,upload-once,public-verification,published}.json`.
+No Base/x402 payment, retry, other-file upload, event creation or participant deposit occurred.
+
+Mainnet-only hosting is prepared: https://kleros-luma-ethereum.netlify.app and
+https://luma-mainnet-backend-production.up.railway.app. This checkpoint precedes application deployment
+and health verification; do not claim it live yet. Railway project/service/volume are new and isolated,
+with the reviewed /data mount and /data/workbench-state.json. The old sites, source, contracts, funds,
+plans and private journals stay preserved. A/B/C scheduled runs were separately retired by the human
+and both native jobs are PAUSED, as recorded above. No upstream push or billing upgrade.
+
+The following earlier text is historical:
 
 Active branch `codex/core-application`; scoped browser-evidence checkpoint `9fe35cc` follows contract/
 generic-policy checkpoint `d7687b9`. Core runtime/UI integration remains uncommitted. The exact compact
