@@ -7,7 +7,8 @@ their financial stages. They remain incomplete with funds/proofs/journals preser
 
 The latest human target is Ethereum mainnet using their own wallet, superseding the briefly requested
 new Chiado E deployment. Wallet: `0x2bb03593892724d225071068E59ab1E48aF05b55` (checksum valid).
-No mainnet transaction has been sent. Only the human signs through their wallet; no CLI signing key.
+The human signed four mainnet setup transactions, now canonical and fully verified. Only the human
+signed through their wallet; no CLI signing key or operator broadcast was used.
 A/B/C hosting/assets/journals and both scheduled operators remain untouched. E has only fresh local
 wallets and a blank Netlify site; E financial entry points are on HOLD, with no E on-chain transaction.
 

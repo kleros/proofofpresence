@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "approved": true,
+  "sourceChat": "01a18695-046c-7983-bea1-3e2228cf5b44",
+  "sourceUserMessage": "01a18708-d7e1-7f01-b94f-13c7c0f5d0cd",
+  "answer": "Publish this exact policy",
+  "sourceFile": "docs/contracts/v9-luma-generic-policy.md",
+  "sha256": "24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308",
+  "byteLength": 8246,
+  "expectedURI": "/ipfs/QmYyofYYD211etbQAabmdoqLeoM5w54STNZW5yfQECYwG1",
+  "endpoint": "https://kleros-api.netlify.app/.netlify/functions/upload-to-ipfs?operation=evidence&pinToGraph=false",
+  "maximumUploads": 1,
+  "paymentsAuthorized": false,
+  "automaticRetry": false,
+  "startedAt": "2026-10-29T09:44:30.678Z"
+}

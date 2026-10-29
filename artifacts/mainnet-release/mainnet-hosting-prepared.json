@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "sourceCommit": "fe476ee9907a2ea6cd7ea9590294ada039424aee",
+  "netlifySiteId": "5daad91a-3e1c-44f8-a43e-a42adacd6936",
+  "publicOrigin": "https://kleros-luma-ethereum.netlify.app",
+  "backendOrigin": "https://luma-mainnet-backend-production.up.railway.app",
+  "railwayProjectId": "fc82ba7d-dbd8-46a1-90b0-46c150405823",
+  "railwayEnvironmentId": "da2b097e-6883-424e-8539-99fb7422df10",
+  "railwayServiceId": "5de64f0d-3712-41c9-b6ae-a5df868e716a",
+  "railwayVolumeId": "ff8af62f-9282-4205-ac81-6aac49c06ef0",
+  "mountPath": "/data",
+  "stateFile": "/data/workbench-state.json",
+  "manifest": "/app/registry/ethereum-v9-luma-mainnet.json",
+  "rpc": "https://ethereum-rpc.publicnode.com",
+  "runtimeUid": 1000,
+  "status": "prepared-not-deployed",
+  "serverSigning": false,
+  "oldResourcesChanged": false,
+  "billingUpgrade": false
+}
