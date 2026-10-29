@@ -56,6 +56,7 @@ export const D_OPERATOR_FILES = Object.freeze([
       "scripts/chiado-ui-d-deposit-guards.mjs",
       "scripts/testnet-ui-d-scenario.mjs",
       "scripts/testnet-ui-d-rehearsal.mjs",
+      "scripts/revise-ui-d-plan.mjs",
       "scripts/testnet-ui-scenario.mjs",
       "scripts/testnet-rehearsal.mjs",
       "scripts/generate-contracts-test15m.mjs",
