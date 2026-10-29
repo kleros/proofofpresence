@@ -1,5 +1,50 @@
 # Verification report
 
+## D complete — 29 October 2026, 05:04 UTC
+
+The separate controlled Chiado D exercise is **complete**: actual UI deposits, admission, Alice-only
+attendance, the same Bob's omission challenge, owner matching, ordinary payout, controlled ruling1
+and actual UI settlement are verified. This is the isolated VERSION80015, 900-second test profile.
+The [final acceptance record](CHIADO_UI_D_ACCEPTANCE.md) and
+[compositional completion](../artifacts/ui-d/settle-completions/2026-10-29T04-56-38-478Z-23d75c35/proof.json)
+establish completion; the historical checkpoints below retain what was known at each earlier time.
+
+The owner settled Bob through one actual UI `resolveChallenge(Bob)` request and broadcast:
+`0xc27fb4878a820914c134be76e693057c6a700948f1d56350aabdf62f04063a0e`, block23741297,
+owner nonce7. The same Bob who deposited and challenged received **1e12wei attendance payment**
+and, separately verified, **30e9wei returned challenge collateral**. Alice had already received1e12wei.
+Total delivered attendance is2e12wei; held shares, owed credit, pending credit/challenges, challenge
+escrow, reserves and child balance are all0. No owed-credit substitution is counted as delivery.
+
+| Final distinct verification | Actual result |
+|---|---|
+| [Settlement operation sidecar](../artifacts/ui-d/settle-2026-10-29T04-37-17.469Z-6739bf8b/ui-d-resolve-bob.proof.json) | **Passed**, one actual UI request/broadcast; SHA256 `0ba2ec8145b0799523d007056c6dd2fde177456513d853e2d33728514f2341b7`. The32 checks belong to the stopped full-run proof. |
+| [Settled role audit](../artifacts/ui-d/status-settled-2026-10-29T04-45-26-924Z-973b436d/proof.json) | **Passed**,86 read/auth requests,3 nonce authentications,6 desktop captures, zero financial actions; SHA256 `8f74f78ae82cc084917ca7bd5dd9ada1451949eff464e375d8b983080993fd2c`. Both independent settled observers passed161 checks; the UI peer independently passed presentation of all6 final captures. |
+| [Final canonical verifier](../artifacts/ui-d/verify-2026-10-29T04-53-08-491Z-03585c97/operator-proof.json) | **Passed**,8 unique actual UI-history operations, exact attendance payments and separate Bob collateral delivery, unchanged A/B/C; zero additional broadcasts. SHA256 `cfe988e24a66ca6e287fd25591b16a78e2e602a974411c3ce703fae823121bbe`. |
+| [Settlement aggregate supplement](../artifacts/ui-d/settle-completions/2026-10-29T04-56-38-478Z-23d75c35/proof.json) | **passed-full-controlled-d-flow-with-read-only-completions**;7 input proofs,13 operator files,26 public files and14 unique canonical headers verified. Original settlement A/B/C before/after equals final verifier A/B/C; original journal bytes unchanged;0 signing-file reads/signatures/broadcasts. SHA256 `b55d3c5b1ea86666242ecbb24a14b1ffe7c2c844b41ba389f6024e91cc7f3c78`. |
+
+There are **14 confirmed D transactions:5 setup +8 actual UI operations +1 controlled ruling**.
+The eight UI operations are two deposits, registration, attendance, challenge, match, ordinary release
+and settlement. No financial operation was replayed, replaced or reset to finish the evidence.
+
+Three original top-level runs remain **stopped**: ordinary payout after its passed operation,
+the normal ruling operator after its confirmed transaction, and settlement after its passed operation.
+The [original settlement proof](../artifacts/ui-d/settle-2026-10-29T04-37-17.469Z-6739bf8b/proof.json)
+retains32 checks and SHA256 `dc0970ddb939c806b7783641722c79cde3c1ac111128f4fe9ff63e5d777a4ef0`.
+Their precise post-operation errors remain unproven. The payout supplement, existing receipt-only
+ruling recovery and final settlement supplement separately complete the outstanding reads;
+they do not turn the original runs into passes. Original proofs, sidecars and journal records are
+retained. The first ruling-recovery diagnostic's corrected reporting ReferenceError made no chain action.
+[Final completion pointer](../artifacts/ui-d-settle-completion.json) records this composite result.
+
+This verifies the controlled D flow and its final desktop presentation. Normal browser-extension
+prompts and real Kleros jury adjudication are not covered. A/B and C remain pending with their
+existing ACTIVE jobs and frozen sources;142 source-preservation checks remain unchanged. No D
+heartbeat was created. D-only UX release is authorized after the final financial Git checkpoint and
+baseline, with no app-source change included in this completion record. The separately recorded
+[production target](ETHEREUM_MAINNET_V8_READINESS.md) is Ethereum1/native ETH, normal v8 VERSION8
+and86400-second periods; that planning record is not approval to broadcast on mainnet.
+
 ## Separate test15m profile and D tooling — 29October2026
 
 New profile VERSION80015/chain10200/900-second challenge and matching periods is explicitly dispatched;
@@ -73,6 +118,71 @@ These are deposit/admission results. **No D kickback, controlled ruling or settl
 at this checkpoint.** The nonce-only admitted role audit and subsequent attendance/challenge/match
 stages require their own passed proofs; later ordinary/ruled/settled UI and canonical audits remain
 mandatory before financial completion can be claimed. See [D runbook](TESTNET_UI_D.md).
+
+## D ordinary payout: passed operation, stopped full run and read-only supplement
+
+The actual UI `releasePayouts()` operation succeeded once:
+`0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3`, block23740796,
+owner nonce5. The [original full-run proof](../artifacts/ui-d/payout-2026-10-29T03-51-39.182Z-3960b430/proof.json)
+records32 checks, one UI wallet request/broadcast and no blocked requests, but its top-level status is
+**stopped**, not passed. It had already persisted the
+[passed per-operation sidecar](../artifacts/ui-d/payout-2026-10-29T03-51-39.182Z-3960b430/ui-d-release-payouts.proof.json),
+SHA256 `2697495cdc9304e1166c88dc68e9537854e0c6962b5a45e0574be4f7251021f5`, with14 observed
+confirmations, review/confirmed screenshots and immediate A/B/C financial equality. The original
+stopped proof SHA is `d32c76415b787cb531c82d0819c81732fe49ef2394b51ad21fe406bb4dcd4274`.
+The precise error after persistence, during remaining cleanup or final checks, remains unproven.
+The UI action was not replayed and the original stopped record was not rewritten.
+
+| Separate ordinary-phase verification | Actual result |
+|---|---|
+| [Nonce-only ordinary role audit](../artifacts/ui-d/status-ordinary-2026-10-29T03-58-30-360Z-2178dda7/proof.json) | **Passed**:86 read/auth requests,3 authentication nonces,6 desktop captures, zero financial signatures/broadcasts and no failures. |
+| [Independent ordinary observer](../artifacts/chiado-ui-d-flow-audit/2026-10-29T03-58-06-211Z-2b8f5d98-0cd7-4a0b-9b30-da725e548b5e.json) | **158 checks passed**, GET/read RPC only; AliceD paid, BobD held/unruled, owed0. |
+| `node --test test/complete-ui-d-payout-proof.test.mjs` | **5/5 passed** using public-proof fixtures: forged/missing operation/source/journal/scope/state, old A/B/C anchors, final payment-block mismatches and mutable RPC rejection; default execution opens no runtime files. |
+| [Read-only aggregate supplement](../artifacts/ui-d/payout-completions/2026-10-29T04-14-47-517Z-854653ed/proof.json) | **passed-read-only-supplement**,04:14:47UTC; all retained D/A/B/C anchors, fresh aggregate A/B/C equality and final D payment/state checks passed with0 signing-file reads/signatures/broadcasts. |
+
+The supplement SHA is `4824515ff70118d66076019f2935e8b7ca4f82b3e474c34af48112531cd6c7a9`;
+its reviewed helper SHA is `5150a82e1596f0e7280efa6f38981f362c37a4271d201a201020bb62e6ba098d`.
+[Completion pointer](../artifacts/ui-d-payout-completion.json) records the original run as stopped.
+It supplements the missing final aggregates and does **not** convert that harness run to passed or
+establish the error's cause. Original inputs, screenshots, thirteen source files, plan and journal
+were verified unchanged; no additional UI or financial transaction occurred during completion.
+
+At this04:14:47UTC checkpoint, D is Finalized with Alice's actual1e12wei attendance payment,
+Bob's1e12wei protected share,30e9wei challenge escrow and owed0. The dynamic case is local2/
+arbitrator1002, Disputed and unruled. Controlled ruling and settlement require their own subsequent
+proofs; neither is claimed complete here. `Finalized` describes the ordinary batch, not full payment.
+
+## D controlled ruling and receipt-only recovery — 04:33UTC checkpoint
+
+One controlled CLI transaction delivered attended ruling1 to D's actual local2/arbitrator1002 case:
+`0x9a273700b4757d5279797f795a4f71d03352c3f1c6bc96c175519ec3700610cf`, block23741046,
+owner nonce6. This is a controlled test-arbitrator result, not an independent Kleros jury decision.
+The original normal operator run confirmed that transaction and then **stopped** with a generic final-check
+error; its precise cause is unproven. It was not relabeled as passed or replayed.
+
+The existing frozen receipt-only branch subsequently returned **passed**, zero additional broadcasts.
+Its [immutable operator proof](../artifacts/ui-d/ruling-2026-10-29T04-30-41-044Z-745755c9/operator-proof.json)
+has SHA256 `e83194878dea9d62f0ea48f04c0c956c5c37d8dfc16d2e6c1ac2bbaf190a38b1`;
+[receipt-only output](../artifacts/ui-d-ruling-receipt-output.json) links that archive. In-process guards
+disabled signing-file reads, signing, sending and mutable RPCs; the active journal bytes stayed unchanged.
+A first recovery diagnostic's reporting wrapper raised a ReferenceError. Its reporting correction made
+zero chain actions and is distinct from the original operator's unproven final-check error.
+
+The separate [original-interval recovery record](../artifacts/ui-d-ruling-recovery.json), SHA256
+`0ded2365f214e8f973af78e6ef6d83116a036d2e700708d04a717f1c457d778b`, compares the persisted
+pre-ruling A/B/C snapshot and public4824515f payout-completion baseline with recovered A/B/C before/after
+facts. All10 unique retained anchors were canonical, the exact controlled call/nonce6 was verified,
+and the original A/B/C interval was unchanged. This establishes more than unchanged state during the
+later recovery read. Original records were retained; recovery read0 signing files, made0 signatures
+and broadcast0 transactions.
+
+The [ruled role audit](../artifacts/ui-d/status-ruled-2026-10-29T04-20-57-035Z-219650d8/proof.json)
+passed86 read/auth requests,3 nonce authentications and6 desktop captures with0 financial signatures/
+broadcasts. The [independent ruled observer](../artifacts/chiado-ui-d-flow-audit/2026-10-29T04-20-23-492Z-f62510b1-6be5-46c4-b4fd-5e951a7522e6.json)
+passed158 checks. These proofs show delivered final1 while Bob's fullD remains held, owed0 and AliceD
+already paid. **They do not establish Bob's late payout or settlement.** At this checkpoint only the
+missing UI settlement and its separate settled-role, observer and final payment/collateral verification
+remain to prove; no completed settlement is claimed here.
 
 ## Public Chiado v8 acceptance — 29October2026, Asia/Bangkok
 

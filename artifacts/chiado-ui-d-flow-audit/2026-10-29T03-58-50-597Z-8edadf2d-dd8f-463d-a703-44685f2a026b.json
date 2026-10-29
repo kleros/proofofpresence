@@ -1,0 +1,425 @@
+{
+  "status": "passed-current-checkpoint",
+  "checkedAt": "2026-10-29T03:59:25.773Z",
+  "origin": "https://kleros-fast15m-d-20261029-9fe71683.netlify.app",
+  "scenario": "d-test15m",
+  "manifestFile": "registry/chiado-v8-ui-d.json",
+  "chainId": 10200,
+  "arbitration": "controlled",
+  "instanceId": "72e1375c-078c-4519-a70d-b6de60d73e12",
+  "manifestSha256": "56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd",
+  "checkpoint": "ordinary",
+  "planId": "70688861-87e2-4936-9e2e-bdc9a7c7a5fd",
+  "planFingerprint": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+  "checks": 158,
+  "readOnly": true,
+  "signatures": 0,
+  "broadcasts": 0,
+  "observerSha256": "087374e8dc0f7fb79929a27736aaa3822307a520264be0f50d557f9094157124",
+  "observerFiles": {
+    "scripts/chiado-ui-d-flow-audit.mjs": "087374e8dc0f7fb79929a27736aaa3822307a520264be0f50d557f9094157124",
+    "scripts/chiado-flow-audit.mjs": "87419114a362b7bd0b3d1397c0c79480ee486c53eeab9449d5d35baf574692e8",
+    "scripts/generate-contracts-test15m.mjs": "45736d171e134aa8fb4d3ab9a2c15e83a13468f0993de37144d3d490e1c9c190"
+  },
+  "events": [
+    {
+      "roles": {
+        "owner": {
+          "wallet": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "status": 0,
+          "attended": false,
+          "pendingWei": "0",
+          "owedWei": "0"
+        },
+        "alice": {
+          "wallet": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+          "status": 2,
+          "attended": true,
+          "pendingWei": "0",
+          "owedWei": "0"
+        },
+        "bob": {
+          "wallet": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+          "status": 1,
+          "attended": false,
+          "pendingWei": "0",
+          "owedWei": "0"
+        }
+      },
+      "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+      "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+      "blockNumber": 23740842,
+      "blockHash": "0x58605ff2a6ad15d707f35fff6dac09a00a8da7d80dac092e5bb80349193d9ee2",
+      "now": 1793246340,
+      "observedHead": {
+        "blockNumber": 23740846,
+        "blockHash": "0xcbd131a9d5bce7a489b8df5a4535afc908bbe8fae2e4cfd77a26f75bfabf096b",
+        "now": 1793246360
+      },
+      "state": {
+        "phase": "Finalized",
+        "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+          "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+        ],
+        "activeStakers": [
+          "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+        ],
+        "stakerHistory": [
+          "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+          "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+        ],
+        "attendees": [
+          "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c"
+        ],
+        "cases": [
+          {
+            "wallet": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+            "matched": true,
+            "outcome": null,
+            "state": "Disputed",
+            "matcher": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+            "matchEndsAt": 1793246005,
+            "depositWei": "30000000000",
+            "localDisputeID": "2",
+            "arbitratorDisputeID": "1002",
+            "heldShareWei": "1000000000000",
+            "caseOrganizer": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+            "finalRuling": null,
+            "caseURI": "/ipfs/QmfLyUxf7YHzYeCsamoBC7LKUirG3Ypb3nDMisKJshpQge",
+            "publication": "unpublished",
+            "appeal": {
+              "ruling": 0,
+              "start": 0,
+              "end": 0,
+              "loserEnd": 0,
+              "costAttended": "0",
+              "costAbsent": "0"
+            }
+          }
+        ],
+        "depositWei": "1000000000000",
+        "poolWei": "2000000000000",
+        "balanceWei": "1030000000000",
+        "reservedWei": "1030000000000",
+        "spareWei": "0",
+        "heldBackWei": "1000000000000",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "30000000000",
+        "payoutShareWei": "1000000000000",
+        "stakerCount": 2,
+        "attendeeCount": 1,
+        "challengeEndsAt": 1793245770,
+        "pendingChallenges": 1,
+        "challengeDepositWei": "30000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x64ef8e882a489fa9b1fbfd87815a5a972f3cd38c": "0",
+          "0x8f9ca1dcdb1eb1842c21bbc20c7737de8d82b501": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 2,
+        "remainingAdmissionSlots": 148,
+        "fingerprint": "c63413bfc53db7e4de73389526337398ca8dbb91d2cdcb4a252174ad50ccf54f",
+        "blockNumber": 23740842,
+        "now": 1793246340
+      },
+      "expectedUi": {
+        "depositsOpen": false,
+        "ordinaryBatchProcessed": true,
+        "canReleaseOnChain": false,
+        "allFinancialObligationsComplete": false,
+        "cases": [
+          {
+            "wallet": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+            "label": "Matched controlled test dispute · awaiting final result",
+            "canResolveOnChain": false,
+            "localDisputeID": "2",
+            "arbitratorDisputeID": "1002"
+          }
+        ]
+      },
+      "payments": {
+        "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+        "chainId": 10200,
+        "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+        "contractVersion": "kleros-event-v8-test15m",
+        "blockNumber": 23740842,
+        "blockHash": "0x58605ff2a6ad15d707f35fff6dac09a00a8da7d80dac092e5bb80349193d9ee2",
+        "attendancePaidWei": "1000000000000",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "1000000000000",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "1000000000000",
+        "scope": "Successful kleros-event-v8-test15m log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": [
+          {
+            "type": "attendance-payout",
+            "wallet": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+            "recipient": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+            "amountWei": "1000000000000",
+            "txHash": "0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3",
+            "blockNumber": 23740796,
+            "logIndex": 1,
+            "successful": true,
+            "sourceMethod": "releasePayouts"
+          }
+        ]
+      },
+      "operations": [
+        {
+          "event": "OwnershipTransferred",
+          "txHash": "0x3c33411d377bec442f8e4831c8465f7d92f02966289fbae212807fb4de59507c",
+          "blockNumber": 23740043,
+          "blockHash": "0x25153327fac820cbafb48374fa74e3e7ed1812d96fbf7871429fcb844ce23835",
+          "blockTimestamp": 1793241985,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x0947D4438489f159E4B1BdC8BA63A1C07D642465",
+          "valueWei": "0",
+          "method": null,
+          "names": [
+            "OwnershipTransferred"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x0000000000000000000000000000000000000000",
+            "0x348800A6690898b36be3CAe18555F80E16401cD7"
+          ]
+        },
+        {
+          "event": "Deposited",
+          "txHash": "0xe3b10808d5060b3ef2b6c5f6ccba1c81d3ebee041c5059c27f96f29eac21d682",
+          "blockNumber": 23740304,
+          "blockHash": "0x3f40c6500add6012a77d3eda6430f35c014353b8eba0a3f0d6be73b0f250b0f5",
+          "blockTimestamp": 1793243405,
+          "from": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "1000000000000",
+          "method": "deposit",
+          "names": [
+            "Deposited"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "Deposited",
+          "txHash": "0xde29bf8ffa52d94ed551a1b9cf2f65edfec933ffcf4e3220cd3bf92eb61f29eb",
+          "blockNumber": 23740332,
+          "blockHash": "0x19ce64cd006690490afa8b5290434b536dfeaeb97c01f9c7ac3203dabab97d50",
+          "blockTimestamp": 1793243550,
+          "from": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "1000000000000",
+          "method": "deposit",
+          "names": [
+            "Deposited"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "StakerRegistered",
+          "txHash": "0x8376920fd03eb0c2cc8a34bcc25f0d79b9be11f7ce9746c4455cbf59e400e56d",
+          "blockNumber": 23740440,
+          "blockHash": "0xd3decf98e2365293cddea359736d00f12327e2aef23326131f2575ab3dd88954",
+          "blockTimestamp": 1793244115,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "registerStakers",
+          "names": [
+            "StakerRegistered",
+            "StakerRegistered"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c"
+          ]
+        },
+        {
+          "event": "StakerRegistered",
+          "txHash": "0x8376920fd03eb0c2cc8a34bcc25f0d79b9be11f7ce9746c4455cbf59e400e56d",
+          "blockNumber": 23740440,
+          "blockHash": "0xd3decf98e2365293cddea359736d00f12327e2aef23326131f2575ab3dd88954",
+          "blockTimestamp": 1793244115,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "registerStakers",
+          "names": [
+            "StakerRegistered",
+            "StakerRegistered"
+          ],
+          "logIndex": 1,
+          "args": [
+            "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+          ]
+        },
+        {
+          "event": "AttendeeAdded",
+          "txHash": "0x77ffa4f018c04050acd95873823e06489c7a6681706ad3926beb38e9d62b7deb",
+          "blockNumber": 23740574,
+          "blockHash": "0x1d534eeaab3ec124c6a2ef59d92fd6637ffc0408ffceebec6b30861788824f26",
+          "blockTimestamp": 1793244870,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c"
+          ]
+        },
+        {
+          "event": "AttendancePosted",
+          "txHash": "0x77ffa4f018c04050acd95873823e06489c7a6681706ad3926beb38e9d62b7deb",
+          "blockNumber": 23740574,
+          "blockHash": "0x1d534eeaab3ec124c6a2ef59d92fd6637ffc0408ffceebec6b30861788824f26",
+          "blockTimestamp": 1793244870,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "postAttendance",
+          "names": [
+            "AttendeeAdded",
+            "AttendancePosted"
+          ],
+          "logIndex": 1,
+          "args": [
+            "1",
+            "1793245770"
+          ]
+        },
+        {
+          "event": "Challenged",
+          "txHash": "0xcbfc9894bbca380818dd9e90d132819c612f79adcdafe7a0d8dae4a17fc8d993",
+          "blockNumber": 23740616,
+          "blockHash": "0xa4f3dec741f5819ca0fa471db48e50cf2757cc10775b1d699cf9371eb20e47bf",
+          "blockTimestamp": 1793245105,
+          "from": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "30000000000",
+          "method": "challenge",
+          "names": [
+            "Challenged"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+            "30000000000",
+            "1793246005"
+          ]
+        },
+        {
+          "event": "ChallengeMatched",
+          "txHash": "0x1dd3a2e9ef04d36387bd5e2ed042ebacc795f4dbe694b0b5aba0fa93b29c7fb3",
+          "blockNumber": 23740671,
+          "blockHash": "0x4673c03a25f362941724fe76d7e0c9e6dee5c13e5589e28ae2f3dd2b8ab830ef",
+          "blockTimestamp": 1793245395,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "30000000000",
+          "method": "matchChallenge",
+          "names": [
+            "ChallengeMatched"
+          ],
+          "logIndex": 3,
+          "args": [
+            "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+            "0x348800A6690898b36be3CAe18555F80E16401cD7",
+            "1002",
+            "2"
+          ]
+        },
+        {
+          "event": "ShareHeldBack",
+          "txHash": "0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3",
+          "blockNumber": 23740796,
+          "blockHash": "0xaedfba06700d30ae5037b2c2975dbf63d1ffd0d81f1b6657406568b8b420fca6",
+          "blockTimestamp": 1793246110,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "releasePayouts",
+          "names": [
+            "ShareHeldBack",
+            "Payout",
+            "Finalized"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "Payout",
+          "txHash": "0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3",
+          "blockNumber": 23740796,
+          "blockHash": "0xaedfba06700d30ae5037b2c2975dbf63d1ffd0d81f1b6657406568b8b420fca6",
+          "blockTimestamp": 1793246110,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "releasePayouts",
+          "names": [
+            "ShareHeldBack",
+            "Payout",
+            "Finalized"
+          ],
+          "logIndex": 1,
+          "args": [
+            "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+            "1000000000000"
+          ]
+        },
+        {
+          "event": "Finalized",
+          "txHash": "0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3",
+          "blockNumber": 23740796,
+          "blockHash": "0xaedfba06700d30ae5037b2c2975dbf63d1ffd0d81f1b6657406568b8b420fca6",
+          "blockTimestamp": 1793246110,
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+          "valueWei": "0",
+          "method": "releasePayouts",
+          "names": [
+            "ShareHeldBack",
+            "Payout",
+            "Finalized"
+          ],
+          "logIndex": 2,
+          "args": [
+            "2",
+            "1",
+            "2000000000000",
+            "1000000000000"
+          ]
+        }
+      ]
+    }
+  ],
+  "notice": "This observer verifies public API and canonical chain facts. UI initiation, screenshots and authenticated role assertions are separate evidence; this GET/RPC-only observer does not establish browser initiation or collateral delivery. Waiting stages are not completed."
+}

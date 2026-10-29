@@ -3,7 +3,67 @@
 This root document is the **canonical project brain**. The current checkpoint and linked release
 records supersede historical implementation/deployment statements retained below.
 
-## Latest D checkpoint — 29October10:51Bangkok
+## Latest verified D completion — 29October12:01Bangkok
+
+The separate controlled Chiado D deposit→dispute→kickback flow is complete. The SAME Bob who
+deposited through the UI received exactly1e12wei attendance payment and a separately verified
+30e9wei collateral return. His actual personal UI shows `0.000001 XDAI directly paid` and
+`Challenge settled`. Alice received1e12wei in the earlier ordinary batch while Bob's share was held
+UNRULED. Delivered ruling1 and the still-held/unpaid state were separately captured before settlement.
+Final D contract balance, pending credit, held shares, owed credit, escrow and reserves are all0;
+two attendees are paid, Bob's case is Resolved with actual resolver/arbitrator IDs2/1002.
+
+Final actual owner UI settlement: `0xc27fb4878a820914c134be76e693057c6a700948f1d56350aabdf62f04063a0e`,
+block23741297, nonce7. Every financial UI operation has a passed immutable per-operation proof,
+one wallet request/broadcast and immediate A/B/C isolation; all8UI operations were verified again.
+The once-journal contains exactly14confirmed transactions:5setup,8actualUI and1controlledruling.
+The original payout/settlement full runners and initial ruling final check stopped AFTER successful
+operations; their exact cleanup/read cause remains unproven. Original stopped evidence was retained.
+Read-only completions closed missing aggregate checks without replaying any transaction or changing
+the original proof/journal bytes. Do not describe those original commands as passed.
+
+- Final read-only canonical8-operation/native-payment/collateral verification:
+  `artifacts/ui-d/verify-2026-10-29T04-53-08-491Z-03585c97/operator-proof.json`, SHA256
+  cfe988e24a66ca6e287fd25591b16a78e2e602a974411c3ce703fae823121bbe;0broadcast.
+- Final settlement aggregate completion: `artifacts/ui-d-settle-completion.json` → immutable
+  `artifacts/ui-d/settle-completions/2026-10-29T04-56-38-478Z-23d75c35/proof.json`, SHA256
+  b55d3c5b1ea86666242ecbb24a14b1ffe7c2c844b41ba389f6024e91cc7f3c78.
+  It binds the original STOPPED dc097... and PASSED UI sidecar0ba2..., all source pins, original
+  pre-settlement A/B/C baselines, canonical headers, final role/observer proofs and separate collateral.
+- Final settled role audit `artifacts/ui-d-status-settled.json`, immutable proof SHA256
+  8f74f78ae82cc084917ca7bd5dd9ada1451949eff464e375d8b983080993fd2c:
+  86read/auth requests,3nonce logins,6desktop captures,zero financial signatures/broadcasts.
+  Root and independent settled observers passed161; independent UI review inspected all6captures.
+- Independent same-Bob canonical payment/native balance proof `artifacts/ui-d-payment-independent.json`:
+  Bob balance+1.03e12wei with nonce unchanged and gas0;1e12 attendance is distinct from30e9collateral.
+
+All A/B/C financial states remained unchanged by D. Their separate public rehearsals are still pending;
+this D completion is not a claim that A/B/C or an independent Court jury has finished. Their ACTIVE
+30October00:20/05:02Bangkok jobs, original plans/journals and verified142-file frozen d4068ec operator
+remain unchanged. No D heartbeat was created; no duplicate financial operator or new D financial
+transaction is needed. Private signing files and once-only journals remain in place.
+
+Financial application source is frontend7bdd40a/backend67ee1d9; local branch `codex/core-application`
+matched-proof checkpoint4cb1528. Record/commit final financial evidence BEFORE changing UI/backend
+source. Reviewed UX/backend candidate8fd010c is isolated and not yet deployed. Its authorized release
+target is ONLY the existing D Netlify site and isolated D backend/volume after the old-source baseline;
+main A/B and C keep their original hosted assets and scheduled financial source checks. Preserve D's
+manifest, policy, contracts, immutable deadlines, accounts and persisted data. Post-release checks must
+verify the optimized source, one bound selected-bootstrap read, mobile/keyboard behavior and the
+same final payment state without any financial broadcast. See `docs/TESTNET_UI_D.md` and acceptance.
+
+### Production target clarified — Ethereum mainnet
+
+The human specified future production on **Ethereum mainnet, chain1/native ETH**. Production uses
+normal v8/VERSION8 with86400-second challenge and matching windows; test15m/VERSION80015 remains
+restricted to Chiado10200. Prepare a separate mainnet readiness review for actual Kleros ABI,
+resolver/arbitrator addresses, fees, policy/publication, funding and deployment inputs. Do not reuse
+the controlled test stack. This target clarification does not authorize a mainnet broadcast or
+production deployment; concrete reviewed production inputs and authorization are still required.
+It does not replace the current D closure/UX release or alter A/B/C jobs. Preserve v7 compatibility,
+held-share/ruling0 economics, historical policies/templates/ABIs and verification inputs.
+
+## D implementation and audit progression — 29October11:34Bangkok
 
 Branch `codex/core-application`, committed implementation `67ee1d9bfac68f6925ca5dff638b07b5e56b5eae`.
 The separate 15-minute synthetic Chiado D app is live at
@@ -54,7 +114,54 @@ a Waiting-case gate after the confirmed match. The matched three-role UI audit a
 Next: fresh canonical eligibility, then actual ordinary UI payout with Bob still unruled.
 Ordinary UI payout must prove AliceD paid/BobD held UNRULED before controlled ruling1, ruled/unpaid
 audit before UI settlement, then actual same-Bob attendance payment and separate collateral proof.
-No D kickback, controlled ruling or settlement is claimed at this checkpoint.
+Ordinary release was executed ONCE through the actual UI, hash
+`0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3`,
+block23740796, owner nonce5. Its UI confirmation/poststate and immediate A/B/C checks passed;
+the canonical once-journal points at immutable PASSED operation sidecar
+`artifacts/ui-d/payout-2026-10-29T03-51-39.182Z-3960b430/ui-d-release-payouts.proof.json`,
+SHA2562697495cdc9304e1166c88dc68e9537854e0c6962b5a45e0574be4f7251021f5.
+It records exactly1UIwallet request/broadcast,14confirmations, owner-confirmed screenshot,
+AliceD directly paid, BobD held UNRULED, owed0, escrow30e9 and balance/reserve1.03D.
+The TOP full-stage proof remains **STOPPED**, SHA256
+d32c76415b787cb531c82d0819c81732fe49ef2394b51ad21fe406bb4dcd4274:
+an exception occurred AFTER the passed operation was persisted, during cleanup or the final aggregate
+reads; exact cause is unproven. No blocked requests were recorded. Never rerun this financial stage.
+Scoped ordinary observer158passed and the ordinary three-role audit passed86read/auth requests,
+3nonce signatures,6desktop screenshots and zero financial actions. Parent
+independent review confirmed the original outer A/B/C baseline is preserved in the operation sidecar.
+A separate read-only completion supplement **PASSED**, binding original stopped proof, passed UI
+sidecar, sources, receipt, ordinary role proof and fresh canonical A/B/C/D facts:
+`artifacts/ui-d-payout-completion.json` points at immutable
+`artifacts/ui-d/payout-completions/2026-10-29T04-14-47-517Z-854653ed/proof.json`, SHA256
+4824515ff70118d66076019f2935e8b7ca4f82b3e474c34af48112531cd6c7a9.
+New helper `scripts/complete-ui-d-payout-proof.mjs` sourceSHA5150a82e1596f0e7280efa6f38981f362c37a4271d201a201020bb62e6ba098d
+is outside the frozen financial closure; its5pure guard tests, default zero-access review, root actual
+metadata-only preflight and independent source review passed. It checked all11retained D/A/B/C/role/
+observer anchors, fresh A/B/C/D anchors, exact payment projection block and all source/input/screenshot
+hashes. Original files/plan/journal stayed byte-identical; no signing file, signature or broadcast.
+Fresh block23741012 still showed AliceD delivered, BobD held UNRULED2/1002, owed0 and original A/B/C
+financials unchanged. The original UI run remains STOPPED; the supplement completes only its missing
+aggregate checks. Independent contract and UI presentation reviews passed. Root launched the exact
+planned controlled attended ruling1 at04:16UTC. Its single transaction
+`0x9a273700b4757d5279797f795a4f71d03352c3f1c6bc96c175519ec3700610cf`, owner nonce6,
+block23741046, canonically delivered resolver ruling1 to actual local2/arbitrator1002. The original
+operator's final check stopped after confirmation; its exact cleanup/read cause remains unproven.
+Root used the EXISTING frozen operator receipt-only branch, with wallet reads/signing/broadcast and
+mutable RPC forcibly disabled, to complete a PASSED zero-broadcast receipt proof:
+`artifacts/ui-d/ruling-2026-10-29T04-30-41-044Z-745755c9/operator-proof.json`, SHA256
+e83194878dea9d62f0ea48f04c0c956c5c37d8dfc16d2e6c1ac2bbaf190a38b1.
+`artifacts/ui-d-ruling-recovery.json`, SHA256
+0ded2365f214e8f973af78e6ef6d83116a036d2e700708d04a717f1c457d778b,
+also compared the PERSISTED original pre-ruling A/B/C baseline and public pre-Court payout-completion
+baseline against both recovered snapshots, with every retained header/receipt canonical. This covers
+the original Court interval as well as receipt recovery. Journal bytes were unchanged; no second
+ruling request/signature/broadcast occurred. One diagnostic wrapper had a reporting-variable typo;
+the corrected read-only wrapper completed without financial actions. Original empty/stopped outputs
+are preserved. The ruled three-role UI audit passed86reads/auth/3nonce/6screens/zero financials;
+scoped observer158passed and independent direct receipt/resolver checks agree delivered1.
+Bob remains Disputed/unsettled with heldD, paid0, owed0 and escrow30e9. **UI settlement is held for
+final independent review of the receipt/original-interval evidence; it has not yet run.** Never rerun
+the ordinary payout or original ruling submission.
 Root remains the sole financial operator; see `docs/TESTNET_UI_D.md`.
 
 The C-only heartbeat check at03:26:55UTC signed/broadcast nothing: Chiado block23740492 is before

@@ -1,0 +1,56 @@
+{
+  "status": "passed-public-ruling-receipt",
+  "readOnly": true,
+  "signatures": 0,
+  "broadcasts": 0,
+  "chainId": 10200,
+  "child": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+  "bob": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+  "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+  "arbitrator": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+  "resolver": "0x45DE965E607F16FC9b8f8a912dfAc6a98411B9eb",
+  "rulingTransaction": {
+    "hash": "0x9a273700b4757d5279797f795a4f71d03352c3f1c6bc96c175519ec3700610cf",
+    "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "to": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+    "nonce": 6,
+    "valueWei": "0",
+    "data": "0x7528ca3100000000000000000000000000000000000000000000000000000000000003ea0000000000000000000000000000000000000000000000000000000000000001",
+    "blockNumber": 23741046,
+    "blockHash": "0x9f9fe45d3e1491477a8d2b94b59a870d0dc269148b9d306be46e89da348739bd",
+    "status": 1,
+    "confirmations": 160,
+    "timestamp": 1793247455
+  },
+  "proxyRuling": {
+    "arbitrator": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+    "arbitratorDisputeID": "1002",
+    "ruling": "1"
+  },
+  "current": {
+    "blockNumber": 23741205,
+    "blockHash": "0xa86f172905cc90512b5816f3b3e0c18722a47bf55e466882d6a061a47dc1d56c",
+    "timestamp": 1793248350,
+    "case": {
+      "state": "2",
+      "matcher": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+      "matchEndsAt": "1793246005",
+      "deposit": "30000000000",
+      "arbitratorDisputeID": "1002",
+      "localDisputeID": "2",
+      "arbitrationPaid": "30000000000",
+      "heldShare": "1000000000000"
+    },
+    "resolverCase": {
+      "arbitratorExtraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+      "isRuled": true,
+      "ruling": "1",
+      "disputeIDOnArbitratorSide": "1002"
+    },
+    "heldWei": "1000000000000",
+    "owedWei": "0",
+    "balanceWei": "1030000000000"
+  },
+  "limits": "Does not replace the stopped operator run or its original A/B/C aggregate comparison; settlement also requires final1/unsettled role UI acceptance.",
+  "performedAt": "2026-10-29T04:32:38.386Z"
+}

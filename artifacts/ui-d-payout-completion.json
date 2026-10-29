@@ -1,0 +1,11 @@
+{
+  "status": "passed-read-only-supplement",
+  "type": "stopped-payout-aggregate-completion",
+  "originalRunStatus": "stopped",
+  "proof": "artifacts/ui-d/payout-completions/2026-10-29T04-14-47-517Z-854653ed/proof.json",
+  "proofSha256": "4824515ff70118d66076019f2935e8b7ca4f82b3e474c34af48112531cd6c7a9",
+  "payoutHash": "0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3",
+  "signingFilesRead": 0,
+  "signatures": 0,
+  "broadcasts": 0
+}

@@ -26,5 +26,32 @@
   "checkedAt": "2026-10-29T03:13:23.874Z",
   "independentOpenProof": "artifacts/chiado-ui-d-flow-audit/2026-10-29T03-04-23-865Z-8083a2bd-0ab7-464f-aeeb-680f155dcbbd.json",
   "financialCompletion": false,
-  "ABCHostingChanged": false
+  "ABCHostingChanged": false,
+  "financialAcceptance": {
+    "status": "controlled-D-complete-with-read-only-aggregate-completions",
+    "verifiedAt": "2026-10-29T04:56:38.090Z",
+    "originalFinancialSources": {
+      "frontend": "7bdd40a3478e487f84b0c00aa0d58e25d13e0d5e",
+      "backend": "67ee1d9bfac68f6925ca5dff638b07b5e56b5eae"
+    },
+    "canonicalTransactions": 14,
+    "actualUITransactions": 8,
+    "controlledRulings": 1,
+    "settlementHash": "0xc27fb4878a820914c134be76e693057c6a700948f1d56350aabdf62f04063a0e",
+    "aliceAttendanceWei": "1000000000000",
+    "sameBobAttendanceWei": "1000000000000",
+    "bobSeparateCollateralWei": "30000000000",
+    "heldOwedPendingEscrowReserveBalanceWei": "0",
+    "finalVerification": "artifacts/ui-d/verify-2026-10-29T04-53-08-491Z-03585c97/operator-proof.json",
+    "finalVerificationSha256": "cfe988e24a66ca6e287fd25591b16a78e2e602a974411c3ce703fae823121bbe",
+    "settlementCompletion": "artifacts/ui-d-settle-completion.json",
+    "completionSha256": "b55d3c5b1ea86666242ecbb24a14b1ffe7c2c844b41ba389f6024e91cc7f3c78",
+    "settledRoleProof": "artifacts/ui-d/status-settled-2026-10-29T04-45-26-924Z-973b436d/proof.json",
+    "settledRoleProofSha256": "8f74f78ae82cc084917ca7bd5dd9ada1451949eff464e375d8b983080993fd2c",
+    "originalStoppedRunsPreserved": true,
+    "noFinancialReplay": true,
+    "protectedABCUnchanged": true,
+    "normalExtensionWalletPromptsCovered": false,
+    "independentKlerosJuryCovered": false
+  }
 }

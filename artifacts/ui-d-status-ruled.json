@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "phase": "ruled",
+  "proof": "artifacts/ui-d/status-ruled-2026-10-29T04-20-57-035Z-219650d8/proof.json",
+  "counts": {
+    "http": 86,
+    "nonceSignatures": 3,
+    "financialSignatures": 0,
+    "broadcasts": 0
+  },
+  "failures": []
+}
+

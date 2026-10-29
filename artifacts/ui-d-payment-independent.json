@@ -1,0 +1,96 @@
+{
+  "status": "passed-independent-bob-payment",
+  "readOnly": true,
+  "signatures": 0,
+  "broadcasts": 0,
+  "chainId": 10200,
+  "contractVersion": 80015,
+  "manifestSha256": "56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd",
+  "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+  "bob": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+  "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+  "sameBobDeposit": {
+    "hash": "0xde29bf8ffa52d94ed551a1b9cf2f65edfec933ffcf4e3220cd3bf92eb61f29eb",
+    "blockNumber": 23740332,
+    "valueWei": "1000000000000"
+  },
+  "sameBobChallenge": {
+    "hash": "0xcbfc9894bbca380818dd9e90d132819c612f79adcdafe7a0d8dae4a17fc8d993",
+    "blockNumber": 23740616,
+    "valueWei": "30000000000"
+  },
+  "settlement": {
+    "hash": "0xc27fb4878a820914c134be76e693057c6a700948f1d56350aabdf62f04063a0e",
+    "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "to": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+    "nonce": 7,
+    "valueWei": "0",
+    "data": "0x32064dac0000000000000000000000008f9ca1dcdb1eb1842c21bbc20c7737de8d82b501",
+    "blockNumber": 23741297,
+    "blockHash": "0xef76235335ff7ec1a36df7b8c0dd71515bdf4b0f604324bcaa35ab028f35cd3f",
+    "timestamp": 1793248855,
+    "status": 1,
+    "confirmations": 36,
+    "ownerGasPaidWei": "14058284011"
+  },
+  "attendancePayouts": [
+    {
+      "to": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+      "amount": "1000000000000"
+    }
+  ],
+  "attendancePaidToBobWei": "1000000000000",
+  "returnedChallengeCollateralWei": "30000000000",
+  "bobBalance": {
+    "beforeBlock": 23741296,
+    "beforeBlockHash": "0x39b073ad6247b502ffd6b3eafa4d45bc9ffb7c4218a7709be84f5c1e360c9a04",
+    "beforeWei": "8944044783262",
+    "afterBlock": 23741297,
+    "afterBlockHash": "0xef76235335ff7ec1a36df7b8c0dd71515bdf4b0f604324bcaa35ab028f35cd3f",
+    "afterWei": "9974044783262",
+    "deltaWei": "1030000000000",
+    "bobGasPaidWei": 0,
+    "beforeNonce": 2,
+    "afterNonce": 2,
+    "eoaBefore": true,
+    "eoaAfter": true
+  },
+  "caseBefore": {
+    "state": "2",
+    "matcher": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "matchEndsAt": "1793246005",
+    "deposit": "30000000000",
+    "arbitratorDisputeID": "1002",
+    "localDisputeID": "2",
+    "arbitrationPaid": "30000000000",
+    "heldShare": "1000000000000"
+  },
+  "caseAfter": {
+    "state": "3",
+    "matcher": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "matchEndsAt": "1793246005",
+    "deposit": "30000000000",
+    "arbitratorDisputeID": "1002",
+    "localDisputeID": "2",
+    "arbitrationPaid": "30000000000",
+    "heldShare": "0"
+  },
+  "resolverBefore": {
+    "arbitratorExtraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+    "isRuled": true,
+    "ruling": "1",
+    "disputeIDOnArbitratorSide": "1002"
+  },
+  "contractAfter": {
+    "balanceWei": "0",
+    "heldBack": "0",
+    "owedTotal": "0",
+    "challengeEscrow": "0",
+    "pendingTotal": "0",
+    "pendingChallenges": "0",
+    "reserved": "0",
+    "bobStatus": "2",
+    "bobAttended": true
+  },
+  "performedAt": "2026-10-29T04:44:23.987Z"
+}

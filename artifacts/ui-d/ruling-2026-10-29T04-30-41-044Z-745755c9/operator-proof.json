@@ -1,0 +1,881 @@
+{
+  "status": "passed",
+  "stage": "ruling",
+  "chainId": 10200,
+  "arbitration": "controlled test arbitrator; no independent jury",
+  "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+  "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+  "planFingerprint": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+  "sourceContext": {
+    "manifestSha256": "56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd",
+    "protectedManifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+    "protectedCManifestSha256": "282e7326548e5a06dda7616fe530afeb31a420b87defc25184f83d1b94d22ab3",
+    "operatorSha256": "a20a6fce58eb6d562338435edd6f96c65e8bb07f2a9db612e90b9cccec5dae25",
+    "stackAnchors": [
+      {
+        "action": "deploy-arbitrator",
+        "contract": "0x7660A60D3f89987D688E0CF826881D868Fc8141c",
+        "transactionHash": "0x17683eff93f043a52204c07f6e517a8b67b1c06d25525ac3ec37f3cc6f27fec3",
+        "blockNumber": 23733112,
+        "blockHash": "0x7112a803b901b4aa22e5554f2c189c216faf4b1b1cdadefb0646c3a34ee0657f",
+        "codeHash": "0x48fa17893ad1a552e166892d180ec7585adf453ea15199167ec42fc91b088318"
+      },
+      {
+        "action": "deploy-resolver",
+        "contract": "0x45DE965E607F16FC9b8f8a912dfAc6a98411B9eb",
+        "transactionHash": "0xfb64edf0a46a9dcda18a800365e2eabf5ce24c0fa9fd1a753485cb6b7a7e9c81",
+        "blockNumber": 23733128,
+        "blockHash": "0xd87d8c04f8ee82a24ff838f2918eef6280a41a27faad9ed975fb8636049786db",
+        "codeHash": "0x73baf88285f8c46195da9ac3a30143906c541d24612f026f052837f9e21a83cc"
+      },
+      {
+        "action": "deploy-factory",
+        "contract": "0xe39e01873814c1959e9e678c1f088788bECa15B8",
+        "transactionHash": "0x6eabfe187c55774f6567bba10a9723e57e3a5bafefffe980ff131e2631a506d2",
+        "blockNumber": 23733132,
+        "blockHash": "0x4947fdd85d1dd787741de500ad9981aff696b2d840fc008e28e7f88cc3f39dfe",
+        "codeHash": "0x6f0477c136eea26f0c0de3a1ee81b7fafc089fb904a39808834eb46224e11554"
+      }
+    ]
+  },
+  "performedAt": "2026-10-29T04:30:41.044Z",
+  "uiHistory": [
+    {
+      "action": "ui-d-deposit-alice",
+      "hash": "0xe3b10808d5060b3ef2b6c5f6ccba1c81d3ebee041c5059c27f96f29eac21d682",
+      "blockNumber": 23740304,
+      "blockHash": "0x3f40c6500add6012a77d3eda6430f35c014353b8eba0a3f0d6be73b0f250b0f5",
+      "uiProofSha256": "f2697789970e9b584275a604945e9009729f39e16f4ed86accc80defdd985231"
+    },
+    {
+      "action": "ui-d-deposit-bob",
+      "hash": "0xde29bf8ffa52d94ed551a1b9cf2f65edfec933ffcf4e3220cd3bf92eb61f29eb",
+      "blockNumber": 23740332,
+      "blockHash": "0x19ce64cd006690490afa8b5290434b536dfeaeb97c01f9c7ac3203dabab97d50",
+      "uiProofSha256": "45fdf8e17c7cf80d4cb410cb2cc21b610f280b0dc51a08ca9e7669d9af9fdd63"
+    },
+    {
+      "action": "ui-d-register",
+      "hash": "0x8376920fd03eb0c2cc8a34bcc25f0d79b9be11f7ce9746c4455cbf59e400e56d",
+      "blockNumber": 23740440,
+      "blockHash": "0xd3decf98e2365293cddea359736d00f12327e2aef23326131f2575ab3dd88954",
+      "uiProofSha256": "642cb78fffebab576d6492a5f16e1ededbcda88d3800d0e2681e934039eebb95"
+    },
+    {
+      "action": "ui-d-post-attendance",
+      "hash": "0x77ffa4f018c04050acd95873823e06489c7a6681706ad3926beb38e9d62b7deb",
+      "blockNumber": 23740574,
+      "blockHash": "0x1d534eeaab3ec124c6a2ef59d92fd6637ffc0408ffceebec6b30861788824f26",
+      "uiProofSha256": "2a1d9d3ed00d8af5691a5f2b795341a1554109213d092d65c062213815f2fb49"
+    },
+    {
+      "action": "ui-d-challenge-bob",
+      "hash": "0xcbfc9894bbca380818dd9e90d132819c612f79adcdafe7a0d8dae4a17fc8d993",
+      "blockNumber": 23740616,
+      "blockHash": "0xa4f3dec741f5819ca0fa471db48e50cf2757cc10775b1d699cf9371eb20e47bf",
+      "uiProofSha256": "ad72decf3037d7ff91b8cdd090217e8700fabaf0dd44ac4acc0bb2d8bcfbf0ef"
+    },
+    {
+      "action": "ui-d-match-bob",
+      "hash": "0x1dd3a2e9ef04d36387bd5e2ed042ebacc795f4dbe694b0b5aba0fa93b29c7fb3",
+      "blockNumber": 23740671,
+      "blockHash": "0x4673c03a25f362941724fe76d7e0c9e6dee5c13e5589e28ae2f3dd2b8ab830ef",
+      "uiProofSha256": "c370739b26a000d762451f5cf3ee6e90ef3b676983f5bfff811379ce3e3e634c"
+    },
+    {
+      "action": "ui-d-release-payouts",
+      "hash": "0x07ff1e1718ffc9aaa7e9bb2c44d6656e8a955d0878ae1d731e0b2f5e89e4fbd3",
+      "blockNumber": 23740796,
+      "blockHash": "0xaedfba06700d30ae5037b2c2975dbf63d1ffd0d81f1b6657406568b8b420fca6",
+      "uiProofSha256": "2697495cdc9304e1166c88dc68e9537854e0c6962b5a45e0574be4f7251021f5"
+    }
+  ],
+  "attendancePaidWei": {
+    "0x64ef8e882a489fa9b1fbfd87815a5a972f3cd38c": "1000000000000"
+  },
+  "rulingTransactionHash": "0x9a273700b4757d5279797f795a4f71d03352c3f1c6bc96c175519ec3700610cf",
+  "finalRuling": 1,
+  "before": {
+    "phase": "Finalized",
+    "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "stakerCount": 2,
+    "attendeeCount": 1,
+    "pendingTotal": "0",
+    "pendingChallenges": "1",
+    "heldBack": "1000000000000",
+    "reserved": "1030000000000",
+    "owedTotal": "0",
+    "challengeEscrow": "30000000000",
+    "payoutShare": "1000000000000",
+    "challengeEndsAt": 1793245770,
+    "challengeDeposit": "30000000000",
+    "stakers": [
+      "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+      "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+    ],
+    "attendees": [
+      "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c"
+    ],
+    "now": 1793248190,
+    "indexedBlock": {
+      "number": 23741180,
+      "hash": "0x64157ff4ee84ff399b8d20cf0a99467b8e7f6403a073a691a1d774607f341d24",
+      "timestamp": 1793248190
+    },
+    "challengeDepositWei": "30000000000",
+    "balance": "1030000000000",
+    "status": {
+      "alice": 2,
+      "bob": 1
+    },
+    "pending": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "owed": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "attended": {
+      "alice": true,
+      "bob": false
+    },
+    "balances": {
+      "alice": "9992819197379",
+      "bob": "8944044783262"
+    },
+    "bobCase": {
+      "state": 2,
+      "matcher": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+      "matchEndsAt": 1793246005,
+      "deposit": "30000000000",
+      "arbitratorDisputeID": "1002",
+      "localDisputeID": "2",
+      "arbitrationPaid": "30000000000",
+      "heldShare": "1000000000000",
+      "finalRuling": 1
+    }
+  },
+  "after": {
+    "phase": "Finalized",
+    "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "stakerCount": 2,
+    "attendeeCount": 1,
+    "pendingTotal": "0",
+    "pendingChallenges": "1",
+    "heldBack": "1000000000000",
+    "reserved": "1030000000000",
+    "owedTotal": "0",
+    "challengeEscrow": "30000000000",
+    "payoutShare": "1000000000000",
+    "challengeEndsAt": 1793245770,
+    "challengeDeposit": "30000000000",
+    "stakers": [
+      "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+      "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+    ],
+    "attendees": [
+      "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c"
+    ],
+    "now": 1793248220,
+    "indexedBlock": {
+      "number": 23741183,
+      "hash": "0x9e7e95b449e7182cbeb4d4412604c8fa947feebeecc13251dca1a9225359be43",
+      "timestamp": 1793248220
+    },
+    "challengeDepositWei": "30000000000",
+    "balance": "1030000000000",
+    "status": {
+      "alice": 2,
+      "bob": 1
+    },
+    "pending": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "owed": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "attended": {
+      "alice": true,
+      "bob": false
+    },
+    "balances": {
+      "alice": "9992819197379",
+      "bob": "8944044783262"
+    },
+    "bobCase": {
+      "state": 2,
+      "matcher": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+      "matchEndsAt": 1793246005,
+      "deposit": "30000000000",
+      "arbitratorDisputeID": "1002",
+      "localDisputeID": "2",
+      "arbitrationPaid": "30000000000",
+      "heldShare": "1000000000000",
+      "finalRuling": 1
+    }
+  },
+  "protectedABC": {
+    "unchanged": true,
+    "before": [
+      {
+        "indexedBlock": {
+          "number": 23741181,
+          "hash": "0x9a7e8a661846c12e0819a56702e14ce6ad45efe1f04d51c2c5df1c887b7b03ac",
+          "timestamp": 1793248195
+        },
+        "financial": {
+          "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "phase": "1",
+          "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "pendingOwner": "0x0000000000000000000000000000000000000000",
+          "stakerCount": "3",
+          "attendeeCount": "2",
+          "pendingTotal": "0",
+          "pendingChallenges": "1",
+          "heldBack": "0",
+          "reserved": "3030000000000",
+          "owedTotal": "0",
+          "challengeEscrow": "30000000000",
+          "payoutShare": "0",
+          "stakers": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+          ],
+          "attendees": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+          ],
+          "challengers": [
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2"
+          ],
+          "balance": "3030000000000",
+          "wallets": [
+            {
+              "wallet": "0xf37e491e7117fc1c3351b1548839f727f05f853b",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xfbee7edd05f1f8b9bdf236acb869eaa3a2e8cd9a",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x083343a3247df539a460a4a26be8393a3f0fede2",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "2",
+                "matcher": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+                "matchEndsAt": "1793295040",
+                "deposit": "30000000000",
+                "arbitratorDisputeID": "1000",
+                "localDisputeID": "0",
+                "arbitrationPaid": "30000000000",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xe5a97deece6cc390146fb0496d7b9e2193d9439f",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "indexedBlock": {
+          "number": 23741181,
+          "hash": "0x9a7e8a661846c12e0819a56702e14ce6ad45efe1f04d51c2c5df1c887b7b03ac",
+          "timestamp": 1793248195
+        },
+        "financial": {
+          "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+          "phase": "1",
+          "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+          "pendingOwner": "0x0000000000000000000000000000000000000000",
+          "stakerCount": "1",
+          "attendeeCount": "1",
+          "pendingTotal": "0",
+          "pendingChallenges": "0",
+          "heldBack": "0",
+          "reserved": "2000000000000",
+          "owedTotal": "0",
+          "challengeEscrow": "0",
+          "payoutShare": "0",
+          "stakers": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ],
+          "attendees": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ],
+          "challengers": [],
+          "balance": "2000000000000",
+          "wallets": [
+            {
+              "wallet": "0xf37e491e7117fc1c3351b1548839f727f05f853b",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xfbee7edd05f1f8b9bdf236acb869eaa3a2e8cd9a",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x083343a3247df539a460a4a26be8393a3f0fede2",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xe5a97deece6cc390146fb0496d7b9e2193d9439f",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "indexedBlock": {
+          "number": 23741181,
+          "hash": "0x9a7e8a661846c12e0819a56702e14ce6ad45efe1f04d51c2c5df1c887b7b03ac",
+          "timestamp": 1793248195
+        },
+        "financial": {
+          "contract": "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
+          "phase": "1",
+          "owner": "0x4481A1Ac07e699F4df61c7e5CAa36Cbf7b569a40",
+          "pendingOwner": "0x0000000000000000000000000000000000000000",
+          "stakerCount": "2",
+          "attendeeCount": "1",
+          "pendingTotal": "0",
+          "pendingChallenges": "1",
+          "heldBack": "0",
+          "reserved": "2030000000000",
+          "owedTotal": "0",
+          "challengeEscrow": "30000000000",
+          "payoutShare": "0",
+          "stakers": [
+            "0x37407F5c6a1911Ba928cB8232A2B09730B9Ed1F6",
+            "0x5191694FE0F9ac45b8CE8722D9e0e897BcEbf10d"
+          ],
+          "attendees": [
+            "0x37407F5c6a1911Ba928cB8232A2B09730B9Ed1F6"
+          ],
+          "challengers": [
+            "0x5191694FE0F9ac45b8CE8722D9e0e897BcEbf10d"
+          ],
+          "balance": "2030000000000",
+          "wallets": [
+            {
+              "wallet": "0x4481a1ac07e699f4df61c7e5caa36cbf7b569a40",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x37407f5c6a1911ba928cb8232a2b09730b9ed1f6",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x5191694fe0f9ac45b8ce8722d9e0e897bcebf10d",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "2",
+                "matcher": "0x4481A1Ac07e699F4df61c7e5CAa36Cbf7b569a40",
+                "matchEndsAt": "1793311675",
+                "deposit": "30000000000",
+                "arbitratorDisputeID": "1001",
+                "localDisputeID": "1",
+                "arbitrationPaid": "30000000000",
+                "heldShare": "0"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "after": [
+      {
+        "indexedBlock": {
+          "number": 23741184,
+          "hash": "0xe2e0438d547d2448c9655259a7372b88e7df58443ffc7170c821a8aa4d498c1e",
+          "timestamp": 1793248225
+        },
+        "financial": {
+          "contract": "0x68D27419c693aD87Daa51AEF133896DDe9BC5Af2",
+          "phase": "1",
+          "owner": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+          "pendingOwner": "0x0000000000000000000000000000000000000000",
+          "stakerCount": "3",
+          "attendeeCount": "2",
+          "pendingTotal": "0",
+          "pendingChallenges": "1",
+          "heldBack": "0",
+          "reserved": "3030000000000",
+          "owedTotal": "0",
+          "challengeEscrow": "30000000000",
+          "payoutShare": "0",
+          "stakers": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2",
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+          ],
+          "attendees": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf",
+            "0xE5a97DEECE6CC390146fB0496D7B9e2193D9439F"
+          ],
+          "challengers": [
+            "0x083343A3247DF539a460a4a26be8393a3F0feDE2"
+          ],
+          "balance": "3030000000000",
+          "wallets": [
+            {
+              "wallet": "0xf37e491e7117fc1c3351b1548839f727f05f853b",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xfbee7edd05f1f8b9bdf236acb869eaa3a2e8cd9a",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x083343a3247df539a460a4a26be8393a3f0fede2",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "2",
+                "matcher": "0xf37E491e7117fC1C3351B1548839f727F05f853B",
+                "matchEndsAt": "1793295040",
+                "deposit": "30000000000",
+                "arbitratorDisputeID": "1000",
+                "localDisputeID": "0",
+                "arbitrationPaid": "30000000000",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xe5a97deece6cc390146fb0496d7b9e2193d9439f",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "indexedBlock": {
+          "number": 23741184,
+          "hash": "0xe2e0438d547d2448c9655259a7372b88e7df58443ffc7170c821a8aa4d498c1e",
+          "timestamp": 1793248225
+        },
+        "financial": {
+          "contract": "0xC5C3e604E8852Ae5AB79cdaC3600384498c383eB",
+          "phase": "1",
+          "owner": "0xfbEE7edd05f1F8B9BdF236ACB869EAA3A2E8Cd9A",
+          "pendingOwner": "0x0000000000000000000000000000000000000000",
+          "stakerCount": "1",
+          "attendeeCount": "1",
+          "pendingTotal": "0",
+          "pendingChallenges": "0",
+          "heldBack": "0",
+          "reserved": "2000000000000",
+          "owedTotal": "0",
+          "challengeEscrow": "0",
+          "payoutShare": "0",
+          "stakers": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ],
+          "attendees": [
+            "0x67def720513EF6dbFa8c32789B2B956a9CC46dBf"
+          ],
+          "challengers": [],
+          "balance": "2000000000000",
+          "wallets": [
+            {
+              "wallet": "0xf37e491e7117fc1c3351b1548839f727f05f853b",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xfbee7edd05f1f8b9bdf236acb869eaa3a2e8cd9a",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x67def720513ef6dbfa8c32789b2b956a9cc46dbf",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x083343a3247df539a460a4a26be8393a3f0fede2",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0xe5a97deece6cc390146fb0496d7b9e2193d9439f",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            }
+          ]
+        }
+      },
+      {
+        "indexedBlock": {
+          "number": 23741184,
+          "hash": "0xe2e0438d547d2448c9655259a7372b88e7df58443ffc7170c821a8aa4d498c1e",
+          "timestamp": 1793248225
+        },
+        "financial": {
+          "contract": "0x9175260daa4D430C8a0c48BFd7fEa7cEbFA06cef",
+          "phase": "1",
+          "owner": "0x4481A1Ac07e699F4df61c7e5CAa36Cbf7b569a40",
+          "pendingOwner": "0x0000000000000000000000000000000000000000",
+          "stakerCount": "2",
+          "attendeeCount": "1",
+          "pendingTotal": "0",
+          "pendingChallenges": "1",
+          "heldBack": "0",
+          "reserved": "2030000000000",
+          "owedTotal": "0",
+          "challengeEscrow": "30000000000",
+          "payoutShare": "0",
+          "stakers": [
+            "0x37407F5c6a1911Ba928cB8232A2B09730B9Ed1F6",
+            "0x5191694FE0F9ac45b8CE8722D9e0e897BcEbf10d"
+          ],
+          "attendees": [
+            "0x37407F5c6a1911Ba928cB8232A2B09730B9Ed1F6"
+          ],
+          "challengers": [
+            "0x5191694FE0F9ac45b8CE8722D9e0e897BcEbf10d"
+          ],
+          "balance": "2030000000000",
+          "wallets": [
+            {
+              "wallet": "0x4481a1ac07e699f4df61c7e5caa36cbf7b569a40",
+              "status": "0",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x37407f5c6a1911ba928cb8232a2b09730b9ed1f6",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": true,
+              "challenge": {
+                "state": "0",
+                "matcher": "0x0000000000000000000000000000000000000000",
+                "matchEndsAt": "0",
+                "deposit": "0",
+                "arbitratorDisputeID": "0",
+                "localDisputeID": "0",
+                "arbitrationPaid": "0",
+                "heldShare": "0"
+              }
+            },
+            {
+              "wallet": "0x5191694fe0f9ac45b8ce8722d9e0e897bcebf10d",
+              "status": "1",
+              "pending": "0",
+              "owed": "0",
+              "attended": false,
+              "challenge": {
+                "state": "2",
+                "matcher": "0x4481A1Ac07e699F4df61c7e5CAa36Cbf7b569a40",
+                "matchEndsAt": "1793311675",
+                "deposit": "30000000000",
+                "arbitratorDisputeID": "1001",
+                "localDisputeID": "1",
+                "arbitrationPaid": "30000000000",
+                "heldShare": "0"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "transactionsBroadcast": 0,
+  "notice": "Final ruling delivered; held share still requires actual UI settlement."
+}
