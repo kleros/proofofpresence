@@ -1,3 +1,17 @@
+# Isolated V10 deployment review only — 30 October 2026
+
+Core source `df75dfab9cbc604e20b040abc7a5be4abcfe0ccf`, branch `codex/core-application`, freezes
+the new V10 human-wallet infrastructure handoff. It is a separate localhost review page at
+`http://127.0.0.1:8788/`, signing disabled, no new production deployment. Actual GET `/api/plan`
+returned200 and exact approval93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0.
+Readiness record deployment-readiness-2026-10-29T17-06-55.343Z-36f42093-1448-4ef8-b51d-67a1c619e518.json
+under artifacts/v10-release binds exact4CREATEs, localgas7194866, passed35publicreads and proposed
+hardmax0.0065625ETH. Contractchat is collectingONEhumanapproval; no answer or signedtx established.
+NoV10policy/hosting/appfinancialactivation/renunciation/V9migration follows from this readiness.
+Existing public V9 remains source09ac3a9 on Netlify6ae367c7adb51327d1ebbb34 /Railway52578d21-88fe-4a37-8ab7-2e5d8ac72842.
+Appintegration/isolatedV10state/auth/canonicalpublicadoption checks remain pending; do not publish WIP.
+Detailed routes/source/proofs: docs/V10_DEPLOYMENT_REVIEW.md. A/B/C untouched andpaused.
+
 # Organizer timeout + wallet feedback repair LIVE — 29 October 2026
 
 The human’s Review event setup request was cut off after29942ms (Railway origin499; browser504).

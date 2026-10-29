@@ -1,5 +1,15 @@
 # V10 final deployment budget review — 30 October 2026, Bangkok
 
+FINALfrozen Core source `df75dfab9cbc604e20b040abc7a5be4abcfe0ccf` on `codex/core-application`.
+Readiness `artifacts/v10-release/deployment-readiness-2026-10-29T17-06-55.343Z-36f42093-1448-4ef8-b51d-67a1c619e518.json`,
+SHA47e59faf11c11659b88e81b50240b00e12bb99ee7d9af53d8615a41d7b9a9dda, readyForHumanBudgetReviewtrue,
+budgetApprovalNONE. Contractchat presentedtheONEapprovalquestion; HUMANANSWERPENDING. No duplicate
+questionhere. Actual local reviewserverhttp://127.0.0.1:8788 verifiedGETplan200/signingfalse/exact93ad
+approval; Coreexecsession58411. Startup logfile `.runtime/mainnet-v10/review-server-20261030T0007.log`.
+Do not operate oldV9server8787, oldrecords orretiredA/B/C. Bridge/planner/verifier/artifact/helperfiles
+are FROZENforhumanapproval/sends; appworkmaycontinueelsewhere. OnlyCoremayenablelocalbridge after
+independentlycheckingactualhumanapproval. Itstillcannotbackendsign; humansigns4walletrequests.
+
 All bounded infrastructure checks complete: source009bad publicdRPC35reads/0blockers at26299743,
 nonce6/latest=pending, balance0.009129904262762008ETH, exactdesignation+3frameworkcodes and4unused
 predictedaddresses verified. Publicproofpreflight-2026-10-29T16-57-39.475Z-62d64915-72f8-416b-ad79-4841921f9533.json,

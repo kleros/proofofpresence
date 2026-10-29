@@ -362,3 +362,13 @@ has a separate authentication message and shows transaction confirmation separat
 readiness. Preserve the exact original hash through every error. Clear owned facts on actor/network
 loss; never generate deposit/manage links from an unadopted receipt. Ordinary organized-event rows
 come only from fresh canonical organizer summaries and refresh independently of the receipt panel.
+
+### Separate V10 setup review page
+
+Files: `tools/v10-wallet/index.html`, `deploy.js`, `style.css`. Updated30October2026.
+Retain the local deployment review's background `#120E1C`, surface `#1C1829`, border `#473C5F`,
+ink `#EEEAF5`, muted `#CAC5D5`, lavender primary/focus `#C2B5F2`, 12px card radius and20px padding.
+Four numbered cards show exact CREATE nonce/address/gas/fee/runtime and a separate receipt state.
+Mobile stacks controls and wraps full values without horizontal overflow. Mainnet, proposed total gas
+cap, immediate owner/renunciation terms and signing-disabled status are visible before wallet actions.
+Keep local receipt recovery and original hashes; do not add event creation or automatic sends.

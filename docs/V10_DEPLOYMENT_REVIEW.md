@@ -107,9 +107,20 @@ SHA256 `873ac01e3255fa601902b895743a5ab944b3d7e6f46ff78f315c32aa37158250`.
 Root inspected the images; their bytes match the preceding inspected screenshots. Independent bounded
 source review found no material blocker at these final hashes. Typecheck and diff checks passed.
 
-Next: emit the source-bound public readiness record, present one exact gas-cap approval in the contract
-chat, then enable only that reviewed handoff if the human approves. Each transaction still requires
-fresh checks and the human's own wallet confirmation. No signing or broadcast is authorized by this file.
+The final handoff was committed as `df75dfab9cbc604e20b040abc7a5be4abcfe0ccf`. The source-bound public
+readiness record passed its offline checks:
+`artifacts/v10-release/deployment-readiness-2026-10-29T17-06-55.343Z-36f42093-1448-4ef8-b51d-67a1c619e518.json`,
+SHA256 `47e59faf11c11659b88e81b50240b00e12bb99ee7d9af53d8615a41d7b9a9dda`.
+It records `readyForHumanBudgetReview=true` and budget approval `NONE`, with signing disabled.
+The contract chat has presented the single exact cap approval; a human answer is still required.
+
+The actual review-only server runs at `http://127.0.0.1:8788/`. Actual GET `/api/plan` returned 200 with
+the exact final plan/approval hashes and signing false. It uses only `.runtime/mainnet-v10/` journals.
+Loopback GET routes are `/api/plan`, `/api/state`, `/api/check?step=N`; origin-checked POST routes are
+`/api/prepare-step`, `/api/record-submitted`, `/api/wallet-error`, `/api/receipt`,
+`/api/recover-candidate`, `/api/verify-setup`. The backend cannot sign or broadcast. Next, enable only
+this frozen handoff if the human approves. Each transaction still requires fresh checks and the
+human's own wallet confirmation. No signing or broadcast is authorized by this file.
 
 New V10 backend modules exist locally with explicit version dispatch, separate manifest/state,
 immediate-governance verifiers and onboarding. No V10 production route or financial capability is

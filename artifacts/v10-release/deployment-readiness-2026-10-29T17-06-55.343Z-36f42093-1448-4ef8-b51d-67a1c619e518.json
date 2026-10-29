@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "kind": "v10-infrastructure-human-budget-review",
+  "checkedAt": "2026-10-29T17:06:55.343Z",
+  "readyForHumanBudgetReview": true,
+  "scope": "four-direct-type2-create-infrastructure-only",
+  "sourceCommit": "df75dfab9cbc604e20b040abc7a5be4abcfe0ccf",
+  "plan": {
+    "file": "artifacts/v10-release/user-2bb-nonce6-reviewed-account-proposed.json",
+    "canonicalSha256": "2e525e6de33c768b7a592b075d002540447dea7fd5205716519cef5bc1bf0e37",
+    "deployer": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+    "chainId": 1,
+    "startingNonce": 6,
+    "addresses": {
+      "KlerosUpgradeControllerV10": "0x8819994609eC122AaC2B4CC2200e694C6b039Cd2",
+      "KlerosEventV10": "0x411ADfb7490C664362D7F933f693B41eE4E997c3",
+      "KlerosEventFactoryV10": "0x5bD88F176d66e7daF87BD3Ff1d783DC26322B829",
+      "ERC1967Proxy": "0x2E10024bD326FD34757b021A72F46813Fc1C61D2"
+    }
+  },
+  "evidence": {
+    "publicPreflight": {
+      "file": "artifacts/v10-release/preflight-2026-10-29T16-57-39.475Z-62d64915-72f8-416b-ad79-4841921f9533.json",
+      "sha256": "21b84ada92099187e80de0a3f9af3c122eb5a74c077af7f3de58c8379498eca7",
+      "sourceCommit": "009bad57847e885f4562c18e677a50362859f88e",
+      "anchor": {
+        "number": 26299743,
+        "hash": "0x4a49fcf7f119830e85169855c03936fb2a4f180e01450e850e52c44bb2e7dfd0",
+        "timestamp": 1793293079,
+        "baseFeePerGasWei": "259203805"
+      },
+      "completedAt": "2026-10-29T16:58:35.271Z"
+    },
+    "localBundle": {
+      "file": "artifacts/v10-integration/bundle/2026-10-29T16-52-27-140Z-78a7539c-5d32-4f4a-8bd8-d4c71b765070/proof.json",
+      "sha256": "d8b569a5675e247ee4ab3d716c3b7f96f4a7242bbe91a8203abd033a69e43022",
+      "sourceCommit": "2a281c606445d2eb646b3ab6d47b97f83449dad9"
+    },
+    "delegatedCreateReview": {
+      "file": "artifacts/v10-release/delegated-four-create-review.json",
+      "sha256": "8769e4c2663c1746e083428b0681c84c66e6de68daa93f0cd256376e7d9c5a14"
+    }
+  },
+  "gas": {
+    "measuredLocalGas": "7194866",
+    "totalDeclaredGasLimit": "8750000",
+    "maximumTotalCostWei": "6562500000000000",
+    "maxFeePerGasWei": "750000000",
+    "maxPriorityFeePerGasWei": "10000000",
+    "indicativeCostAtObservedBasePlusChosenTipWei": "1936885303665130",
+    "observedWalletBalanceWei": "9129904262762008",
+    "budgetApproval": "NONE"
+  },
+  "bridge": {
+    "approvalHash": "93adbbfe5fe7b192bd4c82a30e87c9df65c8e4046b35885e27b897c5b5b09cf0",
+    "bridgeSourceSha256": "67fcc7a43a1872cb6f50c957dc0edb099c1c0041fd805ea6dea227d00f9a8a4e",
+    "sources": {
+      "src/v10-wallet-deployment.mjs": "cc74e502d2861bf1714d15aeed6a6b2d5c3580babb038f84269814fdf7aae86c",
+      "scripts/serve-v10-deployment.mjs": "38ebb51275ea0de36f0d50c6cfe1c418800bf0b5b06c16b624f14d415bb5cdb1",
+      "tools/v10-wallet/index.html": "065a050c791ee50ce95e55bfa66a99ca93143690d93fb646894a17f34f905a49",
+      "tools/v10-wallet/deploy.js": "61f8990f12ef8459dd396f85562150719581c2980a2b79c53b13eb516a44fcb3",
+      "tools/v10-wallet/style.css": "8cf758583a95e2368ac137ecaf667862e3fdc0ca0192dd2484d7f2cfbebe418a",
+      "scripts/mainnet/prepare-v10-release.mjs": "d9c0ec01c208134bc8daa4406bf1d0b41f6449f12c363529a69216c7fd11de1b",
+      "scripts/mainnet/preflight-v10-release.mjs": "b609546aebf5f85cfc52daaecf9a0ea3959c5faefe87d0933633e29884c00e52",
+      "src/v10-upgrade-verification.mjs": "a45d90ad3b89becc4b532957ecde859e2ba929c370a0b1134acf78dbf5259b61",
+      "src/v10-upgrade-artifacts.mjs": "c260b855e3b0e5f2d33b3436ba196764d623ec803d3e8efb61063230554a2e25"
+    },
+    "signingEnabled": false,
+    "terms": {
+      "setupTransactions": 4,
+      "eventCreationIncluded": false,
+      "initialUpgradeOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+      "upgradeDelaySeconds": 0,
+      "governanceKind": "single-owner-immediate",
+      "renounceable": true,
+      "oldEventsSeparate": true,
+      "courtVerified": false,
+      "rpcMinimumAdmissionIntervalMs": 1500,
+      "rpcRetries": 0
+    }
+  },
+  "limits": [
+    "The indicative cost combines isolated local gas with point-in-time public fees; it is not a guaranteed mainnet quote.",
+    "Every wallet handoff must freshly recheck account/framework code, canonical head, nonce, unused address, balance, fees and exact gas estimate.",
+    "This review authorizes no signing. The human must approve the exact new gas cap and sign each of the four direct CREATEs through their own wallet.",
+    "Event creation, policy publication, automatic renunciation, V9 migration, app financial activation and hosting are outside this infrastructure review."
+  ],
+  "networkRequests": 0,
+  "privateFilesRead": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "deploymentAuthorized": false,
+  "applicationFinancialSupport": false
+}
