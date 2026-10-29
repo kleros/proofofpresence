@@ -1,7 +1,10 @@
 // Pure browser-transport tests. No sockets, wallet, provider, publication or financial execution.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createOrganizerJobClient } from "../public/luma-setup.js";
+import {
+  createOrganizerJobClient,
+  createReceiptWatcher,
+} from "../public/luma-setup.js";
 
 const factory = "0x1111111111111111111111111111111111111111";
 const wallet = "0x2222222222222222222222222222222222222222";
@@ -643,5 +646,490 @@ test("expired ready form and unknown receipt result retain explicit reset scope 
     code("ORGANIZER_JOB_STORAGE"),
   );
   f.client.clearTerminal(unavailable);
+  f.financialUntouched();
+});
+
+const receiptContext = () => ({
+  eventId: "synthetic-created-event",
+  wallet,
+  chainId: 1,
+  contract: factory,
+  abiVersion: "kleros-event-v9-uups",
+  mode: "hosted-production",
+  instanceId: "synthetic-instance",
+});
+const pendingResult = () => ({
+  status: "pending",
+  hash,
+  eventId: receiptContext().eventId,
+  wallet,
+  chainId: 1,
+});
+const pendingValue = (result = pendingResult()) => ({
+  result,
+  context: receiptContext(),
+  hash,
+  draftId: "original-draft",
+  knownHash: true,
+});
+
+test("only the exact completed ready pending receipt can retire its app identity for a fresh same-hash read", async () => {
+  const f = fixture();
+  f.respond = (call) => f.envelope(call, { result: pendingResult() });
+  await f.client.run("prepare", { input: terms() });
+  const preparedKey = f.markers()[0][0];
+  const result = await f.client.run("reconcile", {
+    draftId: "original-draft",
+    hash,
+  });
+  const originalId = f.calls.at(-1).requestId;
+  f.client.advancePendingReceipt(pendingValue(result));
+  assert.equal(f.markers().length, 1);
+  assert.equal(f.markers()[0][0], preparedKey);
+  assert.throws(
+    () => f.client.advancePendingReceipt(pendingValue(result)),
+    code("ORGANIZER_JOB_ADVANCE"),
+  );
+  await f.client.run("reconcile", { draftId: "original-draft", hash });
+  assert.equal(f.calls.at(-1).method, "POST");
+  assert.notEqual(f.calls.at(-1).requestId, originalId);
+  assert.deepEqual(
+    f.calls
+      .filter((call) => call.operation === "reconcile")
+      .map((call) => call.body.hash),
+    [hash, hash],
+  );
+  f.financialUntouched();
+});
+
+test("pending retirement rejects copied/changed result, draft, hash, context, storage owner and expired ownership", async (t) => {
+  const variants = [
+    [
+      "copied result",
+      (f, value) => {
+        value.result = structuredClone(value.result);
+      },
+    ],
+    [
+      "changed result",
+      (f, value) => {
+        value.result.eventId = "other-event";
+      },
+    ],
+    [
+      "other draft",
+      (f, value) => {
+        value.draftId = "other-draft";
+      },
+    ],
+    [
+      "other hash",
+      (f, value) => {
+        value.hash = "0x" + "b".repeat(64);
+      },
+    ],
+    [
+      "other context",
+      (f, value) => {
+        value.context.eventId = "other-event";
+      },
+    ],
+    [
+      "other factory",
+      (f, value) => {
+        value.context.contract = "0x" + "3".repeat(40);
+      },
+    ],
+    [
+      "other wallet",
+      (f, value) => {
+        value.context.wallet = "0x" + "3".repeat(40);
+      },
+    ],
+    [
+      "other chain",
+      (f, value) => {
+        value.context.chainId = 10200;
+      },
+    ],
+    [
+      "other profile",
+      (f, value) => {
+        value.context.abiVersion = "kleros-event-v9-uups-chiado";
+      },
+    ],
+    [
+      "changed request ID",
+      (f) => {
+        const [key, raw] = f.markers()[0];
+        f.storage.setItem(
+          key,
+          JSON.stringify({ ...JSON.parse(raw), requestId: "other-request" }),
+        );
+      },
+    ],
+    [
+      "unfinished stored job",
+      (f) => {
+        const [key, raw] = f.markers()[0];
+        f.storage.setItem(
+          key,
+          JSON.stringify({ ...JSON.parse(raw), state: "pending" }),
+        );
+      },
+    ],
+    [
+      "expired ready job",
+      (f) => {
+        f.advance(300000);
+      },
+    ],
+    [
+      "revoked context",
+      (f) => {
+        f.revoke();
+      },
+    ],
+  ];
+  for (const [label, mutate] of variants)
+    await t.test(label, async () => {
+      const f = fixture();
+      f.respond = (call) => f.envelope(call, { result: pendingResult() });
+      const value = pendingValue(
+        await f.client.run("reconcile", { draftId: "original-draft", hash }),
+      );
+      mutate(f, value);
+      assert.throws(
+        () => f.client.advancePendingReceipt(value),
+        (error) =>
+          ["ORGANIZER_JOB_ADVANCE", "ORGANIZER_JOB_STALE"].includes(error.code),
+      );
+      assert.equal(f.markers().length, 1);
+      assert.equal(f.calls.length, 1);
+      f.financialUntouched();
+    });
+});
+
+test("pending retirement never derives permission from storage, terminal result, job pending or uncertain acknowledgement", async (t) => {
+  for (const status of [
+    "confirmed",
+    "failed",
+    "pending-missing-wallet",
+    "pending-wrong-chain",
+  ])
+    await t.test(status, async () => {
+      const f = fixture(),
+        result = pendingResult();
+      if (status === "pending-missing-wallet") delete result.wallet;
+      else if (status === "pending-wrong-chain") result.chainId = 10200;
+      else result.status = status;
+      f.respond = (call) => f.envelope(call, { result });
+      const actual = await f.client.run("reconcile", {
+        draftId: "original-draft",
+        hash,
+      });
+      assert.throws(
+        () => f.client.advancePendingReceipt(pendingValue(actual)),
+        code("ORGANIZER_JOB_ADVANCE"),
+      );
+      assert.throws(
+        () => f.create().advancePendingReceipt(pendingValue(actual)),
+        code("ORGANIZER_JOB_ADVANCE"),
+        "Reloaded storage alone has no ready-result capability",
+      );
+      f.financialUntouched();
+    });
+  const f = fixture();
+  f.respond = () => {
+    throw Error("Synthetic unknown POST acknowledgement");
+  };
+  await assert.rejects(
+    f.client.run("reconcile", { draftId: "original-draft", hash }),
+    /unknown/,
+  );
+  assert.throws(
+    () => f.client.advancePendingReceipt(pendingValue()),
+    code("ORGANIZER_JOB_ADVANCE"),
+  );
+  f.respond = (call) =>
+    f.envelope(call, { state: "pending", pollAfterMs: 1000 });
+  const checking = f.client.run("reconcile", {
+    draftId: "original-draft",
+    hash,
+  });
+  const stopped = assert.rejects(checking, code("ORGANIZER_JOB_WAIT_STOPPED"));
+  await until(() => f.timers.size === 2);
+  assert.throws(
+    () => f.client.advancePendingReceipt(pendingValue()),
+    code("ORGANIZER_JOB_ADVANCE"),
+  );
+  f.client.stop();
+  await stopped;
+  assert.deepEqual(
+    f.calls.map((call) => call.method),
+    ["POST", "GET"],
+  );
+  f.financialUntouched();
+});
+
+function watcherFixture(overrides = {}) {
+  const f = fixture(),
+    states = [],
+    advances = [],
+    checks = [];
+  let current = true,
+    cancels = 0;
+  const watcher = createReceiptWatcher({
+    now: f.settings.now,
+    setTimer: f.settings.setTimer,
+    clearTimer: f.settings.clearTimer,
+    isCurrent: () => current,
+    advance: (value) => advances.push(value),
+    check: async (value) => {
+      checks.push(value);
+      return pendingValue();
+    },
+    onState: (state) => states.push(state),
+    onCancel: () => {
+      cancels++;
+    },
+    ...overrides,
+  });
+  return {
+    ...f,
+    watcher,
+    states,
+    advances,
+    checks,
+    revokeWatch() {
+      current = false;
+    },
+    cancels: () => cancels,
+  };
+}
+
+test("receipt watcher makes at most six serial fresh reads with increasing backoff, then stops", async () => {
+  const f = watcherFixture();
+  assert.equal(f.watcher.start(pendingValue()), true);
+  const delays = [3000, 5000, 10000, 15000, 30000, 30000];
+  for (let i = 0; i < delays.length; i++) {
+    f.advance(delays[i] - 1);
+    await new Promise(setImmediate);
+    assert.equal(f.checks.length, i);
+    f.advance(1);
+    await until(
+      () =>
+        f.checks.length === i + 1 &&
+        (i === 5 ? f.states.includes("limit") : f.timers.size === 2),
+    );
+  }
+  assert.equal(f.advances.length, 6);
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.states.at(-1), "limit");
+  f.advance(300000);
+  assert.equal(f.checks.length, 6);
+  f.financialUntouched();
+});
+
+test("receipt watcher requires explicit known hash/context and rechecks elapsed budget after delayed timers", async () => {
+  const f = watcherFixture();
+  for (const value of [
+    { ...pendingValue(), knownHash: false },
+    { ...pendingValue(), hash: "invalid" },
+    { ...pendingValue(), context: { ...receiptContext(), chainId: 10200 } },
+    {
+      ...pendingValue(),
+      result: { ...pendingResult(), wallet: "0x" + "3".repeat(40) },
+    },
+  ])
+    assert.equal(f.watcher.start(value), false);
+  assert.equal(f.timers.size, 0);
+  f.watcher.start(pendingValue());
+  f.advance(180001);
+  await new Promise(setImmediate);
+  assert.equal(f.advances.length, 0);
+  assert.equal(f.checks.length, 0);
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.states.at(-1), "limit");
+  f.financialUntouched();
+});
+
+test("watcher network uncertainty stops and preserves the new identity for GET-only manual recovery", async () => {
+  const f = fixture(),
+    states = [];
+  f.respond = (call) => f.envelope(call, { result: pendingResult() });
+  const initial = pendingValue(
+    await f.client.run("reconcile", { draftId: "original-draft", hash }),
+  );
+  f.respond = () => {
+    throw Object.assign(
+      Error("Synthetic lost acknowledgement during fresh read"),
+      { status: 504 },
+    );
+  };
+  const watcher = createReceiptWatcher({
+    now: f.settings.now,
+    setTimer: f.settings.setTimer,
+    clearTimer: f.settings.clearTimer,
+    isCurrent: () => true,
+    advance: (value) => f.client.advancePendingReceipt(value),
+    check: async () =>
+      pendingValue(
+        await f.client.run("reconcile", { draftId: "original-draft", hash }),
+      ),
+    onState: (state) => states.push(state),
+    onCancel: () => f.client.stop(),
+  });
+  watcher.start(initial);
+  f.advance(3000);
+  await until(() => states.includes("unavailable"));
+  assert.deepEqual(
+    f.calls.map((call) => call.method),
+    ["POST", "POST"],
+  );
+  const retained = JSON.parse(f.markers()[0][1]);
+  assert.equal(retained.state, "pending");
+  f.advance(300000);
+  assert.equal(f.calls.length, 2);
+  assert.equal(f.timers.size, 0);
+  f.respond = (call) => f.envelope(call, { result: pendingResult() });
+  await f.client.run("reconcile", { draftId: "original-draft", hash });
+  assert.equal(f.calls.at(-1).method, "GET");
+  assert.equal(f.calls.at(-1).requestId, retained.requestId);
+  f.financialUntouched();
+});
+
+test("watcher stops on any rejected check, terminal result or changed context without advancing again", async (t) => {
+  for (const result of [
+    "auth",
+    "scope",
+    "expired",
+    "malformed",
+    "confirmed",
+    "failed",
+  ])
+    await t.test(result, async () => {
+      const f = watcherFixture({
+        check: async () => {
+          if (["auth", "scope", "expired"].includes(result))
+            throw Object.assign(Error("Synthetic boundary failure"), {
+              code: result,
+            });
+          return result === "malformed" ? null : { status: result };
+        },
+      });
+      f.watcher.start(pendingValue());
+      f.advance(3000);
+      await until(() => f.timers.size === 0);
+      assert.equal(f.advances.length, 1);
+      f.advance(300000);
+      assert.equal(f.advances.length, 1);
+      f.financialUntouched();
+    });
+  const stale = watcherFixture();
+  stale.watcher.start(pendingValue());
+  stale.revokeWatch();
+  stale.advance(3000);
+  await new Promise(setImmediate);
+  assert.equal(stale.checks.length, 0);
+  assert.equal(stale.timers.size, 0);
+});
+
+test("pause/dispose aborts an in-flight watcher, waits for cleanup and ignores its late result", async () => {
+  const held = deferred();
+  let observedGuard;
+  const f = watcherFixture({
+    check: async (_value, guard) => {
+      observedGuard = guard;
+      return held.promise;
+    },
+  });
+  f.watcher.start(pendingValue());
+  f.advance(3000);
+  await until(() => observedGuard);
+  const paused = f.watcher.pause();
+  assert.equal(observedGuard(), false);
+  assert.equal(f.cancels(), 1);
+  assert.equal(f.timers.size, 0);
+  held.resolve(pendingValue());
+  await paused;
+  await new Promise(setImmediate);
+  assert.equal(f.advances.length, 1);
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.states.at(-1), "paused");
+  f.watcher.start(pendingValue());
+  await f.watcher.dispose();
+  f.advance(300000);
+  await new Promise(setImmediate);
+  assert.equal(f.advances.length, 1);
+  assert.equal(f.watcher.start(pendingValue()), false);
+  f.financialUntouched();
+});
+
+test("overall receipt budget cancels an in-flight check and never rotates its uncertain job", async () => {
+  const held = deferred();
+  let checking = false;
+  const f = watcherFixture({
+    check: async () => {
+      checking = true;
+      return held.promise;
+    },
+  });
+  f.watcher.start(pendingValue());
+  f.advance(3000);
+  await until(() => checking);
+  f.advance(177000);
+  assert.equal(f.states.at(-1), "limit");
+  assert.equal(f.cancels(), 1);
+  assert.equal(f.timers.size, 0);
+  held.resolve(pendingValue());
+  await new Promise(setImmediate);
+  assert.equal(f.advances.length, 1);
+  assert.equal(f.timers.size, 0);
+  f.financialUntouched();
+});
+
+test("a later pending response cannot switch the watcher's transaction or event/environment/actor tuple", async (t) => {
+  for (const kind of ["hash", "event", "instance", "wallet"])
+    await t.test(kind, async () => {
+      const changed = pendingValue();
+      if (kind === "hash")
+        changed.hash = changed.result.hash = "0x" + "b".repeat(64);
+      if (kind === "event")
+        changed.context.eventId = changed.result.eventId = "foreign-event";
+      if (kind === "instance") changed.context.instanceId = "foreign-instance";
+      if (kind === "wallet")
+        changed.context.wallet = changed.result.wallet = "0x" + "3".repeat(40);
+      const f = watcherFixture({ check: async () => changed });
+      f.watcher.start(pendingValue());
+      f.advance(3000);
+      await until(() => f.states.includes("unavailable"));
+      assert.equal(f.advances.length, 1);
+      assert.equal(f.timers.size, 0);
+      f.advance(300000);
+      assert.equal(f.advances.length, 1);
+      f.financialUntouched();
+    });
+});
+
+test("actor/context revocation during a slow read ignores its late pending result and removes timers", async () => {
+  const held = deferred();
+  let checking = false;
+  const f = watcherFixture({
+    check: async () => {
+      checking = true;
+      return held.promise;
+    },
+  });
+  f.watcher.start(pendingValue());
+  f.advance(3000);
+  await until(() => checking);
+  f.revokeWatch();
+  held.resolve(pendingValue());
+  await until(() => f.timers.size === 0);
+  assert.equal(f.advances.length, 1);
+  f.advance(300000);
+  assert.equal(f.advances.length, 1);
+  assert.equal(f.states.includes("limit"), false);
   f.financialUntouched();
 });

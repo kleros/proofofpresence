@@ -19,6 +19,7 @@ import { mainnetChain, mainnetStateStore } from "./mainnet-runtime.mjs";
 import { assertProductionEOAWallet } from "./production-wallets.mjs";
 import { IMPLEMENTATION_SLOT, verifyV9FactoryDeployment } from "./upgrade-verification.mjs";
 import { createFactoryOnboardingService } from "./factory-onboarding.mjs";
+import { createFactoryCreationRecovery } from "./creation-recovery.mjs";
 import { eventV9LumaTemplate, V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
 import { createProductionCasePublicationService } from "./production-case-publication.mjs";
 import { createFactoryRefresh } from "./shared-factory-refresh.mjs";
@@ -505,6 +506,10 @@ export async function createWorkbench({
     chain, factoryDeployment, events, drafts, store, instanceId: serverInstanceId, assertWallet,
     verifyFactory: (context, deployment) => verifyV9FactoryDeployment(context, deployment),
   })) : null;
+  // Factual recovery has no onboarding or financial authority.
+  const creationRecovery = production && factoryDeployment
+    ? createFactoryCreationRecovery({ chain, factoryDeployment, drafts, instanceId: serverInstanceId })
+    : null;
   function onboarding() {
     requireThat(factoryService, "A verified factory is required", "FACTORY_UNAVAILABLE", 503);
     return factoryService;
@@ -2472,6 +2477,14 @@ export async function createWorkbench({
     recordFactorySubmitted: (s, draftId, txHash) => onboarding().recordSubmitted(s, draftId, txHash),
     reconcileFactorySubmission: (s, draftId, txHash) => onboarding().reconcile(s, draftId, txHash),
     getFactoryDraft: (s, draftId) => onboarding().getDraft(s, draftId),
+    creationRecoveryScope: (wallet, txHash) => {
+      requireThat(creationRecovery, "Creation recovery is unavailable", "NOT_FOUND", 404);
+      return creationRecovery.scopeFor(wallet, txHash);
+    },
+    inspectCreationRecovery: (s) => {
+      requireThat(creationRecovery, "Creation recovery is unavailable", "NOT_FOUND", 404);
+      return creationRecovery.inspect(s);
+    },
     advance,
     mockRuling,
     mockAppeal,

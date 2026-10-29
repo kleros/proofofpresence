@@ -23,6 +23,7 @@ import {
   attendanceStandardText,
 } from "./luma-launch.js";
 import { mountLumaSetup } from "./luma-setup.js";
+import { projectOwnedEvents, renderOwnedEvents } from "./owned-events.js";
 import {
   validateCaseArtifact,
   publicationActions,
@@ -1479,6 +1480,16 @@ function showSetupFailure(error) {
   $("#content").hidden = false;
   $("#content").innerHTML =
     `<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"><section class="luma-setup" data-setup-feedback><div class="eyebrow">KICKBACK SETUP</div><h1>${cancelled ? "Wallet sign-in was cancelled." : "Setup could not be checked."}</h1><p class="error-panel" role="alert" data-setup-feedback-error>${escape(error?.message ?? "The current wallet session could not be verified.")}</p><p>${contextChanged ? "Reload setup to read the current server context. Your saved transaction records are retained." : "Check setup again or reconnect your wallet. The form opens after a fresh session and Ethereum setup check."}</p><div class="luma-setup-actions">${contextChanged ? '<button class="button button-primary" data-setup-reload>Reload setup</button>' : '<button class="button button-primary" data-setup-retry>Check setup again</button><button class="button button-secondary" data-connect-wallet>Reconnect wallet</button>'}</div></section></div></section>`;
+  if (error?.code === "UNSUPPORTED_WALLET") {
+    const notice = document.createElement("p"),
+      link = document.createElement("a");
+    notice.textContent = "Already created an event with this wallet? ";
+    link.href = "/recovery.html";
+    link.textContent =
+      "Inspect the original transaction with read-only sign-in.";
+    notice.append(link);
+    $("#luma-setup").append(notice);
+  }
   if (!activeLoad) setReadBusy(false);
   return true;
 }
@@ -1891,7 +1902,7 @@ function renderPublicCatalogChrome() {
 }
 function renderLaunchHome() {
   if (app.route.setup)
-    return '<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"></div></section>';
+    return '<section class="luma-launch" data-launch-root><a class="back-link" href="#">← Deposit or setup</a><div id="luma-setup"></div><div id="setup-owned-events"></div></section>';
   publicSearch.entries = publicCatalogScreen()
     ? displayCatalog.events
     : publicEventSearchEntries(app.bootstrap?.events);
@@ -1947,6 +1958,23 @@ function mountLaunchSetup() {
     (scope.wallet === null
       ? currentIdentity()?.wallet == null
       : same(currentIdentity()?.wallet, scope.wallet));
+  const ownedHost = $("#setup-owned-events");
+  const paintOwned = (bootstrap) => {
+    if (!current() || !ownedHost?.isConnected) return;
+    if (!scope.wallet || bootstrap?.session?.mode !== "wallet") {
+      ownedHost.replaceChildren();
+      return;
+    }
+    ownedHost.innerHTML = renderOwnedEvents(
+      projectOwnedEvents(bootstrap, {
+        mode: "hosted-production",
+        instanceId: scope.instanceId,
+        wallet: scope.wallet,
+      }),
+    );
+  };
+  // This bootstrap was just verified by load(), including final owner checks.
+  paintOwned(app.bootstrap);
   lumaSetupController = mountLumaSetup(host, {
     bootstrap: app.bootstrap,
     isCurrent: current,
@@ -1954,8 +1982,16 @@ function mountLaunchSetup() {
     provider: () => walletProvider(),
     beforeOpen: () => invalidateDraft(),
     onComplete: () => {
-      if (current())
+      if (current()) {
         toast("Event creation confirmed. Share the deposit link below.");
+        // Refresh only the inventory; retain the confirmed receipt/share panel.
+        api("/api/bootstrap")
+          .then(paintOwned)
+          .catch(() => {
+            if (current() && ownedHost?.isConnected)
+              ownedHost.innerHTML = renderOwnedEvents(null);
+          });
+      }
     },
   });
 }

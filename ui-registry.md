@@ -355,3 +355,10 @@ result. Reuse existing directory rows for Your events, with title/date/Public-or
 Published and one Manage event link. Null/unavailable and verified empty are different states.
 Private titles require the fresh exact authenticated actor/environment before rendering. These pure
 components are unwired until Core's transaction/auth/route integration is approved and tested.
+# Original-transaction recovery view — 29October2026
+
+Use existing Luma cards, labels, monospace hashes and progress component. A read-only recovery view
+has a separate authentication message and shows transaction confirmation separately from portal
+readiness. Preserve the exact original hash through every error. Clear owned facts on actor/network
+loss; never generate deposit/manage links from an unadopted receipt. Ordinary organized-event rows
+come only from fresh canonical organizer summaries and refresh independently of the receipt panel.

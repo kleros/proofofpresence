@@ -1,0 +1,41 @@
+{
+  "kind": "original-wrapper-inner-calls-readonly",
+  "checkedAt": "2026-10-29T14:56:32.255Z",
+  "hash": "0xef60cbf9c65883eb3a1daf6f250bd6cc8328ba655270e897ba17870b1d8a06dc",
+  "wrapperFunction": "redeemDelegations",
+  "wrapperSelector": "0xcef6d209",
+  "permissionContextCount": 1,
+  "modeCount": 1,
+  "executionArrayCount": 1,
+  "executions": [
+    {
+      "mode": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "callType": 0,
+      "target": "0xee049d03a007e150ec8ec46b066823043bacf14e",
+      "valueWei": "0",
+      "selector": "0x80464ff5",
+      "callDataSha256": "463c4fa0e1d19ba3f33a5d45cdbb82a7800a8d78af0960a86a1f38d0efa39cdd",
+      "callDataBytes": 4196,
+      "factoryCall": {
+        "eventKey": "0x3d540cd492f187403fc07b4dd532e141cb9cbc6dfc568de16896bf046f0cbed7",
+        "configurationHash": "0x25325fd1d124a5601a01a0f9109b18124bce34673a0eddb11d3852d2448afa6f",
+        "logConfigurationMatches": true,
+        "logEventKeyMatches": true,
+        "depositWei": "1000000000000000",
+        "eventStart": 1793790000,
+        "claimDeadline": 1794394800,
+        "eventNameSha256": "5cb1a530033522ac745da5982c2243847244d0d6c795ca1b99187379e8a40b26",
+        "policyURI": "https://cdn.kleros.link/ipfs/QmYyofYYD211etbQAabmdoqLeoM5w54STNZW5yfQECYwG1",
+        "templateSha256": "6d2d0611585a68a746323c80b49985c59bd7e4974b1faa9c10a17eda1fe5717d"
+      }
+    }
+  ],
+  "canonicalReceipt": true,
+  "trace": {
+    "status": "unavailable"
+  },
+  "limits": [
+    "No permission-context bytes/signatures, raw execution bytes or serialized signed transaction are printed or saved.",
+    "Matching inner call/log configuration does not by itself establish original saved-review match or full child provenance; no adoption."
+  ]
+}

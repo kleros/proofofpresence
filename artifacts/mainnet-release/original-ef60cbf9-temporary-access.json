@@ -1,0 +1,13 @@
+{
+  "kind": "temporary-personal-ssh-approved-matching-read",
+  "startedAt": "2026-10-29T15:03:09.061Z",
+  "approval": "call_e2f584453d2649f2bd00b5842113f48e",
+  "readerSha256": "1c646471d0d18286ed51a3900b0f653af18e595b60de536159a9143c082a1e82",
+  "registered": false,
+  "readSucceeded": false,
+  "revoked": false,
+  "localPrivateKeyDeleted": true,
+  "publicFingerprint": "SHA256:gtT2hiZmXKvH966lgqptTytL02tuRac6LzDVZrJBOrg",
+  "error": "KEY_REGISTRATION_FAILED",
+  "finishedAt": "2026-10-29T15:03:10.098Z"
+}

@@ -58,6 +58,48 @@ const mime = {
   ".woff2": "font/woff2",
 };
 
+const staticPaths = new Set([
+  "/",
+  "/index.html",
+  "/app.js",
+  "/entry.js",
+  "/public-home.js",
+  "/ui-keyboard.js",
+  "/selected-event.js",
+  "/loading.css",
+  "/contract-inbox.js",
+  "/contract-profiles.js",
+  "/contract-inbox.css",
+  "/batch-actions.js",
+  "/batch-actions.css",
+  "/batch-selection.js",
+  "/batch-pending.js",
+  "/styles.css",
+  "/ethers.js",
+  "/transaction-context.js",
+  "/environment.js",
+  "/luma-launch.js",
+  "/luma-launch.css",
+  "/luma-setup.js",
+  "/setup-progress.js",
+  "/owned-events.js",
+  "/recovery.html",
+  "/recovery-creation.js",
+  "/luma-factory.js",
+  "/event-search.js",
+  "/case-publication.js",
+  "/hosted-wallet.js",
+  "/reconciliation.js",
+  "/policies/v8-testnet.md",
+  "/policies/v8-test15m.md",
+  "/assets/kleros-logo.svg",
+  "/assets/kleros-symbol.svg",
+  "/assets/geist-latin.woff2",
+  "/assets/geist-mono-latin.woff2",
+  "/assets/instrument-serif-regular.woff2",
+  "/assets/instrument-serif-italic.woff2",
+]);
+
 /**
  * @param {{port?:number,rpcPort?:number,contractVersion?:string,testnet?:any,production?:any,deployment?:{mode?:string,publicOrigin?:string,backendOrigin?:string,proxySecret?:string,runtimeRoot?:string}}} [options]
  */
@@ -414,6 +456,21 @@ export async function startServer({
         req.method === "DELETE"
       )
         guardMutation(req, p === "/local-upload");
+      if (s?.mode === "recovery-only") {
+        // Default deny BEFORE bootstrap, jobs, event routes or any workbench call.
+        // A wallet-bearing read session must never reach loose historical auth.
+        const permitted =
+          (p === "/api/recovery/original-creation" && req.method === "GET") ||
+          (p === "/api/session" && req.method === "DELETE") ||
+          (req.method === "GET" && staticPaths.has(p));
+        requireThat(
+          permitted,
+          "This session can only inspect its original creation",
+          "RECOVERY_ONLY",
+          403,
+        );
+      }
+
       if (isProduction) {
         requireThat(!(p === "/api/events" && req.method === "POST"),
           "Production deployments require a separately reviewed deployment plan", "DEMO_ONLY", 403);
@@ -551,6 +608,7 @@ export async function startServer({
           expiresAt = Date.now() + 300_000;
         const message = `Kleros ${isProduction ? "Ethereum mainnet" : external ? "Chiado testnet" : hosted ? "hosted demo" : "local event"} workbench\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: ${w.chain.chainId}\nWallet: ${ethers.getAddress(b.wallet)}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate this ${isProduction ? "Ethereum mainnet" : external ? "testnet" : "isolated demo"} wallet. No financial transaction.`;
         nonces.set(nonce, {
+          purpose: "wallet-auth",
           wallet: ethers.getAddress(b.wallet),
           message,
           expiresAt,
@@ -562,7 +620,7 @@ export async function startServer({
         const b = await body(req),
           n = nonces.get(b.nonce);
         requireThat(
-          n && n.expiresAt > Date.now() && n.origin === authOrigin,
+          n && n.purpose === "wallet-auth" && n.expiresAt > Date.now() && n.origin === authOrigin,
           "Nonce expired or wrong domain",
           "BAD_NONCE",
           403,
@@ -586,6 +644,152 @@ export async function startServer({
           wallet: n.wallet,
           label: walletSession.label,
           mode: "wallet",
+        });
+      }
+      if (p === "/api/recovery/auth/challenge" && req.method === "POST") {
+        requireThat(
+          isProduction && typeof w.creationRecoveryScope === "function",
+          "Creation recovery is unavailable",
+          "NOT_FOUND",
+          404,
+        );
+        requireThat(
+          url.search === "",
+          "Use an exact recovery request",
+          "INVALID_INPUT",
+          400,
+        );
+        const b = await body(req);
+        requireThat(
+          Object.keys(b).length === 2 &&
+            ethers.isAddress(b.wallet) &&
+            /^0x[0-9a-fA-F]{64}$/.test(b.hash ?? ""),
+          "Use your wallet and original transaction hash",
+          "INVALID_INPUT",
+          400,
+        );
+        const wallet = ethers.getAddress(b.wallet),
+          txHash = b.hash.toLowerCase();
+        const nonce = randomBytes(20).toString("hex"),
+          expiresAt = Date.now() + 300_000;
+        const message = `Kleros original event creation recovery\nPurpose: Read only; no financial authority\nDomain: ${new URL(authOrigin).host}\nURI: ${authOrigin}\nChain ID: 1\nWallet: ${wallet}\nOriginal transaction: ${txHash}\nNonce: ${nonce}\nExpires: ${new Date(expiresAt).toISOString()}\nAuthenticate to inspect only your matching saved event creation. This signature cannot authorize a transaction, deposit, dispute, payout, event adoption or account change.`;
+        nonces.set(nonce, {
+          purpose: "factory-creation-recovery",
+          wallet,
+          hash: txHash,
+          message,
+          expiresAt,
+          origin: authOrigin,
+        });
+        return send(res, 200, {
+          nonce,
+          message,
+          expiresAt,
+          instanceId,
+          purpose: "factory-creation-recovery",
+          chainId: 1,
+        });
+      }
+      if (p === "/api/recovery/auth/verify" && req.method === "POST") {
+        requireThat(
+          isProduction && typeof w.creationRecoveryScope === "function",
+          "Creation recovery is unavailable",
+          "NOT_FOUND",
+          404,
+        );
+        requireThat(
+          url.search === "",
+          "Use an exact recovery request",
+          "INVALID_INPUT",
+          400,
+        );
+        const b = await body(req),
+          n = nonces.get(b.nonce);
+        requireThat(
+          n?.purpose === "factory-creation-recovery" &&
+            n.expiresAt > Date.now() &&
+            n.origin === authOrigin,
+          "Recovery nonce expired or wrong purpose",
+          "BAD_NONCE",
+          403,
+        );
+        nonces.delete(b.nonce);
+        let recovered;
+        try {
+          recovered = ethers.verifyMessage(n.message, b.signature);
+        } catch {}
+        requireThat(
+          recovered === n.wallet,
+          "Signature does not prove wallet ownership",
+          "BAD_SIGNATURE",
+          403,
+        );
+        const recoveryScope = w.creationRecoveryScope(n.wallet, n.hash);
+        requireThat(
+          recoveryScope?.wallet?.toLowerCase() === n.wallet.toLowerCase() &&
+            recoveryScope.hash?.toLowerCase() === n.hash &&
+            recoveryScope.instanceId === instanceId,
+          "Recovery scope changed",
+          "RECOVERY_SCOPE",
+          409,
+        );
+        setSession(req, res, {
+          id: id(),
+          wallet: n.wallet,
+          label: "Original creation · read only",
+          mode: "recovery-only",
+          recoveryScope,
+        });
+        return send(res, 200, {
+          wallet: n.wallet,
+          mode: "recovery-only",
+          instanceId,
+          hash: n.hash,
+          capabilities: {
+            walletTransactions: false,
+            createEvents: false,
+            manageEvents: false,
+            adoptEvent: false,
+          },
+        });
+      }
+      if (p === "/api/recovery/original-creation" && req.method === "GET") {
+        requireThat(
+          isProduction && typeof w.inspectCreationRecovery === "function",
+          "Creation recovery is unavailable",
+          "NOT_FOUND",
+          404,
+        );
+        requireThat(
+          s?.mode === "recovery-only",
+          "Authenticate the original creation first",
+          "UNAUTHENTICATED",
+          401,
+        );
+        requireThat(
+          url.search === "",
+          "Recovery reads only the signed original scope",
+          "INVALID_INPUT",
+          400,
+        );
+        requireThat(
+          getSession(req) === s,
+          "Recovery session changed",
+          "RECOVERY_SESSION_CHANGED",
+          401,
+        );
+        const result = await w.inspectCreationRecovery(s);
+        requireThat(
+          getSession(req) === s,
+          "Recovery session changed",
+          "RECOVERY_SESSION_CHANGED",
+          401,
+        );
+        return send(res, 200, {
+          ...result,
+          mode,
+          instanceId,
+          session: { wallet: s.wallet, mode: "recovery-only" },
         });
       }
       const organizerJobRoute = p.match(/^\/api\/organizer\/events\/jobs(?:\/([a-zA-Z0-9_-]+))?$/);
@@ -1139,43 +1343,7 @@ export async function startServer({
       }
       if (
         req.method === "GET" &&
-        [
-          "/",
-          "/index.html",
-          "/app.js",
-          "/entry.js",
-          "/public-home.js",
-          "/ui-keyboard.js",
-          "/selected-event.js",
-          "/loading.css",
-          "/contract-inbox.js",
-          "/contract-profiles.js",
-          "/contract-inbox.css",
-          "/batch-actions.js",
-          "/batch-actions.css",
-          "/batch-selection.js",
-          "/batch-pending.js",
-          "/styles.css",
-          "/ethers.js",
-          "/transaction-context.js",
-          "/environment.js",
-          "/luma-launch.js",
-          "/luma-launch.css",
-          "/luma-setup.js",
-          "/luma-factory.js",
-          "/event-search.js",
-          "/case-publication.js",
-          "/hosted-wallet.js",
-          "/reconciliation.js",
-          "/policies/v8-testnet.md",
-          "/policies/v8-test15m.md",
-          "/assets/kleros-logo.svg",
-          "/assets/kleros-symbol.svg",
-          "/assets/geist-latin.woff2",
-          "/assets/geist-mono-latin.woff2",
-          "/assets/instrument-serif-regular.woff2",
-          "/assets/instrument-serif-italic.woff2",
-        ].includes(p)
+        staticPaths.has(p)
       ) {
         const file =
           p === "/ethers.js"

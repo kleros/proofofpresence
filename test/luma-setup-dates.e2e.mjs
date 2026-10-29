@@ -35,6 +35,7 @@ async function run() {
   );
   const allowed = new Set([
     "/luma-setup.js",
+    "/setup-progress.js",
     "/transaction-context.js",
     "/luma-factory.js",
     "/environment.js",

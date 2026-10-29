@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-10-29T14:36:07.248Z",
+  "kind": "original-transaction-canonical-envelope-and-factory-logs-readonly",
+  "chainId": 1,
+  "hash": "0xef60cbf9c65883eb3a1daf6f250bd6cc8328ba655270e897ba17870b1d8a06dc",
+  "from": "0x2bb03593892724d225071068e59ab1e48af05b55",
+  "to": "0xdb9b1e94b5b69df7e401ddbede43491141047db3",
+  "type": "0x4",
+  "valueWei": "0",
+  "nonce": 4,
+  "inputSelector": "0xcef6d209",
+  "inputSha256": "3e180960f5f3b2e058b385d17bf57beeb0313825d49f31dc716cb196bce26d2b",
+  "authorizationCount": 1,
+  "authorizations": [
+    {
+      "chainId": "0x1",
+      "delegate": "0x63c0c19a282a1b52b07dd5a65b58948a07dae32b",
+      "nonce": "0x5"
+    }
+  ],
+  "blockNumber": 26298864,
+  "blockHash": "0x8ed9d14d2806c379a0d2b585d8122ed991d08a795c15dd0f0e91c11cddcbcf5e",
+  "canonicalBlockHash": "0x8ed9d14d2806c379a0d2b585d8122ed991d08a795c15dd0f0e91c11cddcbcf5e",
+  "canonical": true,
+  "status": 1,
+  "gasUsed": "1622726",
+  "effectiveGasPriceWei": "155978100",
+  "receiptTo": "0xdb9b1e94b5b69df7e401ddbede43491141047db3",
+  "createdTopLevelContract": null,
+  "logCount": 5,
+  "factoryLogs": [
+    {
+      "address": "0xee049d03a007e150ec8ec46b066823043bacf14e",
+      "logIndex": 1020,
+      "topic0": "0x46ca6faac646a8d95cfb9a9443e2b6cfdcdaf367fafbf429c49717ea86a8fffd",
+      "name": "EventCreated",
+      "eventId": "0xf8093a454d7340590c030f8d3252086311bbeb4ea2a203bd5d90cbac8eb866c6",
+      "creator": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+      "eventContract": "0x4542D9b3De78a59d74cbbfe2166e3ef054E42A69",
+      "eventKey": "0x3d540cd492f187403fc07b4dd532e141cb9cbc6dfc568de16896bf046f0cbed7",
+      "version": "9",
+      "configurationHash": "0x25325fd1d124a5601a01a0f9109b18124bce34673a0eddb11d3852d2448afa6f"
+    }
+  ],
+  "walletCodeLatest": {
+    "bytes": 23,
+    "keccak256": "0xb09ef517c48d2bf6eed05457ff56871b2596e3fc904fc6e9795882a870c2e993",
+    "delegationPrefix": true,
+    "delegate": "0x63c0c19a282a1b52b07dd5a65b58948a07dae32b"
+  },
+  "limits": [
+    "No raw calldata, serialized transaction, authorization signatures, credentials or wallet keys are printed or saved.",
+    "Latest wallet code is not proof of its pre-transaction state. No adoption or new financial action."
+  ]
+}

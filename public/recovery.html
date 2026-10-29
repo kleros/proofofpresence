@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#120E1C" />
+    <title>Original event transaction · Kleros</title>
+    <link rel="icon" href="/assets/kleros-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/luma-launch.css" />
+    <script type="module" src="/recovery-creation.js"></script>
+  </head>
+  <body class="launch-mode">
+    <main id="main" class="luma-launch" data-creation-recovery>
+      <a class="brand" href="/" aria-label="Kleros events home"
+        ><img
+          src="/assets/kleros-logo.svg"
+          alt="Kleros"
+          width="128"
+          height="48"
+      /></a>
+      <section class="luma-launch-card">
+        <div class="eyebrow">ETHEREUM MAINNET · READ ONLY</div>
+        <h1>Check your original event transaction.</h1>
+        <p>
+          Already confirmed in your wallet? Check that transaction here before
+          creating another event.
+        </p>
+        <form data-recovery-form>
+          <label for="original-transaction">Original transaction ID</label>
+          <input
+            id="original-transaction"
+            name="transaction"
+            class="mono"
+            required
+            minlength="66"
+            maxlength="66"
+            pattern="0x[0-9a-fA-F]{64}"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="0x…"
+          />
+          <p class="field-help">
+            Sign a read-only message with the wallet that created the event.
+            This page cannot send transactions or enable deposits, disputes or
+            payouts.
+          </p>
+          <div class="luma-setup-actions">
+            <button
+              class="button button-primary"
+              type="submit"
+              data-recovery-connect
+            >
+              Sign in to inspect
+            </button>
+            <button
+              class="button button-secondary"
+              type="button"
+              data-recovery-check
+              hidden
+            >
+              Check original transaction
+            </button>
+            <button
+              class="button button-quiet"
+              type="button"
+              data-recovery-signout
+              hidden
+            >
+              Sign out
+            </button>
+          </div>
+        </form>
+        <p role="status" aria-live="polite" data-recovery-status>
+          Your original transaction ID stays on this page.
+        </p>
+        <p class="error-panel" role="alert" data-recovery-error hidden></p>
+      </section>
+      <div data-recovery-progress></div>
+      <section class="luma-launch-card" data-recovery-facts hidden></section>
+    </main>
+  </body>
+</html>

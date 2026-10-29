@@ -29,7 +29,11 @@ async function run() {
   };
   proof.sources = Object.fromEntries(
     await Promise.all(
-      ["public/luma-setup.js", "test/organizer-jobs-ui.e2e.mjs"].map(
+      [
+        "public/luma-setup.js",
+        "public/setup-progress.js",
+        "test/organizer-jobs-ui.e2e.mjs",
+      ].map(
         async (file) => [
           file,
           createHash("sha256")
@@ -41,6 +45,7 @@ async function run() {
   );
   const allowed = new Set([
     "/luma-setup.js",
+    "/setup-progress.js",
     "/transaction-context.js",
     "/luma-factory.js",
     "/environment.js",
@@ -104,7 +109,11 @@ async function run() {
     const results = await page.evaluate(
       async ({ bootstrap, input, baseDraft }) => {
         const { mountLumaSetup } = await import("/luma-setup.js");
+        const { createTransactionJournal } = await import(
+          "/transaction-context.js"
+        );
         const checks = [],
+          flows = [],
           totals = {
             walletRequests: 0,
             prepares: 0,
@@ -120,7 +129,8 @@ async function run() {
             throw Error(label + ": " + JSON.stringify(actual));
         };
         const wait = async (predicate) => {
-          for (let i = 0; i < 300; i++) {
+          const deadline = performance.now() + 8000;
+          while (performance.now() < deadline) {
             if (predicate()) return;
             await new Promise((resolve) => setTimeout(resolve, 10));
           }
@@ -136,20 +146,46 @@ async function run() {
           localStorage.clear();
           localStorage.setItem("foreign-financial-marker", "preserve-exactly");
           shift = 0;
+          createTransactionJournal(localStorage).record(
+            {
+              eventId: "foreign-event",
+              wallet: "0x" + "6".repeat(40),
+              chainId: 10200,
+              contract: "0x" + "5".repeat(40),
+              abiVersion: "kleros-event-v8",
+              mode: "hosted-testnet",
+              instanceId: "foreign-server",
+            },
+            {
+              hash: "0x" + "8".repeat(64),
+              draftId: "foreign-submitted-draft",
+              action: "deposit",
+            },
+          );
+          const foreignKey = Object.keys(localStorage).find((key) =>
+              key.startsWith("kleros-transactions:v1:"),
+            ),
+            foreignRaw = localStorage.getItem(foreignKey);
           const calls = [],
             walletCalls = [],
             jobs = new Map();
           let controller,
             host,
             firstLost = mode === "lost-ack",
-            receiptChecks = 0;
+            receiptChecks = 0,
+            pendingReadyAt = null;
           const draft = structuredClone(baseDraft);
           draft.createdAt = Date.now();
           draft.expiresAt = Date.now() + 300000;
           const hash = "0x" + "9".repeat(64);
           const request = async (url, options = {}) => {
             const body = options.body ? JSON.parse(options.body) : null;
-            calls.push({ url, method: options.method ?? "GET", body });
+            calls.push({
+              url,
+              method: options.method ?? "GET",
+              body,
+              at: performance.now(),
+            });
             if (url.endsWith("/submitted")) {
               totals.reports++;
               equal(body, { hash }, "Direct submitted hash report");
@@ -173,7 +209,12 @@ async function run() {
                   input,
                   "Date conversion and exact six immutable terms retained",
                 );
-              if (firstLost) {
+              if (
+                firstLost ||
+                (mode === "auto-lost-ack" &&
+                  body.operation === "reconcile" &&
+                  receiptChecks === 2)
+              ) {
                 firstLost = false;
                 throw Object.assign(Error("Synthetic lost acknowledgement"), {
                   status: 504,
@@ -203,7 +244,9 @@ async function run() {
                   ? { draft, transaction: draft.transaction }
                   : {
                       status:
-                        mode === "success" && receiptChecks === 1
+                        ["success", "auto-success", "auto-lost-ack"].includes(
+                          mode,
+                        ) && receiptChecks === 1
                           ? "pending"
                           : "confirmed",
                       hash: job.hash,
@@ -218,6 +261,8 @@ async function run() {
                         draft.eventId +
                         "&view=participant",
                     };
+            if (job.operation === "reconcile" && result.status === "pending")
+              pendingReadyAt = performance.now();
             return {
               ...scope,
               state: "ready",
@@ -381,7 +426,67 @@ async function run() {
                 1,
                 "Pending receipt retains one original wallet request",
               );
-              click(host, "reconcile");
+              await wait(
+                () =>
+                  host.querySelector("[data-setup-progress]")?.dataset
+                    .setupPhase === "confirmations" &&
+                  !host.querySelector('[data-luma-action="pause-receipts"]')
+                    ?.hidden,
+              );
+              equal(
+                host.querySelector("[data-setup-progress-hash]").value,
+                hash,
+                "Pending progress retains the original transaction ID",
+              );
+              if (mode === "success") {
+                click(host, "pause-receipts");
+                await wait(
+                  () =>
+                    host.querySelector('[data-luma-action="pause-receipts"]')
+                      .hidden,
+                );
+                click(host, "reconcile");
+              } else if (mode === "auto-lost-ack") {
+                await wait(
+                  () =>
+                    calls.filter(
+                      (call) => call.body?.operation === "reconcile",
+                    ).length === 2 &&
+                    host.querySelector("[data-setup-progress]")?.dataset
+                      .setupPhase === "unavailable" &&
+                    host.querySelector('[data-luma-action="pause-receipts"]')
+                      .hidden &&
+                    !host.querySelector('[data-luma-action="reconcile"]')
+                      .disabled,
+                );
+                const second = calls.filter(
+                    (call) => call.body?.operation === "reconcile",
+                  )[1],
+                  beforeManual = calls.length;
+                equal(
+                  jobs.has(second.body.requestId),
+                  true,
+                  "Lost automatic acknowledgement preserves the saved job",
+                );
+                // The watcher has stopped; no unattended request follows the error.
+                await new Promise((resolve) => setTimeout(resolve, 600));
+                equal(
+                  calls.length,
+                  beforeManual,
+                  "Lost automatic acknowledgement stops all automatic requests",
+                );
+                click(host, "reconcile");
+                await wait(() => host.querySelector("[data-luma-created]"));
+                const resumed = calls.slice(beforeManual);
+                equal(
+                  resumed.map((call) => ({
+                    method: call.method,
+                    requestId: decodeURIComponent(call.url.split("/").at(-1)),
+                  })),
+                  [{ method: "GET", requestId: second.body.requestId }],
+                  "Manual Check resumes only GET for the same saved job ID",
+                );
+              }
               await wait(() => host.querySelector("[data-luma-created]"));
               equal(
                 walletCalls.filter((method) => method === "eth_sendTransaction")
@@ -404,7 +509,7 @@ async function run() {
                 calls.filter((call) => call.body?.operation === "reconcile")
                   .length,
                 2,
-                "Original and explicitly refreshed canonical receipt jobs",
+                "Exactly two canonical receipt jobs",
               );
               equal(
                 calls
@@ -413,8 +518,51 @@ async function run() {
                 [hash, hash],
                 "Every receipt check retains the same original hash",
               );
+              const receiptPosts = calls.filter(
+                (call) => call.body?.operation === "reconcile",
+              );
+              equal(
+                receiptPosts[0].body.requestId !==
+                  receiptPosts[1].body.requestId,
+                true,
+                "A completed pending read permits one fresh job identity",
+              );
+              const backoffMs = receiptPosts[1].at - pendingReadyAt;
+              if (mode.startsWith("auto-") && backoffMs < 2950)
+                throw Error("Automatic receipt read bypassed its real 3s backoff");
+              equal(
+                host.querySelector("[data-setup-progress]").dataset.setupPhase,
+                "ready",
+                "Confirmed native event progress is ready",
+              );
+              for (const [selector, view] of [
+                ["[data-setup-progress-deposit]", "participant"],
+                ["[data-setup-progress-manage]", "organizer"],
+              ])
+                equal(
+                  host.querySelector(selector).getAttribute("href"),
+                  location.origin +
+                    "/#" +
+                    new URLSearchParams({ event: draft.eventId, view }),
+                  "Ready progress exposes the exact native event link",
+                );
+              flows.push({
+                mode,
+                walletRequests: 1,
+                submittedReports: 1,
+                reconcileRequestIds: receiptPosts.map(
+                  (call) => call.body.requestId,
+                ),
+                originalHash: hash,
+                backoffMs,
+                manualGetRecovery: mode === "auto-lost-ack",
+              });
               checks.push(
-                "Explicit review → validation job → one exact synthetic wallet request → direct hash report → receipt job; wallet delay preserves recovery",
+                mode === "auto-success"
+                  ? "Mounted pending progress automatically waits 3s then confirms the same hash with one wallet send/report and native event links"
+                  : mode === "auto-lost-ack"
+                    ? "Second automatic receipt POST loses its acknowledgement after save, stops automatic work, and manual Check resumes the same ID by GET only"
+                    : "Explicit review → validation job → one exact synthetic wallet request → direct hash report → manual same-hash receipt job; wallet delay preserves recovery",
               );
             }
           }
@@ -452,6 +600,11 @@ async function run() {
             "preserve-exactly",
             "Unrelated financial storage survives every path",
           );
+          equal(
+            localStorage.getItem(foreignKey),
+            foreignRaw,
+            "A real foreign financial journal remains byte-for-byte intact",
+          );
           controller.dispose();
           host.remove();
           equal(
@@ -461,20 +614,28 @@ async function run() {
           );
         }
         try {
-          for (const mode of ["success", "lost-ack", "expired-validation"])
+          for (const mode of [
+            "success",
+            "lost-ack",
+            "expired-validation",
+            "auto-success",
+            "auto-lost-ack",
+          ])
             await scenario(mode);
         } finally {
           Date.now = realNow;
         }
-        return { checks, totals };
+        return { checks, totals, flows };
       },
       { bootstrap, input, baseDraft: draft },
     );
     proof.checks = results.checks;
     proof.totals = results.totals;
+    proof.flows = results.flows;
     assert.deepEqual(proof.errors, []);
     assert.deepEqual(proof.forbidden, []);
-    assert.equal(results.totals.walletRequests, 1);
+    assert.equal(results.totals.walletRequests, 3);
+    assert.equal(results.totals.reports, 3);
     proof.status = "passed";
   } catch (error) {
     proof.status = "failed";

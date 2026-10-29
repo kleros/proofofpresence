@@ -1,3 +1,27 @@
+## Original mainnet creation recovery — 29 October2026
+
+Local recovery inspector9 +HTTP6 +existing productionHTTP26 passed41/41 in the root combined run.
+A subsequent one-line unknown-confirmation correction was verified by all9 inspector tests: unavailable
+counts are null; canonical mined counts remain measured. The financial sender/verifier/wallet gate,
+all v9 contracts, mainnet manifest and policy inputs retain their exact73cf hashes.
+
+Focused jobclient/watcher71 tests passed. Mounted widget5 browser groups passed, including real3s
+automatic SAMEhash checking and lost acknowledgement recovery by GET of the original job ID, with
+3 fake wallet sends/reports across synthetic scenarios. Full-app wallet feedback10 groups and standalone
+read-only recovery4 groups passed. Standalone uses actual UI plus mocked transport/inspection and
+real synthetic authentication signatures; it is not a live wallet-extension or economic proof.
+Typecheck/static build passed. Original actual chain +approved matching-draft comparison separately
+proved reviewed inner calldata equality; original wrapped child remains unadopted and full provenance
+/unrestricted delegated financial support/warning false-positive status are NOT established.
+
+Proofs: artifacts/mainnet-release/original-recovery-combined-final.json,
+artifacts/organizer-jobs-ui/2026-10-29T15-26-01-738Z-a2cabac6-1c94-4440-9ceb-569bec12f621/proof.json,
+artifacts/creation-recovery-ui/2026-10-29T15-19-52-692Z-c2c75333-4f6e-4847-8583-a921a6f2561c/proof.json,
+artifacts/setup-wallet-feedback/final-2026-10-29T15-21-57.415Z/results.json.
+See docs/MAINNET_CREATION_RECOVERY.md for exact APIs, scopes and remaining blocker. Publication/readback
+is pending in this source checkpoint. No unchanged broad financial suite was rerun, no real financial
+transaction/adoption/user impersonation occurred, and retired A/B/C stay paused.
+
 ## Organizer504 and blank wallet feedback repair — 29 October2026
 
 LIVE source9cac8df/Netlify6ae34f33c420d0953a515606, backend4028e8c/Railway30d0d598-a118-46c3-b523-0f9858e7a8e6.

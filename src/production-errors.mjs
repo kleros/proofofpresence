@@ -32,6 +32,45 @@ define(403, "This action requires current staff access to this event.", [
 define(403, "A signed wallet session is required.", ["WALLET_REQUIRED"]);
 define(
   403,
+  "This read-only session can inspect only its original event creation. Sign out before using other wallet actions.",
+  ["RECOVERY_ONLY"],
+);
+define(
+  409,
+  "The original creation or its saved review changed. Preserve its transaction ID for review.",
+  ["RECOVERY_SCOPE", "RECOVERY_REVIEW_CHANGED"],
+);
+define(
+  401,
+  "The read-only recovery session changed. Sign in again to inspect the original transaction.",
+  ["RECOVERY_SESSION_CHANGED"],
+);
+define(
+  404,
+  "No matching saved creation is available for this wallet and transaction.",
+  ["CREATION_RECOVERY_NOT_FOUND"],
+);
+define(403, "This recovery session does not match the original creation.", [
+  "CREATION_RECOVERY_SCOPE",
+]);
+define(
+  409,
+  "The original transaction differs from its saved review. Preserve its transaction ID for review.",
+  ["CREATION_RECOVERY_MISMATCH"],
+);
+define(
+  409,
+  "The original creation receipt changed. Check its existing transaction ID again.",
+  ["CREATION_RECOVERY_REORG"],
+);
+define(
+  503,
+  "The original creation could not be checked. Preserve its transaction ID and check again later.",
+  ["CREATION_RECOVERY_UNAVAILABLE"],
+);
+
+define(
+  403,
   "Review and sign this transaction in your browser wallet.",
   ["WALLET_SIGNATURE_REQUIRED"],
   [403, 409],

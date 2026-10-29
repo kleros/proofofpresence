@@ -1,3 +1,52 @@
+# Active original mainnet creation recovery — 29 October2026, 22:07 Bangkok
+
+Core branch `codex/core-application`, HEAD `73cf9b26131be15e776cb7b0714e4b883be2cc20`.
+Lean optimization IS LIVE: Netlify `6ae3588bebd4d8a681fd1612`, Railway
+`df28a9da-d62b-4332-9c99-07a1efdc233f` SUCCESS/health200, both source73cf.
+This supersedes older "not published" entries below. The matching AFTER performance probe remains
+deliberately deferred during the urgent real transaction investigation; do not invent a timing gain.
+
+The human subsequently confirmed mainnet transaction
+`0xef60cbf9c65883eb3a1daf6f250bd6cc8328ba655270e897ba17870b1d8a06dc`.
+Canonical successful block26298864 created exactly one reviewed-factory event:
+`0x4542D9b3De78a59d74cbbfe2166e3ef054E42A69`. Outer type4/EIP7702 transaction goes
+to `0xdb9b1e94b5b69df7e401ddbede43491141047db3`, with one zero-value inner factory
+`createEvent` call. Wallet2bb now has delegation code pointing to63c0c19a...e32b.
+The strict direct-envelope reconciliation rejects that wrapper; normal EOA-only authentication
+also rejects the delegated account. Do not replay/create a replacement event or weaken guards.
+
+Human approved exact matching private draft read (`call_c794...`) and separately temporary personal
+SSH access (`call_e2f584...`). The final approved read SUCCEEDED; its temporary key was revoked,
+confirmed absent, isolated agent killed and private files deleted. Two earlier registration attempts
+failed before access because CLI inventories only agent/default keys; their private files were deleted.
+No application restart, state/journal edit or broad export occurred. Exact draft is
+`180156be-1f33-4a54-b3f8-4f720bfad131`, stable event
+`event-e27f2cde-57bb-4c99-874f-e896f32df9f1`, original pending/hash retained.
+Redacted comparison PASSED: original reviewed inner calldata equals actual inner call byte-for-byte,
+eventKey/configuration/policy match receipt. Evidence:
+`artifacts/mainnet-release/original-ef60cbf9-review-comparison.json` plus its three hash-bound inputs;
+credential cleanup proof `original-ef60cbf9-temporary-access-attempt3.json`.
+Full child provenance remains unverified; no adoption/deposit-ready link or MetaMask false-positive
+classification is established. Keep protection enabled; warning reason/flagged address remains unknown.
+
+Authorized urgent product request independently read in UI chat userMessage01a18814-0988-7423-9ef6-09cc96f5e871:
+faster setup, automatic original-transaction progress, investigate wallet warning/missing event, show
+organized events after connect. Root owns widget/server/auth/recovery and all live operators. A new
+read-only recovery service is being implemented locally with a distinct server-enforced recovery-only
+session and default-deny API boundary. Normal EOA finance policy and direct reconciliation remain intact.
+No recovery source is published yet; no delegated financial support is authorized/claimed by that view.
+
+UI finite handoff `bdddf4e` contains pure setup-progress/owned-events components, CSS and synthetic
+evidence only. Root reviewing before integration; app/entry/public-home/MyEvents routing stays held.
+No widget/backend source from the UI worktree should overwrite Core. Source/helper/test boundaries:
+`docs/SETUP_PROGRESS_OWNED_EVENTS_HANDOFF.md` in isolated UI worktree until integrated.
+Automatic approval review blocked outgoing management and UI messages containing internal access/
+recovery detail beyond public-proof coordination scope; they were NOT sent. Later UI public proof
+path/outcome-only update was allowed. Do not bypass that scope with indirect messages.
+
+A/B/C remain retired incomplete and native jobs PAUSED; D complete, E unused. No new financial send,
+external security report, billing upgrade, upstream push, replacement event or IPFS upload.
+
 # Lean-startup candidate integrated — 29 October2026
 
 Candidate4UIproducts fromea35a1b are integrated; entry3f8cb009/public-homeeb514495/app89e32090/
