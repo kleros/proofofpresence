@@ -1,3 +1,18 @@
+# Private GitHub source backup — 30 October 2026
+
+The human authorized pushing the project and selected the PRIVATE repository
+https://github.com/markdavemanansala/proofofpresence. Upload completed and privacy/default `main`
+plus all five remote branch hashes were verified. Workspace `origin` now points to this repository.
+Main's source snapshot `4b81d478e193fd1b8f14471272036f706d357026` includes current development files
+captured at 01:58 Bangkok, including previously uncommitted work. Original `codex/core-application`,
+`codex/kleros-ui-ux-speed-audit` and `codex/instant-upgrades-v10` histories are preserved separately;
+`codex/ui-working-copy-2026-10-30` additionally preserves remaining UI changes at `607e29d`.
+The upload was prepared in an isolated checkout without changing active source/index/branches.
+Private keys, credentials, runtime data and once-only journals stayed local. The reviewed export
+covered 99 commits/2089 blobs with no unresolved credential-pattern findings. This is a code backup,
+not a production deployment or new combined-acceptance claim. Later development needs another push.
+The current financial/operator checkpoint continues below unchanged.
+
 # Amended V10 Step 2 recovery handoff running — 30 October 2026, 01:50 Bangkok
 
 Supersedes the preceding bridge/session/source status below. Old session 83412 is stopped.
