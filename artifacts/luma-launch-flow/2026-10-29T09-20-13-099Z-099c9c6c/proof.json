@@ -1,0 +1,3143 @@
+{
+  "status": "PASS",
+  "runId": "2026-10-29T09-20-13-099Z-099c9c6c",
+  "environment": "LOCAL HTTPS + IN-PROCESS GANACHE CHAIN1",
+  "profile": "kleros-event-v9-uups",
+  "depositWei": "1000000000000",
+  "checks": [
+    "Real nonce authentication for organizer",
+    "Real nonce authentication for organizer",
+    "Known factory hash survives real backend/workbench restart, expired signing scope and nonce reauthentication without resend",
+    "Real nonce authentication for other-organizer",
+    "Real nonce authentication for other-event-payer",
+    "Real nonce authentication for Alice",
+    "Real nonce authentication for Bob",
+    "Actual contract case metadata binds the original Luma interval, timezone, policy digest and case organizer",
+    "Actual waiting case export/download preserves exact contract bytes without upload, gateway request or financial signing",
+    "Actual matched case export/download preserves exact contract bytes without upload, gateway request or financial signing",
+    "All twelve explicit UI financial operations requested exactly one wallet transaction each",
+    "Same Bob receives one attendance share plus separate collateral; final personal UI reports paid and case settled",
+    "Second organizer's separate factory child and nonzero payer credit stay unchanged throughout event A",
+    "No backend signer/mutable RPC, external request, public-chain transaction, private key export or uncaught page error"
+  ],
+  "operations": [
+    {
+      "label": "UI creates A",
+      "action": "createEvent",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "0709d165-51e5-4491-8f8c-b0d497b3cf1f",
+      "hash": "0x92be4d35faa1007c5ea8c296ac48e947a7acccd9032abcf3aa3284ea194daaac",
+      "blockNumber": 7,
+      "blockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI creates B",
+      "action": "createEvent",
+      "actor": "0x1CbbEaa3E712C0dF23D58620B752655cFcC23Fbd",
+      "eventId": "event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "draftId": "56fe5bb9-cc9d-4878-bf40-4b4b40a2b53e",
+      "hash": "0xda3433fcace4c8991f454a677e5cfed5628d5b10cb10bae5410911f2ad67854e",
+      "blockNumber": 8,
+      "blockHash": "0x4ccb744664f786bb630c5c595bb59a4bb555f1933ad806be7dae33c394092016",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI deposit",
+      "action": "deposit",
+      "actor": "0xf92558EbB1668fa500537186494Aeba20ba5A24E",
+      "eventId": "event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "draftId": "a14369ed-8674-4511-a0df-530617cd0991",
+      "hash": "0xef7eec105e1e70b543806d473f90840adaa4431d943faadbfd4bbb4b6f9a2dd5",
+      "blockNumber": 9,
+      "blockHash": "0xd06cde83959dbc073c46b6391080cfa6fe193a4affacddc5cd036b3251be2902",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI deposit",
+      "action": "deposit",
+      "actor": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "d9765ea0-a71c-40e4-8221-2145f1435813",
+      "hash": "0x31be5e014224ddaed5ca70b66b45c76f128d792172c90cbd1b9c393e42eead49",
+      "blockNumber": 10,
+      "blockHash": "0x301ee97d6f7130a15a923296c80edeb8d128c2d3cae1ee74491f71a1ff0515eb",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI deposit",
+      "action": "deposit",
+      "actor": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "6bfa2d1d-31b2-4a7e-908a-2958a0be389d",
+      "hash": "0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+      "blockNumber": 11,
+      "blockHash": "0xcf8895e09858437669533e9a933ac95e24a7016bdad4f44ae5680224d09fe83a",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI register",
+      "action": "register",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "3468f5ab-cca7-4db6-a616-2d8163302254",
+      "hash": "0xa7c1b1a724911cd97cd6c0f57d898661dffe6f1ec280e567b45158847529db1e",
+      "blockNumber": 12,
+      "blockHash": "0xd35e1a6aa4bb19681f3a035e4363fdd69d4f61d570e244d4885638feba936e25",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI register",
+      "action": "register",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "aed27657-5e2c-4129-af87-2640f4e0eee2",
+      "hash": "0xee9ce2dc38b5cf4a6682e7e5faac456061a6e7b7037700cc4c504af764858eab",
+      "blockNumber": 13,
+      "blockHash": "0x50fbad474d7f5099520490b62969c118497a35055a9b89304982bab300acd092",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI postAttendance",
+      "action": "postAttendance",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "d32793bd-a661-4d9b-bedf-ff944618c5b2",
+      "hash": "0x3e710b73ae26a1375ef97e29a96b4c52e67114c106d001e8aef4aabb980a4633",
+      "blockNumber": 15,
+      "blockHash": "0xe857177c2152f3f00f08a218066409a7c6673c6323d544296c73b7f0b04f03d4",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI challenge",
+      "action": "challenge",
+      "actor": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "da7494da-ed7b-40c5-81e3-e9ed92130cd2",
+      "hash": "0x09bacb24a59ac5002e17a661fa8dd6e43c99a44e7799b9ab145719859aa84d39",
+      "blockNumber": 16,
+      "blockHash": "0xe8db39bdeda6ba92b7b9640ec6e1abced8903ecdba584f1f4367d22fd5adda7a",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI match",
+      "action": "match",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "3a370d18-ce33-400c-9a80-d315f979f270",
+      "hash": "0x64ff30024055d9928430a82a44db1dc5f4a7d7e58e8616241ca1edd1444f8709",
+      "blockNumber": 17,
+      "blockHash": "0x8496ec7418c3ae40c2ec23a8ce7245dc28a051df6c98bd980098233870eade98",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI release",
+      "action": "release",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "d357f539-178c-472a-9fa1-3046555324c3",
+      "hash": "0xa40c28c261afd1da13648c4bbeede4164cbd9d42f347aa91a9b3441482833ead",
+      "blockNumber": 19,
+      "blockHash": "0x8e479fcf3c2b7f4abeb3ae9fa65191b986c0e9ca559377b288db6d9379b1d6c3",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI resolve",
+      "action": "resolve",
+      "actor": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "draftId": "9dc9dc5b-341b-4580-aeb1-039ec46dc2a9",
+      "hash": "0x824218c985e2462bbf9955e9c18d48af1b4470f5c1632e124f8c3e6f912f38f1",
+      "blockNumber": 21,
+      "blockHash": "0x52b20243f3fa4fd0ab8b0e7ccf5ece7414e626490ee246b75837fdbf33696562",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "both-deposits-confirmed",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "state": {
+        "upgrade": {
+          "kind": "uups",
+          "version": 9,
+          "verified": true,
+          "pending": null,
+          "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+          "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+          "implementationRevision": 1,
+          "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+          "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+          "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+          "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+          "governanceKind": "single-owner-timelock",
+          "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "pendingOwner": null,
+          "pendingOperationCount": 0,
+          "executingOperationCount": 0,
+          "delaySeconds": 172800
+        },
+        "phase": "Open",
+        "owner": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [],
+        "activeStakers": [],
+        "stakerHistory": [],
+        "attendees": [],
+        "cases": [],
+        "depositWei": "1000000000000",
+        "poolWei": "0",
+        "balanceWei": "2000000000000",
+        "reservedWei": "2000000000000",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "0",
+        "payoutShareWei": "0",
+        "stakerCount": 0,
+        "attendeeCount": 0,
+        "challengeEndsAt": 0,
+        "pendingChallenges": 0,
+        "challengeDepositWei": "16200000000000000",
+        "pendingTotalWei": "2000000000000",
+        "pendingCredits": {
+          "0x53ecf4eb2359b059af8204535f6c106ab5c6f594": "1000000000000",
+          "0xc968f20e1dd809ae0867fc619866936f1b52ec86": "1000000000000"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 0,
+        "remainingAdmissionSlots": 150,
+        "deploymentTrust": {
+          "status": "verified",
+          "contractVersion": "kleros-event-v9-uups",
+          "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+          "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+          "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+          "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+          "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+        },
+        "fingerprint": "2905fb13ea3c814fafa82a9f96be25c81a6ec669825fef7a95b0bc2af3e2295e",
+        "blockNumber": 11,
+        "now": 1793265642
+      },
+      "ownWallet": {
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "owedWei": "0",
+        "pendingCreditWei": "1000000000000",
+        "deposit": {
+          "status": "confirmed",
+          "hash": "0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+          "amountWei": "1000000000000",
+          "blockNumber": 11,
+          "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+          "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+          "chainId": 1,
+          "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+          "abiVersion": "kleros-event-v9-uups"
+        },
+        "depositAction": {
+          "eligible": false,
+          "amountWei": "0",
+          "reasonCode": "CREDIT_AVAILABLE",
+          "reason": "Your deposit is fully funded. Organizer approval and admission are separate."
+        }
+      },
+      "payments": {
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "chainId": 1,
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "contractVersion": "kleros-event-v9-uups",
+        "blockNumber": 11,
+        "blockHash": "0xcf8895e09858437669533e9a933ac95e24a7016bdad4f44ae5680224d09fe83a",
+        "attendancePaidWei": "0",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "0",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "0",
+        "scope": "Successful kleros-event-v9-uups log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": []
+      },
+      "deploymentTrust": {
+        "status": "verified",
+        "contractVersion": "kleros-event-v9-uups",
+        "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+        "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+        "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+        "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+        "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+      },
+      "upgrade": {
+        "kind": "uups",
+        "version": 9,
+        "verified": true,
+        "pending": null,
+        "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+        "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+        "implementationRevision": 1,
+        "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+        "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+        "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+        "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+        "governanceKind": "single-owner-timelock",
+        "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "pendingOwner": null,
+        "pendingOperationCount": 0,
+        "executingOperationCount": 0,
+        "delaySeconds": 172800
+      }
+    },
+    {
+      "label": "bob-waiting",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "state": {
+        "upgrade": {
+          "kind": "uups",
+          "version": 9,
+          "verified": true,
+          "pending": null,
+          "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+          "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+          "implementationRevision": 1,
+          "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+          "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+          "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+          "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+          "governanceKind": "single-owner-timelock",
+          "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "pendingOwner": null,
+          "pendingOperationCount": 0,
+          "executingOperationCount": 0,
+          "delaySeconds": 172800
+        },
+        "phase": "Listed",
+        "owner": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "activeStakers": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "stakerHistory": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "attendees": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594"
+        ],
+        "cases": [
+          {
+            "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+            "matched": false,
+            "outcome": null,
+            "state": "Waiting",
+            "matcher": "0x0000000000000000000000000000000000000000",
+            "matchEndsAt": 1793355674,
+            "depositWei": "16200000000000000",
+            "localDisputeID": null,
+            "arbitratorDisputeID": null,
+            "heldShareWei": "0",
+            "caseOrganizer": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "finalRuling": null,
+            "caseURI": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+            "publication": "unpublished",
+            "appeal": null,
+            "rewardsReady": false
+          }
+        ],
+        "depositWei": "1000000000000",
+        "poolWei": "2000000000000",
+        "balanceWei": "16202000000000000",
+        "reservedWei": "16202000000000000",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "16200000000000000",
+        "payoutShareWei": "0",
+        "stakerCount": 2,
+        "attendeeCount": 1,
+        "challengeEndsAt": 1793355669,
+        "pendingChallenges": 1,
+        "challengeDepositWei": "16200000000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x53ecf4eb2359b059af8204535f6c106ab5c6f594": "0",
+          "0xc968f20e1dd809ae0867fc619866936f1b52ec86": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 2,
+        "remainingAdmissionSlots": 148,
+        "deploymentTrust": {
+          "status": "verified",
+          "contractVersion": "kleros-event-v9-uups",
+          "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+          "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+          "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+          "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+          "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+        },
+        "fingerprint": "b18d53b8773a5b522101cfbb0281c5633461e6529b001041411a4b2c3ca30de1",
+        "blockNumber": 16,
+        "now": 1793269274
+      },
+      "ownWallet": {
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "owedWei": "0",
+        "pendingCreditWei": "0",
+        "deposit": {
+          "status": "confirmed",
+          "hash": "0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+          "amountWei": "1000000000000",
+          "blockNumber": 11,
+          "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+          "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+          "chainId": 1,
+          "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+          "abiVersion": "kleros-event-v9-uups"
+        },
+        "depositAction": {
+          "eligible": false,
+          "amountWei": "0",
+          "reasonCode": "DEPOSIT_CLOSED",
+          "reason": "This event no longer accepts deposits."
+        }
+      },
+      "payments": {
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "chainId": 1,
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "contractVersion": "kleros-event-v9-uups",
+        "blockNumber": 16,
+        "blockHash": "0xe8db39bdeda6ba92b7b9640ec6e1abced8903ecdba584f1f4367d22fd5adda7a",
+        "attendancePaidWei": "0",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "0",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "0",
+        "scope": "Successful kleros-event-v9-uups log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": []
+      },
+      "deploymentTrust": {
+        "status": "verified",
+        "contractVersion": "kleros-event-v9-uups",
+        "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+        "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+        "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+        "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+        "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+      },
+      "upgrade": {
+        "kind": "uups",
+        "version": 9,
+        "verified": true,
+        "pending": null,
+        "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+        "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+        "implementationRevision": 1,
+        "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+        "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+        "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+        "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+        "governanceKind": "single-owner-timelock",
+        "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "pendingOwner": null,
+        "pendingOperationCount": 0,
+        "executingOperationCount": 0,
+        "delaySeconds": 172800
+      }
+    },
+    {
+      "label": "alice-paid-bob-held-unruled",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "state": {
+        "upgrade": {
+          "kind": "uups",
+          "version": 9,
+          "verified": true,
+          "pending": null,
+          "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+          "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+          "implementationRevision": 1,
+          "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+          "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+          "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+          "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+          "governanceKind": "single-owner-timelock",
+          "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "pendingOwner": null,
+          "pendingOperationCount": 0,
+          "executingOperationCount": 0,
+          "delaySeconds": 172800
+        },
+        "phase": "Finalized",
+        "owner": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "activeStakers": [
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "stakerHistory": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "attendees": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594"
+        ],
+        "cases": [
+          {
+            "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+            "matched": true,
+            "outcome": null,
+            "state": "Disputed",
+            "matcher": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "matchEndsAt": 1793355674,
+            "depositWei": "16200000000000000",
+            "localDisputeID": "0",
+            "arbitratorDisputeID": "1000",
+            "heldShareWei": "1000000000000",
+            "caseOrganizer": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "finalRuling": null,
+            "caseURI": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+            "publication": {
+              "status": "exported",
+              "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+              "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+              "scopeHash": "af2446901cf80e75b94a7987fe8990572b5a21fd53566b4d1f870341726770a0",
+              "byteLength": 2872,
+              "uploadAttempted": false,
+              "canPublish": true
+            },
+            "appeal": {
+              "rewardsReady": false,
+              "withdrawableWei": null,
+              "ruling": 0,
+              "start": 0,
+              "end": 0,
+              "loserEnd": 0,
+              "costAttended": "0",
+              "costAbsent": "0"
+            },
+            "rewardsReady": false
+          }
+        ],
+        "depositWei": "1000000000000",
+        "poolWei": "2000000000000",
+        "balanceWei": "16201000000000000",
+        "reservedWei": "16201000000000000",
+        "spareWei": "0",
+        "heldBackWei": "1000000000000",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "16200000000000000",
+        "payoutShareWei": "1000000000000",
+        "stakerCount": 2,
+        "attendeeCount": 1,
+        "challengeEndsAt": 1793355669,
+        "pendingChallenges": 1,
+        "challengeDepositWei": "16200000000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x53ecf4eb2359b059af8204535f6c106ab5c6f594": "0",
+          "0xc968f20e1dd809ae0867fc619866936f1b52ec86": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 2,
+        "remainingAdmissionSlots": 148,
+        "deploymentTrust": {
+          "status": "verified",
+          "contractVersion": "kleros-event-v9-uups",
+          "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+          "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+          "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+          "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+          "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+        },
+        "fingerprint": "bafa5b7ae7aafde79dda43974a321609dbc6f6b33e40f9c8302de053f5abdf51",
+        "blockNumber": 19,
+        "now": 1793355680
+      },
+      "ownWallet": {
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "owedWei": "0",
+        "pendingCreditWei": "0",
+        "deposit": {
+          "status": "confirmed",
+          "hash": "0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+          "amountWei": "1000000000000",
+          "blockNumber": 11,
+          "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+          "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+          "chainId": 1,
+          "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+          "abiVersion": "kleros-event-v9-uups"
+        },
+        "depositAction": {
+          "eligible": false,
+          "amountWei": "0",
+          "reasonCode": "DEPOSIT_CLOSED",
+          "reason": "This event no longer accepts deposits."
+        }
+      },
+      "payments": {
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "chainId": 1,
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "contractVersion": "kleros-event-v9-uups",
+        "blockNumber": 19,
+        "blockHash": "0x8e479fcf3c2b7f4abeb3ae9fa65191b986c0e9ca559377b288db6d9379b1d6c3",
+        "attendancePaidWei": "1000000000000",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "1000000000000",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "1000000000000",
+        "scope": "Successful kleros-event-v9-uups log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": [
+          {
+            "type": "attendance-payout",
+            "wallet": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+            "recipient": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+            "amountWei": "1000000000000",
+            "txHash": "0xa40c28c261afd1da13648c4bbeede4164cbd9d42f347aa91a9b3441482833ead",
+            "blockNumber": 19,
+            "logIndex": 1,
+            "successful": true,
+            "sourceMethod": "releasePayouts"
+          }
+        ]
+      },
+      "deploymentTrust": {
+        "status": "verified",
+        "contractVersion": "kleros-event-v9-uups",
+        "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+        "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+        "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+        "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+        "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+      },
+      "upgrade": {
+        "kind": "uups",
+        "version": 9,
+        "verified": true,
+        "pending": null,
+        "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+        "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+        "implementationRevision": 1,
+        "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+        "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+        "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+        "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+        "governanceKind": "single-owner-timelock",
+        "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "pendingOwner": null,
+        "pendingOperationCount": 0,
+        "executingOperationCount": 0,
+        "delaySeconds": 172800
+      }
+    },
+    {
+      "label": "delivered-final-unsettled",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "state": {
+        "upgrade": {
+          "kind": "uups",
+          "version": 9,
+          "verified": true,
+          "pending": null,
+          "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+          "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+          "implementationRevision": 1,
+          "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+          "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+          "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+          "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+          "governanceKind": "single-owner-timelock",
+          "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "pendingOwner": null,
+          "pendingOperationCount": 0,
+          "executingOperationCount": 0,
+          "delaySeconds": 172800
+        },
+        "phase": "Finalized",
+        "owner": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "activeStakers": [
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "stakerHistory": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "attendees": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594"
+        ],
+        "cases": [
+          {
+            "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+            "matched": true,
+            "outcome": null,
+            "state": "Disputed",
+            "matcher": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "matchEndsAt": 1793355674,
+            "depositWei": "16200000000000000",
+            "localDisputeID": "0",
+            "arbitratorDisputeID": "1000",
+            "heldShareWei": "1000000000000",
+            "caseOrganizer": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "finalRuling": 1,
+            "caseURI": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+            "publication": {
+              "status": "exported",
+              "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+              "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+              "scopeHash": "af2446901cf80e75b94a7987fe8990572b5a21fd53566b4d1f870341726770a0",
+              "byteLength": 2872,
+              "uploadAttempted": false,
+              "canPublish": true
+            },
+            "appeal": {
+              "rewardsReady": true,
+              "withdrawableWei": "0",
+              "ruling": 1,
+              "start": 0,
+              "end": 0,
+              "loserEnd": 0,
+              "costAttended": "0",
+              "costAbsent": "0"
+            },
+            "rewardsReady": true
+          }
+        ],
+        "depositWei": "1000000000000",
+        "poolWei": "2000000000000",
+        "balanceWei": "16201000000000000",
+        "reservedWei": "16201000000000000",
+        "spareWei": "0",
+        "heldBackWei": "1000000000000",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "16200000000000000",
+        "payoutShareWei": "1000000000000",
+        "stakerCount": 2,
+        "attendeeCount": 1,
+        "challengeEndsAt": 1793355669,
+        "pendingChallenges": 1,
+        "challengeDepositWei": "16200000000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x53ecf4eb2359b059af8204535f6c106ab5c6f594": "0",
+          "0xc968f20e1dd809ae0867fc619866936f1b52ec86": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 2,
+        "remainingAdmissionSlots": 148,
+        "deploymentTrust": {
+          "status": "verified",
+          "contractVersion": "kleros-event-v9-uups",
+          "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+          "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+          "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+          "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+          "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+        },
+        "fingerprint": "cda24b09187acfcbaebf9fb307b55c6b4e2696e515cffc57a4a665931a0b6de4",
+        "blockNumber": 20,
+        "now": 1793355683
+      },
+      "ownWallet": {
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "owedWei": "0",
+        "pendingCreditWei": "0",
+        "deposit": {
+          "status": "confirmed",
+          "hash": "0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+          "amountWei": "1000000000000",
+          "blockNumber": 11,
+          "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+          "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+          "chainId": 1,
+          "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+          "abiVersion": "kleros-event-v9-uups"
+        },
+        "depositAction": {
+          "eligible": false,
+          "amountWei": "0",
+          "reasonCode": "DEPOSIT_CLOSED",
+          "reason": "This event no longer accepts deposits."
+        }
+      },
+      "payments": {
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "chainId": 1,
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "contractVersion": "kleros-event-v9-uups",
+        "blockNumber": 20,
+        "blockHash": "0x210a6210d22fe05389260c1c3d711c9560ea396d6356cb37939ed4a1e46d7976",
+        "attendancePaidWei": "1000000000000",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "1000000000000",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "1000000000000",
+        "scope": "Successful kleros-event-v9-uups log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": [
+          {
+            "type": "attendance-payout",
+            "wallet": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+            "recipient": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+            "amountWei": "1000000000000",
+            "txHash": "0xa40c28c261afd1da13648c4bbeede4164cbd9d42f347aa91a9b3441482833ead",
+            "blockNumber": 19,
+            "logIndex": 1,
+            "successful": true,
+            "sourceMethod": "releasePayouts"
+          }
+        ]
+      },
+      "deploymentTrust": {
+        "status": "verified",
+        "contractVersion": "kleros-event-v9-uups",
+        "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+        "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+        "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+        "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+        "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+      },
+      "upgrade": {
+        "kind": "uups",
+        "version": 9,
+        "verified": true,
+        "pending": null,
+        "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+        "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+        "implementationRevision": 1,
+        "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+        "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+        "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+        "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+        "governanceKind": "single-owner-timelock",
+        "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "pendingOwner": null,
+        "pendingOperationCount": 0,
+        "executingOperationCount": 0,
+        "delaySeconds": 172800
+      }
+    },
+    {
+      "label": "same-bob-paid-final",
+      "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "state": {
+        "upgrade": {
+          "kind": "uups",
+          "version": 9,
+          "verified": true,
+          "pending": null,
+          "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+          "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+          "implementationRevision": 1,
+          "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+          "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+          "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+          "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+          "governanceKind": "single-owner-timelock",
+          "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+          "pendingOwner": null,
+          "pendingOperationCount": 0,
+          "executingOperationCount": 0,
+          "delaySeconds": 172800
+        },
+        "phase": "Finalized",
+        "owner": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "activeStakers": [],
+        "stakerHistory": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "attendees": [
+          "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+          "0xC968F20e1dD809ae0867FC619866936F1b52eC86"
+        ],
+        "cases": [
+          {
+            "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+            "matched": true,
+            "outcome": null,
+            "state": "Resolved",
+            "matcher": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "matchEndsAt": 1793355674,
+            "depositWei": "16200000000000000",
+            "localDisputeID": "0",
+            "arbitratorDisputeID": "1000",
+            "heldShareWei": "0",
+            "caseOrganizer": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+            "finalRuling": 1,
+            "caseURI": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+            "publication": {
+              "status": "exported",
+              "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+              "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+              "scopeHash": "af2446901cf80e75b94a7987fe8990572b5a21fd53566b4d1f870341726770a0",
+              "byteLength": 2872,
+              "uploadAttempted": false,
+              "canPublish": true
+            },
+            "appeal": {
+              "rewardsReady": true,
+              "withdrawableWei": "0"
+            },
+            "rewardsReady": true
+          }
+        ],
+        "depositWei": "1000000000000",
+        "poolWei": "2000000000000",
+        "balanceWei": "0",
+        "reservedWei": "0",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "0",
+        "payoutShareWei": "1000000000000",
+        "stakerCount": 2,
+        "attendeeCount": 2,
+        "challengeEndsAt": 1793355669,
+        "pendingChallenges": 0,
+        "challengeDepositWei": "16200000000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {
+          "0x53ecf4eb2359b059af8204535f6c106ab5c6f594": "0",
+          "0xc968f20e1dd809ae0867fc619866936f1b52ec86": "0"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 2,
+        "remainingAdmissionSlots": 148,
+        "deploymentTrust": {
+          "status": "verified",
+          "contractVersion": "kleros-event-v9-uups",
+          "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+          "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+          "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+          "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+          "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+        },
+        "fingerprint": "ee3ff7bf7648cda92a29298071be7dd4aca2892f28d5475e8f4ce9dd7c9607f1",
+        "blockNumber": 21,
+        "now": 1793355689
+      },
+      "ownWallet": {
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "owedWei": "0",
+        "pendingCreditWei": "0",
+        "deposit": {
+          "status": "confirmed",
+          "hash": "0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+          "amountWei": "1000000000000",
+          "blockNumber": 11,
+          "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+          "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+          "chainId": 1,
+          "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+          "abiVersion": "kleros-event-v9-uups"
+        },
+        "depositAction": {
+          "eligible": false,
+          "amountWei": "0",
+          "reasonCode": "DEPOSIT_CLOSED",
+          "reason": "This event no longer accepts deposits."
+        }
+      },
+      "payments": {
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "chainId": 1,
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "contractVersion": "kleros-event-v9-uups",
+        "blockNumber": 21,
+        "blockHash": "0x52b20243f3fa4fd0ab8b0e7ccf5ece7414e626490ee246b75837fdbf33696562",
+        "attendancePaidWei": "2000000000000",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "2000000000000",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "2000000000000",
+        "scope": "Successful kleros-event-v9-uups log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": [
+          {
+            "type": "attendance-payout",
+            "wallet": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+            "recipient": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+            "amountWei": "1000000000000",
+            "txHash": "0xa40c28c261afd1da13648c4bbeede4164cbd9d42f347aa91a9b3441482833ead",
+            "blockNumber": 19,
+            "logIndex": 1,
+            "successful": true,
+            "sourceMethod": "releasePayouts"
+          },
+          {
+            "type": "attendance-payout",
+            "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+            "recipient": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+            "amountWei": "1000000000000",
+            "txHash": "0x824218c985e2462bbf9955e9c18d48af1b4470f5c1632e124f8c3e6f912f38f1",
+            "blockNumber": 21,
+            "logIndex": 2,
+            "successful": true,
+            "sourceMethod": "resolveChallenge"
+          }
+        ]
+      },
+      "deploymentTrust": {
+        "status": "verified",
+        "contractVersion": "kleros-event-v9-uups",
+        "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+        "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "configurationHash": "0x762520003bf185e869d7fe100fab472259b66d82ec0294923589bcc8c57af691",
+        "creationBlockHash": "0x158bf949e540abc12b9d624314517687b9f7ac181687ef5b59269a0049e15a7e",
+        "factoryCreationBlockHash": "0xa3112a72a1dd06153e1654160e1189db6952dc349c335844b973947f9f9ce200",
+        "timelockCreationBlockHash": "0x8d042ce195e42d667e87af45c8acc5fb6c61fe16161ff805d1c759b5f0336484"
+      },
+      "upgrade": {
+        "kind": "uups",
+        "version": 9,
+        "verified": true,
+        "pending": null,
+        "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+        "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+        "implementationRevision": 1,
+        "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+        "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+        "authority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+        "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+        "governanceKind": "single-owner-timelock",
+        "initialOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "owner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+        "pendingOwner": null,
+        "pendingOperationCount": 0,
+        "executingOperationCount": 0,
+        "delaySeconds": 172800
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-factory-known-hash-lost-request.png",
+      "sha256": "82f53cd9967ddb4d33ee54d81b4cbb4283d22320732d56e673ed75ee663d750a",
+      "wallet": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "route": "#setup=kickback"
+    },
+    {
+      "file": "02-factory-recovered-after-restart.png",
+      "sha256": "e405ab62d1fe1a0b55e2570507945b9fcf35e867a366a682a498fdee59f29817",
+      "wallet": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "route": "#setup=kickback"
+    },
+    {
+      "file": "03-bob-deposit-confirmed.png",
+      "sha256": "28cd8d87bd6e2b68d1370ac3e6c36ad9f98d614d9bcf24d771af1e308fc66e1c",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "04-bob-waiting.png",
+      "sha256": "2318bc9b868d543b95e105dc0113d6a870a650a1db17edd3039d0bb11dca1a3a",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "05-case-export-waiting.png",
+      "sha256": "ef44d2013fe3055ab5a247f6af1b4e2c016a2696cd94079db8c0cff786c36c04",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "06-bob-matched-unruled.png",
+      "sha256": "8b3ad7c7d8128932ff9c23d5b3eefd5aff0e76e85f605da30fcb4c4477e5aad8",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "07-case-export-matched.png",
+      "sha256": "eac73f538b38e64a1355fc37ff6d17370914e42711bfd218eff573185c321071",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "08-alice-ordinary-direct-payment.png",
+      "sha256": "18474c62f11380972cb0f6e365b9cfdd32b5d921f2fdecb8dfcccf270c15a57c",
+      "wallet": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "09-ordinary-paid-bob-held.png",
+      "sha256": "c133effb10b3684617de2b672d28cd87cd02e19e683ca44502caeab2ed45e6a3",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "10-delivered-final-unsettled.png",
+      "sha256": "6ea530d6c3ae385060602b0bd6f6f0b623c67acc5ca26ced2b73cc1858875354",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "11-bob-paid-case-resolved.png",
+      "sha256": "c301e90202c6f3cc5ce5b391aeecd19882092bbd1e60d9352a3f0ab44e54fc0b",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    },
+    {
+      "file": "12-bob-paid-mobile.png",
+      "sha256": "3a49f99fd46d1e22a76fb1b660e655a817d9cc389ac7737d79dfa9042d44dd57",
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "route": "#event=event-adbc12bb-d086-4a0d-b39e-1972214d5af5&view=participant"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f/submitted",
+      "injected": "dropped-before-backend-hash-binding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f/validate",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0709d165-51e5-4491-8f8c-b0d497b3cf1f/reconcile",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/56fe5bb9-cc9d-4878-bf40-4b4b40a2b53e/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/56fe5bb9-cc9d-4878-bf40-4b4b40a2b53e/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/56fe5bb9-cc9d-4878-bf40-4b4b40a2b53e/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f/drafts/a14369ed-8674-4511-a0df-530617cd0991/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f/drafts/a14369ed-8674-4511-a0df-530617cd0991/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f/submissions/0xef7eec105e1e70b543806d473f90840adaa4431d943faadbfd4bbb4b6f9a2dd5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/d9765ea0-a71c-40e4-8221-2145f1435813/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/d9765ea0-a71c-40e4-8221-2145f1435813/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0x31be5e014224ddaed5ca70b66b45c76f128d792172c90cbd1b9c393e42eead49",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/6bfa2d1d-31b2-4a7e-908a-2958a0be389d/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/6bfa2d1d-31b2-4a7e-908a-2958a0be389d/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "injected": "dropped-confirmed-response"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0x2766a28a30fbbb926bd3dace63543ba46a728b3b9f1f7ffea80afd4093c9252c",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/participants/d5862768-f64c-4291-964a-c49575754170",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/3468f5ab-cca7-4db6-a616-2d8163302254/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/3468f5ab-cca7-4db6-a616-2d8163302254/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0xa7c1b1a724911cd97cd6c0f57d898661dffe6f1ec280e567b45158847529db1e",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/participants/b4964e42-d16e-4d15-a8fa-75847d55c084",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/aed27657-5e2c-4129-af87-2640f4e0eee2/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/aed27657-5e2c-4129-af87-2640f4e0eee2/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0xee9ce2dc38b5cf4a6682e7e5faac456061a6e7b7037700cc4c504af764858eab",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/checkins",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/d32793bd-a661-4d9b-bedf-ff944618c5b2/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/d32793bd-a661-4d9b-bedf-ff944618c5b2/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0x3e710b73ae26a1375ef97e29a96b4c52e67114c106d001e8aef4aabb980a4633",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/da7494da-ed7b-40c5-81e3-e9ed92130cd2/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/da7494da-ed7b-40c5-81e3-e9ed92130cd2/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0x09bacb24a59ac5002e17a661fa8dd6e43c99a44e7799b9ab145719859aa84d39",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/cases/0xC968F20e1dD809ae0867FC619866936F1b52eC86/artifact",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/3a370d18-ce33-400c-9a80-d315f979f270/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/3a370d18-ce33-400c-9a80-d315f979f270/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0x64ff30024055d9928430a82a44db1dc5f4a7d7e58e8616241ca1edd1444f8709",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/cases/0xC968F20e1dD809ae0867FC619866936F1b52eC86/artifact",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/d357f539-178c-472a-9fa1-3046555324c3/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/d357f539-178c-472a-9fa1-3046555324c3/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0xa40c28c261afd1da13648c4bbeede4164cbd9d42f347aa91a9b3441482833ead",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/9dc9dc5b-341b-4580-aeb1-039ec46dc2a9/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/drafts/9dc9dc5b-341b-4580-aeb1-039ec46dc2a9/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/submissions/0x824218c985e2462bbf9955e9c18d48af1b4470f5c1632e124f8c3e6f912f38f1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+      "status": 200
+    }
+  ],
+  "auth": [
+    {
+      "wallet": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "nonceSha256": "1ab6559e2e73c1c6f615b9c3966399d970fb8508b30554566f72ed732ed6e6aa",
+      "messageSha256": "8e13b1bc3057da244044d6d147b8a89057eec63989b12e2c865ce2a515a839f5",
+      "origin": "https://127.0.0.1:54925"
+    },
+    {
+      "wallet": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+      "nonceSha256": "ca41a4bece72bc3e74917ae2ca2fb4c784a2a6aa90759c615a77403db3c5085b",
+      "messageSha256": "6dcdae452435f183826227162a62b7e6d2e56df9d2b1424d16af3bef7871ccb7",
+      "origin": "https://127.0.0.1:54925"
+    },
+    {
+      "wallet": "0x1CbbEaa3E712C0dF23D58620B752655cFcC23Fbd",
+      "nonceSha256": "90d54af20b01116287539a4dfc982c307fa863192b9cd2f465ec46cd5732f4a5",
+      "messageSha256": "1843c4cc39b982de4556031b55aa3c52b23ac99b3b342061aa4393f86653b5c8",
+      "origin": "https://127.0.0.1:54925"
+    },
+    {
+      "wallet": "0xf92558EbB1668fa500537186494Aeba20ba5A24E",
+      "nonceSha256": "075a7c768da59e3465fb0a851201848744141defdbb089fd5e32e5696150cc43",
+      "messageSha256": "b2af4cd308c1b20496e889d7574b2caa325e5084a10e1c269165b9571a5eee2d",
+      "origin": "https://127.0.0.1:54925"
+    },
+    {
+      "wallet": "0x53EcF4eB2359B059Af8204535f6c106ab5C6f594",
+      "nonceSha256": "85ab80aa6e68cab1de99a97beae62892268234ce93e2b68a7cf0963c23699728",
+      "messageSha256": "8da2850f5576eb3afc27e0ec1a5a292046f2491b3e4a0932fed26d7703f6939a",
+      "origin": "https://127.0.0.1:54925"
+    },
+    {
+      "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+      "nonceSha256": "5f070f7fa4fceee6c94b7c4dbc76ac859dca334026ada67cc19e6baa3be6b848",
+      "messageSha256": "29c91e6d11223d5fdc8fe5301ac45cd3f20de0f80074b734aa2272d75d915666",
+      "origin": "https://127.0.0.1:54925"
+    }
+  ],
+  "walletCalls": [
+    {
+      "role": "organizer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-organizer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Alice",
+      "method": "personal_sign"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "personal_sign"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    }
+  ],
+  "external": [],
+  "errors": [],
+  "forbidden": [],
+  "assets": {
+    "public/app.js": "6aef1590d728f746ef300274e0be4f3b540c6146290125ccf53567736a5e5de4",
+    "public/assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "public/assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "public/assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "public/assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "public/batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "public/batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "public/batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "public/batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "public/case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "public/contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "public/contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "public/contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "public/environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "public/hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "public/index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "public/loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "public/luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "public/luma-launch.css": "28778fc773590dbf8f5175da9d62aa0191edf6d75dd62c40ba9d42d1d694b2b5",
+    "public/luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "public/luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "public/reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "public/selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "public/styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "public/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "public/ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "sources": {
+    "artifacts/mainnet-release/luma-v9-generic-policy-draft.json": "ac1b5a84a551feac1977087ae69c56dc587444234fed086f6d7bab10a3ad81d1",
+    "build/contracts-v9/ERC1967Proxy.json": "3881c645e1e9621f2fdebc38dfb41d55cd62d28ab63ca0e612e40ae30039483a",
+    "build/contracts-v9/ERC1967Proxy.storage-layout.json": "e7ad284d2288f5904ee11f44c0fe63736f5f5caca0faf21a1e52a5717df21149",
+    "build/contracts-v9/KlerosEventFactoryV9.json": "0385b677054e0cca3fa263689bc856567a493e0b28933ec20a71d5b66e65238f",
+    "build/contracts-v9/KlerosEventFactoryV9.storage-layout.json": "78e8f698bc58d2a1217fb5cc62e4244dc95a690e1552c9b1aa2dc5b8dd9d94a8",
+    "build/contracts-v9/KlerosEventV9.json": "78cec397f0b4f52aedb950cc60d382726467ebc4783d4cd660c291251a9e0960",
+    "build/contracts-v9/KlerosEventV9.storage-layout.json": "9981e3c307387be3dc7a22ff6c152447234753531f50a47d63a56ceefc2ab03e",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.json": "d28cddaf6bfe947d01dc0b75fa40b2d7b61ca87bb4859dd7b94c1d5cbf0d1516",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.storage-layout.json": "2a0cfb05942eb117591f604447b71fd201a79e703126b8231faba61b50700687",
+    "build/contracts-v9/manifest.json": "ea23931a3ec4539784e7c52862af32a61e40b2ee95443e5f29f7b86b145c7d60",
+    "build/contracts-v9/standard-input.json": "33080e21f6e20b9fa688a74b378199f31594eec86edaa849aa09aa90d4419fe5",
+    "contracts/v9/KlerosEventFactoryV9.sol": "4ce1c30a8ebf383c41718ac2b48bda03ffc719d718447cdd3678e9c067fedbe9",
+    "contracts/v9/KlerosEventV9.sol": "e3d9f947537165d885878c89e86114e6901d0665f4d4b00bf20b9da227a9e11b",
+    "contracts/v9/KlerosUpgradeGateV9.sol": "0197602754ac7296f01b645f4331d3b6f09faf2c78181df4ed702ba1a24bd365",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol": "bd0c37a72bbfb0341530768896035046dab67e01870fadd03e406a618c04926e",
+    "docs/contracts/v9-luma-generic-policy.md": "24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308",
+    "netlify/functions/workbench.mjs": "e26e3220b11d189a060a42ba0c1bfc5f35c1aeb9e88d4ba6e9db31c7cc3303ef",
+    "package-lock.json": "c622f472674738eb5228015a11dcb3cb75aa075dd529a8f6c4f31c57aa261758",
+    "package.json": "25d57f490c0509e0f094eabc404de2cd8e083948cb3d0c48bbfb728e19f9cf33",
+    "public/app.js": "6aef1590d728f746ef300274e0be4f3b540c6146290125ccf53567736a5e5de4",
+    "public/assets/FONT_PROVENANCE.json": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a",
+    "public/assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "public/assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "public/assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "public/assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "public/assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "public/assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "public/batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "public/batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "public/batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "public/batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "public/case-publication.js": "488354b0e9b0de7b80eaca34e1d88300b291333d1fc40f683b2588d2fb8375ca",
+    "public/contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "public/contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "public/contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "public/environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "public/hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "public/index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "public/loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "public/luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "public/luma-launch.css": "28778fc773590dbf8f5175da9d62aa0191edf6d75dd62c40ba9d42d1d694b2b5",
+    "public/luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "public/luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "public/reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "public/selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "public/styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "public/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "public/ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "references/kickback/scripts/lib.mjs": "349a1fc85e72e7d2b076d9251683aac6a6a4e2f358c673cae4e9ea0f0d800c45",
+    "scripts/compile-contracts-v9.mjs": "12805d8e44e43374663069c0c85ae54aa566259e62610fa6b3e764d3ad222cfd",
+    "src/batches.mjs": "28f070725daa0a305bf59ad5e9f073de0e5892a35a38091ce1df6c0172e62f7f",
+    "src/chain.mjs": "612ce4534d00ab478c3f0e268d247d4096a196a5c076b084147b83c979db6eb5",
+    "src/container.mjs": "43d68e440211c1bc7ec8a41e86feff1ccbdca3da344e2635e6a5532c00891101",
+    "src/contracts-v8.mjs": "1ef26947344fca57d485602074ca21bcb3ae602c8a120b9ca108ad7741507918",
+    "src/contracts-v9-luma.mjs": "db93cfe0e06f5a4d45e208c44eaadd63b264e4009243ad0f7994bfacedf1c93f",
+    "src/deposit-inbox.mjs": "b191c8563b276702ba40d18bbf072d54a273fa9e50ff9fef84e51a84fd42b70a",
+    "src/factory-onboarding.mjs": "d4a51eb637e738fb38c6376732f775579f38c606f004292f1bee6da9cb6ad796",
+    "src/import-preview.mjs": "c0f95bf5d674afdb2db75778831f5fd42877d44eda7ade529c85b03bb1f6581c",
+    "src/imports.mjs": "d5e89682a576aa63399e61c36d8596f17f0cdc64424a598e2f70d79b647f3219",
+    "src/mainnet-case-publication.mjs": "612ae4bcb11046ab95afbe6f518fb4ed83b231c672a062b8eb9409d5bedfde5e",
+    "src/mainnet-runtime.mjs": "7776bac160ceb9c1674b534f3366645f64b5ee498c4307185f3347cbd6bf9ea1",
+    "src/mainnet-wallet-deployment.mjs": "07b923f09a67789d11f90b29196a6e481f7b36ede006e37278f1231f3bc4e7c9",
+    "src/payments.mjs": "8f66d6f4eb1f0f2f5cc43f696c1399881712ed7e214be4f988a97a0ca913f2f4",
+    "src/production-case-publication.mjs": "ff21b34907da7371f7ec54ea4ea12f79c70a5d85c26c72968428937dd9c4aaf9",
+    "src/production-errors.mjs": "a3b7e83b5cf3b629206a7a9a195bff8e2cbaa201988dbd70508133e4c52e2ae5",
+    "src/production-wallets.mjs": "d8f8946df88d33eb8c26ab4fc4bc65451d51ba32acf064421834f3eca02ced12",
+    "src/runtime-volume.mjs": "59b61453b612ce1ddbf99e2b82fa69defc9d87172f4969980bcd1cf825fcafa7",
+    "src/server.mjs": "d541f9e96682a5adc4b45f00fff0f26180c79e199865b5a87b4cab972c8bfdac",
+    "src/testnet-config.mjs": "b090d2735f796b1d386c874d009a10349513e66eb4ad5e1081fdc14151be6cd3",
+    "src/testnet-runtime.mjs": "9046a3c31fcbe3420775af513bdac43ba2bc5fe5d1ad7baa8c81e47bbffcdf02",
+    "src/upgrade-artifacts.mjs": "3f3e3becd880846b09276d854322eff92416388ba81ca9e4154efe64d79d9f38",
+    "src/upgrade-verification.mjs": "614cd3ac0f8e7eb49f08f8b4159831d603059d7e24fb987f017a9c923cadd9a3",
+    "src/utils.mjs": "6e77cbaedfe79372abe56214b1b235076d6d20c6610b45f7c34955b4d33ef9f9",
+    "src/v8-deposits.mjs": "b5071e8f39e9c1d90615363c8867116190fc83e460fa566d8a7f5d178a74bd82",
+    "src/v9-testnet-runtime.mjs": "991788cf952f13caf84e83ce803ec39afe9f0c15498864b6e87a03e9e4a85d3e",
+    "src/v9-testnet-verification.mjs": "85dd935d0e74e6d0500f652149f683e5ead9ef13e6744f3e7988c2a503d2ca84",
+    "src/workbench.mjs": "f6949b36a71bf91d45299bd565cf50d54319d87f75b5522e7f862d012661d39a",
+    "test/fixtures/luma-launch-runtime.mjs": "b97e6fd970504b40d502ff066ffacbacd2c96a65c921716324bd9ff3cad7373c",
+    "test/luma-launch-flow.e2e.mjs": "92225214e7edac6b75bcf716651ae1aa389aab7f2ba6e85dd2b4a593d00afebf"
+  },
+  "limitations": [
+    "Public production runtime/bootstrap is injected; actual current V9 source, proxies and governance provenance are verified locally.",
+    "Court adjudication alone is controlled with a local mock. This does not claim a public Court jury vote or real mainnet deployment.",
+    "The fixture persistence survives workbench/server replacement in memory; it does not prove host volume durability.",
+    "The synthetic published policy is fixture metadata only. No IPFS, Luma, hosting or other external publication occurs."
+  ],
+  "publicRequests": 0,
+  "publicSignatures": 0,
+  "publicBroadcasts": 0,
+  "privateSigningFilesRead": 0,
+  "sourceCommit": "9fe35cc9b38ab37f1352da9df38b70246a836639",
+  "sourceFiles": [
+    "artifacts/mainnet-release/luma-v9-generic-policy-draft.json",
+    "build/contracts-v9/ERC1967Proxy.json",
+    "build/contracts-v9/ERC1967Proxy.storage-layout.json",
+    "build/contracts-v9/KlerosEventFactoryV9.json",
+    "build/contracts-v9/KlerosEventFactoryV9.storage-layout.json",
+    "build/contracts-v9/KlerosEventV9.json",
+    "build/contracts-v9/KlerosEventV9.storage-layout.json",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.json",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.storage-layout.json",
+    "build/contracts-v9/manifest.json",
+    "build/contracts-v9/standard-input.json",
+    "contracts/v9/KlerosEventFactoryV9.sol",
+    "contracts/v9/KlerosEventV9.sol",
+    "contracts/v9/KlerosUpgradeGateV9.sol",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol",
+    "docs/contracts/v9-luma-generic-policy.md",
+    "netlify/functions/workbench.mjs",
+    "package-lock.json",
+    "package.json",
+    "public/app.js",
+    "public/assets/FONT_PROVENANCE.json",
+    "public/assets/geist-latin.woff2",
+    "public/assets/geist-mono-latin.woff2",
+    "public/assets/instrument-serif-italic.woff2",
+    "public/assets/instrument-serif-regular.woff2",
+    "public/assets/kleros-logo.svg",
+    "public/assets/kleros-symbol.svg",
+    "public/batch-actions.css",
+    "public/batch-actions.js",
+    "public/batch-pending.js",
+    "public/batch-selection.js",
+    "public/case-publication.js",
+    "public/contract-inbox.css",
+    "public/contract-inbox.js",
+    "public/contract-profiles.js",
+    "public/environment.js",
+    "public/hosted-wallet.js",
+    "public/index.html",
+    "public/loading.css",
+    "public/luma-factory.js",
+    "public/luma-launch.css",
+    "public/luma-launch.js",
+    "public/luma-setup.js",
+    "public/reconciliation.js",
+    "public/selected-event.js",
+    "public/styles.css",
+    "public/transaction-context.js",
+    "public/ui-keyboard.js",
+    "references/kickback/scripts/lib.mjs",
+    "scripts/compile-contracts-v9.mjs",
+    "src/batches.mjs",
+    "src/chain.mjs",
+    "src/container.mjs",
+    "src/contracts-v8.mjs",
+    "src/contracts-v9-luma.mjs",
+    "src/deposit-inbox.mjs",
+    "src/factory-onboarding.mjs",
+    "src/import-preview.mjs",
+    "src/imports.mjs",
+    "src/mainnet-case-publication.mjs",
+    "src/mainnet-runtime.mjs",
+    "src/mainnet-wallet-deployment.mjs",
+    "src/payments.mjs",
+    "src/production-case-publication.mjs",
+    "src/production-errors.mjs",
+    "src/production-wallets.mjs",
+    "src/runtime-volume.mjs",
+    "src/server.mjs",
+    "src/testnet-config.mjs",
+    "src/testnet-runtime.mjs",
+    "src/upgrade-artifacts.mjs",
+    "src/upgrade-verification.mjs",
+    "src/utils.mjs",
+    "src/v8-deposits.mjs",
+    "src/v9-testnet-runtime.mjs",
+    "src/v9-testnet-verification.mjs",
+    "src/workbench.mjs",
+    "test/fixtures/luma-launch-runtime.mjs",
+    "test/luma-launch-flow.e2e.mjs"
+  ],
+  "restartRecovery": {
+    "oldInstance": "f9e43926-eecd-4a8b-becf-ca1f3912e82e",
+    "newInstance": "7c88c8e2-51a4-4661-bb6c-5e0e1db86bf5",
+    "expiredDraftRejected": true,
+    "sameWalletFreshNonce": true,
+    "knownHash": "0x92be4d35faa1007c5ea8c296ac48e947a7acccd9032abcf3aa3284ea194daaac",
+    "droppedBeforeBackendBinding": true,
+    "expirationControl": "Node-only Date.now fixture; no chain/client time change",
+    "newFinancialWalletRequests": 0
+  },
+  "returnToLuma": {
+    "href": "https://luma.com/synthetic-full-kickback",
+    "intercepted": true
+  },
+  "immutableCaseTerms": {
+    "schemaVersion": 1,
+    "lumaUrl": "https://luma.com/synthetic-full-kickback",
+    "startsAt": "2026-10-29T10:21:00.000Z",
+    "endsAt": "2026-10-29T11:21:00.000Z",
+    "timezone": "UTC",
+    "attendanceMode": "event-participation",
+    "attendanceRule": "presence-during-immutable-interval-v1",
+    "evidenceRule": "balance-of-probabilities-with-case-organizer-confirmation-v1",
+    "policySha256": "b43fa6389a8dba7a70deea220dfa5324664b79e7a792a1e5d73a7739cc854d38",
+    "policyURI": "https://production-fixture.example.invalid/policies/synthetic-v9",
+    "caseURI": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+    "contentSha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+    "publication": "not-published-local-exact-bytes-only",
+    "file": "case-bob.json"
+  },
+  "caseExports": [
+    {
+      "label": "waiting",
+      "file": "case-export-waiting.json",
+      "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+      "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+      "originalScope": {
+        "environment": "production",
+        "instanceId": "7c88c8e2-51a4-4661-bb6c-5e0e1db86bf5",
+        "chainId": 1,
+        "contractVersion": "kleros-event-v9-uups",
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "blockNumber": 16,
+        "blockHash": "0xe8db39bdeda6ba92b7b9640ec6e1abced8903ecdba584f1f4367d22fd5adda7a",
+        "matched": false,
+        "localDisputeID": null,
+        "arbitratorDisputeID": null
+      },
+      "currentScope": {
+        "environment": "production",
+        "instanceId": "7c88c8e2-51a4-4661-bb6c-5e0e1db86bf5",
+        "chainId": 1,
+        "contractVersion": "kleros-event-v9-uups",
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "blockNumber": 16,
+        "blockHash": "0xe8db39bdeda6ba92b7b9640ec6e1abced8903ecdba584f1f4367d22fd5adda7a",
+        "matched": false,
+        "localDisputeID": null,
+        "arbitratorDisputeID": null
+      },
+      "publication": {
+        "status": "exported",
+        "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+        "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+        "scopeHash": "af2446901cf80e75b94a7987fe8990572b5a21fd53566b4d1f870341726770a0",
+        "byteLength": 2872,
+        "uploadAttempted": false,
+        "canPublish": true
+      },
+      "newFinancialWalletRequests": 0
+    },
+    {
+      "label": "matched",
+      "file": "case-export-matched.json",
+      "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+      "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+      "originalScope": {
+        "environment": "production",
+        "instanceId": "7c88c8e2-51a4-4661-bb6c-5e0e1db86bf5",
+        "chainId": 1,
+        "contractVersion": "kleros-event-v9-uups",
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "blockNumber": 16,
+        "blockHash": "0xe8db39bdeda6ba92b7b9640ec6e1abced8903ecdba584f1f4367d22fd5adda7a",
+        "matched": false,
+        "localDisputeID": null,
+        "arbitratorDisputeID": null
+      },
+      "currentScope": {
+        "environment": "production",
+        "instanceId": "7c88c8e2-51a4-4661-bb6c-5e0e1db86bf5",
+        "chainId": 1,
+        "contractVersion": "kleros-event-v9-uups",
+        "eventId": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+        "contract": "0xB74f00910623655ceF0e0F5fBE933086ff0BF7cD",
+        "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+        "blockNumber": 17,
+        "blockHash": "0x8496ec7418c3ae40c2ec23a8ce7245dc28a051df6c98bd980098233870eade98",
+        "matched": true,
+        "localDisputeID": "0",
+        "arbitratorDisputeID": "1000"
+      },
+      "publication": {
+        "status": "exported",
+        "uri": "/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs",
+        "sha256": "2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd",
+        "scopeHash": "af2446901cf80e75b94a7987fe8990572b5a21fd53566b4d1f870341726770a0",
+        "byteLength": 2872,
+        "uploadAttempted": false,
+        "canPublish": true
+      },
+      "newFinancialWalletRequests": 0
+    }
+  ],
+  "controlledAdjudication": {
+    "hash": "0x9a385f993e053b325939b8e251fd88743309acad9d90b69597cd526c208cffae",
+    "blockNumber": 20,
+    "localDisputeID": "0",
+    "arbitratorDisputeID": "1000",
+    "ruling": 1,
+    "localOnly": true
+  },
+  "bobPayment": {
+    "wallet": "0xC968F20e1dD809ae0867FC619866936F1b52eC86",
+    "attendanceWei": "1000000000000",
+    "collateralWei": "16200000000000000",
+    "nativeGainWei": "16201000000000000",
+    "nonceUnchanged": true,
+    "caseState": "Resolved",
+    "balancesAndReservesZero": true
+  },
+  "runtime": {
+    "chainId": 1,
+    "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+    "upgradeAuthority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+    "upgradeOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+    "organizerA": "0xE80891399BC2550F36fedD9AA7BAb799b4e75a5A",
+    "organizerB": "0x1CbbEaa3E712C0dF23D58620B752655cFcC23Fbd",
+    "eventA": "event-adbc12bb-d086-4a0d-b39e-1972214d5af5",
+    "eventB": "event-27dcb19e-b03f-4dcc-a10f-1df00a8e597f",
+    "children": 2,
+    "factoryDeployment": {
+      "contractVersion": "kleros-event-v9-uups",
+      "abiVersion": "kleros-event-v9-uups",
+      "chainId": 1,
+      "factory": "0x6E079c3A4670D71242340A81854DfDa848892616",
+      "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+      "implementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+      "implementationCodeHash": "0xedffac5821c2f4aee177c20661c99c4b3f1f5644c8e0d156b9e1722555bef610",
+      "factoryImplementation": "0x2b3dba37a6CF7993606f1819e5C89Eb792091445",
+      "factoryImplementationCodeHash": "0x01d5118408d57bd6a6f0c7a388acb4f8947027e68c8797d1dbdc2dfa41d9ef49",
+      "initialImplementation": "0x090bF7e5f82CF0B9bC6488A73D02dF51B02A6C0E",
+      "initialFactoryImplementation": "0x2b3dba37a6CF7993606f1819e5C89Eb792091445",
+      "initialUpgradeOwner": "0x3cAa478929adE7103Dc58b53594d3dbCb566116e",
+      "upgradeAuthority": "0x357f05b2596D96A47B499017924aC78543384dEb",
+      "upgradeAuthorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+      "factoryDeploymentTxHash": "0x7e6abb1f8a9101a5b45c2cfe18717e183806db9fb4b16c15decf2f04b11cc0bc",
+      "factoryDeploymentBlock": 4,
+      "timelockDeploymentTxHash": "0x0cb46f58a0a6efbad3b184c34db87e8230a712a36fc9ae8a7c98ec9b1447a9c9",
+      "timelockDeploymentBlock": 1,
+      "resolver": "0x095F3966718EaBCC6Cc82b3f6D0bad544f6109eD",
+      "arbitrator": "0xA472bcc0b9FA597Fa4212bBda67105e75A4e0124",
+      "arbitratorExtraData": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003",
+      "policyStatus": "published",
+      "policy": {
+        "uri": "https://production-fixture.example.invalid/policies/synthetic-v9",
+        "text": "Synthetic local V9 policy only. Attendance, disputes and held-share payments follow the unchanged V8 financial rules. No public publication is claimed.",
+        "sha256": "b43fa6389a8dba7a70deea220dfa5324664b79e7a792a1e5d73a7739cc854d38"
+      }
+    },
+    "buildManifestFileSha256": "ea23931a3ec4539784e7c52862af32a61e40b2ee95443e5f29f7b86b145c7d60",
+    "buildManifestCanonicalSha256": "10202cfd4a9657215b6ba6645fbf6dd649287da97e27e17cb485f098564d1e84",
+    "standardInputCanonicalSha256": "559709d4b23f5d8b2396eaa72017c85dbc7ebc2a5df30625dec267c05600a073",
+    "standardInputFileSha256": "33080e21f6e20b9fa688a74b378199f31594eec86edaa849aa09aa90d4419fe5"
+  },
+  "financialStatus": "PASS",
+  "cleanup": [
+    {
+      "name": "browser",
+      "status": "passed"
+    },
+    {
+      "name": "backend",
+      "status": "passed"
+    },
+    {
+      "name": "frontend",
+      "status": "passed"
+    },
+    {
+      "name": "fixture",
+      "status": "passed"
+    },
+    {
+      "name": "temporary-test-certificate",
+      "status": "passed"
+    }
+  ]
+}

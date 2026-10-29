@@ -1,6 +1,50 @@
 # Verification report
 
-## Current Luma browser financial flow — 29 October 2026
+## Final publication-integrated Luma browser flow — 29 October 2026
+
+`node test/luma-launch-flow.e2e.mjs --run-local` passed14 grouped checks, all12 unique UI financial
+transactions and12 screenshots on the final publication-integrated app. This supersedes the earlier
+12-group browser checkpoint below. The parent and independent reviewer checked all79 source and26
+served-asset pins, with zero mismatches. All cleanup steps passed; public requests, signatures and
+broadcasts were0. Backend Node fetches and external browser traffic were both denied by the harness.
+
+[Final immutable proof](../artifacts/luma-launch-flow/2026-10-29T09-20-13-099Z-099c9c6c/proof.json)
+SHA256:`48558e9e31d1253b5565202cf8d69757833d84e17595877cec0ff3e96aca4581`.
+[Actual command log](../artifacts/luma-launch-flow/2026-10-29T09-20-13-099Z-099c9c6c/run.log).
+The [exact tested source archive](../artifacts/luma-launch-flow/2026-10-29T09-20-13-099Z-099c9c6c/source-snapshot.tar.gz)
+and [per-file manifest](../artifacts/luma-launch-flow/2026-10-29T09-20-13-099Z-099c9c6c/source-snapshot.json)
+preserve the frozen working-source bytes, including generated compiler inputs. The archive SHA256 is
+`fbdbfd0cbd1a7388b1605e15717dc2968026e0f8617e8407bcd997567d699ad9`.
+
+The full flow again exercised two actual factory children with separate organizers and the same Luma
+URL; wallet-only deposits; separate approval and registration; trusted attendance; Bob's challenge
+and matching; ordinary Alice payment while Bob's share stayed held; delivered final ruling before
+settlement; and actual UI settlement. Restart/lost-response recovery made no duplicate wallet request.
+
+The SAME Bob in this final run received1000000000000wei attendance plus16200000000000000wei returned
+collateral: native balance gain16201000000000000wei, with his nonce unchanged. The UI displays
+0.000001ETH successful direct attendance and `Challenge settled`; settlement is explicitly asserted
+disabled after resolution. Event A has no remaining pending credit, held share, owed credit, challenge
+escrow, reserve or balance. Event B's nonzero payer credit remains unchanged.
+
+New real-backend publication checks open the actual browser artifact review and download the exact
+contract JSON both while Waiting and after matching. Both downloads are2872bytes, SHA256
+`2e5dca281ca4cdffd14765a413363ecb4b764f28a0dbefedbb769344aefea1fd`, with independently verified URI
+`/ipfs/QmT9YXnr6PNNM4JtBYX1yqcBkk6Pa874z4AuhcKod6yXNs`. Original Waiting provenance/null IDs remain
+unchanged while the current matched scope reports actual resolver/arbitrator IDs0/1000. The UI shows
+`exported`, `uploadAttempted:false`, `canPublish:true`; consent stays unchecked and Publish disabled.
+No upload or gateway availability action was clicked. These checks establish export integrity, not
+public IPFS availability. The exact downloads, screenshots and case JSON are retained beside the proof.
+
+Scope remains local HTTPS/in-process Ganache chain1, injected production bootstrap, in-memory restart
+storage and controlled Court adjudication. Real Kleros protocol execution is covered by the separate
+read-only local-fork proof. Any later publication-store guard hardening requires its own focused regression
+record; this immutable browser proof must not be relabeled as execution of that later source.
+Live policy approval/publication, configured durable hosting, verified deployment manifest and actual
+mainnet activation remain separate release steps. No public launch is inferred from these local checks.
+
+
+## Earlier Luma browser financial checkpoint — 29 October 2026
 
 The integrated compact UI and keyless production workbench completed the actual local V9
 factory/proxy journey. This is a current-source HTTPS browser rehearsal, not a mainnet deployment.

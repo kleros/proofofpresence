@@ -105,3 +105,15 @@ need the exact matching case bytes published and retrievable. The existing local
 action is not IPFS publication. Core/management own the concrete publication/export workflow and its
 release acceptance. Local controlled-Court flow tests must report this limitation honestly; this
 contract lane has made no publication or hosting request.
+
+
+## Final local application acceptance
+
+The final publication-integrated `test/luma-launch-flow.e2e.mjs --run-local` passed14 groups and12
+actual UI transactions, including same-Bob delivery, correct terminal UI, restart without resend,
+two-event isolation, and exact Waiting/matched case downloads without any external publication.
+Proof:`artifacts/luma-launch-flow/2026-10-29T09-20-13-099Z-099c9c6c/proof.json`, SHA256
+`48558e9e31d1253b5565202cf8d69757833d84e17595877cec0ff3e96aca4581`. All79 source and26 asset pins
+were independently checked. An exact source archive preserves this candidate before the later narrow
+publication-store guard hardening. The test report distinguishes source snapshots, the prior stopped
+attempt, controlled jury/in-memory scope, and remaining public release gates.

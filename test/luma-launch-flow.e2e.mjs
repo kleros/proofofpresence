@@ -95,6 +95,7 @@ export async function runLumaLaunchFlow() {
   let fixture, backend, frontend, browser, origin, workbench, gateway;
   let clock = null;
   const realNow = Date.now;
+  const realFetch = globalThis.fetch;
   const sourceFiles = [
     "test/luma-launch-flow.e2e.mjs",
     "test/fixtures/luma-launch-runtime.mjs",
@@ -694,8 +695,75 @@ export async function runLumaLaunchFlow() {
     assert.equal(value.deploymentTrust.status, "verified");
     return value;
   }
+  async function reviewCaseExport(controller, eventId, content, uri, matched, label) {
+    const wallet = fixture.actors.bob.address;
+    const sendsBefore = controller.adapter.calls.filter(
+      (call) => call.method === "eth_sendTransaction",
+    ).length;
+    await openDetails(controller.page, /Advanced · exact case artifact/);
+    const responsePromise = controller.page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return response.request().method() === "POST" && url.origin === origin &&
+        url.pathname.toLowerCase() ===
+          `/api/events/${eventId}/cases/${wallet}/artifact`.toLowerCase();
+    });
+    await controller.page.locator(
+      `[data-case-artifact="review"][data-case-wallet="${wallet}" i]`,
+    ).click();
+    const response = await responsePromise;
+    assert(response.ok());
+    const record = await response.json();
+    await expect(controller.page.locator("[data-case-publication-review]")).toBeVisible();
+    assert.equal(await controller.page.locator("[data-case-publication-json]").textContent(), content);
+    assert.equal(record.artifact.content, content);
+    assert.equal(record.artifact.uri, uri);
+    assert.equal(record.artifact.sha256, sha(content));
+    assert.equal(record.artifact.scope.matched, false, "The original Waiting artifact remains unchanged");
+    assert.equal(record.artifact.scope.localDisputeID, null);
+    assert.equal(record.artifact.scope.arbitratorDisputeID, null);
+    assert.equal(record.currentCase.matched, matched);
+    assert.equal(record.publication.status, "exported");
+    assert.equal(record.publication.uploadAttempted, false);
+    assert.equal(record.publication.canPublish, true);
+    await expect(controller.page.locator("[data-case-publication-consent]")).not.toBeChecked();
+    await expect(controller.page.locator('[data-case-publication="publish"]')).toBeDisabled();
+    const pendingDownload = controller.page.waitForEvent("download");
+    await controller.page.locator('[data-case-publication="download"]').click();
+    const download = await pendingDownload;
+    const filename = `case-export-${label}.json`;
+    await download.saveAs(path.join(output, filename));
+    const bytes = await fs.readFile(path.join(output, filename));
+    assert.deepEqual(bytes, Buffer.from(content, "utf8"));
+    assert.equal(sha(bytes), record.artifact.sha256);
+    assert.equal(controller.adapter.calls.filter(
+      (call) => call.method === "eth_sendTransaction",
+    ).length, sendsBefore);
+    report.caseExports ??= [];
+    report.caseExports.push({ label, file: filename, sha256: sha(bytes), uri,
+      originalScope: record.artifact.scope, currentScope: record.currentCase,
+      publication: record.publication, newFinancialWalletRequests: 0 });
+    await capture(controller, `case-export-${label}`);
+    await controller.page.locator("#review-dialog [data-close]").last().click();
+    await expect(controller.page.locator("#review-dialog")).not.toBeVisible();
+    pass(`Actual ${label} case export/download preserves exact contract bytes without upload, gateway request or financial signing`);
+    return record;
+  }
 
   try {
+    globalThis.fetch = async (input, options = {}) => {
+      let destination;
+      try {
+        destination = new URL(typeof input === "string" || input instanceof URL
+          ? input : input.url);
+      } catch {}
+      report.forbidden.push({
+        transport: "Node fetch",
+        method: options.method ?? "GET",
+        origin: destination?.origin ?? "invalid",
+        path: destination?.pathname ?? "invalid",
+      });
+      throw new Error("External network and publication are forbidden in this local browser test");
+    };
     report.sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], {
       cwd: ROOT,
       encoding: "utf8",
@@ -1071,6 +1139,7 @@ export async function runLumaLaunchFlow() {
       /not created|no matched case/i,
     );
     await capture(bob, "bob-waiting");
+    await reviewCaseExport(bob, aId, caseText, caseURI, false, "waiting");
     await isolate();
     await refresh(organizer, aId);
     await openDetails(organizer.page, /Payouts & attendance disputes/);
@@ -1109,6 +1178,9 @@ export async function runLumaLaunchFlow() {
       String(challenge.arbitratorDisputeID),
     );
     await capture(bob, "bob-matched-unruled");
+    const matchedExport = await reviewCaseExport(bob, aId, caseText, caseURI, true, "matched");
+    assert.equal(matchedExport.currentCase.localDisputeID, String(challenge.localDisputeID));
+    assert.equal(matchedExport.currentCase.arbitratorDisputeID, String(challenge.arbitratorDisputeID));
     await isolate();
     await fixture.advance(
       Math.max(
@@ -1234,6 +1306,9 @@ export async function runLumaLaunchFlow() {
     await expect(bob.page.locator(".case-card")).toContainText(
       "Challenge settled",
     );
+    await expect(bob.page.locator(
+      `[data-tx="resolve"][data-wallet="${fixture.actors.bob.address}" i]`,
+    )).toBeDisabled();
     const paidRow = bob.page
       .locator(".luma-launch-recovery dt")
       .filter({ hasText: "Successful direct attendance payments" })
@@ -1377,6 +1452,7 @@ export async function runLumaLaunchFlow() {
       report.cleanup.some((r) => r.status === "failed")
     )
       report.status = "PASSED_FINANCIAL_CLEANUP_FAILED";
+    globalThis.fetch = realFetch;
     await saveProof();
     console.log(
       JSON.stringify({
