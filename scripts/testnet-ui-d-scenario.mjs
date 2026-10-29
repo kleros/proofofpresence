@@ -274,6 +274,40 @@ export async function verifyUiDFactory({ provider, plan, artifacts, journal }) {
     deploymentBlock: receipt.blockNumber, blockHash: receipt.blockHash };
 }
 
+/** Only a fully verified four-receipt setup earns the narrower child-only resume margin. */
+export async function deploymentDLead({ provider, plan, artifacts, journal, funderAddress, childOnly = false }) {
+  const createAction = `create-${plan.event.id}`, existing = journal.transactions[createAction];
+  if (existing) {
+    check(ethers.isHexString(existing.hash, 32), "An existing D child journal entry needs its known hash; never sign again.");
+    return { mode: "receipt-only", minimumLeadSeconds: 0 };
+  }
+  const completeSetup = ["fund-d-owner", "fund-d-alice", "fund-d-bob", "deploy-d-factory"]
+    .every(action => journal.transactions[action]?.state === "confirmed");
+  if (completeSetup) {
+    for (const role of ROLES) {
+      const entry = journal.transactions[`fund-d-${role}`], expected = {
+        from: funderAddress.toLowerCase(), to: plan.addresses[role].toLowerCase(), data: "0x", value: plan.fundingWei };
+      check(ethers.isHexString(entry.hash, 32) && publicJson(entry.expected) === publicJson(expected),
+        "D resume grant is not the exact reviewed funder/role/value transaction.");
+      const [receipt, tx] = await Promise.all([provider.getTransactionReceipt(entry.hash), provider.getTransaction(entry.hash)]);
+      check(receipt?.status === 1 && (await receipt.confirmations()) >= 2 && tx?.chainId === 10200n &&
+        tx.nonce === entry.nonce && same(tx.from, expected.from) && same(tx.to, expected.to) &&
+        tx.data === "0x" && tx.value === BigInt(plan.fundingWei) && receipt.blockNumber === entry.blockNumber &&
+        receipt.blockHash === entry.blockHash && (await provider.getBlock(entry.blockNumber))?.hash === receipt.blockHash,
+        "D resume requires all three exact successful canonical two-confirmation grants.");
+    }
+    const anchor = await verifyUiDFactory({ provider, plan, artifacts, journal });
+    check((await provider.getTransactionCount(plan.addresses.owner, "pending")) === 1 &&
+      same(await anchor.factory.eventFor(plan.addresses.owner, plan.event.eventKey), ethers.ZeroAddress),
+      "D child-only resume requires owner pending nonce1 and an unused exact factory event key.");
+  } else check(!childOnly, "An unseen D child cannot be signed before all four setup receipts are canonical.");
+  const minimumLeadSeconds = completeSetup ? 30 * 60 : 45 * 60;
+  check((await provider.getBlock("latest")).timestamp + minimumLeadSeconds < plan.event.eventStart,
+    completeSetup ? "D child-only resume needs more than30minutes remaining; no new child is permitted."
+      : "Fresh D setup needs more than45minutes remaining; no new grants are permitted.");
+  return { mode: completeSetup ? "verified-child-only" : "fresh-setup", minimumLeadSeconds };
+}
+
 export function dWallets(filename = UI_D.wallets, prepare = false) {
   check(path.resolve(filename) === path.resolve(UI_D.wallets), "Only the fixed isolated D signing path is allowed.");
   if (!fs.existsSync(filename)) {
@@ -294,7 +328,7 @@ export function dWallets(filename = UI_D.wallets, prepare = false) {
 }
 
 /** Recheck the actual populated transaction immediately before the underlying key can sign. */
-export function boundedDSigner(signer, { provider, plan, journal, action, request }) {
+export function boundedDSigner(signer, { provider, plan, journal, action, request, artifacts, funderAddress }) {
   return {
     getAddress: () => signer.getAddress(),
     populateTransaction: (tx) => signer.populateTransaction(tx),
@@ -320,6 +354,10 @@ export function boundedDSigner(signer, { provider, plan, journal, action, reques
       else check(balance >= BigInt(tx.value ?? 0) + gas * fee + 1_000_000_000_000n +
         (factory ? UI_D.maximumCreateGas * ceiling : 0n),
         "D signing would consume child-deployment or remaining protocol gas reserves.");
+      if (!funding && !factory) {
+        check(!journal.transactions[action], "An existing D child hash is receipt-only; key not used.");
+        await deploymentDLead({ provider, plan, artifacts, journal, funderAddress, childOnly: true });
+      }
       return signer.signTransaction(tx);
     },
   };
@@ -347,8 +385,7 @@ export async function deployUiD({ plan, source, protectedC, stack, provider, art
   if (!journal.transactions["deploy-d-factory"])
     check((await provider.getTransactionCount(plan.addresses.owner, "pending")) === 0 &&
       (await provider.getCode(plan.factory)) === "0x", "D owner nonce/predicted factory address is occupied; no grants are permitted.");
-  check(journal.transactions[createAction] || (await provider.getBlock("latest")).timestamp + 45 * 60 < plan.event.eventStart,
-    "Fresh D deployment needs45minutes of real hosting/deposit margin; never change a started plan.");
+  const lead = await deploymentDLead({ provider, plan, artifacts, journal, funderAddress: await funder.getAddress() });
   const quote = async () => {
     const fees = await currentTransactionFees(provider), fee = fees.maxFeePerGas ?? fees.gasPrice;
     check(BigInt(fee) <= BigInt(plan.deploymentBudget.maxFeePerGas), "D current fee exceeds its explicitly approved ceiling.");
@@ -360,19 +397,22 @@ export async function deployUiD({ plan, source, protectedC, stack, provider, art
   const perform = async (action, signer, request) => {
     await quote();
     const before = await protectedDContext(source, protectedC, provider, legacyArtifacts);
-    const guarded = boundedDSigner(signer, { provider, plan, journal, action, request });
+    const guarded = boundedDSigner(signer, { provider, plan, journal, action, request,
+      artifacts, funderAddress: await funder.getAddress() });
     const receipt = await send({ provider, signer: guarded, journal, journalPath, action, request });
     assertProtectedDUnchanged(before, await protectedDContext(source, protectedC, provider, legacyArtifacts));
     return receipt;
   };
-  for (const role of ROLES) await perform(`fund-d-${role}`, funder,
-    { to: plan.addresses[role], value: BigInt(plan.fundingWei), gasLimit: 21000n });
+  if (lead.mode !== "verified-child-only")
+    for (const role of ROLES) await perform(`fund-d-${role}`, funder,
+      { to: plan.addresses[role], value: BigInt(plan.fundingWei), gasLimit: 21000n });
   const owner = new ethers.Wallet(wallets.roles.owner.privateKey, provider);
   if (!journal.transactions["deploy-d-factory"])
     check((await provider.getTransactionCount(owner.address, "pending")) === 0 &&
       (await provider.getCode(plan.factory)) === "0x", "D factory owner nonce or predicted address is already occupied.");
-  await perform("deploy-d-factory", owner, { data: factoryArtifact.bytecode, value: 0n,
-    gasLimit: UI_D.maximumFactoryGas });
+  if (lead.mode !== "verified-child-only")
+    await perform("deploy-d-factory", owner, { data: factoryArtifact.bytecode, value: 0n,
+      gasLimit: UI_D.maximumFactoryGas });
   const factoryAnchor = await verifyUiDFactory({ provider, plan, artifacts, journal });
   const creation = uiDCreateRequest(plan, artifacts);
   const receipt = await perform(createAction, owner, { ...creation.request, gasLimit: UI_D.maximumCreateGas });
