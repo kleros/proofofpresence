@@ -56,6 +56,9 @@ The proposed user-specific config and exact unsigned bundle are
 The separate budget record is `artifacts/mainnet-release/user-2bb03593-budget-proposed.json`.
 Its fee quote was read at29October14:47Bangkok; it is a proposal, not spending approval or a perpetual
 fee guarantee. All four native values are0. First-event creation and policy publication are separate.
+The shared Luma policy proposal is `artifacts/mainnet-release/luma-v9-generic-policy-draft.json`;
+its event facts are bound by the separate explicit V9 template helper. Approval/publication and exact
+case-metadata CID availability remain launch gates, distinct from empty-factory deployment.
 Core owns fresh checks, the exact user review and user-wallet execution. Never substitute a historical
 Chiado wallet or request a private key.
 

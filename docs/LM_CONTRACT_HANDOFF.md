@@ -47,8 +47,13 @@ Required terms: nonzero eventKey and deposit; eventName1–256UTF8bytes; policyU
 extraData≤128bytes; eventStart strictly after the mined creation block timestamp; claimDeadline at
 least eventStart+604800seconds. Template slots≤32, pieces=slots+1, encoded template≤12288bytes;
 each slot is1–5 and slots1(staker),2(contract),4(case organizer) are mandatory.
-`eventV8Template()` in `src/contracts-v8.mjs` builds the retained financial-model template and returns
-`{pieces, slots}`. Production uses the reviewed real resolver and `abi.encode(uint256(0),uint256(3))`.
+Historical templates retain `eventV8Template()` in `src/contracts-v8.mjs` byte-for-byte. New Luma
+organizer creation uses the explicit `eventV9LumaTemplate()` in `src/contracts-v9-luma.mjs`, returning
+`{pieces, slots}`. It binds each event's Luma URL, UTC interval, IANA timezone and policy SHA256 in
+the immutable contract template/configuration hash. The frozen `V9_LUMA_ATTENDANCE_STANDARD` supports
+verifiable in-person or online participation at some point during that interval, case-organizer
+confirmation, and otherwise balance-of-probabilities evidence. New template checks passed7/7.
+Production uses the reviewed real resolver and `abi.encode(uint256(0),uint256(3))`.
 Challenge and match windows are86400seconds; lifetime unique admissions are capped at150.
 
 The canonical factory receipt emits:
@@ -85,3 +90,18 @@ the new fork proof. The unsigned release planner requires public deployer/nonce,
 current max/priority fee ceilings, per-contract gas limits and an explicit total ETH budget.
 It has no signer or broadcast capability. Core owns fresh live quotes, the final exact review and
 user-wallet execution; no historical test wallet supplies mainnet authority.
+
+
+## Publication remains a separate release gate
+
+The shared, concrete policy draft is `docs/contracts/v9-luma-generic-policy.md`, with exact bytes and
+SHA256 in `artifacts/mainnet-release/luma-v9-generic-policy-draft.json`. It has no event placeholders,
+but is unpublished and unapproved. Per-event facts belong in the explicit V9 immutable template;
+a mutable Luma page or server association cannot replace them. Historical event-specific policy
+examples remain preserved. The four infrastructure CREATE transactions need no child policy.
+
+A contract-computed `/ipfs/CID` for case metadata does not establish public availability. Real jurors
+need the exact matching case bytes published and retrievable. The existing local-only server-copy
+action is not IPFS publication. Core/management own the concrete publication/export workflow and its
+release acceptance. Local controlled-Court flow tests must report this limitation honestly; this
+contract lane has made no publication or hosting request.

@@ -1,5 +1,86 @@
 # Verification report
 
+## Current Luma browser financial flow — 29 October 2026
+
+The integrated compact UI and keyless production workbench completed the actual local V9
+factory/proxy journey. This is a current-source HTTPS browser rehearsal, not a mainnet deployment.
+The parent and an independent reviewer rehashed all77 source files and25 served assets with zero
+mismatches and inspected the final paid desktop/mobile captures.
+
+| Actual command/check | Result |
+| --- | --- |
+| `node test/luma-launch-flow.e2e.mjs --run-local` |Passed12 grouped checks,12 unique confirmed UI transactions and10 screenshots. Each explicit financial operation made exactly one wallet request. [Immutable proof](../artifacts/luma-launch-flow/2026-10-29T08-50-45-508Z-8ffa8d0b/proof.json), [log](../artifacts/luma-launch-flow/2026-10-29T08-50-45-508Z-8ffa8d0b/run.log). |
+| Creation/restart recovery |Two different organizers created actual factory children using the same Luma URL. A creation request was deliberately lost before backend hash binding; a real server/workbench restart, expired draft and fresh nonce session recovered the original child with no additional financial wallet request. A foreign wallet was rejected. |
+| Full event A lifecycle |Actual UI deposits without name/email, separate approval/registration, Alice-only trusted attendance, Bob's omission challenge, matching, ordinary Alice payout with Bob's share held UNRULED, delivered ruling1 with settlement still pending, then actual UI settlement. Event B's nonzero payer credit stayed unchanged. |
+| Same Bob delivery and final UI |Bob received exactly1000000000000wei attendance plus16200000000000000wei collateral, native gain16201000000000000wei with his nonce unchanged. His UI reports0.000001ETH successful direct attendance and `Challenge settled`; the case is Resolved and all event A pending/held/owed/escrow/reserve/balance fields are0. |
+| Actual immutable case terms |Contract-generated JSON matches the original Luma URL, UTC interval, timezone, participation/evidence standard and policy digest. Its independently computed UnixFS CID matches the contract. [Exact local case bytes](../artifacts/luma-launch-flow/2026-10-29T08-50-45-508Z-8ffa8d0b/case-bob.json). This file was not publicly pinned. |
+| `node --test test/contracts-v9-luma-template.test.mjs` |7/7passed. Explicit V9 event facts, escaped metadata, deterministic slot identities and bounds are checked; historical V8 template bytes and Solidity remain unchanged. |
+
+Passing proof SHA256:`94d3c676d88eb71ee7d54cc34d77d85928b28170caa71de3e372aa4f6afc60a1`.
+The proof records HEADd7687b9 plus the exact frozen working-source hashes; it must not be rebound to
+later publication changes silently. All five cleanup steps also passed. No public endpoint, public
+signature/broadcast, financial signing file or real Luma/hosting/IPFS service was used. The chain is
+in-process Ganache1; production bootstrap and persistence are injected, the restart store is in memory,
+and Court adjudication is controlled locally. Real deployed Kleros code is covered by the separately
+retained source-bound fork, not by this mocked adjudication step.
+
+The first actual run [stopped](../artifacts/luma-launch-flow/2026-10-29T08-48-10-910Z-a9d055a0/proof.json)
+after deposits because the test did not reopen a native disclosure after admission refreshed the UI.
+The rerun corrected only that test navigation and modal wait, using fresh isolated contracts/accounts.
+Both source snapshots exactly match their respective original proof pins; the stopped run is not a
+pass. Plain invocation without `--run-local` is intentionally review-only and is not execution evidence.
+
+Opening real participant funds still requires the reviewed live policy and actual public availability
+of exact case metadata, configured durable production hosting/manifest, and the user's deployment
+receipts. A locally stored case or computed CID does not establish public Court availability. These
+release gates remain distinct from the passed local financial flow and four-contract setup review.
+
+
+## Compact deposit page palette — 29 October 2026
+
+Applied the shared palette to the active compact UI worktree's previously clean `public/styles.css`,
+`public/index.html` and `public/luma-launch.css`, preserving concurrent application JavaScript WIP.
+Launch CSS now inherits shared cyan actions and lavender links/focus. Both visual registries record
+the change. Captured an isolated source snapshot before browser testing.
+
+| Actual command/check | Result |
+| --- | --- |
+| Snapshot `test/luma-launch.e2e.mjs --self-test` |14 fixture cases passed, zero network or wallet calls. |
+| Snapshot `test/luma-launch.e2e.mjs --run-loopback` |26 browser groups passed, including mobile confirmed actions, 200% text and recovery states. Only output path changed in the existing runner; all assertions retained. |
+| Root `npm run typecheck` and `node scripts/build.mjs` |Passed; static build verified existing pinned v7 artifacts. Full compiler build passed in the prior palette run below. |
+| Visual inspection |Desktop anonymous deposit and mobile confirmed screenshots show shared plum surfaces, lavender accents and cyan Connect/Return to Luma actions. |
+
+[Results](../artifacts/color-scheme/deposit-2026-10-29T08-38-55-133Z/results.json),
+[source snapshot](../artifacts/color-scheme/deposit-2026-10-29T08-38-55-133Z/source-snapshot.json)
+and [browser log](../artifacts/color-scheme/deposit-2026-10-29T08-38-55-133Z/browser.log)
+are isolated from earlier evidence. Browser execution used approved localhost access, synthetic
+production DTOs and a fake wallet: two synthetic attempts, one submitted synthetic hash, zero real
+financial sends/public requests. This is visual/projection coverage, not production backend/chain
+acceptance or publication. Existing contract/policy snapshots and retained v7 pages were not changed.
+
+## Supplied reference palette — 29 October 2026
+
+Local visual changes in root `public/styles.css` and `public/index.html` apply the human's plum,
+lavender, cyan and soft-white references. Root HEAD was `6c7803f` with concurrent launch WIP;
+this verifies the palette change, not completion of the launch workflow. Node was v25.8.1.
+
+| Actual command/check | Result |
+| --- | --- |
+| `npm run build` | Passed v7/v8/test15m/v9 compilation and static build verification, including pinned v7 equality. |
+| `npm run typecheck` | Passed. |
+| `node .runtime/palette-2026-10-29T08-32-22-245Z.mjs` | Passed the existing `test/ui-redesign.e2e.mjs` with only its screenshot/output directory redirected: 49 assertions plus Playwright expectations, real local v7 execution, Court adjudication mocked. |
+| Desktop/mobile visual inspection | Reviewed 1440×900 directory and participant captures and 400×800 participant capture; palette and cyan action render correctly. Browser suite also passed mobile 200% text reflow and control target checks. |
+| Independent static contrast review | Minimum 8.01:1 for ink/muted/lavender on canvas/surface/raised; dark labels on cyan 11.12:1, hover 13.05:1; control boundary minimum 3.53:1. |
+| Authored-file `git diff --check` | Passed. |
+
+[Browser results](../artifacts/color-scheme/palette-2026-10-29T08-32-22-245Z/results.json) report zero
+external requests, page errors or asset errors. [Browser log](../artifacts/color-scheme/palette-2026-10-29T08-32-22-245Z/browser.log)
+and screenshots use a new output namespace, preserving earlier evidence. The restricted sandbox
+attempts failed before assertions at the local loopback listener (`EADDRINUSE` on port0); the completed
+run used approved localhost execution. Ganache's native-binding warning used its JS fallback.
+No full Node/production browser suite, public-chain action or hosting deployment was performed for
+this palette-only change. [Palette, scope and references](UI_COLOR_PALETTE.md).
+
 ## Current single-owner contract delta — 29 October 2026
 
 The human selected one wallet to deploy and initially control upgrades, with two-step transferable

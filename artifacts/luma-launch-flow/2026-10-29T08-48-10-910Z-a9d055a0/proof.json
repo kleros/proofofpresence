@@ -1,0 +1,1285 @@
+{
+  "status": "STOPPED",
+  "runId": "2026-10-29T08-48-10-910Z-a9d055a0",
+  "environment": "LOCAL HTTPS + IN-PROCESS GANACHE CHAIN1",
+  "profile": "kleros-event-v9-uups",
+  "depositWei": "1000000000000",
+  "checks": [
+    "Real nonce authentication for organizer",
+    "Real nonce authentication for organizer",
+    "Known factory hash survives real backend/workbench restart, expired signing scope and nonce reauthentication without resend",
+    "Real nonce authentication for other-organizer",
+    "Real nonce authentication for other-event-payer",
+    "Real nonce authentication for Alice",
+    "Real nonce authentication for Bob"
+  ],
+  "operations": [
+    {
+      "label": "UI creates A",
+      "action": "createEvent",
+      "actor": "0x037A0B3d0dB6DA18fBB6D8ae91Cc3eD7BEC82360",
+      "eventId": "event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "draftId": "0f0944dc-e1ca-4a36-8029-f0a03b5310a1",
+      "hash": "0xcc73c9f20d3cafd910ae2177dba041e57b249a6caa56148c8a18aa5b31a51afc",
+      "blockNumber": 7,
+      "blockHash": "0x22d3aa2e884336e1db66e04cb717797b5f5b9b97f325381605903ca4ce4b8617",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI creates B",
+      "action": "createEvent",
+      "actor": "0x444a8f8493b90ce66f6233cd8dF4f5928b7cc024",
+      "eventId": "event-d30ed3c5-de73-489e-a10e-64198c568296",
+      "draftId": "939237aa-ac0b-4a74-83f8-f2e6e43b4b31",
+      "hash": "0xc5805dd5a88b12c86bc9b87b4cf18b7932775cfb751a103589ad5a8ee28ac554",
+      "blockNumber": 8,
+      "blockHash": "0xf2c15297a9e2547af9c35f3861da332a74b219d18fcf25d2c95cd349da066786",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI deposit",
+      "action": "deposit",
+      "actor": "0x6D88E2bcA4F8Bc1bB66f1720e1462400A95Abf38",
+      "eventId": "event-d30ed3c5-de73-489e-a10e-64198c568296",
+      "draftId": "8982dbf5-05b7-4f9f-8246-d51b0918d0ee",
+      "hash": "0x973d0eb684c97f664d04780c5400daedc7dce7881fe08023d9f1412bc32958d3",
+      "blockNumber": 9,
+      "blockHash": "0x864c6d6c87a42411631c2cccc81367fadd47d088c1ac70051b8700a8710fef9c",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI deposit",
+      "action": "deposit",
+      "actor": "0x7c3e3D8B06052AC3D77aE622902dbED51608648B",
+      "eventId": "event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "draftId": "13de468c-094e-45bc-8576-a23fd448c20d",
+      "hash": "0xbb6f6be02616be59f730eed578c7a8a01ddb4bbb9d2fe917247e9b9019188600",
+      "blockNumber": 10,
+      "blockHash": "0xb4ba08f80fdef96e86c6f202b75d0bedfdc91cf01d46e1c40a15d32738a71038",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    },
+    {
+      "label": "UI deposit",
+      "action": "deposit",
+      "actor": "0x957794400fD37Af2ac3881e7C84cabD84681F6ea",
+      "eventId": "event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "draftId": "3916b6c6-d215-48be-ad0d-036b4cc4081e",
+      "hash": "0xde7e2fe3a5030520094d5ba17dcb4a365f4dc6eb7cb4fb90feb95d2542e7ca9c",
+      "blockNumber": 11,
+      "blockHash": "0x33f08d254acccdacb4768a90278fddc01b492a95fdf3c4a1d6cfb26a41609a4b",
+      "walletRequests": 1,
+      "receiptStatus": 1
+    }
+  ],
+  "snapshots": [
+    {
+      "label": "both-deposits-confirmed",
+      "eventId": "event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "state": {
+        "upgrade": {
+          "kind": "uups",
+          "version": 9,
+          "verified": true,
+          "pending": null,
+          "implementation": "0xc8393c44a2920e49B6d6b9B71dc55e9F7399d558",
+          "implementationCodeHash": "0xd727bd02ca78ddef2a7f5263d22bf1b21b06d0acf705f967343a312a81f4f169",
+          "implementationRevision": 1,
+          "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+          "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+          "authority": "0x745CCc73F401D785c3f4D0864a5c9309F9E4272A",
+          "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+          "governanceKind": "single-owner-timelock",
+          "initialOwner": "0x7302B77098f6032F27B3Ac2FD329f3014d0c10A1",
+          "owner": "0x7302B77098f6032F27B3Ac2FD329f3014d0c10A1",
+          "pendingOwner": null,
+          "pendingOperationCount": 0,
+          "executingOperationCount": 0,
+          "delaySeconds": 172800
+        },
+        "phase": "Open",
+        "owner": "0x037A0B3d0dB6DA18fBB6D8ae91Cc3eD7BEC82360",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [],
+        "activeStakers": [],
+        "stakerHistory": [],
+        "attendees": [],
+        "cases": [],
+        "depositWei": "1000000000000",
+        "poolWei": "0",
+        "balanceWei": "2000000000000",
+        "reservedWei": "2000000000000",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "0",
+        "payoutShareWei": "0",
+        "stakerCount": 0,
+        "attendeeCount": 0,
+        "challengeEndsAt": 0,
+        "pendingChallenges": 0,
+        "challengeDepositWei": "16200000000000000",
+        "pendingTotalWei": "2000000000000",
+        "pendingCredits": {
+          "0x7c3e3d8b06052ac3d77ae622902dbed51608648b": "1000000000000",
+          "0x957794400fd37af2ac3881e7c84cabd84681f6ea": "1000000000000"
+        },
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 0,
+        "remainingAdmissionSlots": 150,
+        "deploymentTrust": {
+          "status": "verified",
+          "contractVersion": "kleros-event-v9-uups",
+          "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "factory": "0xb15AFd9a93fC3Cc8e9442d5bE127a95B286BE143",
+          "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+          "configurationHash": "0x3ed4421c29ccd220f3a678960d6635c931a12d2860d669b710d05445f5e6dc4e",
+          "creationBlockHash": "0x22d3aa2e884336e1db66e04cb717797b5f5b9b97f325381605903ca4ce4b8617",
+          "factoryCreationBlockHash": "0x6409a6bb61105b71219b6d63cb8507daca535da3fe20fa67c853931da00476cb",
+          "timelockCreationBlockHash": "0x957c8f41edb70b1a083740becb02cfe31905102b101f72a7fb692f89b700cc02"
+        },
+        "fingerprint": "979c605f992e6d1f9b2e80f71bb14bb379b6f0dd0ef17e2fcfda484deab51c29",
+        "blockNumber": 11,
+        "now": 1793263716
+      },
+      "ownWallet": {
+        "wallet": "0x957794400fD37Af2ac3881e7C84cabD84681F6ea",
+        "owedWei": "0",
+        "pendingCreditWei": "1000000000000",
+        "deposit": {
+          "status": "confirmed",
+          "hash": "0xde7e2fe3a5030520094d5ba17dcb4a365f4dc6eb7cb4fb90feb95d2542e7ca9c",
+          "amountWei": "1000000000000",
+          "blockNumber": 11,
+          "wallet": "0x957794400fD37Af2ac3881e7C84cabD84681F6ea",
+          "eventId": "event-e764c0e7-3baf-4523-82a2-a069a9639491",
+          "chainId": 1,
+          "contract": "0xfbf01DF9E6FAdE40305CC4A3671317706527ec55",
+          "abiVersion": "kleros-event-v9-uups"
+        },
+        "depositAction": {
+          "eligible": false,
+          "amountWei": "0",
+          "reasonCode": "CREDIT_AVAILABLE",
+          "reason": "Your deposit is fully funded. Organizer approval and admission are separate."
+        }
+      },
+      "payments": {
+        "eventId": "event-e764c0e7-3baf-4523-82a2-a069a9639491",
+        "chainId": 1,
+        "contract": "0xfbf01DF9E6FAdE40305CC4A3671317706527ec55",
+        "contractVersion": "kleros-event-v9-uups",
+        "blockNumber": 11,
+        "blockHash": "0x33f08d254acccdacb4768a90278fddc01b492a95fdf3c4a1d6cfb26a41609a4b",
+        "attendancePaidWei": "0",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "0",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "0",
+        "scope": "Successful kleros-event-v9-uups log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": []
+      },
+      "deploymentTrust": {
+        "status": "verified",
+        "contractVersion": "kleros-event-v9-uups",
+        "proxyCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "factory": "0xb15AFd9a93fC3Cc8e9442d5bE127a95B286BE143",
+        "factoryCodeHash": "0x6ee09aa9d3eb9fdea99684455c6e49eb360a5c421d47e0268e0e4aeaa79a64c0",
+        "configurationHash": "0x3ed4421c29ccd220f3a678960d6635c931a12d2860d669b710d05445f5e6dc4e",
+        "creationBlockHash": "0x22d3aa2e884336e1db66e04cb717797b5f5b9b97f325381605903ca4ce4b8617",
+        "factoryCreationBlockHash": "0x6409a6bb61105b71219b6d63cb8507daca535da3fe20fa67c853931da00476cb",
+        "timelockCreationBlockHash": "0x957c8f41edb70b1a083740becb02cfe31905102b101f72a7fb692f89b700cc02"
+      },
+      "upgrade": {
+        "kind": "uups",
+        "version": 9,
+        "verified": true,
+        "pending": null,
+        "implementation": "0xc8393c44a2920e49B6d6b9B71dc55e9F7399d558",
+        "implementationCodeHash": "0xd727bd02ca78ddef2a7f5263d22bf1b21b06d0acf705f967343a312a81f4f169",
+        "implementationRevision": 1,
+        "family": "0x68b52ad57a83ed78c7ab826a3cc4b727fcbb332ea36f453bbbd4c3d3382e9f67",
+        "storageSchema": "0x988f371f6a1ad169c1688af1359a0ddc9cab8b48791491ad5470c3cda18eecf7",
+        "authority": "0x745CCc73F401D785c3f4D0864a5c9309F9E4272A",
+        "authorityCodeHash": "0xdf9ad6220524728c4a87a674e2449a064dd16ac7b8f525fcf22273f84f61d220",
+        "governanceKind": "single-owner-timelock",
+        "initialOwner": "0x7302B77098f6032F27B3Ac2FD329f3014d0c10A1",
+        "owner": "0x7302B77098f6032F27B3Ac2FD329f3014d0c10A1",
+        "pendingOwner": null,
+        "pendingOperationCount": 0,
+        "executingOperationCount": 0,
+        "delaySeconds": 172800
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "01-factory-known-hash-lost-request.png",
+      "sha256": "a7564c1eb9ac2955bfff26c546553f3d85f5a5fd5dc0955c69931c537a0f21e0",
+      "wallet": "0x037A0B3d0dB6DA18fBB6D8ae91Cc3eD7BEC82360",
+      "route": "#setup=kickback"
+    },
+    {
+      "file": "02-factory-recovered-after-restart.png",
+      "sha256": "4dde5419d4a4ca3c896f603219499ca241fcdefe6c34a9443b04db4098c22f8b",
+      "wallet": "0x037A0B3d0dB6DA18fBB6D8ae91Cc3eD7BEC82360",
+      "route": "#setup=kickback"
+    },
+    {
+      "file": "03-bob-deposit-confirmed.png",
+      "sha256": "94653fe1bfd839651d392916a101758620d0a15fadacb55b70f83ff70ee076f4",
+      "wallet": "0x957794400fD37Af2ac3881e7C84cabD84681F6ea",
+      "route": "#event=event-e764c0e7-3baf-4523-82a2-a069a9639491&view=participant"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1/submitted",
+      "injected": "dropped-before-backend-hash-binding"
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1/validate",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/0f0944dc-e1ca-4a36-8029-f0a03b5310a1/reconcile",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/939237aa-ac0b-4a74-83f8-f2e6e43b4b31/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/939237aa-ac0b-4a74-83f8-f2e6e43b4b31/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/organizer/events/drafts/939237aa-ac0b-4a74-83f8-f2e6e43b4b31/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296/drafts/8982dbf5-05b7-4f9f-8246-d51b0918d0ee/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296/drafts/8982dbf5-05b7-4f9f-8246-d51b0918d0ee/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296/submissions/0x973d0eb684c97f664d04780c5400daedc7dce7881fe08023d9f1412bc32958d3",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/drafts/13de468c-094e-45bc-8576-a23fd448c20d/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/drafts/13de468c-094e-45bc-8576-a23fd448c20d/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/submissions/0xbb6f6be02616be59f730eed578c7a8a01ddb4bbb9d2fe917247e9b9019188600",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/challenge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/drafts",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/drafts/3916b6c6-d215-48be-ad0d-036b4cc4081e/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/drafts/3916b6c6-d215-48be-ad0d-036b4cc4081e/submitted",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/submissions/reconcile",
+      "injected": "dropped-confirmed-response"
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/submissions/0xde7e2fe3a5030520094d5ba17dcb4a365f4dc6eb7cb4fb90feb95d2542e7ca9c",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/submissions/reconcile",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-d30ed3c5-de73-489e-a10e-64198c568296",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/participants/5958d120-1036-47cd-8d6d-68f7621e7203",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/bootstrap",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/deposit-inbox",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/events/event-e764c0e7-3baf-4523-82a2-a069a9639491/deposit-inbox",
+      "status": 200
+    }
+  ],
+  "auth": [
+    {
+      "wallet": "0x037A0B3d0dB6DA18fBB6D8ae91Cc3eD7BEC82360",
+      "nonceSha256": "60c06c632c65f6ae7214558e7c9aabfd842420a9f05e3e6f1e789d31300f9d6e",
+      "messageSha256": "d99caa13f77816fc7e1a3b1a9fde38174430a2a9e3b1f889ff1bf359a273eeb2",
+      "origin": "https://127.0.0.1:51943"
+    },
+    {
+      "wallet": "0x037A0B3d0dB6DA18fBB6D8ae91Cc3eD7BEC82360",
+      "nonceSha256": "1f0d9e70a918d88ea1d1f4625cad1d06ede77513aa27b7886722727525f1dfc8",
+      "messageSha256": "9f06989e4a8a00df42a45280aa12ca118612326b0fd231a3f4e3bd14ac9c51b5",
+      "origin": "https://127.0.0.1:51943"
+    },
+    {
+      "wallet": "0x444a8f8493b90ce66f6233cd8dF4f5928b7cc024",
+      "nonceSha256": "b6fbee05c959a5623fca7e21523b5b983e42e7bac5b4c7121b8c1a82198f1b7b",
+      "messageSha256": "f603b4d044bea9a08e2820b93cdb585053ff21eb56e6f409c2ab9f5e74042eef",
+      "origin": "https://127.0.0.1:51943"
+    },
+    {
+      "wallet": "0x6D88E2bcA4F8Bc1bB66f1720e1462400A95Abf38",
+      "nonceSha256": "af7950571ddcce5eb3e93e0e6444cff8cbbd0da1f4be0f9a0704870bacb6617f",
+      "messageSha256": "b09f12700a3fecd17e7978b368b67c042c7d098053889a9d604cc37ae7879384",
+      "origin": "https://127.0.0.1:51943"
+    },
+    {
+      "wallet": "0x7c3e3D8B06052AC3D77aE622902dbED51608648B",
+      "nonceSha256": "9b2b0d5531097715954b8ab32df9ae30fa6d667411592316ef1da994e508559c",
+      "messageSha256": "b718777600d2a372d0d0deb3be9fc64f7966efd066ccea1e30dcf14aa49f0ae5",
+      "origin": "https://127.0.0.1:51943"
+    },
+    {
+      "wallet": "0x957794400fD37Af2ac3881e7C84cabD84681F6ea",
+      "nonceSha256": "877f751555c1f72ba6110e0d68365b57b662ddda0f5fecc671552023fea8380a",
+      "messageSha256": "1173ad0fb1d24ce22c6ce1636fe67fbe40953a87e377ce455fdba52dd64f94e4",
+      "origin": "https://127.0.0.1:51943"
+    }
+  ],
+  "walletCalls": [
+    {
+      "role": "organizer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "organizer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-organizer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-organizer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "personal_sign"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "other-event-payer",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Alice",
+      "method": "personal_sign"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Alice",
+      "method": "eth_sendTransaction"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_requestAccounts"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "personal_sign"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_accounts"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_chainId"
+    },
+    {
+      "role": "Bob",
+      "method": "eth_sendTransaction"
+    }
+  ],
+  "external": [],
+  "errors": [],
+  "forbidden": [],
+  "assets": {
+    "public/app.js": "a16f5c054255b13cbe884f92cc249b16e59f5d458023ccd0532765a8be08e96b",
+    "public/assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "public/assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "public/assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "public/assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "public/batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "public/batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "public/batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "public/batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "public/contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "public/contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "public/contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "public/environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "public/hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "public/index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "public/loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "public/luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "public/luma-launch.css": "28778fc773590dbf8f5175da9d62aa0191edf6d75dd62c40ba9d42d1d694b2b5",
+    "public/luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "public/luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "public/reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "public/selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "public/styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "public/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "public/ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8"
+  },
+  "sources": {
+    "artifacts/mainnet-release/luma-v9-generic-policy-draft.json": "ac1b5a84a551feac1977087ae69c56dc587444234fed086f6d7bab10a3ad81d1",
+    "build/contracts-v9/ERC1967Proxy.json": "3881c645e1e9621f2fdebc38dfb41d55cd62d28ab63ca0e612e40ae30039483a",
+    "build/contracts-v9/ERC1967Proxy.storage-layout.json": "e7ad284d2288f5904ee11f44c0fe63736f5f5caca0faf21a1e52a5717df21149",
+    "build/contracts-v9/KlerosEventFactoryV9.json": "0385b677054e0cca3fa263689bc856567a493e0b28933ec20a71d5b66e65238f",
+    "build/contracts-v9/KlerosEventFactoryV9.storage-layout.json": "78e8f698bc58d2a1217fb5cc62e4244dc95a690e1552c9b1aa2dc5b8dd9d94a8",
+    "build/contracts-v9/KlerosEventV9.json": "78cec397f0b4f52aedb950cc60d382726467ebc4783d4cd660c291251a9e0960",
+    "build/contracts-v9/KlerosEventV9.storage-layout.json": "9981e3c307387be3dc7a22ff6c152447234753531f50a47d63a56ceefc2ab03e",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.json": "d28cddaf6bfe947d01dc0b75fa40b2d7b61ca87bb4859dd7b94c1d5cbf0d1516",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.storage-layout.json": "2a0cfb05942eb117591f604447b71fd201a79e703126b8231faba61b50700687",
+    "build/contracts-v9/manifest.json": "ea23931a3ec4539784e7c52862af32a61e40b2ee95443e5f29f7b86b145c7d60",
+    "build/contracts-v9/standard-input.json": "33080e21f6e20b9fa688a74b378199f31594eec86edaa849aa09aa90d4419fe5",
+    "contracts/v9/KlerosEventFactoryV9.sol": "4ce1c30a8ebf383c41718ac2b48bda03ffc719d718447cdd3678e9c067fedbe9",
+    "contracts/v9/KlerosEventV9.sol": "e3d9f947537165d885878c89e86114e6901d0665f4d4b00bf20b9da227a9e11b",
+    "contracts/v9/KlerosUpgradeGateV9.sol": "0197602754ac7296f01b645f4331d3b6f09faf2c78181df4ed702ba1a24bd365",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol": "bd0c37a72bbfb0341530768896035046dab67e01870fadd03e406a618c04926e",
+    "docs/contracts/v9-luma-generic-policy.md": "24e3608d8ed5daf919671193a71c6e91ebac90095a2780a8946a20cda41f8308",
+    "netlify/functions/workbench.mjs": "e26e3220b11d189a060a42ba0c1bfc5f35c1aeb9e88d4ba6e9db31c7cc3303ef",
+    "package-lock.json": "c622f472674738eb5228015a11dcb3cb75aa075dd529a8f6c4f31c57aa261758",
+    "package.json": "25d57f490c0509e0f094eabc404de2cd8e083948cb3d0c48bbfb728e19f9cf33",
+    "public/app.js": "a16f5c054255b13cbe884f92cc249b16e59f5d458023ccd0532765a8be08e96b",
+    "public/assets/FONT_PROVENANCE.json": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a",
+    "public/assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+    "public/assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+    "public/assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+    "public/assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+    "public/assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+    "public/assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+    "public/batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+    "public/batch-actions.js": "88715b4a403519e595fed75705f47d39c4bf270f143248153cb95bef4ee50661",
+    "public/batch-pending.js": "362c7529ef5ecee100ac3764359eb8730988cded45bbf3ddcd9d700e7377dbe8",
+    "public/batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+    "public/contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+    "public/contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+    "public/contract-profiles.js": "00e44f8f22ddeeb88434de711914e08d4f743546885680559834bfd69340a881",
+    "public/environment.js": "6d2cb48efa83be070a9c0fb6e90bf0f8c67e259a83831fa057082709b0daff20",
+    "public/hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+    "public/index.html": "8a6e89e6211401840d8730f958f5e9774a509e0d24684ebd53cecc74dcce2eef",
+    "public/loading.css": "1b36da4a60eabc44a3346788c6af8a9910b2e50f7634faa2c991e98d86fa30c7",
+    "public/luma-factory.js": "a53235c38c9812abeeef524ba56f0d2facee3f6458df4bd2342ab0dff77e37e0",
+    "public/luma-launch.css": "28778fc773590dbf8f5175da9d62aa0191edf6d75dd62c40ba9d42d1d694b2b5",
+    "public/luma-launch.js": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4",
+    "public/luma-setup.js": "ec38d46d8da558687f514a91a2d5f24642aa315ef1d99ac8ad9c1835d6e626b1",
+    "public/reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+    "public/selected-event.js": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18",
+    "public/styles.css": "2a9e5aafe5246534976c830153deb7229421ce28b47cb6a66651ba6845a21bcc",
+    "public/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+    "public/ui-keyboard.js": "a2d0cba51373c50c26f203fcca029a11c85cc71c1edda0d5a449ee8b25cdd0c8",
+    "references/kickback/scripts/lib.mjs": "349a1fc85e72e7d2b076d9251683aac6a6a4e2f358c673cae4e9ea0f0d800c45",
+    "scripts/compile-contracts-v9.mjs": "12805d8e44e43374663069c0c85ae54aa566259e62610fa6b3e764d3ad222cfd",
+    "src/batches.mjs": "28f070725daa0a305bf59ad5e9f073de0e5892a35a38091ce1df6c0172e62f7f",
+    "src/chain.mjs": "78a747805fe185b43746a3add84ae27b3e3680379e2ccfd777c5e622bf84ac54",
+    "src/container.mjs": "43d68e440211c1bc7ec8a41e86feff1ccbdca3da344e2635e6a5532c00891101",
+    "src/contracts-v8.mjs": "1ef26947344fca57d485602074ca21bcb3ae602c8a120b9ca108ad7741507918",
+    "src/contracts-v9-luma.mjs": "db93cfe0e06f5a4d45e208c44eaadd63b264e4009243ad0f7994bfacedf1c93f",
+    "src/deposit-inbox.mjs": "b191c8563b276702ba40d18bbf072d54a273fa9e50ff9fef84e51a84fd42b70a",
+    "src/factory-onboarding.mjs": "d4a51eb637e738fb38c6376732f775579f38c606f004292f1bee6da9cb6ad796",
+    "src/import-preview.mjs": "c0f95bf5d674afdb2db75778831f5fd42877d44eda7ade529c85b03bb1f6581c",
+    "src/imports.mjs": "d5e89682a576aa63399e61c36d8596f17f0cdc64424a598e2f70d79b647f3219",
+    "src/mainnet-case-publication.mjs": "884545c5e72c94cfc6d5c86c90aecc0e868828fef610b5f75ba75c5e49d848b8",
+    "src/mainnet-runtime.mjs": "7bfd934f15b6b882b1ca8e356baa7e93972ef453251f6f7cbec9e022afe3e29a",
+    "src/mainnet-wallet-deployment.mjs": "07b923f09a67789d11f90b29196a6e481f7b36ede006e37278f1231f3bc4e7c9",
+    "src/payments.mjs": "8f66d6f4eb1f0f2f5cc43f696c1399881712ed7e214be4f988a97a0ca913f2f4",
+    "src/production-errors.mjs": "03cc89b18d2f83b973da9cb167b16ef149585148b2be7bcafa32be02b916cac7",
+    "src/production-wallets.mjs": "d8f8946df88d33eb8c26ab4fc4bc65451d51ba32acf064421834f3eca02ced12",
+    "src/runtime-volume.mjs": "59b61453b612ce1ddbf99e2b82fa69defc9d87172f4969980bcd1cf825fcafa7",
+    "src/server.mjs": "99d2da9e56c427853522a737f371d9778239b45e2ab2d6b89cb29cba6cf9258d",
+    "src/testnet-config.mjs": "b090d2735f796b1d386c874d009a10349513e66eb4ad5e1081fdc14151be6cd3",
+    "src/testnet-runtime.mjs": "9046a3c31fcbe3420775af513bdac43ba2bc5fe5d1ad7baa8c81e47bbffcdf02",
+    "src/upgrade-artifacts.mjs": "3f3e3becd880846b09276d854322eff92416388ba81ca9e4154efe64d79d9f38",
+    "src/upgrade-verification.mjs": "614cd3ac0f8e7eb49f08f8b4159831d603059d7e24fb987f017a9c923cadd9a3",
+    "src/utils.mjs": "6e77cbaedfe79372abe56214b1b235076d6d20c6610b45f7c34955b4d33ef9f9",
+    "src/v8-deposits.mjs": "b5071e8f39e9c1d90615363c8867116190fc83e460fa566d8a7f5d178a74bd82",
+    "src/v9-testnet-runtime.mjs": "991788cf952f13caf84e83ce803ec39afe9f0c15498864b6e87a03e9e4a85d3e",
+    "src/v9-testnet-verification.mjs": "85dd935d0e74e6d0500f652149f683e5ead9ef13e6744f3e7988c2a503d2ca84",
+    "src/workbench.mjs": "5078c912230ea819db135480db08f1bc60cbf15ac7ee4895ffef5d2cad18e658",
+    "test/fixtures/luma-launch-runtime.mjs": "b97e6fd970504b40d502ff066ffacbacd2c96a65c921716324bd9ff3cad7373c",
+    "test/luma-launch-flow.e2e.mjs": "c0d86e8bc0e862c2e4aacb34ea84c22a14283bbcadb7689990036201b625db3a"
+  },
+  "limitations": [
+    "Public production runtime/bootstrap is injected; actual current V9 source, proxies and governance provenance are verified locally.",
+    "Court adjudication alone is controlled with a local mock. This does not claim a public Court jury vote or real mainnet deployment.",
+    "The fixture persistence survives workbench/server replacement in memory; it does not prove host volume durability.",
+    "The synthetic published policy is fixture metadata only. No IPFS, Luma, hosting or other external publication occurs."
+  ],
+  "publicRequests": 0,
+  "publicSignatures": 0,
+  "publicBroadcasts": 0,
+  "privateSigningFilesRead": 0,
+  "sourceCommit": "d7687b998c72758e03c3773465b8eca3aae6f06c",
+  "sourceFiles": [
+    "artifacts/mainnet-release/luma-v9-generic-policy-draft.json",
+    "build/contracts-v9/ERC1967Proxy.json",
+    "build/contracts-v9/ERC1967Proxy.storage-layout.json",
+    "build/contracts-v9/KlerosEventFactoryV9.json",
+    "build/contracts-v9/KlerosEventFactoryV9.storage-layout.json",
+    "build/contracts-v9/KlerosEventV9.json",
+    "build/contracts-v9/KlerosEventV9.storage-layout.json",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.json",
+    "build/contracts-v9/KlerosUpgradeTimelockV9.storage-layout.json",
+    "build/contracts-v9/manifest.json",
+    "build/contracts-v9/standard-input.json",
+    "contracts/v9/KlerosEventFactoryV9.sol",
+    "contracts/v9/KlerosEventV9.sol",
+    "contracts/v9/KlerosUpgradeGateV9.sol",
+    "contracts/v9/KlerosUpgradeTimelockV9.sol",
+    "docs/contracts/v9-luma-generic-policy.md",
+    "netlify/functions/workbench.mjs",
+    "package-lock.json",
+    "package.json",
+    "public/app.js",
+    "public/assets/FONT_PROVENANCE.json",
+    "public/assets/geist-latin.woff2",
+    "public/assets/geist-mono-latin.woff2",
+    "public/assets/instrument-serif-italic.woff2",
+    "public/assets/instrument-serif-regular.woff2",
+    "public/assets/kleros-logo.svg",
+    "public/assets/kleros-symbol.svg",
+    "public/batch-actions.css",
+    "public/batch-actions.js",
+    "public/batch-pending.js",
+    "public/batch-selection.js",
+    "public/contract-inbox.css",
+    "public/contract-inbox.js",
+    "public/contract-profiles.js",
+    "public/environment.js",
+    "public/hosted-wallet.js",
+    "public/index.html",
+    "public/loading.css",
+    "public/luma-factory.js",
+    "public/luma-launch.css",
+    "public/luma-launch.js",
+    "public/luma-setup.js",
+    "public/reconciliation.js",
+    "public/selected-event.js",
+    "public/styles.css",
+    "public/transaction-context.js",
+    "public/ui-keyboard.js",
+    "references/kickback/scripts/lib.mjs",
+    "scripts/compile-contracts-v9.mjs",
+    "src/batches.mjs",
+    "src/chain.mjs",
+    "src/container.mjs",
+    "src/contracts-v8.mjs",
+    "src/contracts-v9-luma.mjs",
+    "src/deposit-inbox.mjs",
+    "src/factory-onboarding.mjs",
+    "src/import-preview.mjs",
+    "src/imports.mjs",
+    "src/mainnet-case-publication.mjs",
+    "src/mainnet-runtime.mjs",
+    "src/mainnet-wallet-deployment.mjs",
+    "src/payments.mjs",
+    "src/production-errors.mjs",
+    "src/production-wallets.mjs",
+    "src/runtime-volume.mjs",
+    "src/server.mjs",
+    "src/testnet-config.mjs",
+    "src/testnet-runtime.mjs",
+    "src/upgrade-artifacts.mjs",
+    "src/upgrade-verification.mjs",
+    "src/utils.mjs",
+    "src/v8-deposits.mjs",
+    "src/v9-testnet-runtime.mjs",
+    "src/v9-testnet-verification.mjs",
+    "src/workbench.mjs",
+    "test/fixtures/luma-launch-runtime.mjs",
+    "test/luma-launch-flow.e2e.mjs"
+  ],
+  "restartRecovery": {
+    "oldInstance": "201a5d45-b803-4a78-ab01-54016f24c572",
+    "newInstance": "40314993-0977-4ad6-aa11-9482601b1e21",
+    "expiredDraftRejected": true,
+    "sameWalletFreshNonce": true,
+    "knownHash": "0xcc73c9f20d3cafd910ae2177dba041e57b249a6caa56148c8a18aa5b31a51afc",
+    "droppedBeforeBackendBinding": true,
+    "expirationControl": "Node-only Date.now fixture; no chain/client time change",
+    "newFinancialWalletRequests": 0
+  },
+  "returnToLuma": {
+    "href": "https://luma.com/synthetic-full-kickback",
+    "intercepted": true
+  },
+  "failure": {
+    "name": "TimeoutError",
+    "message": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-launch-register=\"0x7c3e3D8B06052AC3D77aE622902dbED51608648B\" i]')\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"button button-secondary button-small\" data-launch-participant=\"5958d120-1036-47cd-8d6d-68f7621e7203\" data-launch-register=\"0x7c3e3D8B06052AC3D77aE622902dbED51608648B\">Review registration</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+  },
+  "financialStatus": "STOPPED",
+  "cleanup": [
+    {
+      "name": "browser",
+      "status": "passed"
+    },
+    {
+      "name": "backend",
+      "status": "passed"
+    },
+    {
+      "name": "frontend",
+      "status": "passed"
+    },
+    {
+      "name": "fixture",
+      "status": "passed"
+    },
+    {
+      "name": "temporary-test-certificate",
+      "status": "passed"
+    }
+  ]
+}
