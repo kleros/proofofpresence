@@ -1,0 +1,145 @@
+{
+  "status": "passed-current-checkpoint",
+  "checkedAt": "2026-10-29T03:04:46.821Z",
+  "origin": "https://kleros-fast15m-d-20261029-9fe71683.netlify.app",
+  "scenario": "d-test15m",
+  "manifestFile": "registry/chiado-v8-ui-d.json",
+  "chainId": 10200,
+  "arbitration": "controlled",
+  "instanceId": "72e1375c-078c-4519-a70d-b6de60d73e12",
+  "manifestSha256": "56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd",
+  "checkpoint": "open",
+  "planId": "70688861-87e2-4936-9e2e-bdc9a7c7a5fd",
+  "planFingerprint": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+  "checks": 122,
+  "readOnly": true,
+  "signatures": 0,
+  "broadcasts": 0,
+  "observerSha256": "24ba7003d90174bc8489611e7e465a151268f44451b0827a0047445600045f2b",
+  "observerFiles": {
+    "scripts/chiado-ui-d-flow-audit.mjs": "24ba7003d90174bc8489611e7e465a151268f44451b0827a0047445600045f2b",
+    "scripts/chiado-flow-audit.mjs": "87419114a362b7bd0b3d1397c0c79480ee486c53eeab9449d5d35baf574692e8",
+    "scripts/generate-contracts-test15m.mjs": "45736d171e134aa8fb4d3ab9a2c15e83a13468f0993de37144d3d490e1c9c190"
+  },
+  "events": [
+    {
+      "roles": {
+        "owner": {
+          "wallet": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "status": 0,
+          "attended": false,
+          "pendingWei": "0",
+          "owedWei": "0"
+        },
+        "alice": {
+          "wallet": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+          "status": 0,
+          "attended": false,
+          "pendingWei": "0",
+          "owedWei": "0"
+        },
+        "bob": {
+          "wallet": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+          "status": 0,
+          "attended": false,
+          "pendingWei": "0",
+          "owedWei": "0"
+        }
+      },
+      "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+      "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+      "blockNumber": 23740243,
+      "blockHash": "0x0467c6f034aa32323f021fd1ff992b8c2b854150583db980d4d2033e435820eb",
+      "now": 1793243070,
+      "observedHead": {
+        "blockNumber": 23740245,
+        "blockHash": "0x9f938c22797d67244fb323ddf5c8f163b3c6bd5452d7e530ffa72522442b646b",
+        "now": 1793243080
+      },
+      "state": {
+        "phase": "Open",
+        "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+        "pendingOwner": "0x0000000000000000000000000000000000000000",
+        "stakers": [],
+        "activeStakers": [],
+        "stakerHistory": [],
+        "attendees": [],
+        "cases": [],
+        "depositWei": "1000000000000",
+        "poolWei": "0",
+        "balanceWei": "0",
+        "reservedWei": "0",
+        "spareWei": "0",
+        "heldBackWei": "0",
+        "owedTotalWei": "0",
+        "challengeEscrowWei": "0",
+        "payoutShareWei": "0",
+        "stakerCount": 0,
+        "attendeeCount": 0,
+        "challengeEndsAt": 0,
+        "pendingChallenges": 0,
+        "challengeDepositWei": "30000000000",
+        "pendingTotalWei": "0",
+        "pendingCredits": {},
+        "maxStakers": 150,
+        "lifetimeAdmittedCount": 0,
+        "remainingAdmissionSlots": 150,
+        "fingerprint": "51933ba096879288fe37b0875714121dc143341dbed592e14d58f653904102b4",
+        "blockNumber": 23740243,
+        "now": 1793243070
+      },
+      "expectedUi": {
+        "depositsOpen": true,
+        "ordinaryBatchProcessed": false,
+        "canReleaseOnChain": false,
+        "allFinancialObligationsComplete": false,
+        "cases": []
+      },
+      "payments": {
+        "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+        "chainId": 10200,
+        "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+        "contractVersion": "kleros-event-v8-test15m",
+        "blockNumber": 23740243,
+        "blockHash": "0x0467c6f034aa32323f021fd1ff992b8c2b854150583db980d4d2033e435820eb",
+        "attendancePaidWei": "0",
+        "principalRefundedWei": "0",
+        "registeredPrincipalRefundedWei": "0",
+        "unregisteredDepositReturnedWei": "0",
+        "spareRefundedWei": "0",
+        "spareSweptWei": "0",
+        "failedPaymentsWei": "0",
+        "claimedWei": "0",
+        "unclassifiedPayoutWei": "0",
+        "pendingCreditWithdrawnWei": "0",
+        "directAttendancePaidWei": "0",
+        "outstandingCreditsWei": "0",
+        "totalExplicitSuccessfulTransfersWei": "0",
+        "scope": "Successful kleros-event-v8-test15m log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+        "completeNativeTransferHistory": false,
+        "transfers": []
+      },
+      "operations": [
+        {
+          "event": "OwnershipTransferred",
+          "txHash": "0x3c33411d377bec442f8e4831c8465f7d92f02966289fbae212807fb4de59507c",
+          "blockNumber": 23740043,
+          "blockHash": "0x25153327fac820cbafb48374fa74e3e7ed1812d96fbf7871429fcb844ce23835",
+          "from": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+          "to": "0x0947D4438489f159E4B1BdC8BA63A1C07D642465",
+          "valueWei": "0",
+          "method": null,
+          "names": [
+            "OwnershipTransferred"
+          ],
+          "logIndex": 0,
+          "args": [
+            "0x0000000000000000000000000000000000000000",
+            "0x348800A6690898b36be3CAe18555F80E16401cD7"
+          ]
+        }
+      ]
+    }
+  ],
+  "notice": "This observer verifies public API and canonical chain facts. UI initiation, screenshots and authenticated role assertions are separate evidence; this GET/RPC-only observer does not establish browser initiation or collateral delivery. Waiting stages are not completed."
+}

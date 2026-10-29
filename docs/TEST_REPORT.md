@@ -25,13 +25,54 @@ different destination preserving admitted principal, private owner inbox, static
 immutable deposit closure and actual posting/challenge block timestamps plus900seconds. Normal
 v8/v7 controls stayed unchanged. This is local HTTP execution, not public UI-origin proof.
 
-The exact immutable D plan/public policy and budget passed independent read-only review. D funds,
-contract deployment and public UI financial lifecycle are still pending at this checkpoint. The first
+The exact immutable D plan/public policy and budget passed independent read-only review. At that
+prepared-plan checkpoint, D funding, deployment and public UI execution were still pending; the later
+live checkpoint below supersedes that status. The first
 too-low1000wei preparation cap stopped before creating keys/plan/journal; the reviewed replacement
 250000wei cap fits the existing operator priority-fee policy and protects A/B+C reserves. See
 `artifacts/ui-d-preparation-stopped.json`, `ui-d-preparation.json`, `ui-d-plan-independent.json` and
 `ui-d-policy-independent.json`. Existing A/B/C source preservation passed142 Git blob checks;
 their reviewed operator source shares the canonical journals/lock/proof directory and schedules.
+
+## D live hosting, deposits and admission — 29October2026,03:27UTC checkpoint
+
+[D hosting evidence](../artifacts/ui-d-hosting.json) records successful Railway Linux deployment
+`aef2933b-e7bf-4c05-855c-b39b77a96c7b` from backend source
+`67ee1d9bfac68f6925ca5dff638b07b5e56b5eae`, runtime uid1000 and durable `/data` storage.
+Netlify deploy `6ae2a28034076e4185468d63` serves frontend source
+`7bdd40a3478e487f84b0c00aa0d58e25d13e0d5e` at the separate
+[D application](https://kleros-fast15m-d-20261029-9fe71683.netlify.app).
+These hosting records do not establish financial completion or change A/B/C hosting.
+
+`node --test test/revise-ui-d-plan.test.mjs` passed **4/4** with temporary files and an injected
+read-only verifier. It tests only-three-time-field changes, raw original/transaction-entry preservation,
+idempotency after a later child, and fail-closed partial-pair recovery. It does not establish public
+chain execution. The separate [applied revision proof](../artifacts/ui-d-start-revision-applied.json)
+records the reviewed pre-child metadata revision, four retained setup hashes and zero signing-file
+reads/signatures/broadcasts. The revised start03:30UTC/10:30Bangkok was used for the first actual child
+creation `0x3c33411d377bec442f8e4831c8465f7d92f02966289fbae212807fb4de59507c`, block23740043;
+no setup transaction was replayed. The deployed child terms are now immutable.
+
+| Actual D stage/check | Result and distinct evidence |
+|---|---|
+| Financial UI `--stage deposits` | **42 checks passed**; two real synthetic registration forms, two nonce logins, two exact1e12wei deposit reviews, two wallet submissions/broadcasts and canonical UI receipt reconciliation. [Immutable UI proof](../artifacts/ui-d/deposits-2026-10-29T03-07-36.775Z-4b5ede2e/proof.json). |
+| Financial UI `--stage admit` | **43 checks passed**; host approval through the actual UI, followed by one reviewed `registerStakers([Alice,Bob])` wallet submission/broadcast. [Immutable admission proof](../artifacts/ui-d/admit-2026-10-29T03-17-58.585Z-b7229940/proof.json). |
+| Independent admitted observer | **131 checks passed**, anonymous GET/read RPC only, zero signatures/broadcasts. [Canonical API/chain proof](../artifacts/chiado-ui-d-flow-audit/2026-10-29T03-26-46-901Z-c0e4fb87-26b9-4fec-9040-6bce596eb75f.json). This observer does not establish UI initiation. |
+
+The actual UI-origin deposit hashes are Alice
+`0xe3b10808d5060b3ef2b6c5f6ccba1c81d3ebee041c5059c27f96f29eac21d682` (block23740304) and Bob
+`0xde29bf8ffa52d94ed551a1b9cf2f65edfec933ffcf4e3220cd3bf92eb61f29eb` (block23740332).
+The separate admission transaction is
+`0x8376920fd03eb0c2cc8a34bcc25f0d79b9be11f7ce9746c4455cbf59e400e56d` (block23740440).
+Each UI operation and both completed stages verified immediate A/B/C financial state unchanged.
+Counts include repeated source/provenance guards, not42 or43 financial transactions.
+
+At canonical block23740491, the admitted observer found D **Open**, Alice/Bob registered, pool/balance/
+reserves2e12wei, pending credit0, attendees0, cases0, held0, owed0 and attendance payments0.
+These are deposit/admission results. **No D kickback, controlled ruling or settlement has occurred
+at this checkpoint.** The nonce-only admitted role audit and subsequent attendance/challenge/match
+stages require their own passed proofs; later ordinary/ruled/settled UI and canonical audits remain
+mandatory before financial completion can be claimed. See [D runbook](TESTNET_UI_D.md).
 
 ## Public Chiado v8 acceptance — 29October2026, Asia/Bangkok
 

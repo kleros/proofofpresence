@@ -1,0 +1,70 @@
+{
+  "status": "passed",
+  "stage": "deposits",
+  "proof": "artifacts/ui-d/deposits-2026-10-29T03-07-36.775Z-4b5ede2e/proof.json",
+  "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+  "operations": [
+    {
+      "action": "ui-d-deposit-alice",
+      "hash": "0xe3b10808d5060b3ef2b6c5f6ccba1c81d3ebee041c5059c27f96f29eac21d682",
+      "blockNumber": 23740304
+    },
+    {
+      "action": "ui-d-deposit-bob",
+      "hash": "0xde29bf8ffa52d94ed551a1b9cf2f65edfec933ffcf4e3220cd3bf92eb61f29eb",
+      "blockNumber": 23740332
+    }
+  ],
+  "counts": {
+    "nodeHttp": 29,
+    "browserHttp": 66,
+    "browserPaths": {
+      "GET /": 2,
+      "GET /assets/geist-latin.woff2": 2,
+      "GET /assets/instrument-serif-regular.woff2": 2,
+      "GET /styles.css": 2,
+      "GET /contract-inbox.css": 2,
+      "GET /batch-actions.css": 2,
+      "GET /app.js": 2,
+      "GET /assets/kleros-logo.svg": 2,
+      "GET /reconciliation.js": 2,
+      "GET /hosted-wallet.js": 2,
+      "GET /contract-inbox.js": 2,
+      "GET /batch-actions.js": 2,
+      "GET /batch-pending.js": 2,
+      "GET /contract-profiles.js": 2,
+      "GET /transaction-context.js": 2,
+      "GET /batch-selection.js": 2,
+      "GET /api/bootstrap": 8,
+      "GET /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d": 10,
+      "GET /assets/geist-mono-latin.woff2": 2,
+      "POST /api/auth/challenge": 2,
+      "POST /api/auth/verify": 2,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/participants": 2,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts": 2,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/bb2c3b74-0143-47d9-911b-352464d3e223/validate": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/bb2c3b74-0143-47d9-911b-352464d3e223/submitted": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/submissions/reconcile": 2,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/2ee9f1ee-d1ca-482a-b4a2-792314c8a1e0/validate": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/2ee9f1ee-d1ca-482a-b4a2-792314c8a1e0/submitted": 1
+    },
+    "rpc": {
+      "eth_chainId": 256,
+      "eth_getTransactionReceipt": 25,
+      "eth_getTransactionByHash": 14,
+      "eth_getBlockByNumber": 66,
+      "eth_getCode": 24,
+      "eth_call": 848,
+      "eth_getBalance": 46,
+      "eth_getTransactionCount": 4,
+      "eth_estimateGas": 2,
+      "eth_blockNumber": 14,
+      "eth_sendRawTransaction": 2
+    },
+    "nonceSignatures": 2,
+    "walletTransactions": 2,
+    "broadcasts": 2
+  },
+  "protectedABCUnchanged": true
+}
+

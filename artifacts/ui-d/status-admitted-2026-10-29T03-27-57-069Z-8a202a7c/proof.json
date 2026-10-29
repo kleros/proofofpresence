@@ -1,0 +1,738 @@
+{
+  "status": "passed",
+  "phase": "admitted",
+  "roleProofs": [
+    {
+      "role": "alice",
+      "wallet": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+      "ownWallet": {
+        "wallet": "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+        "owedWei": "0",
+        "pendingCreditWei": "0"
+      },
+      "permissions": {
+        "owner": false,
+        "staff": false,
+        "authenticated": true
+      },
+      "uiBlock": 23740508,
+      "nonceSignatures": 1,
+      "participantWallets": [
+        "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c"
+      ]
+    },
+    {
+      "role": "bob",
+      "wallet": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+      "ownWallet": {
+        "wallet": "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501",
+        "owedWei": "0",
+        "pendingCreditWei": "0"
+      },
+      "permissions": {
+        "owner": false,
+        "staff": false,
+        "authenticated": true
+      },
+      "uiBlock": 23740518,
+      "nonceSignatures": 1,
+      "participantWallets": [
+        "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+      ]
+    },
+    {
+      "role": "owner",
+      "wallet": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+      "ownWallet": {
+        "wallet": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+        "owedWei": "0",
+        "pendingCreditWei": "0"
+      },
+      "permissions": {
+        "owner": true,
+        "staff": true,
+        "authenticated": true
+      },
+      "uiBlock": 23740529,
+      "nonceSignatures": 1,
+      "participantWallets": [
+        "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+        "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+      ]
+    }
+  ],
+  "screenshots": [
+    "artifacts/ui-d/status-admitted-2026-10-29T03-27-57-069Z-8a202a7c/alice-spot.png",
+    "artifacts/ui-d/status-admitted-2026-10-29T03-27-57-069Z-8a202a7c/alice-cases.png",
+    "artifacts/ui-d/status-admitted-2026-10-29T03-27-57-069Z-8a202a7c/bob-spot.png",
+    "artifacts/ui-d/status-admitted-2026-10-29T03-27-57-069Z-8a202a7c/bob-cases.png",
+    "artifacts/ui-d/status-admitted-2026-10-29T03-27-57-069Z-8a202a7c/owner-manage.png",
+    "artifacts/ui-d/status-admitted-2026-10-29T03-27-57-069Z-8a202a7c/owner-cases.png"
+  ],
+  "assetAudit": [
+    {
+      "pathname": "/",
+      "publishedSha256": "8479058ee73f637d52f068cd93e21e98694c4856dfb24e78d2d85bb5bb84852d",
+      "expectedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "verifiedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "transform": "strip-exact-d-netlify-hosting-comment-for-hash-only",
+      "removedBytes": 326,
+      "exception": "D-Netlify-static-comment-v1",
+      "locationByteOffset": 71,
+      "removedSha256": "b3371ba22e9850e2b33ce0718c03e1526b7167ed930360d4803449910e3abee0",
+      "delivered": "unchanged published response; only an HTML comment excluded from byte comparison"
+    },
+    {
+      "pathname": "/styles.css",
+      "publishedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "expectedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "verifiedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/instrument-serif-regular.woff2",
+      "publishedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "expectedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "verifiedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/app.js",
+      "publishedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "expectedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "verifiedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/hosted-wallet.js",
+      "publishedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "expectedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "verifiedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/geist-latin.woff2",
+      "publishedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "expectedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "verifiedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-actions.css",
+      "publishedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "expectedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "verifiedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/transaction-context.js",
+      "publishedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "expectedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "verifiedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-profiles.js",
+      "publishedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "expectedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "verifiedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-inbox.css",
+      "publishedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "expectedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "verifiedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-inbox.js",
+      "publishedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "expectedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "verifiedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/reconciliation.js",
+      "publishedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "expectedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "verifiedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-pending.js",
+      "publishedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "expectedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "verifiedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/kleros-logo.svg",
+      "publishedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "expectedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "verifiedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-actions.js",
+      "publishedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "expectedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "verifiedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-selection.js",
+      "publishedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "expectedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "verifiedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/geist-mono-latin.woff2",
+      "publishedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "expectedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "verifiedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/",
+      "publishedSha256": "8479058ee73f637d52f068cd93e21e98694c4856dfb24e78d2d85bb5bb84852d",
+      "expectedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "verifiedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "transform": "strip-exact-d-netlify-hosting-comment-for-hash-only",
+      "removedBytes": 326,
+      "exception": "D-Netlify-static-comment-v1",
+      "locationByteOffset": 71,
+      "removedSha256": "b3371ba22e9850e2b33ce0718c03e1526b7167ed930360d4803449910e3abee0",
+      "delivered": "unchanged published response; only an HTML comment excluded from byte comparison"
+    },
+    {
+      "pathname": "/assets/kleros-logo.svg",
+      "publishedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "expectedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "verifiedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/styles.css",
+      "publishedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "expectedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "verifiedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/app.js",
+      "publishedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "expectedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "verifiedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-inbox.css",
+      "publishedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "expectedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "verifiedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/hosted-wallet.js",
+      "publishedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "expectedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "verifiedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-inbox.js",
+      "publishedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "expectedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "verifiedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/transaction-context.js",
+      "publishedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "expectedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "verifiedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-pending.js",
+      "publishedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "expectedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "verifiedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-actions.css",
+      "publishedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "expectedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "verifiedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/instrument-serif-regular.woff2",
+      "publishedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "expectedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "verifiedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/geist-latin.woff2",
+      "publishedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "expectedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "verifiedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/reconciliation.js",
+      "publishedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "expectedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "verifiedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-actions.js",
+      "publishedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "expectedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "verifiedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-profiles.js",
+      "publishedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "expectedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "verifiedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-selection.js",
+      "publishedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "expectedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "verifiedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/geist-mono-latin.woff2",
+      "publishedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "expectedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "verifiedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/",
+      "publishedSha256": "8479058ee73f637d52f068cd93e21e98694c4856dfb24e78d2d85bb5bb84852d",
+      "expectedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "verifiedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "transform": "strip-exact-d-netlify-hosting-comment-for-hash-only",
+      "removedBytes": 326,
+      "exception": "D-Netlify-static-comment-v1",
+      "locationByteOffset": 71,
+      "removedSha256": "b3371ba22e9850e2b33ce0718c03e1526b7167ed930360d4803449910e3abee0",
+      "delivered": "unchanged published response; only an HTML comment excluded from byte comparison"
+    },
+    {
+      "pathname": "/app.js",
+      "publishedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "expectedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "verifiedSha256": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/reconciliation.js",
+      "publishedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "expectedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "verifiedSha256": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/geist-latin.woff2",
+      "publishedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "expectedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "verifiedSha256": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/hosted-wallet.js",
+      "publishedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "expectedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "verifiedSha256": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-profiles.js",
+      "publishedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "expectedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "verifiedSha256": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-inbox.js",
+      "publishedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "expectedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "verifiedSha256": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-pending.js",
+      "publishedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "expectedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "verifiedSha256": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-actions.css",
+      "publishedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "expectedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "verifiedSha256": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/contract-inbox.css",
+      "publishedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "expectedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "verifiedSha256": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/kleros-logo.svg",
+      "publishedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "expectedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "verifiedSha256": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/transaction-context.js",
+      "publishedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "expectedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "verifiedSha256": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/instrument-serif-regular.woff2",
+      "publishedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "expectedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "verifiedSha256": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/styles.css",
+      "publishedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "expectedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "verifiedSha256": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-actions.js",
+      "publishedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "expectedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "verifiedSha256": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/batch-selection.js",
+      "publishedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "expectedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "verifiedSha256": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "transform": "none",
+      "removedBytes": 0
+    },
+    {
+      "pathname": "/assets/geist-mono-latin.woff2",
+      "publishedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "expectedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "verifiedSha256": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "transform": "none",
+      "removedBytes": 0
+    }
+  ],
+  "counts": {
+    "http": 86,
+    "nonceSignatures": 3,
+    "financialSignatures": 0,
+    "broadcasts": 0
+  },
+  "failures": [],
+  "source": {
+    "origin": "https://kleros-fast15m-d-20261029-9fe71683.netlify.app",
+    "instanceId": "72e1375c-078c-4519-a70d-b6de60d73e12",
+    "planFingerprint": "2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1",
+    "manifestSha256": "56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd",
+    "sourceManifestSha256": "2d3c19ede31dd990dc33c8b1fe9d1effc7ad5952fd974e842107e52d8a3f109d",
+    "protectedCManifestSha256": "282e7326548e5a06dda7616fe530afeb31a420b87defc25184f83d1b94d22ab3",
+    "harnessSha256": "85588a44bc3445779ff35fd3eaae946564b85b70f62b9467d052415a70e39468",
+    "provenance": {
+      "contractProfile": {
+        "contractVersion": "kleros-event-v8-test15m",
+        "contractName": "KlerosEventV8Test15m",
+        "factoryName": "KlerosEventFactoryV8Test15m",
+        "artifactDirectory": "contracts-test15m",
+        "sourceDirectory": "contracts/test",
+        "version": 80015,
+        "challengeWindowSeconds": 900,
+        "matchWindowSeconds": 900,
+        "chainId": 10200,
+        "testOnly": true
+      },
+      "productionSources": {
+        "contracts/KlerosEventV8.sol": "e97e3f9a4adb2bb4a697adac609367e5ad2103379bb395a241d54cedc62a9769",
+        "contracts/KlerosEventFactoryV8.sol": "8488bb19f34f90c302afb08af99759b6308ef04199bc10dc973fa5ad35558505"
+      },
+      "v8Compiler": "0.8.38+commit.1835d247.Emscripten.clang",
+      "v7MockCompiler": "0.8.28+commit.7893614a.Emscripten.clang",
+      "sources": {
+        "contracts/test/KlerosEventV8Test15m.sol": "46530aaf048f6a2026cdfd8e7e4cc820acce7da6a55472c10448dd7b32f638e7",
+        "contracts/test/KlerosEventFactoryV8Test15m.sol": "8ee8382bf9a1dd3e8997a63cf51950ae10cdcbbf41c92c96895195e10e9a2e90",
+        "references/kickback/test/MockKleros.sol": "beae9a66702d986159e2d06f0d5dfe4cd18df95906a56f7a2e1117c808884136"
+      },
+      "creationCodeHashes": {
+        "KlerosEventV8Test15m": "0x5bf9454fa2653055199c63aded037886758c4f1e0b276e9290b6424cab5771c0",
+        "KlerosEventFactoryV8Test15m": "0x263f1f460ceb46abe9e77222d4fcfd0ffbf16f027522aea4fbac2b41391fc433",
+        "MockKlerosLiquid": "0xcd44ded079384e526257177ded33e2dd78ead605dd118b56a6f449e5d883adf7",
+        "MockArbitrableProxy": "0xeebf0efd791c1c659aca493517d0cace0e3c8eae6051dbf388ce60a6afdd54c0"
+      }
+    },
+    "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+    "codeHash": "0xe2752e59cd662c74def35b0a99b6f889332c6deeaabc0a3b6db5b4ce523e0edf",
+    "creationTransaction": "0x3c33411d377bec442f8e4831c8465f7d92f02966289fbae212807fb4de59507c",
+    "publicFiles": {
+      "/app.js": "883017cddc320f8f4ca1d16cff3e1b718703ba281def7c8d731f9fb1d04c0f2a",
+      "/assets/ASSET_PROVENANCE.md": "fe03990a05ef0350c12b6b904d3ca2eb27f43d4eaf228ea9c7e10399feaf8ee3",
+      "/assets/FONT_PROVENANCE.json": "ee28db4130de510b67e51da87e49d2e0480b304ffb690ae0a6b385bbaa47f46a",
+      "/assets/GEIST_MONO_OFL.txt": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691",
+      "/assets/GEIST_OFL.txt": "f12f59163d92084b0473315ae4566cde0c1233d940ae464f5225a69c347cc691",
+      "/assets/INSTRUMENT_SERIF_OFL.txt": "b6b2292aa580937fb63796878d65a027a27f8c3db2d97601d0c34d9031f4ca17",
+      "/assets/geist-latin.woff2": "9b6f5ff45b278c744b5f379a2c4ecbaf858a842b8eaf82ac8d21b699ca16c608",
+      "/assets/geist-mono-latin.woff2": "5f3d6ad60f29d6cb708414ec6887163d63bf197377ef5417d2483ff31ace6c3b",
+      "/assets/instrument-serif-italic.woff2": "6ee678c33f388dd7ba59700ebea635deb98821baafd817b09891f7927177f702",
+      "/assets/instrument-serif-regular.woff2": "60c06664b5a95c7de6cc3e00d1f9034d78bd1e40b564016b241674449a067d4d",
+      "/assets/kleros-logo.svg": "1631ffb840c9503fb930751a28d36f0ff737361e0719965dcb9fb1945f89464a",
+      "/assets/kleros-symbol.svg": "5ed568e07ae139feb3b215c3d4805c2eca82668183f5caec424f9cc6aa28de86",
+      "/batch-actions.css": "cdbf18baa8b7b9ba35c5259b16516e0b502687e4c931f3df929c8d84969aa1bc",
+      "/batch-actions.js": "72e51459e3e7a96311b3d5f799e931c6a55626ab82f005d9f81427d3cf4d76e2",
+      "/batch-pending.js": "8b9461b9afe8f221ceed1a0a5ccdeabf00b934da0cd2d6c4853a2d574298ba10",
+      "/batch-selection.js": "08c6c157cf99a72a182300c4021230395c4d03df344e09d46f5394bfd91616b6",
+      "/contract-inbox.css": "61ed167ebee724c929a3bddbd3c0f8035dabed7b8e121725536a72683c931efe",
+      "/contract-inbox.js": "28de29dac08d5793c33bf33ded925b4b43cebc7b02d376f47efd3fa6042e949a",
+      "/contract-profiles.js": "aeb3355ff9b161de5d0b1a6b6ce76a4dc4c3030026cc38a58cb42a534370d749",
+      "/hosted-wallet.js": "6ec533ed08d0a8f57e75ee25971e94d958e2e02319dbab4804e20794defd7015",
+      "/index.html": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+      "/policies/v8-test15m.md": "d8df68ee6438a490569a6391a205913107d24beb90e4f5b4b3278cf92acb7e09",
+      "/policies/v8-testnet.md": "e9e36be8e8bb1741bda4413820d0c4691cc31df0767d41ca269200424b5ea542",
+      "/reconciliation.js": "fb071de09ade412dba1aa8c1183a677c10da4143f63b46615a077bf10433d402",
+      "/styles.css": "1bcadbd96a26303ac52d338e1c02093635ded311f7d46ee9879788b4e612cca5",
+      "/transaction-context.js": "e7c5568fa3dddfb5983ededa48a90db3b13c33c00d59bcd9393e7f02470f07af"
+    }
+  },
+  "chainBefore": {
+    "phase": "Open",
+    "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "stakerCount": 2,
+    "attendeeCount": 0,
+    "pendingTotal": "0",
+    "pendingChallenges": "0",
+    "heldBack": "0",
+    "reserved": "2000000000000",
+    "owedTotal": "0",
+    "challengeEscrow": "0",
+    "payoutShare": "0",
+    "challengeEndsAt": 0,
+    "challengeDeposit": "30000000000",
+    "stakers": [
+      "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+      "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+    ],
+    "attendees": [],
+    "now": 1793244460,
+    "indexedBlock": {
+      "number": 23740500,
+      "hash": "0x77def618d585328e420c0113556b9a334a881f94ca8ec93197de9ecdc8952d04",
+      "timestamp": 1793244460
+    },
+    "challengeDepositWei": "30000000000",
+    "balance": "2000000000000",
+    "status": {
+      "alice": 1,
+      "bob": 1
+    },
+    "pending": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "owed": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "attended": {
+      "alice": false,
+      "bob": false
+    },
+    "balances": {
+      "alice": "8992819197379",
+      "bob": "8994529317079"
+    },
+    "bobCase": {
+      "state": 0,
+      "matcher": "0x0000000000000000000000000000000000000000",
+      "matchEndsAt": 0,
+      "deposit": "0",
+      "arbitratorDisputeID": "0",
+      "localDisputeID": "0",
+      "arbitrationPaid": "0",
+      "heldShare": "0",
+      "finalRuling": null
+    }
+  },
+  "canonicalPayments": {
+    "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+    "chainId": 10200,
+    "contract": "0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88",
+    "contractVersion": "kleros-event-v8-test15m",
+    "blockNumber": 23740500,
+    "blockHash": "0x77def618d585328e420c0113556b9a334a881f94ca8ec93197de9ecdc8952d04",
+    "attendancePaidWei": "0",
+    "principalRefundedWei": "0",
+    "registeredPrincipalRefundedWei": "0",
+    "unregisteredDepositReturnedWei": "0",
+    "spareRefundedWei": "0",
+    "spareSweptWei": "0",
+    "failedPaymentsWei": "0",
+    "claimedWei": "0",
+    "unclassifiedPayoutWei": "0",
+    "pendingCreditWithdrawnWei": "0",
+    "directAttendancePaidWei": "0",
+    "outstandingCreditsWei": "0",
+    "totalExplicitSuccessfulTransfersWei": "0",
+    "scope": "Successful kleros-event-v8-test15m log-explicit attendance payments and returns; claims remain unattributed fungible credit. Successful challenge reimbursements/remainders, arbitration and appeal transfers are outside this projection.",
+    "completeNativeTransferHistory": false,
+    "transfers": []
+  },
+  "summary": {
+    "paid": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "sentWei": "0",
+    "heldWei": "0",
+    "owedWei": "0",
+    "poolWei": "2000000000000",
+    "case": {
+      "state": 0,
+      "matcher": "0x0000000000000000000000000000000000000000",
+      "matchEndsAt": 0,
+      "deposit": "0",
+      "arbitratorDisputeID": "0",
+      "localDisputeID": "0",
+      "arbitrationPaid": "0",
+      "heldShare": "0",
+      "finalRuling": null
+    }
+  },
+  "chainAfter": {
+    "phase": "Open",
+    "owner": "0x348800A6690898b36be3CAe18555F80E16401cD7",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "stakerCount": 2,
+    "attendeeCount": 0,
+    "pendingTotal": "0",
+    "pendingChallenges": "0",
+    "heldBack": "0",
+    "reserved": "2000000000000",
+    "owedTotal": "0",
+    "challengeEscrow": "0",
+    "payoutShare": "0",
+    "challengeEndsAt": 0,
+    "challengeDeposit": "30000000000",
+    "stakers": [
+      "0x64ef8E882a489FA9b1fbfd87815A5A972F3Cd38c",
+      "0x8f9cA1dCdB1eB1842C21BBc20C7737de8d82b501"
+    ],
+    "attendees": [],
+    "now": 1793244660,
+    "indexedBlock": {
+      "number": 23740535,
+      "hash": "0x819e7395fad5989403a3628a1ae19c74b9953f7f331450bc066e7bcd30996347",
+      "timestamp": 1793244660
+    },
+    "challengeDepositWei": "30000000000",
+    "balance": "2000000000000",
+    "status": {
+      "alice": 1,
+      "bob": 1
+    },
+    "pending": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "owed": {
+      "alice": "0",
+      "bob": "0"
+    },
+    "attended": {
+      "alice": false,
+      "bob": false
+    },
+    "balances": {
+      "alice": "8992819197379",
+      "bob": "8994529317079"
+    },
+    "bobCase": {
+      "state": 0,
+      "matcher": "0x0000000000000000000000000000000000000000",
+      "matchEndsAt": 0,
+      "deposit": "0",
+      "arbitratorDisputeID": "0",
+      "localDisputeID": "0",
+      "arbitrationPaid": "0",
+      "heldShare": "0",
+      "finalRuling": null
+    }
+  },
+  "notice": "Nonce-authenticated role UI versus canonical D state; no financial signatures, broadcasts or guest-record writes."
+}

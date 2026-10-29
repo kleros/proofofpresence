@@ -1,0 +1,24 @@
+{
+  "kind": "independent-D-frontend-html-source-check",
+  "checkedAt": "2026-10-29T03:02:13.118Z",
+  "origin": "https://kleros-fast15m-d-20261029-9fe71683.netlify.app",
+  "status": "passed",
+  "httpStatus": 200,
+  "verification": {
+    "pathname": "/",
+    "publishedSha256": "8479058ee73f637d52f068cd93e21e98694c4856dfb24e78d2d85bb5bb84852d",
+    "expectedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+    "verifiedSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+    "transform": "strip-exact-d-netlify-hosting-comment-for-hash-only",
+    "removedBytes": 326,
+    "exception": "D-Netlify-static-comment-v1",
+    "locationByteOffset": 71,
+    "removedSha256": "b3371ba22e9850e2b33ce0718c03e1526b7167ed930360d4803449910e3abee0",
+    "delivered": "unchanged published response; only an HTML comment excluded from byte comparison"
+  },
+  "readOnly": true,
+  "authRequests": 0,
+  "signatures": 0,
+  "broadcasts": 0,
+  "applicationReadyClaimed": false
+}

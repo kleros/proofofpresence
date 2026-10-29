@@ -18,6 +18,8 @@ export const PHASE_NAMES = [
   "open",
   "deposited",
   "admitted",
+  "listed",
+  "waiting",
   "matched",
   "ordinary",
   "ruled",
@@ -170,6 +172,40 @@ export function assertDPhase(phase, current, addresses, depositWei) {
   assert.equal(s.pendingTotalWei, "0");
   assert.equal(roles.alice.pendingWei, "0");
   assert.equal(roles.bob.pendingWei, "0");
+  if (["listed", "waiting"].includes(phase)) {
+    assert.equal(s.phase, "Listed");
+    assert.equal(s.attendeeCount, 1);
+    assert.equal(roles.alice.status, 1);
+    assert.equal(roles.bob.status, 1);
+    assert.equal(roles.bob.attended, false);
+    assert.equal(s.heldBackWei, "0");
+    assert.equal(s.payoutShareWei, "0");
+    assert.equal(paid(addresses.alice), 0n);
+    assert.equal(paid(addresses.bob), 0n);
+    assert.equal(s.cases.length, phase === "waiting" ? 1 : 0);
+    assert.equal(s.pendingChallenges, phase === "waiting" ? 1 : 0);
+    let escrow = 0n;
+    if (phase === "waiting") {
+      const waiting = s.cases[0];
+      assert.ok(same(waiting.wallet, addresses.bob));
+      assert.equal(waiting.state, "Waiting");
+      assert.equal(waiting.matched, false);
+      assert.equal(waiting.matcher, ethers.ZeroAddress);
+      assert.ok(same(waiting.caseOrganizer, addresses.owner));
+      assert.equal(waiting.localDisputeID, null);
+      assert.equal(waiting.arbitratorDisputeID, null);
+      assert.equal(waiting.finalRuling, null);
+      assert.equal(waiting.heldShareWei, "0");
+      assert.equal(waiting.caseURI, null);
+      assert.equal(waiting.appeal, null);
+      assert.equal(waiting.depositWei, "30000000000");
+      escrow = BigInt(waiting.depositWei);
+    }
+    assert.equal(s.challengeEscrowWei, String(escrow));
+    assert.equal(s.reservedWei, String(2n * D + escrow));
+    assert.equal(s.balanceWei, String(2n * D + escrow));
+    return;
+  }
   assert.equal(s.cases.length, 1);
   const c = s.cases[0];
   assert.ok(same(c.wallet, addresses.bob));
@@ -230,6 +266,36 @@ export function assertDPhase(phase, current, addresses, depositWei) {
     assert.equal(s[field], "0", field);
   assert.equal(c.heldShareWei, "0");
   assert.equal(ui.allFinancialObligationsComplete, true);
+}
+
+/** Deadlines are derived from canonical receipt-block time, never a scheduled clock. */
+export function assertDWindowEvent(event, receiptTimestamp, args, state) {
+  if (!["AttendancePosted", "Challenged"].includes(event)) return;
+  assert.ok(Number.isSafeInteger(receiptTimestamp) && receiptTimestamp > 0);
+  const deadline = BigInt(args[event === "AttendancePosted" ? 1 : 2]);
+  assert.equal(
+    deadline,
+    BigInt(receiptTimestamp) + 900n,
+    `${event} opens exactly900seconds`,
+  );
+  if (event === "AttendancePosted") {
+    assert.equal(
+      deadline,
+      BigInt(state.challengeEndsAt),
+      "Actual attendance deadline matches the canonical posting receipt",
+    );
+  } else {
+    const challenge = state.cases.find((item) => same(item.wallet, args[0]));
+    assert.ok(
+      challenge,
+      "Canonical challenge belongs to the current event case",
+    );
+    assert.equal(
+      deadline,
+      BigInt(challenge.matchEndsAt),
+      "Actual match deadline matches the canonical challenge receipt",
+    );
+  }
 }
 
 async function verifyDBirth(provider, d, record, artifact, eq, snapshotBlock) {
@@ -811,6 +877,7 @@ export async function auditD({ expected, phase: checkpoint, rpcUrl } = {}) {
             txHash: log.transactionHash,
             blockNumber: receipt.blockNumber,
             blockHash: receipt.blockHash,
+            blockTimestamp: canonical.timestamp,
             from: tx.from,
             to: tx.to,
             valueWei: tx.value.toString(),
@@ -819,6 +886,8 @@ export async function auditD({ expected, phase: checkpoint, rpcUrl } = {}) {
           };
           receipts.set(log.transactionHash, proof);
         }
+        assertDWindowEvent(parsed.name, proof.blockTimestamp, parsed.args, s);
+        if (["AttendancePosted", "Challenged"].includes(parsed.name)) checks++;
         operations.push({
           event: parsed.name,
           ...proof,

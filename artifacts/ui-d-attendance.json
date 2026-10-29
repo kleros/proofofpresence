@@ -1,0 +1,65 @@
+{
+  "status": "passed",
+  "stage": "attendance",
+  "proof": "artifacts/ui-d/attendance-2026-10-29T03-31-39.985Z-0efbea56/proof.json",
+  "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+  "operations": [
+    {
+      "action": "ui-d-post-attendance",
+      "hash": "0x77ffa4f018c04050acd95873823e06489c7a6681706ad3926beb38e9d62b7deb",
+      "blockNumber": 23740574
+    }
+  ],
+  "counts": {
+    "nodeHttp": 19,
+    "browserHttp": 38,
+    "browserPaths": {
+      "GET /": 1,
+      "GET /assets/geist-latin.woff2": 1,
+      "GET /assets/instrument-serif-regular.woff2": 1,
+      "GET /styles.css": 1,
+      "GET /contract-inbox.css": 1,
+      "GET /batch-actions.css": 1,
+      "GET /app.js": 1,
+      "GET /assets/kleros-logo.svg": 1,
+      "GET /reconciliation.js": 1,
+      "GET /hosted-wallet.js": 1,
+      "GET /contract-inbox.js": 1,
+      "GET /batch-actions.js": 1,
+      "GET /batch-pending.js": 1,
+      "GET /contract-profiles.js": 1,
+      "GET /transaction-context.js": 1,
+      "GET /batch-selection.js": 1,
+      "GET /api/bootstrap": 4,
+      "GET /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d": 5,
+      "GET /assets/geist-mono-latin.woff2": 1,
+      "POST /api/auth/challenge": 1,
+      "POST /api/auth/verify": 1,
+      "GET /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/deposit-inbox": 5,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/checkins": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/664751e0-f348-4621-b66a-8cebc6bd62e6/validate": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/664751e0-f348-4621-b66a-8cebc6bd62e6/submitted": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/submissions/reconcile": 1
+    },
+    "rpc": {
+      "eth_chainId": 189,
+      "eth_getTransactionReceipt": 21,
+      "eth_getTransactionByHash": 11,
+      "eth_getBlockByNumber": 49,
+      "eth_getCode": 22,
+      "eth_call": 621,
+      "eth_getBalance": 29,
+      "eth_blockNumber": 10,
+      "eth_getTransactionCount": 2,
+      "eth_estimateGas": 1,
+      "eth_sendRawTransaction": 1,
+      "eth_getBlockByHash": 1
+    },
+    "nonceSignatures": 1,
+    "walletTransactions": 1,
+    "broadcasts": 1
+  },
+  "protectedABCUnchanged": true
+}
+

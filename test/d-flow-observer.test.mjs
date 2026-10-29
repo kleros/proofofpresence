@@ -4,9 +4,13 @@ import { createHash } from "node:crypto";
 import {
   assertDManifest,
   assertDPhase,
+  assertDWindowEvent,
   parseDObserverArgs,
 } from "../scripts/chiado-ui-d-flow-audit.mjs";
-import { reconcileTransfers } from "../scripts/chiado-flow-audit.mjs";
+import {
+  expectedUi,
+  reconcileTransfers,
+} from "../scripts/chiado-flow-audit.mjs";
 
 const addr = (x) => "0x" + x.repeat(40);
 const roles = { owner: addr("1"), alice: addr("2"), bob: addr("3") };
@@ -144,6 +148,49 @@ function current(phase) {
   };
 }
 
+function prePayout(phase, now = 1100) {
+  const value = current("ordinary");
+  Object.assign(value.state, {
+    phase: "Listed",
+    now,
+    challengeEndsAt: 1900,
+    attendeeCount: 1,
+    pendingChallenges: phase === "waiting" ? 1 : 0,
+    heldBackWei: "0",
+    payoutShareWei: "0",
+    challengeEscrowWei: phase === "waiting" ? "30000000000" : "0",
+    reservedWei: phase === "waiting" ? "2030000000000" : "2000000000000",
+    balanceWei: phase === "waiting" ? "2030000000000" : "2000000000000",
+  });
+  value.state.cases =
+    phase === "waiting"
+      ? [
+          {
+            ...value.state.cases[0],
+            state: "Waiting",
+            matched: false,
+            matcher: addr("0"),
+            matchEndsAt: 1905,
+            localDisputeID: null,
+            arbitratorDisputeID: null,
+            finalRuling: null,
+            heldShareWei: "0",
+            depositWei: "30000000000",
+            caseURI: null,
+            appeal: null,
+          },
+        ]
+      : [];
+  value.roles.alice.status = 1;
+  value.payments.transfers = [];
+  value.expectedUi = expectedUi({
+    ...value.state,
+    eventStart: 900,
+    arbitrationMode: "controlled",
+  });
+  return value;
+}
+
 test("D observer requires externally reviewed exact plan/origin/child/raw-manifest pins", () => {
   const fixture = manifestFixture();
   assertDManifest(fixture.manifest, fixture.expected, fixture.bytes);
@@ -245,6 +292,138 @@ test("ordinary and delivered-ruling checkpoints preserve unpaid Bob held share",
     wrongRuling.state.cases[0].finalRuling = phase === "ordinary" ? 1 : null;
     assert.throws(() => assertDPhase(phase, wrongRuling, roles, D));
   }
+});
+
+test("listed checkpoint proves Alice-only attendance and an intact unpaid two-deposit pool", () => {
+  const value = prePayout("listed");
+  assertDPhase("listed", value, roles, D);
+  for (const mutate of [
+    (x) => {
+      x.state.cases = [{ state: "Waiting" }];
+    },
+    (x) => {
+      x.state.pendingChallenges = 1;
+    },
+    (x) => {
+      x.roles.bob.attended = true;
+    },
+    (x) => {
+      x.roles.alice.status = 2;
+    },
+    (x) => {
+      x.state.challengeEscrowWei = "1";
+    },
+    (x) => {
+      x.state.reservedWei = "1999999999999";
+    },
+    (x) => {
+      x.state.balanceWei = "1999999999999";
+    },
+    (x) => {
+      x.payments.transfers.push(payment(roles.alice));
+    },
+  ]) {
+    const wrong = structuredClone(value);
+    mutate(wrong);
+    assert.throws(() => assertDPhase("listed", wrong, roles, D));
+  }
+  const expired = prePayout("listed", 1901);
+  assert.equal(expired.expectedUi.canReleaseOnChain, true);
+  assertDPhase("listed", expired, roles, D);
+});
+
+test("waiting checkpoint keeps unknown Court IDs null and reserves Bob's exact collateral", () => {
+  const value = prePayout("waiting");
+  assertDPhase("waiting", value, roles, D);
+  for (const mutate of [
+    (x) => {
+      x.state.cases[0].localDisputeID = "0";
+    },
+    (x) => {
+      x.state.cases[0].arbitratorDisputeID = "0";
+    },
+    (x) => {
+      x.state.cases[0].finalRuling = 0;
+    },
+    (x) => {
+      x.state.cases[0].matched = true;
+    },
+    (x) => {
+      x.state.cases[0].state = "Disputed";
+    },
+    (x) => {
+      x.state.cases[0].caseOrganizer = roles.bob;
+    },
+    (x) => {
+      x.state.cases[0].depositWei = "29999999999";
+    },
+    (x) => {
+      x.state.challengeEscrowWei = "0";
+    },
+    (x) => {
+      x.state.balanceWei = "2000000000000";
+    },
+    (x) => {
+      x.state.pendingChallenges = 0;
+    },
+  ]) {
+    const wrong = structuredClone(value);
+    mutate(wrong);
+    assert.throws(() => assertDPhase("waiting", wrong, roles, D));
+  }
+  const expired = prePayout("waiting", 1906);
+  assert.equal(expired.expectedUi.canReleaseOnChain, true);
+  assert.equal(expired.expectedUi.cases[0].canResolveOnChain, true);
+  assertDPhase("waiting", expired, roles, D);
+});
+
+test("canonical posting/challenge receipts bind both 900-second deadlines", () => {
+  const state = prePayout("waiting").state;
+  assertDWindowEvent("AttendancePosted", 1000, [1n, 1900n], state);
+  assertDWindowEvent(
+    "Challenged",
+    1005,
+    [roles.bob, 30000000000n, 1905n],
+    state,
+  );
+  assert.throws(() =>
+    assertDWindowEvent("AttendancePosted", 1000, [1n, 1901n], state),
+  );
+  assert.throws(() =>
+    assertDWindowEvent("AttendancePosted", 999, [1n, 1900n], state),
+  );
+  assert.throws(() =>
+    assertDWindowEvent("AttendancePosted", 1000, [1n, 1900n], {
+      ...state,
+      challengeEndsAt: 1901,
+    }),
+  );
+  assert.throws(() =>
+    assertDWindowEvent(
+      "Challenged",
+      1005,
+      [roles.bob, 30000000000n, 1906n],
+      state,
+    ),
+  );
+  assert.throws(() =>
+    assertDWindowEvent(
+      "Challenged",
+      1005,
+      [roles.alice, 30000000000n, 1905n],
+      state,
+    ),
+  );
+  const wrong = structuredClone(state);
+  wrong.cases[0].matchEndsAt = 1906;
+  assert.throws(() =>
+    assertDWindowEvent(
+      "Challenged",
+      1005,
+      [roles.bob, 30000000000n, 1905n],
+      wrong,
+    ),
+  );
 });
 
 test("settled proof requires exact Bob attendance delivery, correct recipient and cleared liabilities", () => {

@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-29T03:47:50.973244+00:00",
+  "siteId": "f6b82f41-9e30-49b0-a836-40fedbab93a4",
+  "origin": "https://kleros-event-workbench-preview.netlify.app",
+  "purpose": "Disable optional hosting badge and HUD injection under authorized preview maintenance; retain application source and financial source guards",
+  "before": {
+    "hudEnabled": false,
+    "builtWithBadgeEnabled": true,
+    "html": {
+      "sha256": "75834c16b33c14de181f8005a5896b55d79d6ee354e71602ace9d82da8b0ad79",
+      "hudScriptPresent": true,
+      "scripts": [
+        "/app.js",
+        "/.netlify/scripts/hud?variant=public"
+      ]
+    }
+  },
+  "after": {
+    "hudEnabled": false,
+    "builtWithBadgeEnabled": false,
+    "html": {
+      "sha256": "faac2bc8b83a209cb1ec5af8101b22db3485b4c15163cb78ac3572674ac36dd2",
+      "hudScriptPresent": false,
+      "scripts": [
+        "/app.js"
+      ],
+      "comparison": {
+        "transform": "strip-exact-main-site-nonexecuting-comment-plus-one-newline-for-hash-only",
+        "removedBytes": 326,
+        "removedSha256": "ac299873ec628300bc3817310defbb2209405f1609debc641b9cdf759c4ff3e8",
+        "commentSha256": "92069763abfc97148ccff5f46fb5b80a9c7249b83b5e0b5c4fe1cc1ddac6f6c5",
+        "byteOffset": 71,
+        "verifiedApplicationHtmlSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+        "everyOtherByteUnchanged": true,
+        "servedResponseUnchanged": true,
+        "financialGuardChanged": false
+      }
+    }
+  },
+  "publishedDeployIdUnchanged": "6ae256bf680f9cc3dd92092c",
+  "expectedApplicationHtmlSha256": "dbd0f2cd8a070df519b8928bea1ba82adaf56ec906f7cc6ff6fef60fb957f8aa",
+  "applicationSourceCommit": "f4643f8b3a2938d4cbcebe233e202656847a3084",
+  "applicationRedeployed": false,
+  "financialActions": 0,
+  "CAndDHostingChanged": false,
+  "financialSchedulesChanged": false
+}

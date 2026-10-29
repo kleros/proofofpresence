@@ -1,0 +1,65 @@
+{
+  "status": "passed",
+  "stage": "admit",
+  "proof": "artifacts/ui-d/admit-2026-10-29T03-17-58.585Z-b7229940/proof.json",
+  "eventId": "chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d",
+  "operations": [
+    {
+      "action": "ui-d-register",
+      "hash": "0x8376920fd03eb0c2cc8a34bcc25f0d79b9be11f7ce9746c4455cbf59e400e56d",
+      "blockNumber": 23740440
+    }
+  ],
+  "counts": {
+    "nodeHttp": 21,
+    "browserHttp": 81,
+    "browserPaths": {
+      "GET /": 3,
+      "GET /assets/geist-latin.woff2": 3,
+      "GET /assets/instrument-serif-regular.woff2": 3,
+      "GET /styles.css": 3,
+      "GET /contract-inbox.css": 3,
+      "GET /batch-actions.css": 3,
+      "GET /app.js": 3,
+      "GET /assets/kleros-logo.svg": 3,
+      "GET /reconciliation.js": 3,
+      "GET /hosted-wallet.js": 3,
+      "GET /contract-inbox.js": 3,
+      "GET /batch-actions.js": 3,
+      "GET /batch-pending.js": 3,
+      "GET /contract-profiles.js": 3,
+      "GET /transaction-context.js": 3,
+      "GET /batch-selection.js": 3,
+      "GET /api/bootstrap": 7,
+      "GET /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d": 8,
+      "GET /assets/geist-mono-latin.woff2": 3,
+      "POST /api/auth/challenge": 1,
+      "POST /api/auth/verify": 1,
+      "GET /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/deposit-inbox": 7,
+      "PATCH /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/participants/2cc63aed-c535-4deb-8171-b71813bd226c": 1,
+      "PATCH /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/participants/2e59445f-05b0-4c06-a9fd-e6a032161d40": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/6fabb68e-4a1f-43aa-939f-76661be72460/validate": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/drafts/6fabb68e-4a1f-43aa-939f-76661be72460/submitted": 1,
+      "POST /api/events/chiado-ui-70688861-87e2-4936-9e2e-bdc9a7c7a5fd-d/submissions/reconcile": 1
+    },
+    "rpc": {
+      "eth_chainId": 191,
+      "eth_getTransactionReceipt": 23,
+      "eth_getTransactionByHash": 12,
+      "eth_getBlockByNumber": 51,
+      "eth_getCode": 22,
+      "eth_call": 621,
+      "eth_getBalance": 29,
+      "eth_blockNumber": 13,
+      "eth_getTransactionCount": 2,
+      "eth_estimateGas": 1,
+      "eth_sendRawTransaction": 1
+    },
+    "nonceSignatures": 1,
+    "walletTransactions": 1,
+    "broadcasts": 1
+  },
+  "protectedABCUnchanged": true
+}
+

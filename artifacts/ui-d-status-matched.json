@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "phase": "matched",
+  "proof": "artifacts/ui-d/status-matched-2026-10-29T03-46-00-743Z-fbec845c/proof.json",
+  "counts": {
+    "http": 86,
+    "nonceSignatures": 3,
+    "financialSignatures": 0,
+    "broadcasts": 0
+  },
+  "failures": []
+}
+

@@ -3,6 +3,70 @@
 This root document is the **canonical project brain**. The current checkpoint and linked release
 records supersede historical implementation/deployment statements retained below.
 
+## Latest D checkpoint — 29October10:51Bangkok
+
+Branch `codex/core-application`, committed implementation `67ee1d9bfac68f6925ca5dff638b07b5e56b5eae`.
+The separate 15-minute synthetic Chiado D app is live at
+<https://kleros-fast15m-d-20261029-9fe71683.netlify.app>. Its actual child is
+`0x8E1eCFb62465E1b333CBcf30763a2F8aCE2ABb88`; active plan fingerprint
+`2d195b00bec7ffe8436bf2146f2d25dacb6d289ab76329cd92901e8fc07c70d1`.
+Event start/deposit cutoff is now immutable at29October03:30UTC/10:30Bangkok, event hours12h,
+minimum posting/claim term7days. The historical09:24:20 preparation below was revised BEFORE any
+child existed; append-only applied proof `artifacts/ui-d-start-revision-applied.json` preserves the
+original raw plan/journal and all four consumed setup entries. Revision tests passed4/4 and the
+revision itself signed/broadcast nothing. No replacement D2 plan, keys or event exists.
+
+Child creation `0x3c33411d377bec442f8e4831c8465f7d92f02966289fbae212807fb4de59507c`,
+block23740043, and manifest `registry/chiado-v8-ui-d.json` are canonical. Manifest raw SHA256
+`56eca833e2c196a4de7e3c788165cd856ebacdd81f29342caa9911888a0292bd`.
+Actual source-bound UI deposits passed42 checks with exactly2 wallet requests/broadcasts:
+Alice `0xe3b10808d5060b3ef2b6c5f6ccba1c81d3ebee041c5059c27f96f29eac21d682`,
+Bob `0xde29bf8ffa52d94ed551a1b9cf2f65edfec933ffcf4e3220cd3bf92eb61f29eb`.
+Actual organizer approval/separate UI registration passed43 checks with exactly1 broadcast:
+`0x8376920fd03eb0c2cc8a34bcc25f0d79b9be11f7ce9746c4455cbf59e400e56d`, block23740440.
+Summaries `artifacts/ui-d-deposits.json` and `ui-d-admit.json` bind immutable UI proofs and immediate
+A/B/C financial isolation. Independent open/deposited/admitted observers passed122/128/131.
+At admission: Open, exactly2stakers, pool/balance/reserve2D, pending/held/owed/paid/escrow0, no cases.
+The nonce-only admitted three-role UI audit passed86read/auth requests,3nonce signatures,
+6desktop screenshots and zero financial signatures/broadcasts.
+
+D frontend remains source7bdd40a, Netlify deploy6ae2a28034076e4185468d63. Backend source67ee1d9,
+Railway deploymentaef2933b-e7bf-4c05-855c-b39b77a96c7b is healthy with isolated persistent `/data`,
+uid1000, one replica and sleeping disabled; see `artifacts/ui-d-hosting.json`.
+Financial operator assets/source closure must remain unchanged through the remaining D proofs.
+Actual UI attendance, Bob challenge and owner matching are now confirmed, one wallet request/broadcast
+per stage with unchanged immediate A/B/C finances:
+
+| D stage | Canonical hash | Block | Full UI checks | Scoped observer |
+|---|---|---|---|---|
+| Alice-only attendance | `0x77ffa4f018c04050acd95873823e06489c7a6681706ad3926beb38e9d62b7deb` |23740574|35|135|
+| Same Bob omission challenge | `0xcbfc9894bbca380818dd9e90d132819c612f79adcdafe7a0d8dae4a17fc8d993` |23740616|33|150|
+| Organizer match | `0x1dd3a2e9ef04d36387bd5e2ed042ebacc795f4dbe694b0b5aba0fa93b29c7fb3` |23740671|33|155|
+
+Public summaries `artifacts/ui-d-attendance.json`, `ui-d-challenge.json`, `ui-d-match.json` bind their
+immutable full/operation proofs. Actual dynamic D resolver/arbitrator IDs are2/1002; Bob is Disputed
+and UNRULED, pool2D, balance/reserve2D+30e9 escrow, pending/held/owed/attendance-paid0.
+ACTUAL attendance challengeEndsAt1793245770 is29October03:49:30UTC/10:49:30Bangkok, exactly the
+attendance receipt block time+900seconds. Bob's03:53:25UTC historical matching deadline is no longer
+a Waiting-case gate after the confirmed match. The matched three-role UI audit also passed86reads/auth,
+3nonce signatures,6desktop screenshots, zero financial signatures/broadcasts; pointer
+`artifacts/ui-d-status-matched.json`. Its phase proof and fresh chain observer gate ordinary release.
+Next: fresh canonical eligibility, then actual ordinary UI payout with Bob still unruled.
+Ordinary UI payout must prove AliceD paid/BobD held UNRULED before controlled ruling1, ruled/unpaid
+audit before UI settlement, then actual same-Bob attendance payment and separate collateral proof.
+No D kickback, controlled ruling or settlement is claimed at this checkpoint.
+Root remains the sole financial operator; see `docs/TESTNET_UI_D.md`.
+
+The C-only heartbeat check at03:26:55UTC signed/broadcast nothing: Chiado block23740492 is before
+C's actual21:59:50UTC challenge deadline. C matched proof/auditor hashes and all142 frozen operator
+files passed verification. C and A/B remain ACTIVE at30October05:02/00:20Bangkok respectively;
+neither owns D. Subsequent D work resumes under the human's separate full-fast-test authorization.
+
+Additional UI speed/mobile/keyboard fixes are isolated at UI commitab979223, with backend selected
+bootstrap optimization being implemented in `/private/tmp/kleros-selected-bootstrap-67ee1d9`.
+Root application source and live assets have not been replaced. Review and combined checks precede
+any authorized preview release, including a safe source-validation plan for existing scheduled runs.
+
 ## Current phase: simpler v8 app and controlled Chiado testnet
 
 The user requested simpler UX, integration of the new contract, and the full deposit→dispute→kickback
