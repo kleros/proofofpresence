@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { V10_FRONTEND_HEADERS } from "./prepare-v10-frontend.mjs";
+import { verifyV10Frontend } from "./verify-v10-frontend.mjs";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 
@@ -11,6 +12,8 @@ export async function buildV10Netlify({ root = ROOT } = {}) {
     "public/vendor/walletconnect/2.26.0/walletconnect.bundle.js", "netlify/functions/workbench.mjs"]) {
     if (!(await fs.stat(path.join(root, file))).isFile()) throw Error(`Missing production frontend file: ${file}`);
   }
+  // Keep the previous build intact when source syntax or local dependencies fail.
+  await verifyV10Frontend({ root });
   const output = path.join(root, "dist/netlify-app");
   await fs.rm(output, { recursive: true, force: true });
   await fs.cp(path.join(root, "public"), output, { recursive: true });

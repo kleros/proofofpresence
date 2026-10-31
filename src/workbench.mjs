@@ -2849,7 +2849,18 @@ export async function createWorkbench({
       depositWei: String(depositWei), amountWei, pendingCreditWei: String(credit),
       blockNumber: block.number, blockHash: block.hash, snapshot };
     const transaction = { to: d.contract, from: actor.wallet, data: c.interface.encodeFunctionData("deposit", []), value: amountWei, chainId: 1 };
-    const draft = { scopeKind: "event-call", id: id(), eventId: context.eventId, action: "deposit", params: { directDeposit: true, preparation: "amount-quote" },
+    return sealDirectDeposit(actor, { r, registryHash, revision, transaction, context }, "amount-quote");
+  }
+  async function prepareDirectDeposit(actor) {
+    // One complete current-state preflight is both preparation and signing
+    // validation for the immediate wallet path. No financial check is omitted.
+    const checked = await directDepositPreflight(actor);
+    checked.context.verification = "ready-to-send";
+    return sealDirectDeposit(actor, checked, "ready-to-send");
+  }
+  async function sealDirectDeposit(actor, { r, registryHash, revision, transaction, context }, preparation) {
+    const d = r.deployment;
+    const draft = { scopeKind: "event-call", id: id(), eventId: context.eventId, action: "deposit", params: { directDeposit: true, preparation },
       wallet: actor.wallet, sessionId: actor.id, chainId: 1, contract: d.contract, abiVersion: d.abiVersion,
       contractVersion: d.contractVersion, valueWei: context.amountWei, method: "deposit", args: [],
       summary: `Deposit ${ethers.formatEther(context.amountWei)} ETH toward this event's commitment.`,
@@ -3112,6 +3123,7 @@ export async function createWorkbench({
     publicTransactionTarget,
     createPublicTransactionActor,
     createDirectDeposit,
+    prepareDirectDeposit,
     validateDirectDeposit,
     publicTransactionSubmitted,
     reconcilePublicTransaction,

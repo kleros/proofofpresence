@@ -9,6 +9,7 @@ import { chromium, expect } from '@playwright/test';
 import { PGlite } from '@electric-sql/pglite';
 import { ethers } from 'ethers';
 import { createFirstEventPostgres } from '../src/first-event-postgres.mjs';
+import { EVENT as PINNED_EVENT } from '../public/first-event/event.js';
 
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 const OUT = path.join(ROOT, 'artifacts/direct-deposit-home', new Date().toISOString().replace(/[:.]/g, '-'));
@@ -30,7 +31,7 @@ try {
     ['Object.keys(options).every((key) => key === "origin"),', 'Object.keys(options).every((key) => ["origin", "firstEventStore", "firstEventManageScope"].includes(key)),'],
     ['      {\n        workbenchFactory: async (options) => {', '      {\n        firstEventStore: options.firstEventStore,\n        workbenchFactory: async (options) => {'],
     ['            productionRuntime: async () => runtime,', '            productionRuntime: async () => runtime,\n            firstEventManageScope: options.firstEventManageScope,'],
-    ['      if (data.kind === "organizer-job" && data.state === "ready") {', '      if (method === "POST" && /\\/direct-deposit$/.test(new URL(route, "https://fixture.invalid").pathname) && response.status === 200) review = data;\n      if (data.kind === "organizer-job" && data.state === "ready") {'],
+    ['      if (data.kind === "organizer-job" && data.state === "ready") {', '      if (method === "POST" && /\\/direct-deposit(?:\\/prepare)?$/.test(new URL(route, "https://fixture.invalid").pathname) && response.status === 200) review = data;\n      if (data.kind === "organizer-job" && data.state === "ready") {'],
   ];
   // Avoid shadowing the fixture options with the server workbench options.
   let adapted = original.replaceAll('../../', pathToFileURL(ROOT).href);
@@ -51,16 +52,18 @@ try {
   const context = await browser.newContext({ viewport: { width: 1360, height: 1000 }, timezoneId: 'UTC', reducedMotion: 'reduce', serviceWorkers: 'block', permissions: ['clipboard-read', 'clipboard-write'] });
   let badCode = false, blockDepositConfirm = false, withholdDisplay = false, displayRequests = 0;
   let tamperValidation = null, allowDirectSend = false, simulateWalletSwitch = false, directReplyCount = 0, walletSwitchAfterReply = 0;
+  let delayedPreparedReply = false, latePreparedContinuation = false, legacyBackend = false, creationPreparation = null;
   let receiptMode = 'empty', selectedWalletOverride = null;
   const apiStarts = [];
   const rejectedDirect = [];
   const mints = [], resumed = [], publicJobs = [], deniedConfirm = [], setupReplies = [];
   const configured = (body, pathname) => {
     if (!synthetic) return body;
-    if (pathname === '/first-event/event.js') return Buffer.from(`export const EVENT = Object.freeze(${JSON.stringify(synthetic)});\n`);
+    if (pathname === '/first-event/event.js') return Buffer.from(body.toString().replace('export const EVENT = PROMOTED_EVENT ?? LEGACY_EVENT;', `export const EVENT = Object.freeze(${JSON.stringify(synthetic)});`));
     if (['/public-transactions.js', '/event-read.js', '/entry.js'].includes(pathname))
-      return Buffer.from(body.toString().replaceAll(ID, synthetic.id).replaceAll(CHILD, synthetic.contract));
-    if (pathname === '/first-event/index.html' || pathname === '/first-event/') return Buffer.from(body.toString().replaceAll(CHILD, synthetic.contract));
+      return Buffer.from(body.toString().replaceAll(ID, synthetic.id).replaceAll(CHILD, synthetic.contract).replaceAll(PINNED_EVENT.id, synthetic.id).replaceAll(PINNED_EVENT.contract, synthetic.contract));
+    if (pathname === '/first-event/wallet.js') return Buffer.from(body.toString().replace('await execute(prepared);', 'if (window.__delayPreparedContinuation) await new Promise(resolve => setTimeout(resolve, 1300)); await execute(prepared);'));
+    if (pathname === '/first-event/index.html' || pathname === '/first-event/') return Buffer.from(body.toString().replaceAll(CHILD, synthetic.contract).replaceAll(PINNED_EVENT.contract, synthetic.contract));
     return body;
   };
   const routeHandler = async route => {
@@ -102,6 +105,10 @@ try {
         proof.http.push({ method, pathname: redactedPath(pathname), status: 503, operation: 'confirm', syntheticGate: true });
         return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ code: 'SYNTHETIC_CONFIRM_UNAVAILABLE', error: 'Synthetic receipt transport unavailable.' }) });
       }
+      if (pathname.endsWith('/direct-deposit/prepare') && legacyBackend) {
+        proof.http.push({ method, pathname: redactedPath(pathname), status: 405, syntheticLegacyBackend: true });
+        return route.fulfill({ status: 405, contentType: 'application/json', body: JSON.stringify({ code: 'METHOD_NOT_ALLOWED', error: 'Method is not available' }) });
+      }
       if (pathname.startsWith('/first-event/')) {
         const rel = decodeURIComponent(pathname.slice('/first-event/'.length)) || 'index.html';
         assert(!rel.includes('..'));
@@ -110,20 +117,25 @@ try {
       }
       const response = await fixture.forward(pathname + url.search, { method, headers: request.headers(), body: request.postDataBuffer() ?? undefined });
       let responseBody = response.body;
-      if (pathname.endsWith('/direct-deposit') && method === 'POST' && response.status === 200) {
+      if (pathname.includes('/organizer-jobs/') && response.status === 200) {
+        const value = JSON.parse(responseBody);
+        if (value.kind === 'organizer-job' && value.state === 'ready' && value.operation === 'prepare') creationPreparation = value.result;
+      }
+      if ((pathname.endsWith('/direct-deposit') || pathname.endsWith('/direct-deposit/prepare')) && method === 'POST' && response.status === 200) {
         directReplyCount++;
         const draft = fixture.reviewedDraft();
         assert.equal(draft.action, 'deposit');
         assert.equal(draft.directDepositContext.kind, 'direct-deposit-v1');
         if (allowDirectSend) fixture.armEventDraft(draft.id, 'deposit');
       }
-      if (pathname.endsWith('/direct-deposit/validate') && response.status === 200 && tamperValidation) {
+      if ((pathname.endsWith('/direct-deposit/validate') || (pathname.endsWith('/direct-deposit/prepare') && !delayedPreparedReply && !latePreparedContinuation)) && response.status === 200 && tamperValidation) {
         const value = JSON.parse(responseBody);
         assert(value.transaction?.to && value.transaction?.value);
         if (tamperValidation === 'recipient') value.transaction.to = '0x1111111111111111111111111111111111111111';
         else value.transaction.value = '1';
         responseBody = Buffer.from(JSON.stringify(value));
       }
+      if (pathname.endsWith('/direct-deposit/prepare') && response.status === 200 && delayedPreparedReply) await new Promise(resolve => setTimeout(resolve, 3300));
       proof.http.push({ method, pathname: redactedPath(pathname), status: response.status, ...(input?.operation ? { operation: input.operation } : {}) });
       if (pathname.startsWith('/api/public-transactions')) {
         assert.equal(response.headers['set-cookie'], undefined, 'Public flow must never create a login session');
@@ -149,6 +161,12 @@ try {
     }
     if (simulateWalletSwitch && directReplyCount > walletSwitchAfterReply && request.method === 'eth_accounts') {
       await fixture.wallet(request, page.url()); return ['0x1111111111111111111111111111111111111111'];
+    }
+    if (request.method === 'eth_sendTransaction' && !synthetic) {
+      const original = fixture.reviewedDraft();
+      assert.equal(original.scopeKind, 'factory-create');
+      assert.equal(original.transaction.to, fixture.manifest.factoryDeployment.factory);
+      fixture.armCreation(original.id);
     }
     if (request.method === 'eth_sendTransaction' && synthetic) {
       assert(allowDirectSend, 'A negative direct-deposit case must not ask the wallet to send');
@@ -183,24 +201,16 @@ try {
   // browser and the product conversion helper used by the form.
   const eventTimezone = 'Asia/Kathmandu', wallTime = seconds => new Date((seconds + 345 * 60) * 1000).toISOString().slice(0, 16);
   for (const [selector, value] of [['#luma-title', 'Synthetic signature-free setup'], ['#luma-url', 'https://luma.com/synthetic-signature-free'], ['#luma-timezone', eventTimezone], ['#luma-start', wallTime(start)], ['#luma-end', wallTime(start + 7200)], ['#luma-deposit', '0.01']]) await page.locator(selector).fill(value);
-  badCode = true;
+  assert.equal(fixture.stats.walletRequests, 0);
   await page.locator('[data-luma-action="review"]').click();
-  await expect(page.locator('[data-luma-error]')).toContainText(/outside|unsupported|reviewed V10/i, { timeout: 15000 });
-  await expect(page.locator('[data-luma-action="review"]')).toBeEnabled();
-  pass(fixture.stats.walletRequests === 0 && publicJobs.length === 0, 'Unsupported setup account connects but is rejected at explicit transaction preparation before a draft or send');
-  badCode = false;
-  await page.locator('[data-luma-action="review"]').click();
-  await expect(page.locator('dialog[data-luma-dialog]')).toBeVisible({ timeout: 60000 });
+  await expect(page.locator('[data-luma-created]')).toBeVisible({ timeout: 60000 });
   const createDraft = fixture.reviewedDraft();
   assert.equal(createDraft.scopeKind, 'factory-create'); assert.equal(createDraft.transaction.to, fixture.manifest.factoryDeployment.factory);
-  assert.equal(createDraft.creationContext.kind, 'verified-creation-context-v1');
-  assert.equal(createDraft.creationContext.draftId, createDraft.id); assert.equal(createDraft.creationContext.snapshot, createDraft.snapshot);
+  assert.equal(creationPreparation.creationContext.kind, 'verified-creation-context-v1');
+  assert.equal(creationPreparation.creationContext.draftId, createDraft.id); assert.equal(creationPreparation.creationContext.snapshot, createDraft.snapshot);
   assert(!publicJobs.some(job => job.family === 'event' && job.operation === 'bootstrap'), 'Creation consumes its existing successful prepare proof without a preliminary full bootstrap');
-  pass(fixture.stats.walletRequests === 0 && fixture.stats.authSignatures === 0, 'Fresh factory/account verification and exact creation review finish without a login signature or premature wallet send');
-  await shot('creation-review');
-  fixture.armCreation(createDraft.id);
-  await page.locator('[data-luma-action="confirm"]').click();
-  await expect(page.locator('[data-luma-created]')).toBeVisible({ timeout: 60000 });
+  pass(fixture.stats.walletRequests === 1 && fixture.stats.authSignatures === 0,
+    'Current direct creation performs fresh factory/account validation and one protected wallet send after the explicit Create click without a login signature or app review dialog');
   const created = fixture.savedState().events.find(event => event.eventId === createDraft.eventId);
   const createdContract = new ethers.Contract(created.deployment.contract, ['function eventStart() view returns (uint256)', 'function claimDeadline() view returns (uint256)'], fixture.provider);
   pass(created.definition.timezone === eventTimezone && created.definition.startsAt === new Date(start * 1000).toISOString() &&
@@ -228,9 +238,12 @@ try {
   await expect(page.locator('.wallet-review')).not.toBeVisible();
   pass(fixture.stats.walletRequests === 1, 'Unsupported deposit account connects but fails at Deposit preparation without opening a financial review or payment');
   badCode = false;
-  for (const fault of ['recipient', 'amount', 'wallet-switch']) {
-    tamperValidation = fault === 'wallet-switch' ? null : fault;
+  for (const fault of ['recipient', 'amount', 'wallet-switch', 'stale-response', 'late-continuation', 'legacy-backend']) {
+    delayedPreparedReply = fault === 'stale-response'; latePreparedContinuation = fault === 'late-continuation'; legacyBackend = fault === 'legacy-backend';
+    await page.evaluate(value => { window.__delayPreparedContinuation = value; }, latePreparedContinuation);
+    tamperValidation = fault === 'wallet-switch' ? null : ['recipient', 'amount'].includes(fault) ? fault : 'amount';
     simulateWalletSwitch = fault === 'wallet-switch';
+    const validationsBefore = proof.http.filter(row => row.pathname.endsWith('/direct-deposit/validate')).length;
     const repliesBefore = directReplyCount;
     walletSwitchAfterReply = repliesBefore;
     await page.locator('[data-deposit]').click();
@@ -238,9 +251,11 @@ try {
     await expect(page.locator('[data-deposit]')).toBeEnabled({ timeout: 30000 });
     await expect(page.locator('[data-tx-status]')).toContainText(/differ|changed|wallet|review/i);
     pass(fixture.stats.walletRequests === 1, `Direct deposit rejects ${fault} before any wallet send`);
+    if (['stale-response', 'late-continuation', 'legacy-backend'].includes(fault)) assert.equal(proof.http.filter(row => row.pathname.endsWith('/direct-deposit/validate')).length, validationsBefore + 1, `${fault} must obtain complete final validation`);
     rejectedDirect.push({ fault, status: await page.locator('[data-tx-status]').textContent() });
   }
-  tamperValidation = null; simulateWalletSwitch = false;
+  tamperValidation = null; simulateWalletSwitch = false; delayedPreparedReply = latePreparedContinuation = legacyBackend = false;
+  await page.evaluate(() => { window.__delayPreparedContinuation = false; });
   const before = await fixture.financialSnapshot(synthetic.id);
   allowDirectSend = true; blockDepositConfirm = true;
   const directStart = proof.http.length;
@@ -250,6 +265,8 @@ try {
   const depositDraft = fixture.reviewedDraft();
   assert.equal(depositDraft.action, 'deposit'); assert.equal(depositDraft.valueWei, synthetic.depositWei);
   const directRequests = proof.http.slice(directStart);
+  assert.equal(directRequests.filter(row => row.pathname.endsWith('/direct-deposit/prepare')).length, 1);
+  assert(!directRequests.some(row => row.pathname.endsWith('/direct-deposit') || row.pathname.endsWith('/direct-deposit/validate')), 'Immediate prepared transaction must not repeat a quote or complete validation');
   pass(await page.evaluate(() => window.__openedAppDialogs.length === 0) &&
     !directRequests.some(row => row.operation === 'deposit' || row.operation === 'validate') && fixture.stats.authSignatures === 0,
     'One Deposit click opens the exact protected wallet send without an app review dialog, login signature or legacy pre-send deposit/validate jobs');

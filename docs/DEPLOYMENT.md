@@ -74,3 +74,42 @@ domain for functional checks and coordinate the origin switch before go-live.
 
 These checks require no wallet signature or blockchain transaction. Connected
 wallet tests and actual financial actions remain separate user-confirmed steps.
+
+## Keep a verified release live
+
+Netlify publishes a complete deploy atomically. A failed build leaves the
+published deploy in place. The production build now rejects invalid JavaScript,
+missing local modules and missing HTML/CSS assets before replacing its output.
+The independent `production-frontend` CI job also exercises the static fallback.
+These checks reduce broken releases; they do not prove that every runtime action
+or upstream service is available.
+
+For the launch, a Kleros-team administrator should use the project's
+[deploy list](https://app.netlify.com/projects/kickback-kleros/deploys) to:
+
+1. Confirm the canonical-domain smoke checks above, record the published deploy
+   ID and commit, and **lock that published deploy**. A lock prevents automatic
+   publishing while updates are built and tested.
+2. Build the next candidate without publishing it. Require the frontend CI/build
+   checks and inspect its static files. Production wallet/API requests on preview
+   URLs must remain blocked by the existing origin restrictions; do not expand
+   those restrictions to test a preview.
+3. Publish the reviewed candidate, run the read-only checks on the canonical
+   domain, and retain the previous verified deploy ID. Keep publishing locked
+   between deliberate releases.
+4. If a published update fails, select the previous verified deploy and use
+   **Publish deploy** to roll back. Keep the lock so the next Git build does not
+   immediately replace the restored release. Record the failure before retrying.
+
+The homepage offers the static `/first-event/` page when its directory or a startup
+module fails. That page renders the current event's address, amount and QR without
+the database. Wallet actions still require their normal current checks. Recovery
+routes keep their original event and never automatically become a new deposit.
+
+A frontend rollback does not roll back Railway or PostgreSQL. Backend releases
+must keep the previous frontend's API working, and receipt journals must remain
+intact. A hosting outage needs separate recovery; no release strategy guarantees
+continuous availability during every provider outage.
+
+See Netlify's [deploy management](https://docs.netlify.com/deploy/manage-deploys/manage-deploys-overview/)
+for locking and restoring published deploys.

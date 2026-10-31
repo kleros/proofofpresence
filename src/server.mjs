@@ -675,6 +675,7 @@ export async function startServer({
         if (!operation && req.method === "GET") return send(res, 200, publicTransactions.read(token));
         if (operation === "direct-deposit" && req.method === "POST") {
           if (!requestId) return send(res, 200, await publicTransactions.directDeposit(token, await body(req)));
+          if (requestId === "prepare") return send(res, 200, await publicTransactions.directPrepare(token, await body(req)));
           if (requestId === "validate") return send(res, 200, await publicTransactions.directValidate(token, await body(req)));
         }
         if (operation === "submitted" && !requestId && req.method === "POST")

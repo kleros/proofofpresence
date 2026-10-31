@@ -177,7 +177,7 @@ export function mountPublicHome({
         $("#loading").hidden = true;
         $("#content").hidden = false;
         $("#content").innerHTML =
-          `<section class="luma-launch"><div class="luma-launch-heading"><h1>We couldn’t load the event directory.</h1></div><p class="error-panel" role="alert">${escape(error.message)}</p><button class="button button-primary" data-reload data-public-catalog-retry>Try again</button></section>`;
+          `<section class="luma-launch"><div class="luma-launch-heading"><h1>We couldn’t load the event directory.</h1></div><p class="error-panel" role="alert">${escape(error.message)}</p><button class="button button-primary" data-reload data-public-catalog-retry>Try again</button><p><a class="button button-secondary" href="/first-event/" data-event-fallback>Open the Truth Pays deposit page</a></p></section>`;
         catalog = null;
         walletView?.dispose(); walletView = null;
         if (restore) $("[data-public-catalog-retry]")?.focus();

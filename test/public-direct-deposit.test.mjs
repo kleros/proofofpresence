@@ -30,12 +30,16 @@ test("direct public deposits retain current pins, exact credit, scope, window an
     return `${BASE}/${response.data.token}`;
   }
   const send = f.provider.send, profiles = {}; let phase = null;
+  // Inject a fixed local RTT into each logical provider read; this isolates
+  // serial preparation overhead without claiming production phone timings.
+  const readDelayMs = 25;
   f.provider.send = async function(method, params) {
-    if (phase) (profiles[phase] ??= []).push(method);
+    if (phase) { (profiles[phase] ??= []).push(method); await new Promise(resolve => setTimeout(resolve, readDelayMs)); }
     return send.call(this, method, params);
   };
   t.after(() => { f.provider.send = send; });
   const path = await mint(); phase = "prepare";
+  const legacyStart = performance.now();
   const prepared = await request(path + "/direct-deposit", {}); phase = null;
   assert.equal(prepared.status, 200, JSON.stringify(prepared.data));
   const first = prepared.data, c = first.directDepositContext;
@@ -52,6 +56,26 @@ test("direct public deposits retain current pins, exact credit, scope, window an
     { count: reads.length, methods: Object.fromEntries([...new Set(reads)].map(method => [method, reads.filter(value => value === method).length])) }])) }));
   assert.equal(profiles.prepare.length, 5); assert.equal(profiles.validate.length, 14);
   assert.equal(Object.values(profiles).reduce((sum, reads) => sum + reads.length, 0), 19);
+  const legacyElapsedMs = Math.round(performance.now() - legacyStart);
+  const fastPath = await mint(); phase = "ready";
+  const readyStart = performance.now(), ready = await request(fastPath + "/direct-deposit/prepare", {});
+  const readyElapsedMs = Math.round(performance.now() - readyStart); phase = null;
+  assert.equal(ready.status, 200, JSON.stringify(ready.data));
+  assert.equal(ready.data.directDepositContext.verification, "ready-to-send");
+  assert.equal(ready.data.params.preparation, "ready-to-send");
+  assert.equal(ready.data.directDepositContext.snapshot, first.snapshot);
+  assert.deepEqual(ready.data.transaction, first.transaction); assert(ready.data.v10Intent);
+  assert.equal(profiles.ready.length, 13);
+  assert(readyElapsedMs < legacyElapsedMs, JSON.stringify({ legacyElapsedMs, readyElapsedMs }));
+  // Both preparation variants reserve the same once-only flow family.
+  assert.equal((await request(fastPath + "/direct-deposit", {})).data.code, "PUBLIC_FLOW_CONFLICT");
+  assert.equal((await request(fastPath + "/direct-deposit/prepare", {})).data.code, "PUBLIC_FLOW_CONFLICT");
+  assert.equal((await request(path + "/direct-deposit/prepare", {})).data.code, "PUBLIC_FLOW_CONFLICT");
+  const rawEquivalent = reads => reads.reduce((sum, method) => sum + (method === "eth_chainId" ? 1 : 2), 0);
+  t.diagnostic(JSON.stringify({ fixedSyntheticReadDelayMs: readDelayMs, legacyElapsedMs, readyElapsedMs,
+    logicalReads: { legacy: 19, ready: profiles.ready.length },
+    productionTransportRawEquivalent: { legacy: rawEquivalent([...profiles.prepare, ...profiles.validate]), ready: rawEquivalent(profiles.ready) },
+    limits: "Raw equivalent is calculated from the unchanged production verifier's fresh per-call chain probe; fixture latency is synthetic, not a phone or live-backend measurement." }));
   assert(!Object.values(profiles).flat().some(m => ["eth_getLogs", "eth_getTransactionByHash", "eth_getTransactionReceipt"].includes(m)));
   const partial = await f.sendSyntheticTransaction(0, { to: created.contract, data: "0xd0e30db0", value: ethers.parseEther("0.004") }); await partial.wait();
   assert.equal((await request(path + "/direct-deposit/validate", { draftId: first.id })).data.code, "STALE_DRAFT");
@@ -61,6 +85,7 @@ test("direct public deposits retain current pins, exact credit, scope, window an
     try {
       await f.provider.send("evm_setAccountCode", [address, "0x00"]);
       assert((await request(target + "/direct-deposit/validate", { draftId: quote.data.id })).status >= 400);
+      assert((await request((await mint(other)) + "/direct-deposit/prepare", {})).status >= 400);
     } finally { assert.equal(await f.provider.send("evm_revert", [snapshot]), true); }
   }
   for (const address of [d.contract, d.factory]) {
@@ -69,6 +94,7 @@ test("direct public deposits retain current pins, exact credit, scope, window an
     try {
       await f.provider.send("evm_setAccountStorageAt", [address, IMPLEMENTATION_SLOT, ethers.ZeroHash]);
       assert((await request(target + "/direct-deposit/validate", { draftId: quote.data.id })).status >= 400);
+      assert((await request((await mint(other)) + "/direct-deposit/prepare", {})).status >= 400);
     } finally { assert.equal(await f.provider.send("evm_revert", [snapshot]), true); }
   }
   const windowTarget = await mint(other), windowQuote = await request(windowTarget + "/direct-deposit", {});
@@ -77,6 +103,7 @@ test("direct public deposits retain current pins, exact credit, scope, window an
   try {
     await f.provider.send("evm_increaseTime", [7200]); await f.provider.send("evm_mine", []);
     assert.equal((await request(windowTarget + "/direct-deposit/validate", { draftId: windowQuote.data.id })).data.code, "OUTSIDE_DEPOSIT_WINDOW");
+    assert.equal((await request((await mint(other)) + "/direct-deposit/prepare", {})).data.code, "OUTSIDE_DEPOSIT_WINDOW");
   } finally { assert.equal(await f.provider.send("evm_revert", [snapshot]), true); }
   const statusTarget = await mint(other), statusQuote = await request(statusTarget + "/direct-deposit", {});
   assert.equal(statusQuote.status, 200);
@@ -86,14 +113,19 @@ test("direct public deposits retain current pins, exact credit, scope, window an
     const registered = await f.sendSyntheticTransaction(1, { to: created.contract,
       data: w.contract(created.eventId).interface.encodeFunctionData("registerStakers", [[other]]) }); await registered.wait();
     assert.equal((await request(statusTarget + "/direct-deposit/validate", { draftId: statusQuote.data.id })).data.code, "ALREADY_REGISTERED");
+    assert.equal((await request((await mint(other)) + "/direct-deposit/prepare", {})).data.code, "ALREADY_REGISTERED");
   } finally { assert.equal(await f.provider.send("evm_revert", [statusSnapshot]), true); }
   const createPath = await mint(other, "create"); assert.equal((await request(createPath + "/direct-deposit", {})).status, 403);
+  assert.equal((await request(createPath + "/direct-deposit/prepare", {})).status, 403);
   const reorgTarget = await mint(other), reorgQuote = await request(reorgTarget + "/direct-deposit", {}); assert.equal(reorgQuote.status, 200);
   const rpcSend = f.provider.send;
   f.provider.send = async function(method, params) { const block = await rpcSend.call(this, method, params);
     return method === "eth_getBlockByNumber" && params[0] !== "latest" && block
       ? { ...block, hash: ethers.id("synthetic-direct-reorg") } : block; };
-  try { assert.equal((await request(reorgTarget + "/direct-deposit/validate", { draftId: reorgQuote.data.id })).data.code, "SELECTED_EVENT_REORG"); }
+  try {
+    assert.equal((await request(reorgTarget + "/direct-deposit/validate", { draftId: reorgQuote.data.id })).data.code, "SELECTED_EVENT_REORG");
+    assert.equal((await request((await mint(other)) + "/direct-deposit/prepare", {})).data.code, "SELECTED_EVENT_REORG");
+  }
   finally { f.provider.send = rpcSend; }
   const target = await mint(), topup = await request(target + "/direct-deposit", {});
   assert.equal(topup.status, 200); assert.equal(topup.data.valueWei, "6000000000000000");
@@ -104,6 +136,7 @@ test("direct public deposits retain current pins, exact credit, scope, window an
   assert.equal((await request(target + "/submitted", { draftId: topup.data.id, hash: sent.hash })).status, 200);
   assert.equal(r.participants.size, 0);
   const duplicate = await mint(); assert.equal((await request(duplicate + "/direct-deposit", {})).data.code, "PENDING_DEPOSIT");
+  assert.equal((await request((await mint()) + "/direct-deposit/prepare", {})).data.code, "PENDING_DEPOSIT");
   const actorId = f.savedState().drafts.find(([id]) => id === topup.data.id)[1].sessionId;
   // The HTTP flow's actor remains private. Exercise its normal public confirm job.
   const requestId = "direct-confirm-original", start = await request(target + "/event-read-jobs", {
@@ -119,6 +152,7 @@ test("direct public deposits retain current pins, exact credit, scope, window an
   assert.equal(terminal.result.hash, sent.hash); assert.equal([...r.participants.values()][0].identitySource, "signed-transaction-receipt");
   assert.equal(await w.contract(created.eventId).pendingDeposits(guest), ethers.parseEther("0.01"));
   const funded = await mint(); assert.equal((await request(funded + "/direct-deposit", {})).data.code, "CREDIT_AVAILABLE");
+  assert.equal((await request((await mint()) + "/direct-deposit/prepare", {})).data.code, "CREDIT_AVAILABLE");
   assert.equal(f.stats.authSignatures, 0); assert.equal(f.stats.backendSigningCalls, 0);
   t.diagnostic(JSON.stringify({ kind: "actual-local-direct-deposit-profile", rpc: Object.fromEntries(Object.entries(profiles).map(([key, reads]) => [key, reads.length])) }));
 });

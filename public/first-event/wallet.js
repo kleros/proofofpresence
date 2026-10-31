@@ -329,7 +329,7 @@ async function api(path, options = {}) {
       headers: { ...(options.body ? { "Content-Type": "application/json" } : {}), ...options.headers } });
     let data;
     try { data = await response.json(); } catch { fail(`The event service returned HTTP ${response.status}. Keep any original transaction ID.`); }
-    if (!response.ok) throw Object.assign(new Error(data.error || `The event service returned HTTP ${response.status}.`), { code: data.code });
+    if (!response.ok) throw Object.assign(new Error(data.error || `The event service returned HTTP ${response.status}.`), { code: data.code, status: response.status });
     return data;
   } finally { clearTimeout(timer); outer?.removeEventListener("abort", abort); }
 }
@@ -456,14 +456,25 @@ async function prepare() {
     paint();
     if (pending(captured)) return;
     if (heldIntent(captured)) fail("Check the original wallet request before another payment.");
-    const reviewed = await transactionFlow.api("/api/direct-deposit", { method: "POST", body: "{}", signal: readController.signal });
+    let reviewed, prepared = null;
+    try {
+      reviewed = await transactionFlow.api("/api/direct-deposit/prepare", { method: "POST", body: "{}", signal: readController.signal });
+      prepared = { draft: reviewed, receivedAt: performance.now() };
+      if (reviewed?.directDepositContext?.verification !== "ready-to-send" || reviewed.params?.preparation !== "ready-to-send")
+        fail("The deposit preparation could not be verified. Try again.");
+    } catch (error) {
+      // An older backend rejects the new suffix before preparing anything.
+      // Retain its complete quote/validate path during a frontend rollback.
+      if (error.status !== 405 || error.code !== "METHOD_NOT_ALLOWED") throw error;
+      reviewed = await transactionFlow.api("/api/direct-deposit", { method: "POST", body: "{}", signal: readController.signal });
+    }
     if (!current(capturedEpoch, captured)) fail("The wallet or page changed. Connect again.");
     assertDirectDepositDraft(reviewed, captured);
     draft = reviewed;
-    // The explicit Deposit click goes straight to the wallet's review screen.
-    // The shared sender still validates, checks the account and retains hashes.
+    // This response already passed the complete current-state validation.
+    // The shared sender still checks the account and durably retains hashes.
     busy = false;
-    await execute();
+    await execute(prepared);
   } catch (error) {
     preparationFailed = true;
     if (current(capturedEpoch, captured)) {
@@ -492,7 +503,7 @@ function observe(capturedEpoch, captured, id, hash) {
     check: reconcile });
 }
 
-async function execute() {
+async function execute(prepared = null) {
   if (busy || !draft) return;
   busy = true;
   const capturedEpoch = epoch, captured = scope(), reviewed = draft, rawProvider = provider;
@@ -524,7 +535,22 @@ async function execute() {
     } };
     const result = await submitWalletDraft({ draft: reviewed, context: captured, provider: guardedProvider, journal,
       isCurrentContext: isCurrent,
-      validate: async (_eventId, id) => (await transactionFlow.api("/api/direct-deposit/validate", { method: "POST", body: JSON.stringify({ draftId: id }), signal: readController.signal })).transaction,
+      validate: async (_eventId, id) => {
+        const age = performance.now() - prepared?.receivedAt;
+        const serverAge = Date.now() - reviewed.createdAt;
+        // createdAt is sealed only after preflight completes. Bound it as well
+        // as local continuation time so a suspended/delayed response cannot be
+        // reused as fresh authority. Clock skew takes the full-validation path.
+        if (prepared?.draft === reviewed && reviewed.id === id && Number.isFinite(age) && age >= 0 && age <= 1000 &&
+            Number.isSafeInteger(reviewed.createdAt) && serverAge >= 0 && serverAge <= 3000 && isCurrent()) {
+          assertDirectDepositDraft(reviewed, captured);
+          if (reviewed.directDepositContext.verification !== "ready-to-send" || reviewed.params?.preparation !== "ready-to-send")
+            fail("The deposit preparation changed. Try again.");
+          return reviewed.transaction;
+        }
+        // A delayed/resumed continuation must obtain a new complete preflight.
+        return (await transactionFlow.api("/api/direct-deposit/validate", { method: "POST", body: JSON.stringify({ draftId: id }), signal: readController.signal })).transaction;
+      },
       recordSubmitted: (_eventId, _id, hash) => {
         submittedHash = hash;
         // The unchanged sender has already durably recorded this hash before this callback.

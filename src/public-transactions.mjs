@@ -115,6 +115,17 @@ export function createPublicTransactionService(w, { origin, instanceId, walletCo
       bound(f); f.draftId = draft.id;
       return draft;
     },
+    async directPrepare(token, input) {
+      const f = find(token);
+      check(f.kind === "deposit" && exact(input, []));
+      check(!f.prepareId && !f.hash, "PUBLIC_FLOW_CONFLICT", 409);
+      // Share the legacy preparation family: neither route can mint a second
+      // draft for a flow that is already preparing or has possibly been sent.
+      f.prepareId = "direct-deposit";
+      const draft = await w.prepareDirectDeposit(f.actor);
+      bound(f); f.draftId = draft.id;
+      return draft;
+    },
     async directValidate(token, input) {
       const f = find(token);
       check(f.kind === "deposit" && exact(input, ["draftId"])); ownDraft(f, input.draftId);

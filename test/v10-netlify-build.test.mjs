@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import { V10_FRONTEND_HEADERS } from "../scripts/prepare-v10-frontend.mjs";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url)), execute = promisify(execFile);
-const sourceFiles = ["scripts/build-v10-netlify.mjs", "scripts/prepare-v10-frontend.mjs", "scripts/build-hosted-frontend.mjs", "package.json", "netlify.toml"];
+const sourceFiles = ["scripts/build-v10-netlify.mjs", "scripts/verify-v10-frontend.mjs", "scripts/prepare-v10-frontend.mjs", "scripts/build-hosted-frontend.mjs", "package.json", "netlify.toml"];
 const sha = value => createHash("sha256").update(value).digest("hex");
 const pins = async () => Object.fromEntries(await Promise.all([...sourceFiles, "test/v10-netlify-build.test.mjs"].map(async file => [file, sha(await fs.readFile(path.join(ROOT, file)))])));
 const exists = async file => { try { await fs.access(file); return true; } catch { return false; } };
@@ -117,5 +117,28 @@ test("generic hosted builder retains its self-only policy and historical demo bu
   assert.deepEqual(directives.get("connect-src"), ["'self'"]);
   assert.deepEqual(directives.get("img-src"), ["'self'", "data:"]);
   assert.equal(directives.has("frame-src"), false); assert(!headers.includes("walletconnect.org") && !headers.includes("web3modal.org"));
+  await f.offline();
+});
+
+test("broken first-party JavaScript, missing static/deferred modules and missing HTML/CSS assets retain the prior build", async t => {
+  const f = await fixture(t), output = path.join(f.root, "dist/netlify-app"); await fs.mkdir(output, { recursive: true });
+  const sentinel = path.join(output, "retained.txt"), contents = "last verified build"; await fs.writeFile(sentinel, contents);
+  const cases = [
+    ["public/first-event/page.js", source => source + "\nexport const = ;\n", /Invalid frontend JavaScript/],
+    ["public/first-event/page.js", source => source + '\nimport "./missing-module.js";\n', /Missing local module/],
+    ["public/wallet-connection.js", source => source + '\nexport const missing = () => import("./missing-deferred.js");\n', /Missing local module/],
+    ["public/index.html", source => source + '\n<img\n alt="regression" src="/assets/missing-image.svg">', /Missing local asset/],
+    ["public/first-event/index.html", source => source + '\n<link href="./missing.css" rel="stylesheet">', /Missing local asset/],
+    ["public/first-event/styles.css", source => source + '\n.test { background: url("./assets/missing-font.woff2"); }', /Missing local asset/],
+  ];
+  for (const [file, change, expected] of cases) {
+    const target = path.join(f.root, file), original = await fs.readFile(target, "utf8");
+    await fs.writeFile(target, change(original));
+    try {
+      await assert.rejects(f.run(process.execPath, ["scripts/build-v10-netlify.mjs"]), error => { assert.match(error.stderr, expected); return true; });
+      assert.deepEqual(await files(output), ["retained.txt"]);
+      assert.equal(await fs.readFile(sentinel, "utf8"), contents);
+    } finally { await fs.writeFile(target, original); }
+  }
   await f.offline();
 });

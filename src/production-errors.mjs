@@ -128,13 +128,17 @@ define(
 );
 define(
   409,
+  "Your wallet requested permissions this app cannot verify. Keep any submitted transaction ID and check it before paying again.",
+  ["V10_PERMISSION_UNSUPPORTED"],
+);
+define(
+  409,
   "The transaction does not match its original saved V10 review or supported account profile.",
   [
     "V10_WALLET_SCOPE",
     "V10_WALLET_EVIDENCE",
     "V10_TRANSACTION_CODEC",
     "V10_INTENT_MISMATCH",
-    "V10_PERMISSION_UNSUPPORTED",
     "V10_RECEIPT_CONTEXT_SCOPE",
     "V10_RECEIPT_CONTEXT_CHANGED",
     "V10_RECEIPT_CONTEXT_UNSEALED",

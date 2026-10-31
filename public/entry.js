@@ -85,6 +85,8 @@ async function showFirstEvent() {
   }
 }
 function loading() {
+  const fallback = document.querySelector("#startup-fallback");
+  if (fallback) fallback.hidden = !homeRoute();
   document.querySelector("#loading").hidden = false;
   document.querySelector("#content").hidden = true;
   document.querySelector("#loading-title").textContent =
@@ -100,7 +102,8 @@ function failure() {
   content.hidden = false;
   content.setAttribute("aria-busy", "false");
   content.innerHTML =
-    '<section class="luma-launch"><h1>This view could not be opened.</h1><p class="error-panel" role="alert">An application file could not be loaded. Reload this page to try again.</p><button class="button button-primary" data-startup-reload>Reload page</button></section>';
+    '<section class="luma-launch"><h1>This view could not be opened.</h1><p class="error-panel" role="alert">An application file could not be loaded. Reload this page to try again.</p><button class="button button-primary" data-startup-reload>Reload page</button>' +
+    (homeRoute() ? '<p><a class="button button-secondary" href="/first-event/" data-event-fallback>Open the Truth Pays deposit page</a></p>' : '') + '</section>';
   content
     .querySelector("[data-startup-reload]")
     .addEventListener("click", () => window.location.reload());

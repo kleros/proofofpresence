@@ -60,6 +60,7 @@ export async function createPublicTransactionFlow({ api, wallet, kind, contract 
   const scopedApi = async (path, options = {}) => {
     let target;
     if (path === "/api/direct-deposit") target = prefix + "/direct-deposit";
+    else if (path === "/api/direct-deposit/prepare") target = prefix + "/direct-deposit/prepare";
     else if (path === "/api/direct-deposit/validate") target = prefix + "/direct-deposit/validate";
     else if (/^\/api\/event-read-jobs(?:\/[A-Za-z0-9_-]+)?$/.test(path)) target = prefix + path.slice(4);
     else if (/^\/api\/organizer\/events\/jobs(?:\/[A-Za-z0-9_-]+)?$/.test(path)) target = prefix + "/organizer-jobs" + path.slice("/api/organizer/events/jobs".length);
