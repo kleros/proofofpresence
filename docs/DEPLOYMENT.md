@@ -1,9 +1,14 @@
 # Kickback production deployment
 
-Deploy this repository as a separate Netlify project in the team that manages
-`kleros.io`, with `kickback.kleros.io` as its canonical domain. The frontend and
+Deploy the latest `main` from this repository to the `kickback-kleros` Netlify
+project in the team that manages `kleros.io`. Its canonical domain is
+`https://kickback.kleros.io`; its Netlify address is
+`https://kickback-kleros.netlify.app`. The frontend and
 gateway use the existing production Railway backend, database and Reown project.
 No contract deployment or database migration is part of this frontend deployment.
+
+The checked-in domain redirects send both the current and previous Netlify
+addresses to the canonical domain while retaining paths and query parameters.
 
 ## Import from Git
 

@@ -9,6 +9,18 @@
 [functions]
   node_bundler = "esbuild"
 
+[[redirects]]
+  from = "https://kickback-kleros.netlify.app/*"
+  to = "https://kickback.kleros.io/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://kleros-kickback.netlify.app/*"
+  to = "https://kickback.kleros.io/:splat"
+  status = 301
+  force = true
+
 # The gateway requires KLEROS_BACKEND_URL, KLEROS_PUBLIC_ORIGIN and
 # KLEROS_PROXY_SECRET in Netlify runtime variables. Never put the key in source.
 # The unchanged financial runtime remains in one persistent private backend.
