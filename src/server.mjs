@@ -84,6 +84,7 @@ const staticPaths = new Set([
   "/selected-event.js",
   "/event-read.js",
   "/public-transactions.js",
+  "/deposit-ownership.js",
   "/first-event-display.js",
   "/loading.css",
   "/contract-inbox.js",
@@ -667,7 +668,7 @@ export async function startServer({
         requireThat(publicTransactions && url.search === "", "Public transaction flow is unavailable", "PUBLIC_FLOW_NOT_FOUND", 404);
         if (p === "/api/public-transactions") {
           requireThat(req.method === "POST", "Use an explicit transaction request", "METHOD_NOT_ALLOWED", 405);
-          return send(res, 201, publicTransactions.create(await body(req)));
+          return send(res, 201, publicTransactions.create(await body(req), req.headers["x-kleros-requester-key"]));
         }
         const route = p.match(/^\/api\/public-transactions\/([0-9a-f]{64})(?:\/(event-read-jobs|organizer-jobs|submitted|direct-deposit)(?:\/([A-Za-z0-9_-]+))?)?$/);
         requireThat(route, "Public transaction flow not found", "PUBLIC_FLOW_NOT_FOUND", 404);

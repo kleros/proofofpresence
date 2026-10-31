@@ -24,6 +24,8 @@ define(503, "The Ethereum deposit simulation returned an invalid reply. No trans
 define(409, "This wallet is already registered for the event.", ["ALREADY_REGISTERED"]);
 define(409, "This wallet's registration was rejected. Unused credit can be recovered.", ["REGISTRATION_REJECTED"]);
 define(503, "Transaction preparation is busy. Try again shortly.", ["PUBLIC_FLOW_CAPACITY"]);
+define(429, "Too many wallet requests from this connection. Try again shortly.", ["PUBLIC_FLOW_RATE_LIMIT"]);
+define(503, "Wallet connection is temporarily unavailable. Try again shortly.", ["PUBLIC_FLOW_REQUESTER_UNAVAILABLE"]);
 define(403, "The sign-in request expired or is invalid. Authenticate again.", [
   "BAD_NONCE",
 ]);

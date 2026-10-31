@@ -20,13 +20,16 @@ test("direct public deposits retain current pins, exact credit, scope, window an
   const created = await w.reconcileFactorySubmission(owner, creation.id, createdTx.hash);
   managed.set(created.eventId, created.contract);
   const r = w.events.get(created.eventId), d = r.deployment, BASE = "/api/public-transactions";
-  async function request(path, payload) {
-    const response = await f.forward(path, { method: "POST", body: JSON.stringify(payload) });
+  async function request(path, payload, headers = {}) {
+    const response = await f.forward(path, { method: "POST", body: JSON.stringify(payload), headers });
     assert.equal(response.headers["set-cookie"], undefined);
     return { status: response.status, data: JSON.parse(response.body.toString()) };
   }
+  let syntheticClient = 0;
   async function mint(wallet = guest, kind = "deposit") {
-    const response = await request(BASE, { wallet, kind }); assert.equal(response.status, 201);
+    // Independent isolated proof scenarios are independent trusted requesters;
+    // admission limits are exercised separately, without relaxing these checks.
+    const response = await request(BASE, { wallet, kind }, { "x-kleros-requester-key": ethers.id(`synthetic-client-${++syntheticClient}`).slice(2) }); assert.equal(response.status, 201);
     return `${BASE}/${response.data.token}`;
   }
   const send = f.provider.send, profiles = {}; let phase = null;

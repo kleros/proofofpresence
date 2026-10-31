@@ -2,6 +2,7 @@
 // can prepare only a public deposit or a new public event, never private actions.
 const PROFILE = "kleros-event-v10-uups";
 import { EVENT, LEGACY_EVENT } from "./first-event/event.js";
+import { assertDepositOwnership } from "./deposit-ownership.js";
 const same = (a, b) => typeof a === "string" && typeof b === "string" && a.toLowerCase() === b.toLowerCase();
 const stable = value => typeof value === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(value);
 const fail = (message, code = "PUBLIC_TRANSACTION_SCOPE") => { throw Object.assign(Error(message), { code }); };
@@ -9,25 +10,30 @@ const storageKey = (wallet, kind) => "kleros-public-transaction-v1:" + JSON.stri
   location.origin, kind, wallet.toLowerCase(),
   ...(kind === "deposit" && EVENT.id !== LEGACY_EVENT.id ? [EVENT.id, EVENT.contract.toLowerCase()] : []),
 ]);
-export function resetCompletedPublicTransactionFlow({ wallet, kind, token = null, hash = null }) {
+export function resetCompletedPublicTransactionFlow({ wallet, kind, token = null, hash = null, ownership = null }) {
+  if (kind === "deposit") assertDepositOwnership(ownership, { wallet });
   const key = storageKey(wallet, kind);
   const saved = JSON.parse(localStorage.getItem(key) ?? "null");
   if (saved && (token ? saved.token !== token : !hash || !same(saved.hash, hash))) fail("The saved transaction flow changed.");
   localStorage.removeItem(key);
 }
-export function resetUnusedPublicTransactionFlow({ wallet, kind }) {
+export function resetUnusedPublicTransactionFlow({ wallet, kind, token = null, ownership = null }) {
+  if (kind === "deposit") assertDepositOwnership(ownership, { wallet });
   const key = storageKey(wallet, kind);
   const saved = JSON.parse(localStorage.getItem(key) ?? "null");
+  if (kind === "deposit" && saved && saved.token !== token) fail("The saved transaction flow belongs to another request.");
   if (saved?.hash) fail("Keep the original transaction ID before starting another request.");
   localStorage.removeItem(key);
 }
 
-export async function createPublicTransactionFlow({ api, wallet, kind, contract = null, isCurrent = () => true, signal = undefined }) {
+export async function createPublicTransactionFlow({ api, wallet, kind, contract = null, isCurrent = () => true, signal = undefined, ownership = null }) {
   if (!/^0x[0-9a-f]{40}$/i.test(wallet ?? "") || !["deposit", "create"].includes(kind)) fail("Connect your wallet first.");
-  const current = () => { if (signal?.aborted || !isCurrent()) fail("The wallet or page changed. Connect again."); };
+  const owned = () => { if (kind === "deposit") assertDepositOwnership(ownership, { wallet }); };
+  const current = () => { owned(); if (signal?.aborted || !isCurrent()) fail("The wallet or page changed. Connect again."); };
   const key = storageKey(wallet, kind);
   current(); let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(key) ?? "null"); }
+  let stored;
+  try { stored = localStorage.getItem(key); saved = JSON.parse(stored ?? "null"); }
   catch { fail("Saved wallet activity is unavailable. Keep any original transaction ID."); }
   const call = (path, options = {}) => api(path, { credentials: "omit", ...options });
   let info;
@@ -38,10 +44,13 @@ export async function createPublicTransactionFlow({ api, wallet, kind, contract 
       // Never silently replace an expired original flow after a possible send.
       if (saved.hash) fail("Keep your transaction ID and use deposit recovery to check it.", "PUBLIC_TRANSACTION_EXPIRED");
       if (!["PUBLIC_TRANSACTION_EXPIRED", "PUBLIC_FLOW_NOT_FOUND", "NOT_FOUND"].includes(error.code) && error.status !== 404) throw error;
+      current();
+      if (kind === "deposit" && localStorage.getItem(key) !== stored) fail("The saved transaction flow changed. Preserve the original request.");
       localStorage.removeItem(key); saved = null;
+      stored = null;
     }
   }
-  if (!info) info = await call("/api/public-transactions", { method: "POST", body: JSON.stringify({ wallet, kind }), signal });
+  if (!info) { current(); info = await call("/api/public-transactions", { method: "POST", body: JSON.stringify({ wallet, kind }), signal }); }
   current();
   if (info?.kind !== "public-transaction-flow" || info.flowKind !== kind || info.schemaVersion !== 1 || !/^[0-9a-f]{64}$/.test(info.token ?? "") ||
       !same(info.wallet, wallet) || info.mode !== "hosted-production" || info.chainId !== 1 || !stable(info.instanceId) ||
@@ -54,10 +63,17 @@ export async function createPublicTransactionFlow({ api, wallet, kind, contract 
       walletContext.capabilities?.transactionsReady !== false || walletContext.capabilities.createEvents !== false ||
       walletContext.capabilities.manageEvents !== false) fail("The wallet transaction context is unavailable.");
   saved = { kind, wallet, token: info.token, instanceId: info.instanceId, ...(saved?.hash ? { hash: saved.hash } : {}) };
-  const persist = () => { const value = JSON.stringify(saved); localStorage.setItem(key, value); if (localStorage.getItem(key) !== value) fail("The browser could not retain your transaction activity."); };
+  const persist = () => {
+    owned();
+    if (kind === "deposit" && localStorage.getItem(key) !== stored) fail("The saved transaction flow changed. Keep the original transaction ID.");
+    const value = JSON.stringify(saved); localStorage.setItem(key, value);
+    if (localStorage.getItem(key) !== value) fail("The browser could not retain your transaction activity.");
+    stored = value;
+  };
   persist();
   const prefix = `/api/public-transactions/${info.token}`;
   const scopedApi = async (path, options = {}) => {
+    owned();
     let target;
     if (path === "/api/direct-deposit") target = prefix + "/direct-deposit";
     else if (path === "/api/direct-deposit/prepare") target = prefix + "/direct-deposit/prepare";

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { createHmac } from "node:crypto";
 import { createGateway } from "../netlify/functions/workbench.mjs";
 
 // All requests are intercepted by this in-memory Fetch implementation. These tests never
@@ -83,6 +84,8 @@ test("API reads use the fixed backend, preserve query data and cookies, and disc
       "x-forwarded-proto": "http",
       "x-real-ip": "192.0.2.1",
       "x-kleros-proxy-key": "caller-forgery",
+      "x-kleros-requester-key": "a".repeat(64),
+      "x-nf-client-connection-ip": "192.0.2.2",
       "x-unrelated-header": "not-forwarded",
     },
   }));
@@ -98,8 +101,73 @@ test("API reads use the fixed backend, preserve query data and cookies, and disc
   assert.equal(call.headers.get("accept"), "application/json");
   assert.equal(call.headers.get("origin"), null, "API requests must not invent a user Origin");
   assert.equal(call.headers.get("x-kleros-proxy-key"), SECRET);
-  for (const name of ["authorization", "host", "forwarded", "x-forwarded-host", "x-forwarded-proto", "x-real-ip", "x-unrelated-header"])
+  for (const name of ["authorization", "host", "forwarded", "x-forwarded-host", "x-forwarded-proto", "x-real-ip", "x-kleros-requester-key", "x-nf-client-connection-ip", "x-unrelated-header"])
     assert.equal(call.headers.get(name), null, `${name} must not be trusted or forwarded`);
+});
+
+test("new flow admission trusts only platform context IP and never browser requester/IP headers", async () => {
+  const { gateway, calls } = setup();
+  const input = () => request("/api/public-transactions", "POST", { body: '{"wallet":"synthetic-claim","kind":"deposit"}', headers: {
+    "content-type": "application/json", "x-kleros-requester-key": "b".repeat(64),
+    "x-nf-client-connection-ip": "198.51.100.1", "x-forwarded-for": "198.51.100.2", "x-real-ip": "198.51.100.3",
+    forwarded: "for=198.51.100.4", "cf-connecting-ip": "198.51.100.5",
+  } });
+  for (const context of [undefined, {}, { ip: null }, { ip: "invalid" }, { ip: ["192.0.2.8"] }, { ip: "192.0.2.8, 192.0.2.9" }, { ip: "fe80::1%en0" }]) {
+    const response = await gateway(input(), context);
+    assert.equal(response.status, 503); assert.equal((await response.json()).code, "PUBLIC_FLOW_REQUESTER_UNAVAILABLE");
+  }
+  assert.equal(calls.length, 0, "Missing trusted identity fails closed before any backend call");
+  assert.equal((await gateway(input(), { ip: "192.0.2.8" })).status, 200);
+  const expected = createHmac("sha256", SECRET).update(`public-flow-requester-v1\n${PUBLIC}\nv4:192.0.2.8`).digest("hex");
+  assert.equal(calls[0].headers.get("x-kleros-requester-key"), expected);
+  for (const header of ["x-nf-client-connection-ip", "x-forwarded-for", "x-real-ip", "forwarded", "cf-connecting-ip"])
+    assert.equal(calls[0].headers.get(header), null);
+  assert(!calls[0].headers.get("x-kleros-requester-key").includes("192.0.2.8"));
+  assert.equal((await gateway(input(), { ip: "192.0.2.8" })).status, 200);
+  assert.equal(calls[1].headers.get("x-kleros-requester-key"), expected);
+  await gateway(input(), { ip: "192.0.2.9" });
+  assert.notEqual(calls[2].headers.get("x-kleros-requester-key"), expected);
+});
+
+test("IPv6 equivalent spellings/privacy addresses share a /64 and mapped IPv4 cannot reset admission", async () => {
+  const { gateway, calls } = setup();
+  const getKey = async ip => {
+    assert.equal((await gateway(request("/api/public-transactions", "POST", {
+      body: "{}", headers: { "content-type": "application/json" },
+    }), { ip })).status, 200);
+    return calls.at(-1).headers.get("x-kleros-requester-key");
+  };
+  const v6 = await getKey("2001:db8:1234:5678::1");
+  assert.equal(await getKey("2001:0DB8:1234:5678:0000:0000:0000:0001"), v6);
+  assert.equal(await getKey("2001:db8:1234:5678:ffff:abcd:1234:9876"), v6);
+  assert.notEqual(await getKey("2001:db8:1234:5679::1"), v6);
+  const v4 = await getKey("192.0.2.8");
+  assert.equal(await getKey("::ffff:192.0.2.8"), v4);
+  assert.equal(await getKey("0:0:0:0:0:FFFF:C000:0208"), v4);
+});
+
+test("trusted identity is required only for new minting; existing token/draft/hash routes remain compatible", async () => {
+  const { gateway, calls } = setup({ reply: () => new Response('{"status":"retained"}', { status: 200, headers: { "content-type": "application/json" } }) });
+  const token = "a".repeat(64);
+  for (const [path, method] of [
+    [`/api/public-transactions/${token}`, "GET"],
+    [`/api/public-transactions/${token}/direct-deposit/prepare`, "POST"],
+    [`/api/public-transactions/${token}/direct-deposit/validate`, "POST"],
+    [`/api/public-transactions/${token}/submitted`, "POST"],
+    [`/api/public-transactions/${token}/event-read-jobs`, "POST"],
+    [`/api/public-transactions/${token}/organizer-jobs`, "POST"],
+  ]) {
+    const response = await gateway(request(path, method, method === "GET" ? {} : { body: "{}", headers: { "content-type": "application/json" } }));
+    assert.equal(response.status, 200);
+    assert.equal(calls.at(-1).headers.get("x-kleros-requester-key"), null);
+  }
+  // Gateway-first deployment is backward compatible: an older backend receives
+  // the original JSON contract plus an additive private header and no new env.
+  const body = '{"wallet":"0x1111111111111111111111111111111111111111","kind":"deposit"}';
+  const response = await gateway(request("/api/public-transactions", "POST", { body, headers: { "content-type": "application/json" } }), { ip: "192.0.2.20" });
+  assert.equal(response.status, 200); assert.equal(calls.at(-1).body, body);
+  assert.match(calls.at(-1).headers.get("x-kleros-requester-key"), /^[a-f0-9]{64}$/);
+  assert.equal(calls.at(-1).headers.get("x-kleros-proxy-key"), SECRET);
 });
 
 test("API mutations forward the actual same-origin body and cookie without manufacturing success", async () => {
