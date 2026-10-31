@@ -13,6 +13,7 @@ import { importCsv } from "./imports.mjs";
 import { createImportPreviewService } from "./import-preview.mjs";
 import { createBatchService, participantBatchEligibility } from "./batches.mjs";
 import { createPayerAdoptionService, manualAttendanceWallets, bindManualAttendanceReview } from "./first-event-manage.mjs";
+import { createEventAccessService, eventAccessRole } from "./event-access.mjs";
 import { FIRST_EVENT_MANAGE_SCOPE, firstEventManageMatches, firstEventDisplayScopes, assertFirstEventDepositTarget } from "./first-event-manage-scope.mjs";
 import { projectPayments } from "./payments.mjs";
 import { v8DepositCredits } from "./v8-deposits.mjs";
@@ -240,7 +241,7 @@ export async function createWorkbench({
       401,
     );
   }
-  function record(eventId, s) {
+  function record(eventId, s, authority = null) {
     const r = events.get(eventId);
     requireThat(r, "Unknown event", "NOT_FOUND", 404);
     if (publicActor(s)) requireThat(r.definition.visibility === "public" && r.definition.editorialStatus === "published",
@@ -256,6 +257,8 @@ export async function createWorkbench({
             r.definition.staff,
             [...r.participants.values()].map((p) => p.wallet),
             r.financialAccess ?? [],
+            authority && productionV10 && firstEventManageMatches(r, manageScope) &&
+              ["owner", "pending-owner", "admin", "staff"].includes(eventAccessRole(r, s.wallet, authority, productionOrigin)) ? [s.wallet] : [],
           ]
             .flat()
             .some((x) => lower(x) === lower(s.wallet)),
@@ -373,11 +376,45 @@ export async function createWorkbench({
     }
     throw Object.assign(new Error("Current event authority changed"), { code: "SELECTED_EVENT_REORG", status: 409 });
   }
+  // Present-state authority for database roles only. Financial actions continue
+  // through the original complete provenance verifier and wallet pipeline.
+  async function dbEventAuthority(eventId) {
+    const r = events.get(eventId);
+    requireThat(productionV10 && firstEventManageMatches(r, manageScope), "Choose the current reviewed event", "FIRST_EVENT_SCOPE", 404);
+    const d = r.deployment, binding = hash(d), c = contract(eventId);
+    requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n, "Production RPC chain changed", "WRONG_CHAIN", 409);
+    const block = await directDepositBlock("latest"), tag = ethers.toQuantity(block.number);
+    requireThat(block.number >= d.deploymentBlock, "Current event authority is unavailable", "SELECTED_EVENT_REORG", 409);
+    const factory = new ethers.Contract(d.factory, ["function isEvent(address) view returns(bool)",
+      "function upgradeAuthority() view returns(address)"], chain.provider);
+    const addresses = [d.contract, d.implementation, d.factory, d.factoryImplementation, d.upgradeAuthority];
+    const expected = [d.codeHash, d.implementationCodeHash, d.factoryCodeHash, d.factoryImplementationCodeHash, d.upgradeAuthorityCodeHash];
+    requireThat(addresses.every(ethers.isAddress) && expected.every(value => ethers.isHexString(value, 32)),
+      "Current event source pins are unavailable", "UPGRADE_TRUST_MISMATCH", 409);
+    const [values, hashes, eventSlot, factorySlot] = await Promise.all([
+      v10ReadBatch(chain.provider, [{ contract: c, method: "owner" }, { contract: c, method: "pendingOwner" },
+        { contract: c, method: "originatingFactory" }, { contract: c, method: "upgradeAuthority" },
+        { contract: factory, method: "isEvent", args: [d.contract] }, { contract: factory, method: "upgradeAuthority" }], block.number),
+      v10CodeHashBatch(chain.provider, addresses, block.number),
+      chain.provider.send("eth_getStorageAt", [d.contract, IMPLEMENTATION_SLOT, tag]),
+      chain.provider.send("eth_getStorageAt", [d.factory, IMPLEMENTATION_SLOT, tag]),
+    ]);
+    requireThat(hashes.every((value, i) => lower(value) === lower(expected[i])) &&
+      ethers.isHexString(eventSlot, 32) && BigInt(eventSlot) === BigInt(d.implementation) &&
+      ethers.isHexString(factorySlot, 32) && BigInt(factorySlot) === BigInt(d.factoryImplementation) &&
+      ethers.isAddress(values[0]) && ethers.isAddress(values[1]) && lower(values[2]) === lower(d.factory) &&
+      lower(values[3]) === lower(d.upgradeAuthority) && values[4] === true && lower(values[5]) === lower(d.upgradeAuthority),
+      "Current event implementation or authority changed", "UPGRADE_TRUST_MISMATCH", 409);
+    const [canonical, network] = await Promise.all([directDepositBlock(tag), chain.provider.send("eth_chainId", [])]);
+    requireThat(canonical.hash === block.hash && BigInt(network) === 1n && hash(r.deployment) === binding &&
+      firstEventManageMatches(r, manageScope), "Current event authority changed", "SELECTED_EVENT_REORG", 409);
+    return { owner: values[0], pendingOwner: values[1], now: block.timestamp };
+  }
   async function owner(eventId, s) {
     requireThat(!publicActor(s), "Authenticate organizer access separately", "PUBLIC_FLOW_SCOPE", 403);
     authenticated(s);
     if (productionV10 && firstEventManageMatches(events.get(eventId), manageScope)) {
-      const authority = await firstEventAuthority(eventId), r = record(eventId, s);
+      const authority = await firstEventAuthority(eventId), r = record(eventId, s, authority);
       requireThat(lower(authority.owner) === lower(s.wallet),
         "Only this event's current contract owner can do that", "NOT_OWNER", 403);
       return r;
@@ -396,8 +433,9 @@ export async function createWorkbench({
     requireThat(!publicActor(s), "Authenticate staff access separately", "PUBLIC_FLOW_SCOPE", 403);
     authenticated(s);
     if (productionV10 && firstEventManageMatches(events.get(eventId), manageScope)) {
-      const authority = await firstEventAuthority(eventId), r = record(eventId, s);
-      requireThat(r.definition.staff.some(wallet => lower(wallet) === lower(s.wallet)) || lower(authority.owner) === lower(s.wallet),
+      const authority = await firstEventAuthority(eventId), r = record(eventId, s, authority);
+      requireThat(r.definition.staff.some(wallet => lower(wallet) === lower(s.wallet)) ||
+        ["owner", "admin", "staff"].includes(eventAccessRole(r, s.wallet, authority, productionOrigin)),
         "Staff access is scoped to this event", "NOT_STAFF", 403);
       return r;
     }
@@ -660,6 +698,7 @@ export async function createWorkbench({
           personal: new Map(item.personal),
           publications: new Map(item.publications),
           nonces: new Set(item.nonces),
+          ...(item.eventAccess ? { eventAccess: structuredClone(item.eventAccess) } : {}),
         });
       }
       for (const [key, value] of saved.drafts) drafts.set(key, value);
@@ -698,7 +737,8 @@ export async function createWorkbench({
     const role = publicActor(s) ? "participant" :
       s && lower(s.wallet) === lower(st.owner)
         ? "organizer"
-        : s && r.definition.staff.some((x) => lower(x) === lower(s.wallet))
+        : s && (r.definition.staff.some((x) => lower(x) === lower(s.wallet)) ||
+          (productionV10 && firstEventManageMatches(r, manageScope) && ["admin", "staff"].includes(eventAccessRole(r, s.wallet, st, productionOrigin))))
           ? "staff"
           : "participant";
     return {
@@ -999,10 +1039,9 @@ export async function createWorkbench({
     const roleOf = (row) =>
       s && lower(s.wallet) === lower(row.owner)
         ? "organizer"
-        : s &&
-            row.r.definition.staff.some(
-              (wallet) => lower(wallet) === lower(s.wallet),
-            )
+        : s && (row.r.definition.staff.some((wallet) => lower(wallet) === lower(s.wallet)) ||
+            (productionV10 && firstEventManageMatches(row.r, manageScope) &&
+              ["admin", "staff"].includes(eventAccessRole(row.r, s.wallet, row, productionOrigin))))
           ? "staff"
           : "participant";
     let selectedEvent = selection;
@@ -1010,7 +1049,7 @@ export async function createWorkbench({
       try {
         const row = authority.get(selection.eventId);
         if (!row.available) throw row.error;
-        record(selection.eventId, s);
+        record(selection.eventId, s, row);
         requireThat(
           roleOf(row) === selection.detail.event.role,
           "Event access changed",
@@ -1033,7 +1072,7 @@ export async function createWorkbench({
       const row = authority.get(item.id);
       if (!row?.available) return false;
       try {
-        record(item.id, s);
+        record(item.id, s, row);
       } catch {
         return false;
       }
@@ -1154,9 +1193,21 @@ export async function createWorkbench({
           "Participant reviews require this first event", "FIRST_EVENT_SCOPE", 404);
       }
       if (["adopt-payer", "manage-draft", "deposit-inbox"].includes(operation)) {
-        requireThat(firstEventManageMatches(events.get(eventId), manageScope) &&
-          disclosed.directory.some(item => item.id === eventId && item.role === "organizer"),
-          "Only this event's current financial owner may receive the organizer review", "NOT_OWNER", 403);
+        const accepting = operation === "manage-draft" && result?.action === "acceptOwnership";
+        if (accepting) {
+          const d = drafts.get(result.id), r = events.get(eventId), authority = await firstEventAuthority(eventId);
+          requireThat(firstEventManageMatches(r, manageScope) && d && hash(result) === hash(d) && d.eventId === eventId &&
+            d.sessionId === s?.id && lower(d.wallet) === lower(s?.wallet) && lower(authority.pendingOwner) === lower(s?.wallet) &&
+            d.instanceId === serverInstanceId && d.origin === productionOrigin && d.action === "acceptOwnership" &&
+            d.method === "acceptOwnership" && Array.isArray(d.args) && d.args.length === 0 &&
+            d.params && Object.keys(d.params).length === 0 && d.valueWei === "0" && d.transaction?.value === "0" &&
+            lower(d.transaction.to) === lower(r.deployment.contract) && lower(d.transaction.from) === lower(s.wallet) &&
+            d.transaction.chainId === 1 && d.transaction.data === contract(eventId).interface.encodeFunctionData("acceptOwnership", []) &&
+            !d.used && !d.submittedHash && d.expiresAt > Date.now(), "Only the current pending owner may accept this exact review", "NOT_OWNER", 403);
+          v10Receipts.sealDraft(d);
+        } else requireThat(firstEventManageMatches(events.get(eventId), manageScope) &&
+            disclosed.directory.some(item => item.id === eventId && item.role === "organizer"),
+            "Only this event's current financial owner may receive the organizer review", "NOT_OWNER", 403);
       }
       if (operation === "deposit" && result?.depositReview) {
         const d = drafts.get(result.id), review = result.depositReview;
@@ -1190,7 +1241,7 @@ export async function createWorkbench({
 
   async function detail(eventId, s, knownState = null) {
     const st = knownState ?? (await state(eventId)),
-      r = record(eventId, s),
+      r = record(eventId, s, st),
       event = await summary(r, s, st);
     // A pinned response can replay this event's credit history once for all
     // participants and its ledger. Keep latest reads fresh, and never retain
@@ -1754,9 +1805,8 @@ export async function createWorkbench({
     r.revision++;
     return p;
   }
-  async function checkin(eventId, s, input) {
-    const r = await staff(eventId, s),
-      p = participantFor(r, s, input.participantId);
+  function appendDoorObservation(r, s, input, timestamp) {
+    const eventId = r.definition.id, p = participantFor(r, s, input.participantId);
     requireThat(verifiedParticipantWallet(r, p), "Participant wallet must be verified");
     requireThat(
       input.source === "staff-door",
@@ -1770,7 +1820,6 @@ export async function createWorkbench({
       "REPLAY",
       409,
     );
-    const timestamp = (await chain.provider.getBlock("latest")).timestamp;
     requireThat(
       timestamp >= Date.parse(r.definition.startsAt) / 1000 &&
         timestamp <= Date.parse(r.definition.endsAt) / 1000,
@@ -1798,6 +1847,12 @@ export async function createWorkbench({
     r.nonces.add(nonce);
     r.revision++;
     return o;
+  }
+  async function checkin(eventId, s, input, assertSession = () => {}) {
+    if (productionV10 && firstEventManageMatches(events.get(eventId), manageScope))
+      return access.legacyCheckin(eventId, s, input, assertSession);
+    const r = await staff(eventId, s), block = await chain.provider.getBlock("latest");
+    return appendDoorObservation(r, s, input, block.timestamp);
   }
   function personal(eventId, s, input) {
     authenticated(s);
@@ -2496,6 +2551,7 @@ export async function createWorkbench({
     );
     d.used = true;
     d.confirmedHash = txHash;
+    if (productionV10 && d.action === "acceptOwnership" && firstEventManageMatches(r, manageScope)) delete r.eventAccess;
     r.revision++;
     const result = {
       hash: txHash,
@@ -2683,6 +2739,10 @@ export async function createWorkbench({
     });
     if (!r.transactions.includes(entry)) r.transactions.push(entry);
     if (receipt) {
+      if (!d.used && status === "confirmed" && productionV10 && d.action === "acceptOwnership" && firstEventManageMatches(r, manageScope)) {
+        delete r.eventAccess;
+        r.revision++;
+      }
       d.used = true;
       d.confirmedHash = txHash;
     }
@@ -3224,6 +3284,24 @@ export async function createWorkbench({
   w.batchStatus = batches.status;
   w.firstEventManageAvailable = eventId => productionV10 && firstEventManageMatches(events.get(eventId), manageScope);
   w.firstEventCreditRecoveryAvailable = eventId => productionV10 && firstEventCreditRecoveryMatches(events.get(eventId), manageScope);
+  const access = createEventAccessService({ origin: productionOrigin, instanceId: serverInstanceId,
+    record: eventId => {
+      const r = events.get(eventId);
+      requireThat(productionV10 && firstEventManageMatches(r, manageScope), "Choose the current reviewed event", "FIRST_EVENT_SCOPE", 404);
+      return r;
+    },
+    authenticate: s => {
+      authenticated(s);
+      requireThat(s.mode === "wallet" && !publicActor(s), "Use an authenticated wallet session", "WALLET_REQUIRED", 403);
+    }, authority: dbEventAuthority, appendCheckin: appendDoorObservation, resolveParticipant: participantFor,
+    persist: (eventId, r) => {
+      requireThat(store, "Durable event access storage is unavailable", "EVENT_ACCESS_SAVE_FAILED", 503);
+      const staged = new Map(events); staged.set(eventId, r); return store.save(staged, drafts);
+    },
+  });
+  w.eventAccess = access.read;
+  w.patchEventAccess = access.patch;
+  w.staffCheckin = access.checkin;
   w.adoptPayer = createPayerAdoptionService(w, manageScope);
   if (store)
     for (const name of [
@@ -3243,6 +3321,10 @@ export async function createWorkbench({
     ]) {
       const original = w[name];
       w[name] = async (...args) => {
+        // Current-event door observations commit through the staged access
+        // service; never overwrite its rollback with the legacy finally-save.
+        if (name === "checkin" && productionV10 && firstEventManageMatches(events.get(args[0]), manageScope))
+          return original(...args);
         try {
           return await original(...args);
         } finally {

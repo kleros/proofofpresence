@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { hash, lower, requireThat } from "./utils.mjs";
 import { verifyV10ArtifactSources } from "./v10-upgrade-artifacts.mjs";
 import { createV10ReceiptContext } from "./v10-receipt-context.mjs";
+import { validateEventAccessState } from "./event-access.mjs";
 import { createReadOnlyHttpProvider } from "./mainnet-runtime.mjs";
 import {
   eventV10LumaTemplate,
@@ -977,6 +978,11 @@ export function v10MainnetStateStore(filename, input) {
     const contracts = new Set();
     for (const record of saved.events) {
       const trusted = deployments.get(record.eventId);
+      if (record.eventAccess) {
+        const d = trusted?.deployment ?? record.deployment;
+        validateEventAccessState(record.eventAccess, { eventId: record.eventId, chainId: 1,
+          contract: d?.contract, registryHash: hash(d) });
+      }
       if (trusted) {
         requireThat(
           record.dynamic !== true && record.deployment === undefined,
@@ -1154,6 +1160,8 @@ export function v10MainnetStateStore(filename, input) {
             personal: [...record.personal],
             publications: [...record.publications],
             nonces: [...record.nonces],
+            ...(record.eventAccess ? { eventAccess: structuredClone(validateEventAccessState(record.eventAccess,
+              { eventId, chainId: 1, contract: record.deployment.contract, registryHash: hash(record.deployment) })) } : {}),
           };
         });
         for (const [key, draft] of drafts) {

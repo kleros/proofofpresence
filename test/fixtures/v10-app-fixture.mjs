@@ -66,7 +66,7 @@ export async function createV10AppFixture({ origin = "https://v10-browser.exampl
     const url = new URL(route, app.url); assert.equal(url.hostname, "127.0.0.1"); assert.equal(url.protocol, "http:");
     const response = await new Promise((resolve, reject) => {
       const req = http.request(url, { method, agent: false, headers: { host: new URL(backendOrigin).host, "x-kleros-proxy-key": proxySecret,
-        ...(headers.cookie ? { cookie: headers.cookie } : {}), ...(method === "GET" ? {} : { origin, "content-type": "application/json" }) } }, res => {
+        ...(headers.cookie ? { cookie: headers.cookie } : {}), ...(method === "GET" ? {} : { origin: headers.origin ?? origin, "content-type": "application/json" }) } }, res => {
         const chunks = []; res.on("data", chunk => chunks.push(chunk)); res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks) }));
       }); req.on("error", reject); req.end(body);
     });
