@@ -41,6 +41,43 @@ export function lumaReturnUrl(value) {
 }
 export const launchWei = (value) =>
   typeof value === "string" && /^\d+$/.test(value) ? value : null;
+
+// UI preflight only. The server rechecks the owner, immutable interval and exact
+// registered wallet selection before issuing and validating a sealed draft.
+export function ownerAttendanceReviewState(detail) {
+  const eventId = detail?.event?.id;
+  const wallets = new Set();
+  const registered = (detail?.participants ?? []).filter((person) => {
+    if (person?.eventId !== eventId || person.registered !== true ||
+        !/^0x[0-9a-f]{40}$/i.test(person.wallet ?? "") || wallets.has(person.wallet.toLowerCase())) return false;
+    wallets.add(person.wallet.toLowerCase());
+    return true;
+  });
+  const end = Date.parse(detail?.event?.endsAt ?? "");
+  const now = Number(detail?.state?.now) * 1000;
+  const reason = detail?.permissions?.owner !== true ? "Current event owner access is required."
+    : !Number.isFinite(end) || !Number.isFinite(now) ? "The immutable event end and verified chain time are required."
+    : now < end ? "Attendance can be approved after the immutable event end."
+    : detail?.state?.phase !== "Open" ? "Attendance has already been posted or this event is closed."
+    : !registered.length ? "Register approved deposit wallets before reviewing attendance."
+    : null;
+  return { registered, reason };
+}
+
+export function ownerAttendanceParams(detail, selected, review) {
+  const { registered, reason } = ownerAttendanceReviewState(detail);
+  if (reason) throw new Error(reason);
+  const allowed = new Map(registered.map((person) => [person.wallet.toLowerCase(), person.wallet]));
+  if (!Array.isArray(selected) || !selected.length || selected.some((wallet) =>
+      typeof wallet !== "string" || !allowed.has(wallet.toLowerCase())) ||
+      new Set(selected.map((wallet) => wallet.toLowerCase())).size !== selected.length)
+    throw new Error("Choose the exact registered wallets that actually attended. No wallets have been silently removed.");
+  const note = typeof review?.note === "string" ? review.note.trim() : "";
+  if (review?.confirmed !== true || note.length < 8 || note.length > 1000)
+    throw new Error("Confirm the attendance review and add an evidence note of 8–1000 characters.");
+  return { attendedWallets: selected.map((wallet) => allowed.get(wallet.toLowerCase())),
+    attendanceReview: { confirmed: true, note } };
+}
 export function participantDeposit(detail, wallet) {
   const address = (value) =>
     typeof value === "string" && /^0x[0-9a-f]{40}$/i.test(value);

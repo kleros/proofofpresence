@@ -4,7 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { makeLumaSetupFixture } from "./fixtures/luma-launch-fixture.mjs";
+import { makeLumaSetupFixture, makeLumaFactoryDraft } from "./fixtures/luma-launch-fixture.mjs";
 
 // One synthetic widget, static loopback assets only. No wallet or API transport.
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -28,7 +28,7 @@ async function run() {
   };
   proof.sourceSha256 = Object.fromEntries(
     await Promise.all(
-      ["public/luma-setup.js", "test/luma-setup-dates.e2e.mjs"].map(
+      ["public/luma-setup.js", "public/event-timezone.js", "test/luma-setup-dates.e2e.mjs"].map(
         async (p) => [p, sha(await fs.readFile(path.join(root, p)))],
       ),
     ),
@@ -41,6 +41,8 @@ async function run() {
     "/environment.js",
     "/contract-profiles.js",
     "/luma-launch.js",
+    "/event-timezone.js",
+    "/v10-wallet-account.js",
   ]);
   const server = http.createServer(async (req, res) => {
     const pathname = new URL(req.url, "http://127.0.0.1").pathname;
@@ -97,7 +99,7 @@ async function run() {
       page.on("pageerror", (error) => proof.errors.push(error.message));
       await page.goto(origin);
       const observed = await page.evaluate(
-        async ({ bootstrap, timezoneId }) => {
+        async ({ bootstrap, timezoneId, reviewDraft }) => {
           const { mountLumaSetup } = await import("/luma-setup.js");
           const checks = [],
             requests = [];
@@ -106,7 +108,7 @@ async function run() {
             if (actual !== expected)
               throw Error(`${label}: ${actual} != ${expected}`);
           };
-          const create = () => {
+          const create = (readyDraft = null) => {
             const host = document.createElement("section");
             document.querySelector("main").append(host);
             const added = [],
@@ -126,6 +128,7 @@ async function run() {
               isCurrent: () => true,
               request: async (url, init) => {
                 requests.push({ url, input: JSON.parse(init.body) });
+                if (readyDraft) return structuredClone(readyDraft);
                 throw Error("Stopped synthetic review capture");
               },
               provider: () => {
@@ -145,6 +148,21 @@ async function run() {
               node.dispatchEvent(new Event("change", { bubbles: true }));
           };
           const widget = create();
+          const choices = field(widget, "timezoneChoice");
+          equal(choices.tagName, "SELECT", "common zones use a native choice control");
+          for (const zone of ["Asia/Kolkata", "Asia/Bangkok", "UTC"]) {
+            set(widget, "timezoneChoice", zone);
+            equal(field(widget, "timezone").value, zone, "curated choice updates the authoritative IANA input");
+          }
+          set(widget, "timezone", "Asia/Kathmandu");
+          equal(choices.value, "custom", "custom IANA search remains available");
+          set(widget, "timezone", timezoneId);
+          equal(field(widget, "timezone").value, timezoneId, "browser timezone restored for existing date cases");
+          equal(widget.host.querySelector("#luma-capacity").value, "150", "contract capacity remains 150");
+          equal(widget.host.querySelector("#luma-capacity").readOnly, true, "fixed capacity cannot imply a configurable contract limit");
+          checks.push("curated-zone-choices-custom-search-and-fixed-capacity");
+          equal(field(widget, "timezone").value, timezoneId, "browser timezone defaults the event zone");
+          equal(field(widget, "timezone").readOnly, false, "event timezone is editable");
           if (timezoneId === "Asia/Bangkok") {
             for (const [start, end] of [
               ["2030-11-05T10:00", "2030-11-05T12:00"],
@@ -269,6 +287,46 @@ async function run() {
             checks.push(
               "existing-utc-payload-and-interval-validation-preserved",
             );
+            const selected = create();
+            set(selected, "title", "Synthetic selected timezone");
+            set(selected, "lumaUrl", "https://luma.com/synthetic-selected-zone");
+            set(selected, "depositEth", "0.01");
+            set(selected, "timezone", "Asia/Kathmandu");
+            set(selected, "startsAt", "2030-11-10T10:00");
+            equal(field(selected, "endsAt").value, "2030-11-10T12:00", "selected zone keeps two elapsed hours");
+            selected.host.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            equal(requests.at(-1).input.startsAt, "2030-11-10T04:15:00.000Z", "Kathmandu converts independently of Bangkok browser");
+            equal(requests.at(-1).input.timezone, "Asia/Kathmandu", "selected IANA label is submitted");
+            set(selected, "timezone", "UTC");
+            selected.host.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            equal(requests.at(-1).input.startsAt, "2030-11-10T10:00:00.000Z", "changing zone changes the UTC instant");
+            checks.push("editable-selected-zone-controls-UTC-payload-not-browser-label");
+            const beforeAmbiguous = requests.length;
+            set(selected, "timezone", "America/New_York");
+            set(selected, "startsAt", "2030-11-03T01:30");
+            selected.host.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            equal(requests.length, beforeAmbiguous, "ambiguous selected-zone wall clock never prepares a review");
+            equal(/occurs twice.*UTC/.test(selected.host.querySelector("[data-luma-error]").textContent), true, "fold explains the explicit UTC alternative");
+            selected.controller.dispose();
+            checks.push("selected-zone-fold-rejected-with-explicit-error");
+            const review = create(reviewDraft);
+            set(review, "title", reviewDraft.terms.title); set(review, "lumaUrl", reviewDraft.terms.lumaUrl);
+            set(review, "depositEth", "0.01"); set(review, "timezone", "Asia/Kathmandu");
+            set(review, "startsAt", "2030-11-10T10:00");
+            review.host.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+            await new Promise(resolve => setTimeout(resolve, 0));
+            const dialog = review.host.querySelector("dialog");
+            equal(Boolean(dialog?.open), true, "synthetic timezone review opens");
+            equal(dialog.textContent.includes("2030-11-10 10:00 Asia/Kathmandu"), true, "review shows the chosen wall clock and zone");
+            equal(dialog.textContent.includes("2030-11-10 04:15:00 UTC"), true, "review retains exact UTC reference");
+            set(review, "timezoneChoice", "UTC");
+            equal(field(review, "timezone").value, "UTC", "curated timezone updates the IANA field");
+            equal(Boolean(review.host.querySelector("dialog[open]")), false, "curated timezone edit invalidates the open review");
+            review.controller.dispose();
+            checks.push("review-displays-selected-zone-and-zone-edit-invalidates-review");
           } else {
             set(widget, "startsAt", "2030-03-10T01:30");
             equal(
@@ -325,7 +383,9 @@ async function run() {
             walletCalls,
           };
         },
-        { bootstrap: makeLumaSetupFixture().bootstrap, timezoneId },
+        { bootstrap: makeLumaSetupFixture().bootstrap, timezoneId,
+          reviewDraft: makeLumaFactoryDraft(makeLumaSetupFixture().bootstrap, { title: "Synthetic timezone review", lumaUrl: "https://luma.com/synthetic-timezone-review",
+            startsAt: "2030-11-10T04:15:00.000Z", endsAt: "2030-11-10T06:15:00.000Z", timezone: "Asia/Kathmandu", depositEth: "0.01" }) },
       );
       proof.checks.push(
         ...observed.checks.map((name) => `${timezoneId}:${name}`),

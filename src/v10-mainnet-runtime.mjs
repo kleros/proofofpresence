@@ -578,6 +578,38 @@ function validateFactoryDraft(key, draft, manifest) {
     "Factory creation draft calldata left its reviewed configuration",
     "STATE_SCOPE",
   );
+  const witness = draft.submissionWitness;
+  if (witness !== undefined) {
+    requireThat(witness && Object.keys(witness).sort().join() ===
+      ["hash", "wallet", "nonce", "reviewBlock", "type", "to", "valueWei", "dataHash", "gasLimit", "accessListHash"].sort().join() &&
+      digest(witness.hash) && same(witness.hash, draft.submittedHash) && same(witness.wallet, draft.wallet) &&
+      Number.isSafeInteger(witness.nonce) && witness.nonce >= 0 && witness.reviewBlock === draft.reviewBlock && witness.type === 2 &&
+      address(witness.to) && witness.valueWei === "0" && digest(witness.dataHash) &&
+      /^(?:[1-9][0-9]*)$/.test(witness.gasLimit) && /^[0-9a-f]{64}$/.test(witness.accessListHash),
+    "Original factory submission witness changed", "STATE_SCOPE");
+    if (draft.v10Intent) requireThat(draft.v10Submission &&
+      Object.keys(draft.v10Submission).sort().join() === "reviewHash,witnessHash" &&
+      draft.v10Submission.reviewHash === draft.v10Intent.reviewHash && draft.v10Submission.witnessHash === hash(witness),
+    "Original factory submission witness is not sealed", "STATE_SCOPE");
+  } else requireThat(draft.v10Submission === undefined && draft.replacement === undefined && draft.v10Replacement === undefined,
+    "Factory replacement is missing its original nonce witness", "STATE_SCOPE");
+  if (draft.replacement !== undefined) {
+    const r = draft.replacement;
+    requireThat(r && r.verified === true && r.kind === "same-call-fee-replacement" && r.chainId === 1 &&
+      digest(r.hash) && !same(r.hash, draft.submittedHash) && same(r.originalHash, draft.submittedHash) && same(r.wallet, draft.wallet) &&
+      r.nonce === witness.nonce && r.type === 2 && same(r.to, witness.to) && r.valueWei === witness.valueWei &&
+      r.dataHash === witness.dataHash && r.gasLimit === witness.gasLimit && r.accessListHash === witness.accessListHash &&
+      integer(r.blockNumber) && r.blockNumber > draft.reviewBlock && digest(r.blockHash) &&
+      /^(?:[1-9][0-9]*)$/.test(r.gasUsed) && /^(?:0|[1-9][0-9]*)$/.test(r.gasPriceWei) &&
+      /^(?:0|[1-9][0-9]*)$/.test(r.feeWei) && BigInt(r.gasUsed) * BigInt(r.gasPriceWei) === BigInt(r.feeWei) &&
+      (draft.confirmedHash === undefined || same(draft.confirmedHash, r.hash)),
+    "Factory replacement evidence changed", "STATE_SCOPE");
+    if (draft.v10Intent) requireThat(draft.v10Replacement &&
+      Object.keys(draft.v10Replacement).sort().join() === "replacementHash,reviewHash,witnessHash" &&
+      draft.v10Replacement.reviewHash === draft.v10Intent.reviewHash &&
+      draft.v10Replacement.witnessHash === hash(witness) && draft.v10Replacement.replacementHash === hash(r),
+    "Factory replacement evidence is not sealed", "STATE_SCOPE");
+  } else requireThat(draft.v10Replacement === undefined, "Factory replacement seal has no evidence", "STATE_SCOPE");
 }
 
 function privateEndpoint(value) {
@@ -1171,6 +1203,8 @@ export function v10MainnetStateStore(filename, input) {
               ) &&
                 (!old.submittedHash ||
                   same(old.submittedHash, draft.submittedHash)) &&
+                ["submissionWitness", "v10Submission", "replacement", "v10Replacement"].every(name =>
+                  old[name] === undefined || hash(old[name]) === hash(draft[name])) &&
                 (!old.confirmedHash ||
                   same(old.confirmedHash, draft.confirmedHash)) &&
                 (!["confirmed", "failed"].includes(old.status) || draft.status === old.status) &&

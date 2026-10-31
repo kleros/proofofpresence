@@ -4,6 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { isSelectedBootstrapQuery } from "./fixtures/selected-bootstrap-query.mjs";
 import {
   makePublicEventSearchFixture,
   PRIVATE_SEARCH_TITLES,
@@ -67,7 +68,7 @@ function allowed(origin, url, method, body, names) {
     return u.pathname === "/api/session" && !u.search && body === "{}";
   if (method !== "GET" || body) return false;
   if (u.pathname === "/api/bootstrap")
-    return !u.search || u.search === "?selectedEventId=" + PUBLIC_SEARCH_A;
+    return !u.search || isSelectedBootstrapQuery(u.searchParams, PUBLIC_SEARCH_A);
   return (
     !u.search &&
     (["/", "/api/public-catalog"].includes(u.pathname) ||
@@ -835,6 +836,12 @@ async function run(baseline) {
         assert.equal(requestsSince(start).length, 1);
         assert.equal(requestsSince(start)[0].path, "/api/bootstrap");
         assert.equal(
+          requestsSince(start)[0].query,
+          route.startsWith("#event")
+            ? "?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=1"
+            : "",
+        );
+        assert.equal(
           result.requests.slice(start).filter((item) => item.path === "/app.js")
             .length,
           1,
@@ -888,7 +895,10 @@ async function run(baseline) {
         requestsSince(start).map((item) => [item.path, item.query]),
         [
           ["/api/public-catalog", ""],
-          ["/api/bootstrap", "?selectedEventId=" + PUBLIC_SEARCH_A],
+          [
+            "/api/bootstrap",
+            "?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=1",
+          ],
         ],
       );
       result.checks.push(

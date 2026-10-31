@@ -9,6 +9,7 @@ import {
   assertCreationDraft,
   assertCreationValidation,
   assertCreationReceipt,
+  assertCreationReplacement,
   lumaEventUrl,
   depositWei,
   creationReviewDisclosure,
@@ -16,6 +17,7 @@ import {
 import { attendanceStandardText } from "./luma-launch.js";
 import { mountSetupProgress } from "./setup-progress.js";
 import { assertV10WalletAccount } from "./v10-wallet-account.js";
+import { validateEventTimeZone, eventTimeToUtc, eventTimeFromUtc, formatEventTime, eventTimeZones } from "./event-timezone.js";
 
 const escape = (value) =>
   String(value ?? "").replace(
@@ -48,17 +50,12 @@ const date = (seconds) =>
     .toISOString()
     .replace("T", " ")
     .replace(".000Z", " UTC");
-const localDateValue = (value) =>
-  new Date(value.valueOf() - value.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-const completeLocalDate = (value) => {
-  if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(value)) return null;
-  const parsed = new Date(value);
-  return Number.isFinite(parsed.valueOf()) && localDateValue(parsed) === value
-    ? parsed
-    : null;
-};
+let timezoneListSequence = 0;
+const TIMEZONE_PRESETS = Object.freeze([
+  ["Asia/Kolkata", "India · IST (UTC+05:30)"],
+  ["Asia/Bangkok", "Bangkok · ICT (UTC+07:00)"],
+  ["UTC", "UTC"],
+]);
 
 const JOB_PATH = "/api/organizer/events/jobs";
 const JOB_FIELDS = [
@@ -137,7 +134,8 @@ export function createOrganizerJobClient({
       JSON.stringify(item.scope) !== JSON.stringify(scope) ||
       !stableId(item.requestId) ||
       !/^[a-f0-9]{64}$/.test(item.payloadHash) ||
-      !["prepare", "validate", "reconcile"].includes(item.operation) ||
+      !["prepare", "validate", "reconcile", "replacement"].includes(item.operation) ||
+      (item.operation === "replacement" && (scope.contractVersion !== "kleros-event-v10-uups" || bootstrap.capabilities?.creationReplacementRecovery !== true)) ||
       !["pending", "ready", "failed", "expired"].includes(item.state)
     )
       throw jobFailure(
@@ -185,7 +183,8 @@ export function createOrganizerJobClient({
       };
     }
     if (
-      !["validate", "reconcile"].includes(operation) ||
+      !["validate", "reconcile", "replacement"].includes(operation) ||
+      (operation === "replacement" && (scope.contractVersion !== "kleros-event-v10-uups" || bootstrap.capabilities?.creationReplacementRecovery !== true)) ||
       !stableId(args?.draftId)
     )
       throw jobFailure(
@@ -698,7 +697,21 @@ export function createReceiptWatcher({
 
 /** A compact factory workflow. Mounting reads local recovery data only, never the wallet. */
 export function mountLumaSetup(host, options) {
-  const bootstrap = options.bootstrap;
+  let bootstrap = options.bootstrap;
+  const displayMode = bootstrap?.kind === "kickback-setup-display";
+  const directCreation = bootstrap?.contractVersion === "kleros-event-v10-uups" && bootstrap?.mode === "hosted-production";
+  let replacementPreset = null, replacementIssue = null, replacementApplied = false;
+  if (options.replacementPreset !== undefined) {
+    const value = options.replacementPreset, input = value?.input;
+    const originalEventId = "event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5", originalContract = "0xCd7418413fBFA814D41799C9dFaCc4654f295c11";
+    const recoveryUrl = "/#event=" + originalEventId + "&view=participant&deposit=manage";
+    if (directCreation && value?.kind === "truth-pays-ist-replacement-v1" && value.originalEventId === originalEventId &&
+      same(value.originalContract, originalContract) && value.recoveryUrl === recoveryUrl &&
+      input?.title === "Truth Pays: Queryable Data, Prediction Markets & Onchain Justice" && input.lumaUrl === "https://luma.com/qewnqhas" &&
+      input.startsAt === "2026-11-04T12:30:00.000Z" && input.endsAt === "2026-11-04T16:30:00.000Z" && input.timezone === "Asia/Kolkata" && input.depositEth === "0.01" &&
+      Object.keys(input).length === 6 && Object.keys(value).length === 5) replacementPreset = structuredClone(value);
+    else replacementIssue = "The replacement event details changed. Open the reviewed replacement setup link again.";
+  }
   const view = host.ownerDocument.createElement("div");
   const progressHost = host.ownerDocument.createElement("div");
   progressHost.dataset.lumaProgressHost = "";
@@ -714,8 +727,10 @@ export function mountLumaSetup(host, options) {
     preparing = false,
     formRevision = 0,
     reviewedForm = null,
-    receiptWatchActive = false;
+    receiptWatchActive = false,
+    stopBootstrapWait = null;
   let scope,
+    originalReadScope,
     storage,
     journal,
     key,
@@ -761,9 +776,26 @@ export function mountLumaSetup(host, options) {
   const authenticated =
     bootstrap?.session?.mode === "wallet" &&
     typeof bootstrap.session.wallet === "string";
-  const readyIssue = factorySetupIssue(bootstrap, { requireWallet: true });
-  const disclosure = creationReviewDisclosure(bootstrap);
+  const replacementEnabled = bootstrap?.contractVersion === "kleros-event-v10-uups" &&
+    bootstrap.capabilities?.creationReplacementRecovery === true;
+  let readyIssue = displayMode ? null : factorySetupIssue(bootstrap, { requireWallet: true });
+  let disclosure = creationReviewDisclosure(bootstrap);
+  const sameReadScope = (value) =>
+    Boolean(originalReadScope) &&
+    value.mode === originalReadScope.mode &&
+    value.chainId === originalReadScope.chainId &&
+    value.instanceId === originalReadScope.instanceId &&
+    value.abiVersion === originalReadScope.abiVersion &&
+    same(value.contract, originalReadScope.contract) &&
+    same(value.wallet, originalReadScope.wallet);
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  const timezoneListId = `luma-event-timezones-${++timezoneListSequence}`;
+  const timezoneChoices = eventTimeZones(timezone).map(zone => `<option value="${escape(zone)}"></option>`).join("");
+  const timezonePreset = zone => TIMEZONE_PRESETS.some(([value]) => value === zone) ? zone : "custom";
+  const syncTimezoneChoice = form => {
+    const choice = form?.elements.namedItem("timezoneChoice"), zone = form?.elements.namedItem("timezone");
+    if (choice && zone) choice.value = timezonePreset(zone.value);
+  };
   const dateForms = new WeakMap();
   const dateState = (form) => {
     if (!dateForms.has(form))
@@ -843,7 +875,8 @@ export function mountLumaSetup(host, options) {
           "confirmed",
           "failed",
         ].includes(found.phase) ||
-        (found.hash !== undefined && !hashPattern.test(found.hash))
+        (found.hash !== undefined && !hashPattern.test(found.hash)) ||
+        (found.replacementCandidate !== undefined && !hashPattern.test(found.replacementCandidate))
       )
         throw Error(
           "The event creation recovery record is unreadable. Preserve browser storage and reconcile the original transaction before creating another event.",
@@ -861,6 +894,7 @@ export function mountLumaSetup(host, options) {
               : known.status === "failed"
                 ? "failed"
                 : "submitted",
+          ...(known.canonicalHash ? { canonicalHash: known.canonicalHash, replacement: known.replacement } : {}),
         };
       // The marker is persisted before sending. A purely prepared record has
       // never reached the wallet; it can be replaced by a new current review.
@@ -873,6 +907,7 @@ export function mountLumaSetup(host, options) {
   };
   try {
     if (authenticated) {
+      originalReadScope = factoryReadScope(bootstrap);
       storage = host.ownerDocument.defaultView.localStorage;
       journal = createTransactionJournal(storage);
       discoverRecovery();
@@ -886,10 +921,12 @@ export function mountLumaSetup(host, options) {
           onStatus: (operation) =>
             status(
               operation === "prepare"
-                ? "Checking your event terms in the background. You can stop waiting without losing the form."
+                ? "Preparing event…"
                 : operation === "validate"
-                  ? "Rechecking the reviewed transaction before your wallet opens…"
-                  : "Checking the original transaction receipt in the background…",
+                  ? "Preparing transaction…"
+                  : operation === "replacement"
+                    ? "Checking the replacement transaction and event in the background…"
+                    : "Checking the original transaction receipt in the background…",
             ),
         });
     }
@@ -913,6 +950,14 @@ export function mountLumaSetup(host, options) {
     if (marker?.phase !== "prepared") return;
     storage.removeItem(key);
     marker = null;
+  };
+  // A recorded confirmation permits a distinct form, never a freshly verified
+  // event link. Keep the original journal scoped to its original server.
+  const recordedConfirmed = () => {
+    if (marker?.phase !== "confirmed" || !scope || !hashPattern.test(marker.hash ?? "")) return false;
+    const known = journal.get({ ...scope, eventId: marker.eventId }, marker.hash);
+    return known?.status === "confirmed" && known.action === "createEvent" &&
+      known.draftId === marker.draftId && same(known.hash, marker.hash);
   };
   const status = (message) => {
     if (!current()) return;
@@ -981,8 +1026,8 @@ export function mountLumaSetup(host, options) {
   const terminalControl = (cause) => {
     if (!current() || !cause?.organizerJob) return;
     terminalJob = cause;
-    if (cause.organizerJob.operation === "reconcile") {
-      const check = host.querySelector('[data-luma-action="reconcile"]');
+    if (["reconcile", "replacement"].includes(cause.organizerJob.operation)) {
+      const check = host.querySelector(`[data-luma-action="${cause.organizerJob.operation === "replacement" ? "check-replacement" : "reconcile"}"]`);
       if (check) check.textContent = "Check transaction again";
       return;
     }
@@ -1007,13 +1052,13 @@ export function mountLumaSetup(host, options) {
         : request(
             path(args.draftId) +
               "/" +
-              (operation === "validate" ? "validate" : "reconcile"),
+              (operation === "validate" ? "validate" : operation === "replacement" ? "replacement" : "reconcile"),
             operation === "validate" ? {} : { hash: args.hash },
           );
   const jobMessage = (cause) =>
     cause.message +
     (cause.organizerJob?.abandon && cause.organizerJob.state !== "ready"
-      ? cause.organizerJob.operation === "reconcile"
+      ? ["reconcile", "replacement"].includes(cause.organizerJob.operation)
         ? " This check is unavailable; a previous check may still be running. Check the same transaction again explicitly."
         : " This check is unavailable; a previous check may still be running. You can explicitly abandon this unsigned check with Prepare a new review."
       : "");
@@ -1100,7 +1145,10 @@ export function mountLumaSetup(host, options) {
     watchActivity(false);
     closeDialog();
     const terminal = marker.phase === "failed";
-    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">KICKBACK SETUP</div><h1>${terminal ? "Event creation failed" : "Check your event transaction"}</h1><div class="luma-setup-recovery" data-luma-recovery><p>${terminal ? "The canonical receipt shows that this transaction failed. No deposit link has been created." : marker.hash ? "Your wallet returned a transaction ID. Check its canonical receipt before creating another event." : "A wallet request may still be pending. Check your wallet activity before continuing. This page will not send that request again."}</p>${scope.instanceId !== bootstrap.instanceId ? "<p>This request belongs to an earlier server instance. Only its original receipt can be checked here.</p>" : ""}${marker.hash ? `<code class="mono" data-luma-hash>${escape(marker.hash)}</code>` : '<label for="luma-recovery-hash">Transaction ID from your wallet</label><input id="luma-recovery-hash" name="txHash" autocomplete="off" spellcheck="false" placeholder="0x…" />'}<div class="luma-setup-actions"><button class="button button-primary" data-luma-action="reconcile">Check transaction</button>${terminal && terminalAdopted ? '<button class="button button-secondary" data-luma-action="new">Set up another event</button>' : ""}</div></div><p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
+    const recorded = recordedConfirmed();
+    const replacementInput = bootstrap.capabilities?.creationReplacementRecovery === true && scope.abiVersion === "kleros-event-v10-uups" && marker.hash && !terminal
+      ? `<details data-luma-replacement><summary>Used Speed Up in your wallet?</summary><p>Paste the already-signed replacement transaction ID to verify its receipt and event. This check cannot send or speed up a transaction.</p><label for="luma-replacement-hash">Replacement transaction ID</label><input id="luma-replacement-hash" name="replacementHash" autocomplete="off" spellcheck="false" placeholder="0x…" value="${escape(marker.canonicalHash ?? marker.replacementCandidate ?? "")}" /><button class="button button-secondary" data-luma-action="check-replacement">Check replacement</button></details>` : "";
+    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">KICKBACK SETUP</div><h1>${recorded ? "Recorded event creation" : terminal ? "Event creation failed" : "Check your event transaction"}</h1><div class="luma-setup-recovery" data-luma-recovery><p>${recorded ? "Your browser records this event creation as confirmed. Check its receipt or create a different event." : terminal ? "The canonical receipt shows that this transaction failed. No deposit link has been created." : marker.hash ? "Your wallet returned a transaction ID. Check its canonical receipt before creating another event." : "A wallet request may still be pending. Check your wallet activity before continuing. This page will not send that request again."}</p>${scope.instanceId !== bootstrap.instanceId ? recorded ? "<p>This recorded transaction belongs to an earlier server instance.</p>" : "<p>This request belongs to an earlier server instance. Only its original receipt can be checked here.</p>" : ""}${marker.hash ? `<p>Original transaction ID</p><code class="mono" data-luma-hash>${escape(marker.hash)}</code>` : '<label for="luma-recovery-hash">Transaction ID from your wallet</label><input id="luma-recovery-hash" name="txHash" autocomplete="off" spellcheck="false" placeholder="0x…" />'}${marker.replacementCandidate || marker.canonicalHash ? `<p>Replacement transaction ID · verification required</p><code class="mono" data-luma-replacement-hash>${escape(marker.canonicalHash ?? marker.replacementCandidate)}</code>` : ""}<div class="luma-setup-actions"><button class="button ${recorded ? "button-secondary" : "button-primary"}" data-luma-action="reconcile">Check transaction</button>${recorded || terminal && terminalAdopted ? '<button class="button button-primary" data-luma-action="new">Create new event</button>' : ""}</div>${replacementInput}</div><p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
   };
   const renderShare = (result) => {
     if (!current()) return;
@@ -1108,9 +1156,9 @@ export function mountLumaSetup(host, options) {
     watchActivity(false);
     terminalAdopted = true;
     closeDialog();
-    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">EVENT CREATED</div><h1>Your deposit page is ready.</h1><p>Share this event-specific link in your Luma registration. Guests can connect their wallet, deposit, and copy their transaction ID.</p><section class="luma-setup-share" data-luma-created><h2>Share the deposit link</h2><label for="luma-created-link">Event deposit page</label><input id="luma-created-link" data-luma-deposit-link readonly value="${escape(result.participantUrl)}" /><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="copy-link">Copy deposit link</button><a class="button button-secondary" href="${escape(result.participantUrl)}">Open deposit page</a><button class="button button-quiet" data-luma-action="new">Set up another event</button></div><details><summary>Confirmed transaction</summary><dl class="luma-setup-terms"><dt>Transaction ID</dt><dd><code data-luma-hash>${escape(result.hash)}</code></dd><dt>Event contract</dt><dd><code>${escape(result.contract)}</code></dd><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Confirmed block</dt><dd>${escape(result.blockNumber)}</dd></dl></details></section><p data-luma-status role="status" aria-live="polite">Event creation confirmed.</p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
+    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">EVENT CREATED</div><h1>Your deposit page is ready.</h1><p>Share this event-specific link in your Luma registration. Guests can connect their wallet, deposit, and copy their transaction ID.</p><section class="luma-setup-share" data-luma-created><h2>Share the deposit link</h2><label for="luma-created-link">Event deposit page</label><input id="luma-created-link" data-luma-deposit-link readonly value="${escape(result.participantUrl)}" /><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="copy-link">Copy deposit link</button><a class="button button-secondary" href="${escape(result.participantUrl)}">Open deposit page</a><button class="button button-quiet" data-luma-action="new">Set up another event</button></div><details><summary>Confirmed transaction</summary><dl class="luma-setup-terms"><dt>${result.canonicalHash ? "Original transaction ID" : "Transaction ID"}</dt><dd><code data-luma-hash>${escape(result.hash)}</code></dd>${result.canonicalHash ? `<dt>Confirmed replacement transaction ID</dt><dd><code data-luma-replacement-hash>${escape(result.canonicalHash)}</code></dd>` : ""}<dt>Event contract</dt><dd><code>${escape(result.contract)}</code></dd><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Confirmed block</dt><dd>${escape(result.blockNumber)}</dd></dl></details></section><p data-luma-status role="status" aria-live="polite">Event creation confirmed.</p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
     showProgress("ready", {
-      hash: result.hash,
+      hash: result.canonicalHash ?? result.hash,
       transactionConfirmed: true,
       event: {
         id: result.eventId,
@@ -1126,19 +1174,32 @@ export function mountLumaSetup(host, options) {
   };
   const renderForm = () => {
     if (!current()) return;
-    if (storageIssue) {
-      view.innerHTML = `<section class="luma-setup"><h1>Set up kickback</h1><p class="luma-setup-error" data-luma-setup-issue role="alert">${escape(storageIssue)}</p></section>`;
+    if (storageIssue || replacementIssue) {
+      view.innerHTML = `<section class="luma-setup"><h1>Set up kickback</h1><p class="luma-setup-error" data-luma-setup-issue role="alert">${escape(storageIssue || replacementIssue)}</p></section>`;
       return;
     }
     if (marker) {
       renderRecovery();
       return;
     }
-    const issue = authenticated ? readyIssue : factorySetupIssue(bootstrap);
+    const issue = displayMode ? null : authenticated ? readyIssue : factorySetupIssue(bootstrap);
     const standard = attendanceStandardText(
       bootstrap.organizerSetup?.attendanceStandard,
     );
-    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">FOR LUMA ORGANIZERS</div><h1>Set up kickback.</h1><p>Create one deposit page for your Luma event. Review the fixed terms before your wallet opens.</p>${issue ? `<p class="luma-setup-notice" data-luma-setup-issue>${escape(issue)}</p>` : ""}${standard ? `<p class="luma-setup-notice" data-luma-attendance-standard>${escape(standard)}</p>` : ""}${!authenticated ? '<div class="luma-launch-card"><h2>Connect your organizer wallet</h2><p>Use the wallet that will manage this event.</p><button class="button button-primary" data-connect-wallet>Connect wallet</button></div>' : `<form class="luma-setup-form" data-luma-form><div class="full"><label for="luma-title">Event title</label><input id="luma-title" name="title" required maxlength="120" autocomplete="off" /></div><div class="full"><label for="luma-url">Luma event URL</label><input id="luma-url" name="lumaUrl" type="url" required placeholder="https://luma.com/your-event" /><p class="field-help">Registration stays on Luma. No guest names or emails are imported.</p></div><div><label for="luma-start">Starts · your local time</label><input id="luma-start" name="startsAt" type="datetime-local" required /></div><div><label for="luma-end">Ends · your local time</label><input id="luma-end" name="endsAt" type="datetime-local" required aria-describedby="luma-end-help" /><p id="luma-end-help" class="field-help">Defaults to 2 hours after start until you edit it.</p></div><div><label for="luma-timezone">Your time zone</label><input id="luma-timezone" name="timezone" readonly value="${escape(timezone)}" /></div><div><label for="luma-deposit">Deposit per guest · ETH</label><input id="luma-deposit" name="depositEth" required inputmode="decimal" placeholder="0.01" autocomplete="off" /></div>${disclosure ? `<p class="luma-setup-notice full" data-luma-publication-disclosure>${escape(disclosure.publicationNotice)}</p>` : ""}<p class="luma-setup-capacity full">Fixed capacity: <strong>150 guests</strong> · Claim period: <strong>7 days</strong> · Challenge and response windows: <strong>1 day each</strong></p><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="review" ${readyIssue ? "disabled" : ""}>Review event setup</button></div></form>`}<p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
+    const timezoneControl = `<div><label for="luma-timezone-choice">Event timezone</label><select id="luma-timezone-choice" name="timezoneChoice">${TIMEZONE_PRESETS.map(([value, label]) => `<option value="${escape(value)}" ${timezonePreset(timezone) === value ? "selected" : ""}>${escape(label)}</option>`).join("")}<option value="custom" ${timezonePreset(timezone) === "custom" ? "selected" : ""}>Search / custom timezone</option></select><label for="luma-timezone">Search or enter an IANA timezone</label><input id="luma-timezone" name="timezone" list="${timezoneListId}" required value="${escape(timezone)}" autocomplete="off" aria-describedby="luma-timezone-help" /><datalist id="${timezoneListId}">${timezoneChoices}</datalist><p id="luma-timezone-help" class="field-help">Start and end use this timezone. Choose UTC if a time occurs twice during a clock change.</p></div>`;
+    const capacityControl = `<div><label for="luma-capacity">Contract capacity · guests</label><input id="luma-capacity" type="number" value="150" min="150" max="150" readonly aria-describedby="luma-capacity-help" /><p id="luma-capacity-help" class="field-help">Fixed at 150 by this launch contract.</p></div>`;
+    const replacementNotice = replacementPreset
+      ? `<p class="luma-setup-notice" data-luma-replacement-preset>Creating this replacement event makes a new contract and deposit link. The original event and its deposits stay unchanged. <a href="${escape(replacementPreset.recoveryUrl)}">Recover unused deposits from the original event</a>.</p>` : "";
+    view.innerHTML = `<section class="luma-setup"><div class="eyebrow">FOR LUMA ORGANIZERS</div><h1>Set up kickback.</h1><p>${directCreation ? "Set your event hours and fixed terms, then confirm creation in your wallet." : "Create one deposit page for your Luma event. Review the fixed terms before your wallet opens."}</p>${replacementNotice}${issue ? `<p class="luma-setup-notice" data-luma-setup-issue>${escape(issue)}</p>` : ""}${standard ? `<p class="luma-setup-notice" data-luma-attendance-standard>${escape(standard)}</p>` : ""}${!authenticated ? '<div class="luma-launch-card"><h2>Connect your organizer wallet</h2><p>Use the wallet that will manage this event.</p><button class="button button-primary" data-connect-wallet>Connect wallet</button></div>' : `<form class="luma-setup-form" data-luma-form><div class="full"><label for="luma-title">Event title</label><input id="luma-title" name="title" required maxlength="120" autocomplete="off" /></div><div class="full"><label for="luma-url">Luma event URL</label><input id="luma-url" name="lumaUrl" type="url" required placeholder="https://luma.com/your-event" /><p class="field-help">Registration stays on Luma. No guest names or emails are imported.</p></div><div><label for="luma-start">Starts · event time</label><input id="luma-start" name="startsAt" type="datetime-local" required /></div><div><label for="luma-end">Ends · event time</label><input id="luma-end" name="endsAt" type="datetime-local" required aria-describedby="luma-end-help" /><p id="luma-end-help" class="field-help">Defaults to 2 hours after start until you edit it.</p></div>${timezoneControl}${capacityControl}<div><label for="luma-deposit">Deposit per guest · ETH</label><input id="luma-deposit" name="depositEth" required inputmode="decimal" placeholder="0.01" autocomplete="off" /></div>${disclosure ? `<p class="luma-setup-notice full" data-luma-publication-disclosure>${escape(disclosure.publicationNotice)}</p>` : ""}<p class="luma-setup-capacity full">Fixed capacity: <strong>150 guests</strong> · Claim period: <strong>7 days</strong> · Challenge and response windows: <strong>1 day each</strong></p><div class="luma-setup-actions"><button class="button button-primary" data-luma-action="review" ${readyIssue ? "disabled" : ""}>${directCreation ? "Create event in wallet" : "Review event setup"}</button></div></form>`}<p data-luma-status role="status" aria-live="polite"></p><p class="luma-setup-error" data-luma-error role="alert" hidden></p></section>`;
+    if (replacementPreset && !replacementApplied && authenticated) {
+      const form = view.querySelector("[data-luma-form]"), input = replacementPreset.input;
+      for (const name of ["title", "lumaUrl", "timezone", "depositEth"]) form.elements.namedItem(name).value = input[name];
+      form.elements.namedItem("startsAt").value = eventTimeFromUtc(input.startsAt, input.timezone);
+      form.elements.namedItem("endsAt").value = eventTimeFromUtc(input.endsAt, input.timezone);
+      dateState(form).endEdited = true;
+      syncTimezoneChoice(form);
+      replacementApplied = true;
+    }
   };
   const formInput = (form) => {
     const values = new FormData(form),
@@ -1148,22 +1209,9 @@ export function mountLumaSetup(host, options) {
       throw Error(
         "Enter an event title and a valid https://luma.com event URL without query parameters.",
       );
-    const parseLocal = (name) => {
-      const value = String(values.get(name) ?? ""),
-        parsed = new Date(value);
-      const local = Number.isFinite(parsed.valueOf())
-        ? new Date(parsed.valueOf() - parsed.getTimezoneOffset() * 60000)
-            .toISOString()
-            .slice(0, 16)
-        : "";
-      if (local !== value)
-        throw Error(
-          "Choose a valid local date and time. A daylight-saving time gap cannot be used.",
-        );
-      return parsed.toISOString();
-    };
-    const startsAt = parseLocal("startsAt"),
-      endsAt = parseLocal("endsAt");
+    const eventTimezone = validateEventTimeZone(String(values.get("timezone") ?? ""));
+    const startsAt = eventTimeToUtc(String(values.get("startsAt") ?? ""), eventTimezone),
+      endsAt = eventTimeToUtc(String(values.get("endsAt") ?? ""), eventTimezone);
     if (
       Date.parse(startsAt) <= Date.now() ||
       Date.parse(endsAt) <= Date.parse(startsAt)
@@ -1173,7 +1221,7 @@ export function mountLumaSetup(host, options) {
       );
     const depositEth = String(values.get("depositEth") ?? "").trim();
     depositWei(depositEth);
-    return { title, lumaUrl, startsAt, endsAt, timezone, depositEth };
+    return { title, lumaUrl, startsAt, endsAt, timezone: eventTimezone, depositEth };
   };
   const openReview = (draft) => {
     options.beforeOpen?.();
@@ -1185,7 +1233,7 @@ export function mountLumaSetup(host, options) {
     dialog.className = "luma-setup-review";
     dialog.setAttribute("data-luma-dialog", "");
     dialog.setAttribute("aria-labelledby", "luma-review-title");
-    dialog.innerHTML = `<header><h2 id="luma-review-title" tabindex="-1">Review event setup</h2><button type="button" class="button button-quiet" data-luma-action="close">Close</button></header><p>These event terms are fixed when this transaction confirms.</p><dl class="luma-setup-terms"><dt>Event</dt><dd>${escape(terms.title)}</dd><dt>Luma registration</dt><dd>${escape(terms.lumaUrl)}</dd><dt>Starts</dt><dd>${escape(date(terms.eventStart))}<small>${escape(terms.timezone)}</small></dd><dt>Ends</dt><dd>${escape(new Date(terms.endsAt).toISOString())}</dd><dt>Deposit per guest</dt><dd>${escape(terms.depositEth)} ETH<small>${escape(terms.depositWei)} wei</small></dd><dt>Capacity</dt><dd>150 guests</dd><dt>Claim deadline</dt><dd>${escape(date(terms.claimDeadline))} · 7 days</dd><dt>Challenge / response</dt><dd>1 day each</dd>${disclosure ? `<dt>Publication</dt><dd data-luma-review-publication>${escape(disclosure.publication)}<small>${escape(disclosure.publicationNotice)}</small></dd>` : ""}<dt>Attendance standard</dt><dd data-luma-review-attendance-standard>${escape(attendanceStandardText(terms.attendanceStandard))}</dd><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Organizer wallet</dt><dd><code>${escape(draft.wallet)}</code></dd><dt>Factory recipient</dt><dd><code>${escape(draft.contract)}</code></dd><dt>Transaction value</dt><dd>0 ETH · wallet estimates network fees</dd><dt>Gas estimate</dt><dd>${escape(draft.transaction.gasLimit)} gas · not a fixed fee</dd><dt>Policy</dt><dd>${escape(terms.policyURI)}<small><code>${escape(terms.policySha256)}</code></small></dd><dt>Review block / expiry</dt><dd>${escape(draft.reviewBlock)} · ${escape(new Date(draft.expiresAt).toISOString())}</dd></dl><p class="luma-setup-notice">${disclosure ? escape(disclosure.upgradeNotice) : "The upgrade owner can change contract logic after the 48-hour timelock. Ownership transfers require acceptance; this delay does not guarantee withdrawals."}</p><p data-luma-dialog-status role="status"></p><div class="luma-setup-actions"><button type="button" class="button button-primary" data-luma-action="confirm">Create event in wallet</button></div>`;
+    dialog.innerHTML = `<header><h2 id="luma-review-title" tabindex="-1">Review event setup</h2><button type="button" class="button button-quiet" data-luma-action="close">Close</button></header><p>These event terms are fixed when this transaction confirms.</p><dl class="luma-setup-terms"><dt>Event</dt><dd>${escape(terms.title)}</dd><dt>Luma registration</dt><dd>${escape(terms.lumaUrl)}</dd><dt>Starts</dt><dd>${escape(formatEventTime(new Date(terms.eventStart * 1000), terms.timezone))}<small>${escape(date(terms.eventStart))}</small></dd><dt>Ends</dt><dd>${escape(formatEventTime(terms.endsAt, terms.timezone))}<small>${escape(new Date(terms.endsAt).toISOString())}</small></dd><dt>Deposit per guest</dt><dd>${escape(terms.depositEth)} ETH<small>${escape(terms.depositWei)} wei</small></dd><dt>Capacity</dt><dd>150 guests</dd><dt>Claim deadline</dt><dd>${escape(formatEventTime(new Date(terms.claimDeadline * 1000), terms.timezone))} · 7 days<small>${escape(date(terms.claimDeadline))}</small></dd><dt>Challenge / response</dt><dd>1 day each</dd>${disclosure ? `<dt>Publication</dt><dd data-luma-review-publication>${escape(disclosure.publication)}<small>${escape(disclosure.publicationNotice)}</small></dd>` : ""}<dt>Attendance standard</dt><dd data-luma-review-attendance-standard>${escape(attendanceStandardText(terms.attendanceStandard))}</dd><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Organizer wallet</dt><dd><code>${escape(draft.wallet)}</code></dd><dt>Factory recipient</dt><dd><code>${escape(draft.contract)}</code></dd><dt>Transaction value</dt><dd>0 ETH · wallet estimates network fees</dd><dt>Gas estimate</dt><dd>${escape(draft.transaction.gasLimit)} gas · not a fixed fee</dd><dt>Policy</dt><dd>${escape(terms.policyURI)}<small><code>${escape(terms.policySha256)}</code></small></dd><dt>Review block / expiry</dt><dd>${escape(draft.reviewBlock)} · ${escape(new Date(draft.expiresAt).toISOString())}</dd></dl><p class="luma-setup-notice">${disclosure ? escape(disclosure.upgradeNotice) : "The upgrade owner can change contract logic after the 48-hour timelock. Ownership transfers require acceptance; this delay does not guarantee withdrawals."}</p><p data-luma-dialog-status role="status"></p><div class="luma-setup-actions"><button type="button" class="button button-primary" data-luma-action="confirm">Create event in wallet</button></div>`;
     host.append(dialog);
     dialog.addEventListener("cancel", (event) => {
       if (busy) event.preventDefault();
@@ -1214,7 +1262,7 @@ export function mountLumaSetup(host, options) {
     reviewedForm = null;
     let stop;
     try {
-      if (readyIssue) throw Error(readyIssue);
+      if (!displayMode && readyIssue) throw Error(readyIssue);
       journal.probe();
       const input = formInput(form);
       const revision = formRevision,
@@ -1232,23 +1280,84 @@ export function mountLumaSetup(host, options) {
         stop.textContent = "Stop waiting";
         form.querySelector(".luma-setup-actions").append(stop);
       }
-      status("Preparing your immutable event review…");
+      status("Preparing event…");
       showProgress("preparing");
+      const preparedContext = bootstrap?.contractVersion === "kleros-event-v10-uups";
+      if (preparedContext && typeof options.prepareConnection === "function") {
+        await options.prepareConnection();
+        if (!unchanged()) throw jobFailure("The event form or wallet changed. Review the current terms again.", "ORGANIZER_JOB_STALE");
+      }
+      if (!preparedContext && (displayMode || typeof options.prepareBootstrap === "function")) {
+        if (typeof options.prepareBootstrap !== "function")
+          throw Error("Fresh setup checks are unavailable. Reload setup before reviewing this event.");
+        if (!sameReadScope(factoryReadScope(bootstrap)))
+          throw Error("The factory wallet or environment changed. Reload setup before continuing.");
+        const fresh = await new Promise((resolve, reject) => {
+          let waiting = true;
+          const stopWaiting = () => {
+            waiting = false;
+            reject(jobFailure(
+              "Stopped waiting for setup checks. Your form is preserved; choose Review event setup to check again.",
+              "ORGANIZER_JOB_WAIT_STOPPED",
+            ));
+          };
+          stopBootstrapWait = stopWaiting;
+          Promise.resolve().then(() => {
+            if (!waiting || !unchanged())
+              throw jobFailure("The event form or sign-in changed. Review the current terms again.", "ORGANIZER_JOB_STALE");
+            return options.prepareBootstrap();
+          }).then(resolve, reject).finally(() => {
+            if (stopBootstrapWait === stopWaiting) stopBootstrapWait = null;
+          });
+        });
+        if (!unchanged())
+          throw jobFailure("The event form or sign-in changed. Review the current terms again.", "ORGANIZER_JOB_STALE");
+        const issue = factorySetupIssue(fresh, { requireWallet: true });
+        if (fresh?.kind === "kickback-setup-display" || issue)
+          throw Error(issue || "Fresh factory verification is required before reviewing this event.");
+        if (!sameReadScope(factoryReadScope(fresh)) || !sameReadScope(factoryReadScope(bootstrap)))
+          throw Error("The factory wallet or environment changed. Reload setup before continuing.");
+        bootstrap = fresh;
+        readyIssue = issue;
+        disclosure = creationReviewDisclosure(fresh);
+      }
       const draft = await runOperation("prepare", { input }, unchanged);
       if (!unchanged())
         throw jobFailure(
           "The event form changed. Review the current terms again.",
           "ORGANIZER_JOB_STALE",
         );
+      if (preparedContext) {
+        const context = draft.creationContext;
+        if (context?.kind !== "verified-creation-context-v1" || context.draftId !== draft.id ||
+            context.snapshot !== draft.snapshot || context.origin !== location.origin ||
+            !same(context.wallet, originalReadScope.wallet) || !sameReadScope(factoryReadScope(context)))
+          throw jobs ? jobs.unusedResult("prepare", Error("The event preparation context changed. Review the current form again.")) : Error("The event preparation context changed.");
+        const issue = factorySetupIssue(context, { requireWallet: true });
+        if (issue) throw jobs ? jobs.unusedResult("prepare", Error(issue)) : Error(issue);
+        bootstrap = context;
+        readyIssue = null;
+        disclosure = creationReviewDisclosure(context);
+      }
       try {
         reviewed = assertCreationDraft(draft, bootstrap, input);
       } catch (cause) {
         throw jobs ? jobs.unusedResult("prepare", cause) : cause;
       }
       reviewedForm = { form, revision, fingerprint };
-      openReview(reviewed);
-      hideProgress();
-      status("Review the event terms before opening your wallet.");
+      if (directCreation) {
+        options.beforeOpen?.();
+        if (!reviewCurrent()) throw Error("The event form or wallet changed. Create this event again from the current form.");
+        if (host.ownerDocument.querySelector("dialog[open]")) throw Error("Close the current wallet review before creating an event.");
+        preparing = false;
+        stop?.remove();
+        lock(false);
+        await send();
+      } else {
+        openReview(reviewed);
+        hideProgress();
+        status("Review the event terms before opening your wallet.");
+      }
     } catch (cause) {
       terminalControl(cause);
       error(jobMessage(cause));
@@ -1260,6 +1369,7 @@ export function mountLumaSetup(host, options) {
       status("Event setup has not been submitted.");
     } finally {
       preparing = false;
+      stopBootstrapWait = null;
       stop?.remove();
       lock(false);
     }
@@ -1314,8 +1424,8 @@ export function mountLumaSetup(host, options) {
           return rawProvider.request(payload);
         },
       };
-      dialog.querySelector("[data-luma-dialog-status]").textContent =
-        "Rechecking the reviewed transaction before your wallet opens…";
+      const preparingNotice = dialog?.querySelector("[data-luma-dialog-status]");
+      if (preparingNotice) preparingNotice.textContent = "Preparing transaction…";
       const result = await submitWalletDraft({
         draft,
         context,
@@ -1470,14 +1580,20 @@ export function mountLumaSetup(host, options) {
         });
       status("Checking the canonical event creation receipt…");
       showProgress("confirmations");
-      const result = assertCreationReceipt(
-        await runOperation("reconcile", { draftId, hash }, unchanged),
-        context,
-        hash,
-        host.ownerDocument.location.origin,
-      );
+      const response = await runOperation("reconcile", { draftId, hash }, unchanged);
+      const isReplacement = response?.canonicalHash !== undefined || response?.replacement !== undefined;
+      if (isReplacement && !replacementEnabled)
+        throw Error("Replacement recovery is unavailable in this environment. Preserve both transaction IDs.");
+      const result = isReplacement
+        ? assertCreationReplacement(response, context, hash, response.canonicalHash, host.ownerDocument.location.origin)
+        : assertCreationReceipt(response, context, hash, host.ownerDocument.location.origin);
       if (!unchanged()) return null;
       if (result.status === "pending") {
+        const recovery = result.replacementRecovery;
+        const savedSubmission = replacementEnabled && recovery?.witnessRetained === true && recovery?.reviewSealRetained === true &&
+          same(recovery.originalHash, hash) && same(recovery.wallet, context.wallet) &&
+          Number.isSafeInteger(recovery.nonce) && recovery.nonce >= 0 && /^[0-9a-f]{64}$/.test(recovery.witnessHash ?? "") &&
+          /^[0-9a-f]{64}$/.test(recovery.reviewHash ?? "");
         if (jobs)
           terminalControl(
             jobs.unusedResult(
@@ -1489,11 +1605,14 @@ export function mountLumaSetup(host, options) {
           journal.update(context, hash, { status: "needs-confirmation" });
         status(
           walletReturnedHash
-            ? "The transaction is pending or onboarding is not yet confirmed. Check again later."
+            ? "The transaction is pending or onboarding is not yet confirmed. Check again later." +
+              (savedSubmission ? ` Original nonce ${recovery.nonce} and its review seal are saved for replacement checks.` : "")
             : "This candidate has no verified terminal receipt yet. Check your wallet transaction ID and try again; no new transaction will be sent.",
         );
         return pendingReceipt(result, draftId, context, walletReturnedHash);
       }
+      if (isReplacement && jobs)
+        jobs.clearTerminal(jobs.unusedResult("reconcile", Error("The verified replacement receipt check completed.")));
       journal.record(context, {
         hash,
         draftId: marker.draftId,
@@ -1502,9 +1621,11 @@ export function mountLumaSetup(host, options) {
       journal.update(context, hash, {
         status: result.status,
         blockNumber: result.blockNumber,
+        ...(isReplacement ? { canonicalHash: result.canonicalHash, replacement: result.replacement } : {}),
         error: null,
       });
-      persist({ ...marker, hash, phase: result.status });
+      persist({ ...marker, hash, phase: result.status,
+        ...(isReplacement ? { canonicalHash: result.canonicalHash, replacement: result.replacement } : {}) });
       terminalAdopted = true;
       if (result.status === "confirmed") renderShare(result);
       else {
@@ -1529,6 +1650,10 @@ export function mountLumaSetup(host, options) {
     await receiptWatcher.pause();
     watchActivity(false);
     if (!current() || busy || !marker) return;
+    if (marker.canonicalHash && replacementEnabled) {
+      await checkReplacement();
+      return;
+    }
     if (terminalJob?.organizerJob?.operation === "reconcile") {
       try {
         const original = terminalJob.organizerJob.hash;
@@ -1555,9 +1680,67 @@ export function mountLumaSetup(host, options) {
     const outcome = await reconcile();
     if (outcome?.knownHash) startReceiptWatch(outcome);
   };
+  const checkReplacement = async () => {
+    await receiptWatcher.pause();
+    watchActivity(false);
+    if (!current() || busy || !marker?.hash || marker.phase === "failed" || !replacementEnabled || scope?.abiVersion !== "kleros-event-v10-uups") return;
+    const originalHash = marker.hash, draftId = marker.draftId;
+    const context = { ...scope, eventId: marker.eventId };
+    const candidate = host.querySelector('[name="replacementHash"]')?.value?.trim();
+    let unchanged = current;
+    try {
+      if (!hashPattern.test(candidate ?? "") || same(candidate, originalHash))
+        throw Error("Enter the complete, different transaction ID returned by the wallet's Speed Up request.");
+      if (marker.canonicalHash && !same(marker.canonicalHash, candidate))
+        throw Error("Check the recorded canonical replacement transaction. Its evidence cannot be changed.");
+      if (terminalJob?.organizerJob?.operation === "replacement") {
+        const saved = terminalJob.organizerJob;
+        if (["ready", "failed", "expired"].includes(saved.state)) jobs.clearTerminal(terminalJob);
+        else if (saved.hash && !same(saved.hash, candidate))
+          throw Error("Check the same saved replacement request before choosing another transaction ID.");
+        terminalJob = null;
+      }
+      terminalAdopted = false;
+      persist({ ...marker, replacementCandidate: candidate.toLowerCase() });
+      renderRecovery();
+      host.querySelector("[data-luma-replacement]").open = true;
+      lock(true);
+      unchanged = () => current() && marker?.draftId === draftId && marker?.eventId === context.eventId &&
+        same(marker?.hash, originalHash) && scope?.instanceId === context.instanceId && same(scope?.wallet, context.wallet) &&
+        same(scope?.contract, context.contract) && scope?.abiVersion === context.abiVersion &&
+        same(host.querySelector('[name="replacementHash"]')?.value?.trim(), candidate);
+      journal.probe();
+      status("Checking the replacement receipt and verified event…");
+      showProgress("confirmations", { hash: candidate });
+      let result;
+      try {
+        result = assertCreationReplacement(
+          await runOperation("replacement", { draftId, hash: candidate }, unchanged),
+          context, originalHash, candidate, host.ownerDocument.location.origin,
+        );
+      } catch (cause) { throw jobs ? jobs.unusedResult("replacement", cause) : cause; }
+      if (!unchanged()) return;
+      // Retire only this completed app-only read. Its backend identity and both
+      // financial transaction records remain immutable, and a reload rechecks.
+      if (jobs) jobs.clearTerminal(jobs.unusedResult("replacement", Error("The verified replacement check completed.")));
+      journal.record(context, { hash: originalHash, draftId, action: "createEvent" });
+      journal.update(context, originalHash, { status: "confirmed", blockNumber: result.blockNumber,
+        canonicalHash: result.canonicalHash, replacement: result.replacement, error: null });
+      persist({ ...marker, hash: originalHash, phase: "confirmed", canonicalHash: result.canonicalHash, replacement: result.replacement });
+      terminalJob = null;
+      renderShare(result);
+    } catch (cause) {
+      if (!current() || !unchanged()) return;
+      terminalControl(cause);
+      error(jobMessage(cause));
+      showProgress("unavailable", { hash: hashPattern.test(candidate ?? "") ? candidate : originalHash,
+        reasonCode: typeof cause.code === "string" ? cause.code : undefined });
+    } finally { lock(false); }
+  };
   const onDateInput = (event) => {
     const input = event.target;
-    if (current() && input.matches?.('[name="txHash"]')) {
+    if (input.matches?.('[name="timezone"]')) syncTimezoneChoice(input.closest("[data-luma-form]"));
+    if (current() && input.matches?.('[name="txHash"], [name="replacementHash"]')) {
       void receiptWatcher.pause();
       watchActivity(false);
       jobs?.stop();
@@ -1576,6 +1759,7 @@ export function mountLumaSetup(host, options) {
       void receiptWatcher.pause();
       watchActivity(false);
       jobs?.stop();
+      stopBootstrapWait?.();
       closeDialog();
       hideProgress();
     }
@@ -1584,26 +1768,42 @@ export function mountLumaSetup(host, options) {
     if (form && host.contains(form)) dateState(form).endEdited = true;
   };
   const onDateChange = (event) => {
-    const input = event.target;
+    let input = event.target;
     if (!current()) return;
+    if (input.matches?.('[name="timezoneChoice"]')) {
+      const selected = input.value, form = input.closest("[data-luma-form]"), zone = form?.elements.namedItem("timezone");
+      if (!zone || !host.contains(form)) return;
+      if (selected === "custom") { zone.focus(); zone.select(); return; }
+      if (!TIMEZONE_PRESETS.some(([value]) => value === selected)) return;
+      zone.value = selected;
+      input = zone;
+    }
     if (input.matches?.('[name="endsAt"]')) {
       onDateInput(event);
       return;
     }
-    if (busy || !input.matches?.('[name="startsAt"]')) return;
+    if (input.matches?.('[name="timezone"]')) onDateInput({ target: input });
+    if (busy || !input.matches?.('[name="startsAt"], [name="timezone"]')) return;
     const form = input.closest("[data-luma-form]");
     if (!form || !host.contains(form)) return;
-    const start = completeLocalDate(input.value);
-    if (!start || start.valueOf() <= Date.now()) return;
+    const startValue = form.elements.namedItem("startsAt").value;
+    if (!startValue) return;
+    let start, eventTimezone;
+    try {
+      eventTimezone = validateEventTimeZone(form.elements.namedItem("timezone").value);
+      start = new Date(eventTimeToUtc(startValue, eventTimezone));
+    } catch (cause) { error(cause.message); return; }
+    if (start.valueOf() <= Date.now()) return;
     const end = form.elements.namedItem("endsAt"),
       state = dateState(form);
-    end.min = input.value;
+    end.min = startValue;
     if (state.endEdited || (end.value && end.value !== state.suggested)) return;
-    const suggested = new Date(start.valueOf() + 2 * 60 * 60 * 1000),
-      value = localDateValue(suggested);
-    // A repeated DST hour cannot express both instants in datetime-local. Keep
-    // manual choice rather than silently suggesting a different elapsed time.
-    if (completeLocalDate(value)?.valueOf() !== suggested.valueOf()) return;
+    const suggested = new Date(start.valueOf() + 2 * 60 * 60 * 1000);
+    let value;
+    try {
+      value = eventTimeFromUtc(suggested, eventTimezone);
+      if (eventTimeToUtc(value, eventTimezone) !== suggested.toISOString()) return;
+    } catch (cause) { error(cause.message); return; }
     end.value = value;
     state.suggested = value;
   };
@@ -1618,6 +1818,7 @@ export function mountLumaSetup(host, options) {
       event.target.closest("[data-luma-action]")?.dataset.lumaAction;
     if (!action || !current()) return;
     if (action === "stop-waiting" && preparing) {
+      stopBootstrapWait?.();
       jobs?.stop();
       return;
     }
@@ -1628,6 +1829,10 @@ export function mountLumaSetup(host, options) {
     }
     if (action === "reconcile") {
       await manualReceiptCheck();
+      return;
+    }
+    if (action === "check-replacement") {
+      await checkReplacement();
       return;
     }
     if (busy) return;
@@ -1669,15 +1874,22 @@ export function mountLumaSetup(host, options) {
     }
     if (
       action === "new" &&
-      terminalAdopted &&
-      ["confirmed", "failed"].includes(marker?.phase)
+      marker
     ) {
       try {
+        if (!recordedConfirmed() && !(terminalAdopted && marker.phase === "failed")) return;
+        const completed = { status: marker.phase, hash: marker.hash, draftId: marker.draftId,
+          eventId: marker.eventId, context: { ...scope, eventId: marker.eventId } };
         await receiptWatcher.pause();
+        if (!current() || marker?.draftId !== completed.draftId || marker?.hash !== completed.hash) return;
+        if (completed.status === "confirmed" && !recordedConfirmed()) return;
         watchActivity(false);
+        options.onNew?.(completed);
+        if (!current()) return;
         storage.removeItem(key);
         marker = null;
         terminalAdopted = false;
+        replacementPreset = null;
         reviewed = null;
         reviewedForm = null;
         terminalJob = null;
@@ -1711,6 +1923,7 @@ export function mountLumaSetup(host, options) {
   return {
     dispose() {
       alive = false;
+      stopBootstrapWait?.();
       void receiptWatcher.dispose();
       progress.dispose();
       jobs?.dispose();

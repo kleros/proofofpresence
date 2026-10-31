@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build:hosted"
+  command = "npm run build:netlify:production"
   publish = "dist/netlify-app"
   functions = "netlify/functions"
 

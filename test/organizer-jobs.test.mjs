@@ -21,6 +21,20 @@ function fixture(options = {}) {
   return { service, actor, current, calls, advance(ms) { time += ms; } };
 }
 
+test("replacement reads are V10-only, exact scoped jobs and repeated polling never reruns them", async () => {
+  const body = { requestId: "replacement-read", operation: "replacement", draftId: "original-draft", hash: `0x${"ab".repeat(32)}` };
+  const old = fixture();
+  assert.throws(() => old.service.start(old.actor, body), errorCode("INVALID_INPUT", 400));
+  assert.equal(old.calls.length, 0);
+  const f = fixture({ contractVersion: "kleros-event-v10-uups", execute: () => ({ status: "confirmed", canonicalHash: body.hash }) });
+  assert.throws(() => f.service.start(f.actor, { ...body, nonce: 10 }), errorCode("INVALID_INPUT", 400));
+  assert.equal(f.service.start(f.actor, body).state, "pending"); await settle();
+  assert.equal(f.service.status(f.actor, body.requestId).state, "ready");
+  assert.equal(f.service.start(f.actor, body).state, "ready");
+  assert.equal(f.calls.length, 1); assert.equal(f.calls[0].operation, "replacement");
+  assert.equal(f.calls[0].args.hash, body.hash); assert.strictEqual(f.calls[0].args.session, f.actor);
+});
+
 test("start reserves synchronously, duplicate requests and repeated status never execute twice", async () => {
   const work = deferred(), f = fixture({ execute: () => work.promise });
   const body = prepare(), first = f.service.start(f.actor, body);

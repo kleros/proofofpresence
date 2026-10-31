@@ -294,16 +294,12 @@ test("reviewed event terms/template/birth metadata and canonical source/slots ar
       verifyV10Deployment(context(), { ...d, ...changed }),
       code("UPGRADE_TRUST_MISMATCH"),
     );
-  await assert.rejects(
-    verifyV10Deployment(
-      context({
-        getCode: async (target, tag) =>
-          target === d.contract ? "0x00" : provider.getCode(target, tag),
-      }),
-      d,
-    ),
-    code("WRONG_CONTRACT"),
-  );
+  await isolated(async () => {
+    // Runtime checks may use a deployless EXTCODECOPY batch. Corrupt the real
+    // synthetic chain code so every valid read transport observes the defect.
+    await rpc.request({ method: "evm_setAccountCode", params: [d.contract, "0x00"] });
+    await assert.rejects(verifyV10Deployment(context(), d), code("WRONG_CONTRACT"));
+  });
   await assert.rejects(
     verifyV10Deployment(
       context({
@@ -448,6 +444,65 @@ test("closing canonical guard detects changed authority block while all older bi
   });
   await assert.rejects(verifyV10Deployment(c, d), code("DEPLOYMENT_REORG"));
 });
+test("deployless getter batches retain the closing authority guard after a real nomination during the proof", () =>
+  isolated(async () => {
+    let changed = false, batches = 0;
+    const afterBatch = async value => {
+      batches++;
+      if (!changed) {
+        changed = true;
+        await receipt(controller.transferOwnership(other.address));
+      }
+      return value;
+    };
+    const c = context({
+      send: async (method, params) => {
+        const value = await provider.send(method, params);
+        return method === "eth_call" && !params?.[0]?.to ? afterBatch(value) : value;
+      },
+      call: async transaction => {
+        const value = await provider.call(transaction);
+        return !transaction?.to ? afterBatch(value) : value;
+      },
+    });
+    await assert.rejects(verifyV10Deployment(c, d), code("IMPLEMENTATION_CHANGED"));
+    assert(changed); assert(batches > 0, "The injected read must be an actual deployless getter batch");
+  }));
+test("malformed deployless batch output cannot produce a verified factory or child proof", async () => {
+  for (const child of [false, true]) {
+    let corrupted = 0;
+    const c = context({
+      send: async (method, params) => {
+        const value = await provider.send(method, params);
+        if (method === "eth_call" && !params?.[0]?.to) { corrupted++; return "0x"; }
+        return value;
+      },
+      call: async transaction => {
+        const value = await provider.call(transaction);
+        if (!transaction?.to) { corrupted++; return "0x"; }
+        return value;
+      },
+    });
+    await assert.rejects(child ? verifyV10Deployment(c, d) : verifyV10FactoryDeployment(c, F));
+    assert(corrupted > 0, "A real deployless batch response must reach the malformed-output guard");
+  }
+});
+test("a late real runtime change cannot reuse the opening code batch as the closing source check", () =>
+  isolated(async () => {
+    let changed = false;
+    const c = context({
+      send: async (method, params) => {
+        const value = await provider.send(method, params);
+        if (!changed && method === "eth_call" && !params?.[0]?.to) {
+          changed = true;
+          await rpc.request({ method: "evm_setAccountCode", params: [d.contract, "0x00"] });
+        }
+        return value;
+      },
+    });
+    await assert.rejects(verifyV10Deployment(c, d), code("WRONG_CONTRACT"));
+    assert(changed);
+  }));
 test("wrapped real child birth requires a trusted exact factual intent proof; manifest/client proof never authorizes it", () =>
   isolated(async () => {
     const wrapper = await deploy(fixture("TestWallet")),

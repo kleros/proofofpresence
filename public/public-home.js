@@ -1,5 +1,6 @@
 import { searchPublicEvents, validatePublicCatalog } from "./event-search.js";
 import { focusMain } from "./ui-keyboard.js";
+import { renderHomeWallet, mountHomeWallet } from "./home-wallet.js";
 
 const escape = (value) =>
   String(value ?? "").replace(
@@ -49,10 +50,10 @@ export function renderPublicResults(entries, query) {
   return `<ul class="public-event-list">${matches.map((event) => `<li class="public-event-row" data-public-event-row><div class="public-event-copy"><h3>${escape(event.title)}</h3><p class="public-event-date">${escape(date(event))}</p><div class="public-event-meta"><span>${event.depositWei === null ? "Deposit unavailable" : `Event deposit: ${eth(event.depositWei)} ETH`}</span><span class="badge">${escape(event.statusLabel)}</span></div></div><a class="button button-secondary" data-public-event-open href="#${new URLSearchParams({ event: event.id, view: "participant" })}" aria-label="Open event: ${escape(event.title)}">Open event</a></li>`).join("")}</ul>`;
 }
 export function renderPublicHome({ entries, query, metadataOnly }) {
-  return `<section class="luma-launch" data-launch-root ${metadataOnly ? "data-public-catalog-screen" : ""}><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Find your event, review its deposit and return to Luma.</p></div><section class="luma-launch-card public-event-search"><h2>Find your event</h2>${metadataOnly ? '<p class="field-help" data-public-catalog-note>Recorded event details only. Current status and wallet actions are checked when you open an event.</p>' : ""}<label for="public-event-search">Search by event name</label><div class="public-event-controls"><input id="public-event-search" type="search" data-public-event-search maxlength="120" autocomplete="off" placeholder="Event name" value="${escape(query)}" aria-controls="public-event-results"><button class="button button-secondary" type="button" data-public-event-clear ${query ? "" : "hidden"}>Clear search</button></div><p class="public-event-status" data-public-event-status role="status" aria-live="polite" aria-atomic="true">${escape(publicResultStatus(entries, query))}</p><div id="public-event-results" data-public-event-results>${renderPublicResults(entries, query)}</div></section><section class="luma-launch-card"><h2>Organizing an event?</h2><p>Connect your Luma event to its own reviewed kickback contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></section>`;
+  return `<section class="luma-launch" data-launch-root ${metadataOnly ? "data-public-catalog-screen" : ""}><div class="luma-launch-heading"><div class="eyebrow">KLEROS KICKBACK</div><h1>A deposit for your Luma event.</h1><p>Find your event, review its deposit and return to Luma.</p></div><section class="luma-launch-card public-event-search"><h2>Find your event</h2>${metadataOnly ? '<p class="field-help" data-public-catalog-note>Recorded event details only. Current status and wallet actions are checked when you open an event.</p>' : ""}<label for="public-event-search">Search by event name</label><div class="public-event-controls"><input id="public-event-search" type="search" data-public-event-search maxlength="120" autocomplete="off" placeholder="Event name" value="${escape(query)}" aria-controls="public-event-results"><button class="button button-secondary" type="button" data-public-event-clear ${query ? "" : "hidden"}>Clear search</button></div><p class="public-event-status" data-public-event-status role="status" aria-live="polite" aria-atomic="true">${escape(publicResultStatus(entries, query))}</p><div id="public-event-results" data-public-event-results>${renderPublicResults(entries, query)}</div></section>${renderHomeWallet()}<section class="luma-launch-card"><h2>Organizing an event?</h2><p>Connect your Luma event to its own reviewed kickback contract.</p><a class="button button-secondary" href="#setup=kickback">Set up kickback</a></section></section>`;
 }
 
-// This controller owns only public metadata. No wallet, storage or bootstrap is read.
+// Public metadata and a separate wallet-selection controller; no bootstrap or auth.
 export function mountPublicHome({
   initialResponse,
   abortInitial,
@@ -65,6 +66,7 @@ export function mountPublicHome({
     catalog = null,
     query = "",
     active = null,
+    walletView = null,
     abort = abortInitial;
   const current = () => {
     const route = new URLSearchParams(location.hash.slice(1));
@@ -154,12 +156,15 @@ export function mountPublicHome({
         catalog = fresh;
         chrome();
         if (sameScope && $("[data-public-catalog-screen]")) results();
-        else
+        else {
+          walletView?.dispose();
           $("#content").innerHTML = renderPublicHome({
             entries: catalog.events,
             query,
             metadataOnly: true,
           });
+          walletView = mountHomeWallet($("#content"), { isCurrent: current, instanceId: catalog.instanceId });
+        }
         $("#loading").hidden = true;
         $("#content").hidden = false;
         if (restoreRetry && !focused.isConnected)
@@ -173,6 +178,7 @@ export function mountPublicHome({
         $("#content").innerHTML =
           `<section class="luma-launch"><div class="luma-launch-heading"><h1>We couldn’t load the event directory.</h1></div><p class="error-panel" role="alert">${escape(error.message)}</p><button class="button button-primary" data-reload data-public-catalog-retry>Try again</button></section>`;
         catalog = null;
+        walletView?.dispose(); walletView = null;
         if (restore) $("[data-public-catalog-retry]")?.focus();
       } finally {
         // Abort only this read after its body has been consumed; a newer read
@@ -237,6 +243,7 @@ export function mountPublicHome({
       alive = false;
       generation++;
       abort?.();
+      walletView?.dispose();
       document.removeEventListener("input", input);
       document.removeEventListener("click", click);
       $("#refresh").removeEventListener("click", refreshClick);

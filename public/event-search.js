@@ -2,6 +2,7 @@ import {
   isVerifiedSupportedProductionEvent,
   isSupportedProductionVersion,
 } from "./contract-profiles.js";
+import { isPreviousFirstEvent } from "./first-event/event.js";
 
 const stableId = (value) =>
   typeof value === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(value);
@@ -77,7 +78,7 @@ export function validatePublicCatalog(value) {
     );
   const records = value.events.filter(
     (event) =>
-      event?.visibility === "public" && event?.editorialStatus === "published",
+      event?.visibility === "public" && event?.editorialStatus === "published" && !isPreviousFirstEvent(event),
   );
   const counts = new Map();
   for (const event of records)
@@ -132,7 +133,7 @@ export function publicEventSearchEntries(events) {
   if (!Array.isArray(events)) return Object.freeze([]);
   const publicRecords = events.filter(
     (event) =>
-      event?.visibility === "public" && event?.editorialStatus === "published",
+      event?.visibility === "public" && event?.editorialStatus === "published" && !isPreviousFirstEvent(event),
   );
   const counts = new Map();
   for (const event of publicRecords)

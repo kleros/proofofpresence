@@ -149,6 +149,33 @@ test("source+both protocol proofs authorize the unpublished local candidate whil
   assert.equal(Object.keys(authorized).length, 6);
   assert.equal(c.calls.filter((x) => x.method === "eth_getCode").length, 8);
 });
+test("a supplied observation stays pinned when latest advances, without skipping canonical or framework checks", async () => {
+  const wallet = "0x1111111111111111111111111111111111111111";
+  for (const code of ["0x", "0xef0100" + METAMASK_V130.delegate.slice(2)]) {
+    const c = context({ code, transform: (method, params, result) =>
+      method === "eth_getBlockByNumber" && params[0] === "latest"
+        ? { number: "0x65", hash: ethers.id("normal-next-block") } : result });
+    const proof = await c.policy.assertWallet(wallet, { blockNumber: 100, blockHash, code });
+    assert.equal(proof.blockNumber, 100);
+    assert.equal(proof.blockHash, blockHash);
+    assert.equal(proof.financialEligible, true);
+    assert.deepEqual(c.calls.filter(call => call.method === "eth_getBlockByNumber").map(call => call.params),
+      [[tag, false], [tag, false]]);
+    assert(c.calls.filter(call => call.method === "eth_getCode").every(call => call.params[1] === tag));
+    assert.equal(c.calls.filter(call => call.method === "eth_getCode").length, code === "0x" ? 1 : 4);
+    assert.equal(c.calls.filter(call => call.method === "eth_chainId").length, 2);
+  }
+});
+test("supplied observations reject malformed scope, changed canonical block and changed account code", async () => {
+  const wallet = "0x1111111111111111111111111111111111111111";
+  for (const change of [o => { o.blockNumber = 0; }, o => { o.blockNumber = -1; },
+    o => { o.blockNumber = Number.MAX_SAFE_INTEGER + 1; }, o => { o.blockHash = "0x12"; },
+    o => { o.code = "bad"; }, o => { o.extra = true; }, o => { o.blockHash = ethers.id("reorganized-block"); },
+    o => { o.code = "0x6000"; }]) {
+    const observation = { blockNumber: 100, blockHash, code: "0x" }; change(observation);
+    await assert.rejects(context().policy.assertWallet(wallet, observation), { code: "V10_WALLET_REORG" });
+  }
+});
 test("wrong network, changed canonical anchor, stale observation and changed framework fail closed", async () => {
   const wallet = "0x1111111111111111111111111111111111111111";
   await assert.rejects(

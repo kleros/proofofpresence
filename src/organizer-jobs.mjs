@@ -15,7 +15,7 @@ function exact(value, keys) {
 }
 function payloadOf(body) {
   const operation = body && typeof body === "object" ? Object.getOwnPropertyDescriptor(body, "operation")?.value : undefined;
-  check(["prepare", "validate", "reconcile"].includes(operation), "INVALID_INPUT", 400, "Choose an organizer review operation.");
+  check(["prepare", "validate", "reconcile", "replacement"].includes(operation), "INVALID_INPUT", 400, "Choose an organizer review operation.");
   const keys = body.operation === "prepare" ? ["requestId", "operation", "input"]
     : body.operation === "validate" ? ["requestId", "operation", "draftId"] : ["requestId", "operation", "draftId", "hash"];
   check(exact(body, keys) && stable(body.requestId), "INVALID_INPUT", 400, "Use an exact scoped organizer request.");
@@ -28,7 +28,7 @@ function payloadOf(body) {
   check(stable(body.draftId, 160), "INVALID_INPUT", 400, "Choose the original organizer draft.");
   if (body.operation === "validate") return { operation: "validate", draftId: body.draftId };
   check(typeof body.hash === "string" && /^0x[0-9a-fA-F]{64}$/.test(body.hash), "INVALID_INPUT", 400, "Use the exact submitted transaction hash.");
-  return { operation: "reconcile", draftId: body.draftId, hash: body.hash.toLowerCase() };
+  return { operation: body.operation, draftId: body.draftId, hash: body.hash.toLowerCase() };
 }
 
 /**
@@ -88,6 +88,8 @@ export function createOrganizerJobService({ instanceId, factory, execute, isSess
       const owner = actor(session);
       check(owner, "UNAUTHENTICATED", 401, "Sign in with your wallet first.");
       const payload = payloadOf(body), requestId = body.requestId;
+      check(payload.operation !== "replacement" || contractVersion === "kleros-event-v10-uups",
+        "INVALID_INPUT", 400, "Fee-replacement recovery requires the reviewed V10 profile.");
       const fingerprint = createHash("sha256").update(JSON.stringify(payload)).digest("hex");
       const prior = jobs.get(requestId);
       if (prior) {

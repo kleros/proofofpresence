@@ -288,7 +288,7 @@ export function canonicalParticipantUrl(value, eventId, origin) {
     return null;
   }
 }
-export function assertCreationReceipt(result, context, hash, origin) {
+export function assertCreationReceipt(result, context, hash, origin, allowReplacement = false) {
   must(
     result &&
       ["pending", "failed", "confirmed"].includes(result.status) &&
@@ -306,6 +306,10 @@ export function assertCreationReceipt(result, context, hash, origin) {
     "The canonical receipt context is incomplete.",
   );
   if (result.status === "failed") return result;
+  if (result.canonicalHash !== undefined || result.replacement !== undefined) {
+    must(allowReplacement === true, "Check the replacement transaction before adopting this event.");
+    assertReplacementEvidence(result, context, hash);
+  }
   const participantUrl = canonicalParticipantUrl(
     result.participantUrl,
     context.eventId,
@@ -318,4 +322,26 @@ export function assertCreationReceipt(result, context, hash, origin) {
     "The event receipt is not yet canonically onboarded. Keep the transaction reference and check again.",
   );
   return { ...result, participantUrl };
+}
+
+function assertReplacementEvidence(result, context, originalHash, replacementHash = null) {
+  const proof = result?.replacement;
+  const quantity = (value) => typeof value === "string" && /^(?:0|[1-9][0-9]*)$/.test(value);
+  must(
+    context?.abiVersion === V10_PRODUCTION_CONTRACT_VERSION && context.mode === "hosted-production" && context.chainId === 1 &&
+      result?.status === "confirmed" && result.chainId === 1 && result.eventId === context.eventId && same(result.wallet, context.wallet) &&
+      bytes32(originalHash) && same(result.hash, originalHash) && bytes32(result.canonicalHash) && !same(result.canonicalHash, originalHash) &&
+      proof?.verified === true && proof.kind === "same-call-fee-replacement" && proof.chainId === 1 && same(proof.wallet, context.wallet) &&
+      same(proof.originalHash, originalHash) && same(proof.hash, result.canonicalHash) &&
+      (replacementHash === null || same(proof.hash, replacementHash)) && integer(proof.nonce) && integer(proof.blockNumber) &&
+      proof.blockNumber > 0 && proof.blockNumber === result.blockNumber && bytes32(proof.blockHash) &&
+      quantity(proof.gasUsed) && BigInt(proof.gasUsed) > 0n && quantity(proof.gasPriceWei) && quantity(proof.feeWei) &&
+      BigInt(proof.feeWei) === BigInt(proof.gasUsed) * BigInt(proof.gasPriceWei),
+    "The verified replacement does not match this original event transaction. Preserve both transaction IDs and check again.",
+  );
+}
+
+export function assertCreationReplacement(result, context, originalHash, replacementHash, origin) {
+  assertReplacementEvidence(result, context, originalHash, replacementHash);
+  return assertCreationReceipt(result, context, originalHash, origin, true);
 }

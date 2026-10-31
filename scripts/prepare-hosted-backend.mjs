@@ -5,22 +5,44 @@ import { execFileSync } from "node:child_process";
 const root = fileURLToPath(new URL("../", import.meta.url));
 if (
   process.argv.length > 4 ||
-  (process.argv[3] && process.argv[3] !== "--mainnet-context")
+  (process.argv[3] &&
+    !["--mainnet-context", "--v10-context"].includes(process.argv[3]))
 )
-  throw new Error("Use a commit and optional --mainnet-context");
+  throw new Error(
+    "Use a commit and optional --mainnet-context or --v10-context",
+  );
 const sourceCommit = execFileSync(
   "git",
   ["rev-parse", "--verify", `${process.argv[2] ?? "HEAD"}^{commit}`],
   { cwd: root, encoding: "utf8" },
 ).trim();
-const destination = path.join(
-  root,
-  ".runtime",
-  process.argv[3] === "--mainnet-context"
-    ? "mainnet-backend-context"
-    : "hosted-backend-context",
-);
-await fs.rm(destination, { recursive: true, force: true });
+const v10Context = process.argv[3] === "--v10-context";
+const destination = v10Context
+  ? path.join(
+      root,
+      ".runtime",
+      "mainnet-v10",
+      `backend-context-${sourceCommit}`,
+    )
+  : path.join(
+      root,
+      ".runtime",
+      process.argv[3] === "--mainnet-context"
+        ? "mainnet-backend-context"
+        : "hosted-backend-context",
+    );
+// A V10 package never overwrites the existing V9 package or any prior V10
+// snapshot. Each immutable source commit has its own public-source-only folder.
+if (v10Context) {
+  try {
+    await fs.stat(destination);
+    throw new Error(
+      "This immutable V10 context already exists; inspect or reuse it without resetting it",
+    );
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+} else await fs.rm(destination, { recursive: true, force: true });
 await fs.mkdir(destination, { recursive: true });
 const items = [
   "Dockerfile",
@@ -97,6 +119,7 @@ for (const registryFile of [
   "registry/chiado-v8-ui-c.json",
   "registry/chiado-v8-ui-d.json",
   "registry/ethereum-v9-luma-mainnet.json",
+  "registry/ethereum-v10-luma-mainnet.json",
 ]) {
   if (
     execFileSync(

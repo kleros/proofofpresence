@@ -1,5 +1,15 @@
 # Kleros Event Workbench
 
+For the **Ethereum mainnet Kickback deployment**, use
+[the current Netlify production handoff](docs/NETLIFY_PRODUCTION_HANDOFF.md).
+Importing the repository uses `npm run build:netlify:production`, a frontend-only
+build with the production WalletConnect/Reown headers. Configure the three
+server-side gateway variables described there; the existing Railway backend and
+database are reused. `netlify.env.example` contains placeholders only.
+
+The development and rehearsal notes below preserve the historical local v7/v8
+workflows and earlier deployments.
+
 > Private development snapshot captured on 30 October 2026. Start with
 > [PROJECT_BRAIN.md](PROJECT_BRAIN.md) for current status and
 > [GitHub snapshot notes](docs/GITHUB_SNAPSHOT.md) for branch coverage. Older release and schedule

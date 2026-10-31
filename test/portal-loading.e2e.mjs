@@ -4,6 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { isSelectedBootstrapQuery } from "./fixtures/selected-bootstrap-query.mjs";
 import {
   makePublicEventSearchFixture,
   PRIVATE_SEARCH_TITLES,
@@ -27,7 +28,8 @@ function allowed(origin, url, method, assetNames) {
   if (method !== "GET" || parsed.origin !== origin) return false;
   if (parsed.pathname === "/api/bootstrap") {
     return (
-      !parsed.search || parsed.search === "?selectedEventId=" + PUBLIC_SEARCH_A
+      !parsed.search ||
+      isSelectedBootstrapQuery(parsed.searchParams, PUBLIC_SEARCH_A)
     );
   }
   return (
@@ -99,6 +101,26 @@ function selfTest() {
     [origin + "/api/bootstrap", "GET", true],
     [origin + "/api/public-catalog", "GET", true],
     [origin + "/api/bootstrap?selectedEventId=" + PUBLIC_SEARCH_A, "GET", true],
+    [
+      origin + "/api/bootstrap?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=1",
+      "GET",
+      true,
+    ],
+    [
+      origin + "/api/bootstrap?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=0",
+      "GET",
+      false,
+    ],
+    [
+      origin + "/api/bootstrap?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=1&selectedOnly=1",
+      "GET",
+      false,
+    ],
+    [
+      origin + "/api/bootstrap?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=1&wallet=foreign",
+      "GET",
+      false,
+    ],
     [origin + "/api/bootstrap", "POST", false],
     [origin + "/api/auth/verify", "GET", false],
     [origin + "/api/bootstrap?wallet=foreign", "GET", false],
@@ -652,7 +674,12 @@ async function run(label) {
             .slice(before)
             .filter((entry) => entry.path.startsWith("/api/"))
             .map((entry) => [entry.path, entry.query]),
-          [["/api/bootstrap", "?selectedEventId=" + PUBLIC_SEARCH_A]],
+          [
+            [
+              "/api/bootstrap",
+              "?selectedEventId=" + PUBLIC_SEARCH_A + "&selectedOnly=1",
+            ],
+          ],
         );
         evidence.checks.push(
           "Setup and selected event each fetch fresh scoped bootstrap; metadata-only catalog is never financial authority",

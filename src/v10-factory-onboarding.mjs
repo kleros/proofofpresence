@@ -9,8 +9,11 @@ import { loadV10UpgradeableArtifacts } from "./v10-upgrade-artifacts.mjs";
 import { V10_MAINNET_SCOPE, V10_IMPLEMENTATION_SLOT, verifyV10FactoryDeployment } from "./v10-upgrade-verification.mjs";
 import { V10_POLICY_SHA256 } from "./v10-mainnet-runtime.mjs";
 import { METAMASK_V130 } from "./v10-wallet-compatibility.mjs";
+import { projectV10CanonicalTransaction } from "./v10-production-wallets.mjs";
+import { verifyV10CreationFeeReplacement } from "./v10-creation-replacement.mjs";
 import { assertProductionEOAWallet } from "./production-wallets.mjs";
 import { verifyDeployment } from "./chain.mjs";
+import { v10ReadBatch, v10CodeHashBatch } from "./v10-read-batch.mjs";
 
 const PROFILE = "kleros-event-v10-uups", DAY = 86400, TTL = 300000;
 const copy = (value) => JSON.parse(json(value));
@@ -137,6 +140,44 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     const { factorySource, policyText, ...publicDraft } = draft;
     return copy(publicDraft);
   }
+  function replacementFor(draft, txHash) {
+    return draft.replacement?.verified === true && draft.replacement.kind === "same-call-fee-replacement" &&
+      same(draft.replacement.originalHash, draft.submittedHash) && same(draft.replacement.hash, txHash);
+  }
+  function receiptResult(draft, extra = {}) {
+    const witness = draft.submissionWitness, seal = draft.v10Submission;
+    const retained = witness && seal && draft.v10Intent && same(witness.hash, draft.submittedHash) &&
+      same(witness.wallet, draft.wallet) && seal.reviewHash === draft.v10Intent.reviewHash && seal.witnessHash === hash(witness);
+    return { status: draft.status, hash: draft.submittedHash ?? draft.confirmedHash, eventId: draft.eventId,
+      wallet: draft.wallet, chainId: 1, ...(draft.blockNumber === undefined ? {} : { blockNumber: draft.blockNumber }),
+      ...(draft.createdContract ? { contract: draft.createdContract } : {}),
+      ...(retained ? { replacementRecovery: { originalHash: draft.submittedHash, wallet: draft.wallet, nonce: witness.nonce,
+        witnessHash: seal.witnessHash, reviewHash: seal.reviewHash, witnessRetained: true, reviewSealRetained: true } } : {}),
+      ...(draft.replacement ? { canonicalHash: draft.replacement.hash, replacement: copy(draft.replacement) } : {}), ...extra };
+  }
+  async function captureSubmissionWitness(draft, tx) {
+    // Recovery is limited to the existing signed type2 envelope. Other supported
+    // creation routes keep their previous behavior, with no replacement claim.
+    if (Number(tx?.type) !== 2) return;
+    // Pre-release terminal records never needed this witness. Reading them must
+    // not mutate their historical review or attempt to seal a new submission.
+    if (!draft.submissionWitness && (draft.used || draft.confirmedHash)) return;
+    const raw = await chain.provider.send("eth_getTransactionByHash", [tx.hash]);
+    const view = projectV10CanonicalTransaction(raw);
+    check(same(view.hash, draft.submittedHash) && same(view.hash, tx.hash) && same(view.from, tx.from) &&
+      same(view.to, tx.to) && same(view.data, tx.data) && BigInt(view.value) === BigInt(tx.value) &&
+      Number(BigInt(view.nonce)) === Number(tx.nonce) && Number(BigInt(view.chainId)) === 1 && Number(BigInt(view.type)) === 2 &&
+      BigInt(raw.gas) === BigInt(tx.gasLimit), "Original submission facts changed", "REPLACEMENT_ORIGINAL_CHANGED", 409);
+    const witness = { hash: tx.hash, wallet: draft.wallet, nonce: Number(tx.nonce), reviewBlock: draft.reviewBlock,
+      type: 2, to: tx.to, valueWei: String(tx.value), dataHash: ethers.keccak256(tx.data), gasLimit: String(tx.gasLimit),
+      accessListHash: hash(raw.accessList ?? []) };
+    check(Number.isSafeInteger(witness.nonce) && witness.nonce >= 0 &&
+      (!draft.submissionWitness || hash(draft.submissionWitness) === hash(witness)),
+    "Original submission facts changed", "REPLACEMENT_ORIGINAL_CHANGED", 409);
+    draft.submissionWitness ??= witness;
+    if (receiptContext) receiptContext.sealFactorySubmission(draft);
+    await persist(); // A successful acknowledgement must retain the nonce before the original can disappear.
+  }
   function exactReview(draft) {
     const template = templateFor(draft.terms);
     check(draft.eventKey === ethers.id(draft.eventId) && draft.method === "createEvent" &&
@@ -169,22 +210,26 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       "Factory implementation or governance changed; review again", "STALE_DRAFT", 409);
     await assertWallet(actor.wallet);
     await network();
-    const head = await chain.provider.getBlock("latest"), f = source(), tag = ethers.toQuantity(head.number), at = { blockTag: head.number };
+    const head = await chain.provider.getBlock("latest"), f = source(), tag = ethers.toQuantity(head.number);
     const controller = new ethers.Contract(f.upgradeAuthority, artifacts.controller.abi, chain.provider);
     const factory = new ethers.Contract(f.factory, artifacts.factory.abi, chain.provider);
     const implementation = new ethers.Contract(f.implementation, artifacts.event.abi, chain.provider);
-    const [code, slot, factoryCode, implementationCode, factoryImplementationCode, controllerCode,
-      selected, owner, pendingOwner, disabled, controllerVersion, factoryVersion, eventVersion, delay] = await Promise.all([
+    const [code, slot, codeHashes, current] = await Promise.all([
       chain.provider.getCode(actor.wallet, head.number),
       chain.provider.send("eth_getStorageAt", [f.factory, V10_IMPLEMENTATION_SLOT, tag]),
-      chain.provider.getCode(f.factory, head.number), chain.provider.getCode(f.implementation, head.number),
-      chain.provider.getCode(f.factoryImplementation, head.number), chain.provider.getCode(f.upgradeAuthority, head.number),
-      factory.eventImplementation(at), controller.owner(at), controller.pendingOwner(at), controller.upgradesDisabled(at),
-      controller.VERSION(at), factory.VERSION(at), implementation.VERSION(at), controller.UPGRADE_DELAY_SECONDS(at),
+      v10CodeHashBatch(chain.provider, [f.factory, f.implementation, f.factoryImplementation, f.upgradeAuthority], head.number),
+      v10ReadBatch(chain.provider, [
+        { contract: factory, method: "eventImplementation" }, { contract: controller, method: "owner" },
+        { contract: controller, method: "pendingOwner" }, { contract: controller, method: "upgradesDisabled" },
+        { contract: controller, method: "VERSION" }, { contract: factory, method: "VERSION" },
+        { contract: implementation, method: "VERSION" }, { contract: controller, method: "UPGRADE_DELAY_SECONDS" },
+      ], head.number),
     ]);
+    const [factoryCodeHash, implementationCodeHash, factoryImplementationCodeHash, controllerCodeHash] = codeHashes;
+    const [selected, owner, pendingOwner, disabled, controllerVersion, factoryVersion, eventVersion, delay] = current;
     check(ethers.isHexString(slot, 32) && same(slot, ethers.zeroPadValue(f.factoryImplementation, 32)) &&
-      ethers.keccak256(factoryCode) === f.factoryCodeHash && ethers.keccak256(implementationCode) === f.implementationCodeHash &&
-      ethers.keccak256(factoryImplementationCode) === f.factoryImplementationCodeHash && ethers.keccak256(controllerCode) === f.upgradeAuthorityCodeHash &&
+      same(factoryCodeHash, f.factoryCodeHash) && same(implementationCodeHash, f.implementationCodeHash) &&
+      same(factoryImplementationCodeHash, f.factoryImplementationCodeHash) && same(controllerCodeHash, f.upgradeAuthorityCodeHash) &&
       same(selected, f.implementation) && controllerVersion === 10n && factoryVersion === 10n && eventVersion === 10n && delay === 0n,
       "Factory changed after provenance review", "STALE_DRAFT", 409);
     const governance = latest.result.upgrade;
@@ -203,7 +248,8 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       "Wallet compatibility changed during review", "UNSUPPORTED_WALLET", 422);
     check((await chain.provider.getBlock(head.number))?.hash === head.hash,
       "Factory/wallet verification snapshot changed", "FACTORY_REORG", 409);
-    return walletProof;
+    return { walletProof, factoryVerification: latest.result,
+      verificationBlock: { number: head.number, hash: head.hash, timestamp: head.timestamp } };
   }
   async function createDraft(session, input) {
     const actor = auth(session); await network(); await assertWallet(actor.wallet);
@@ -231,11 +277,19 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       factoryFingerprint: factoryHash(), registryHash: hash(source()), snapshot: verified.snapshot,
       createdAt: Date.now(), expiresAt: Date.now() + TTL, reviewBlock: verified.result.anchor.number, status: "reviewed", used: false };
     draft.transaction.gasLimit = String(await simulate(draft));
-    await finishSigningChecks(actor, draft);
+    const checked = await finishSigningChecks(actor, draft);
     drafts.set(draft.id, draft);
     try { if (receiptContext) receiptContext.sealDraft(draft); await persist(); }
     catch (error) { drafts.delete(draft.id); throw error; }
-    return dto(draft);
+    return { ...dto(draft), creationContext: {
+      kind: "verified-creation-context-v1", draftId: draft.id, snapshot: draft.snapshot,
+      mode: "hosted-production", origin, instanceId, wallet: actor.wallet, chainId: 1,
+      contractVersion: PROFILE, abiVersion: PROFILE, now: checked.verificationBlock.timestamp,
+      verificationBlock: checked.verificationBlock,
+      factory: { address: factoryDeployment.factory, chainId: 1, contractVersion: PROFILE, abiVersion: PROFILE,
+        verified: true, deploymentTrust: copy(checked.factoryVerification.deploymentTrust),
+        upgrade: copy(checked.factoryVerification.upgrade) },
+    } };
   }
   async function validateFact(session, draftId) {
     const { actor, draft } = find(session, draftId, true); approvedPolicy();
@@ -254,7 +308,7 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     if (tx) {
       check(same(tx.hash, txHash) && Number(tx.chainId) === 1, "Transaction left its reviewed chain or hash", "TX_MISMATCH", 409);
       const direct = same(tx.from, draft.wallet) && same(tx.to, draft.factory) && tx.data === draft.transaction.data && tx.value === 0n;
-      if (!direct || Number(tx.type) === 4) {
+      if (!direct || Number(tx.type) === 4 || (receiptContext && replacementFor(draft, txHash))) {
         check(typeof chain.assertTransactionIntent === "function", "Transaction differs from the reviewed creation", "TX_MISMATCH", 409);
         const expected = Object.freeze({ chainId: 1, transactionHash: txHash, from: draft.wallet, to: draft.factory,
           valueWei: "0", data: draft.transaction.data });
@@ -274,8 +328,8 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     check(/^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""), "Use a valid transaction hash");
     if (receiptContext) receiptContext.sealDraft(draft);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
-    check(!draft.confirmedHash || same(draft.confirmedHash, txHash), "A different confirmed transaction belongs to this review", "TX_MISMATCH", 409);
-    check(![...drafts.values()].some(d => d !== draft && [d.submittedHash, d.confirmedHash].some(value => value && same(value, txHash))),
+    check(!draft.confirmedHash || same(draft.confirmedHash, txHash) || replacementFor(draft, draft.confirmedHash), "A different confirmed transaction belongs to this review", "TX_MISMATCH", 409);
+    check(![...drafts.values()].some(d => d !== draft && [d.submittedHash, d.confirmedHash, d.replacement?.hash].some(value => value && same(value, txHash))),
       "Transaction hash already belongs to another review", "TX_MISMATCH", 409);
     draft.submittedHash = txHash;
     if (!draft.used) draft.status = "pending";
@@ -285,12 +339,14 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
     const { draft } = find(session, draftId);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
     await retainSubmission(draft, txHash);
-    await exactTransaction(draft, txHash);
+    if (!draft.replacement) {
+      const tx = await exactTransaction(draft, txHash);
+      if (tx) await captureSubmissionWitness(draft, tx);
+    }
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
-    if (draft.used) return { status: draft.status, hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1,
-      blockNumber: draft.blockNumber, ...(draft.createdContract ? { contract: draft.createdContract } : {}) };
+    if (draft.used) return receiptResult(draft);
     check(![...drafts.values()].some((d) => d.id !== draft.id && same(d.submittedHash ?? "", txHash)), "Transaction hash already belongs to another creation", "TX_MISMATCH", 409);
-    return { status: "pending", hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1 };
+    return receiptResult(draft, { status: "pending" });
   }
   function recordSubmitted(session, draftId, txHash) { return serial(draftId, () => recordSubmittedFact(session, draftId, txHash)); }
   async function reconcileFact(session, draftId, txHash) {
@@ -299,13 +355,27 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       "The original wallet submission must be recorded first; the saved review is preserved", "ORIGINAL_HASH_NOT_RECORDED", 409);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
     await retainSubmission(draft, txHash);
-    await network(); const tx = await exactTransaction(draft, txHash);
+    await network();
+    const canonicalHash = draft.replacement?.hash ?? txHash;
+    if (draft.replacement) {
+      check(replacementFor(draft, canonicalHash) && draft.submissionWitness,
+        "Replacement facts are not bound to the original review", "REPLACEMENT_ORIGINAL_CHANGED", 409);
+      const fresh = await verifyV10CreationFeeReplacement({ provider: chain.provider, original: draft.submissionWitness, replacementHash: canonicalHash });
+      for (const key of ["hash", "originalHash", "nonce", "blockNumber", "blockHash", "dataHash", "gasLimit", "accessListHash"])
+        check(String(fresh[key]).toLowerCase() === String(draft.replacement[key]).toLowerCase(),
+          "Replacement receipt changed", "REPLACEMENT_REORG", 409);
+      if (receiptContext) receiptContext.sealFactoryReplacement(draft);
+    }
+    const tx = await exactTransaction(draft, canonicalHash);
     check(tx, "Transaction is not visible yet; preserve its hash and retry the read", "TX_UNAVAILABLE", 409);
     check(!draft.submittedHash || same(draft.submittedHash, txHash), "A different transaction already belongs to this review", "TX_MISMATCH", 409);
-    const receipt = await chain.provider.getTransactionReceipt(txHash);
-    if (!receipt) return { status: "pending", hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1 };
+    if (!draft.replacement) await captureSubmissionWitness(draft, tx);
+    const receipt = await chain.provider.getTransactionReceipt(canonicalHash);
+    if (!receipt) return receiptResult(draft, { status: "pending" });
     const receiptHeader = await chain.provider.getBlock(receipt.blockNumber);
-    check(same(tx.hash, txHash) && same(receipt.hash ?? receipt.transactionHash, txHash) &&
+    if (draft.replacement) check(receipt.status === 1 && receipt.blockNumber === draft.replacement.blockNumber &&
+      same(receipt.blockHash, draft.replacement.blockHash), "Replacement receipt changed", "REPLACEMENT_REORG", 409);
+    check(same(tx.hash, canonicalHash) && same(receipt.hash ?? receipt.transactionHash, canonicalHash) &&
       receipt.blockNumber === tx.blockNumber && receipt.blockHash === tx.blockHash && receipt.blockNumber > draft.reviewBlock &&
       receiptHeader?.hash === receipt.blockHash,
     "Creation receipt predates the review or is noncanonical", "TX_REORG", 409);
@@ -313,8 +383,8 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       "A terminal creation receipt changed; preserve the original record", "TX_REORG", 409);
     if (receipt.status !== 1) {
       check(draft.status !== "confirmed", "Confirmed creation receipt changed", "TX_REORG", 409);
-      draft.status = "failed"; draft.used = true; draft.confirmedHash = txHash; draft.blockNumber = receipt.blockNumber; draft.blockHash = receipt.blockHash; await persist();
-      return { status: "failed", hash: txHash, eventId: draft.eventId, wallet: draft.wallet, chainId: 1, blockNumber: receipt.blockNumber };
+      draft.status = "failed"; draft.used = true; draft.confirmedHash = canonicalHash; draft.blockNumber = receipt.blockNumber; draft.blockHash = receipt.blockHash; await persist();
+      return receiptResult(draft);
     }
     const logs = receipt.logs.filter((log) => same(log.address, draft.factory)).flatMap((log) => {
       try { const p = iface.parseLog(log); return p?.name === "EventCreated" ? [p] : []; } catch { return []; }
@@ -327,7 +397,7 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       logs[0].args.configurationHash === configurationHash && ethers.isAddress(logs[0].args.eventContract),
     "Creation receipt does not contain the exact reviewed EventCreated event", "TX_MISMATCH", 409);
     const contract = ethers.getAddress(logs[0].args.eventContract), f = draft.factorySource, terms = draft.terms;
-    const deployment = { ...f, eventId: draft.eventId, contract, deploymentTxHash: txHash, deploymentBlock: receipt.blockNumber,
+    const deployment = { ...f, eventId: draft.eventId, contract, deploymentTxHash: canonicalHash, deploymentBlock: receipt.blockNumber,
       owner: draft.wallet, creator: draft.wallet, eventName: terms.title, depositWei: terms.depositWei, eventStart: terms.eventStart,
       claimDeadline: terms.claimDeadline, depositOpensAt: receiptHeader.timestamp,
       depositDeadline: terms.eventStart, resolver: draft.config.arbitration.disputeResolver,
@@ -356,11 +426,34 @@ export function createV10FactoryOnboardingService({ chain, factoryDeployment, ev
       participants: new Map(), observations: [], batches: [], personal: new Map(), publications: new Map(),
       transactions: [], nonces: new Set(), revision: 0,
     });
-    draft.used = true; draft.status = "confirmed"; draft.confirmedHash = txHash; draft.createdContract = contract;
+    draft.used = true; draft.status = "confirmed"; draft.confirmedHash = canonicalHash; draft.createdContract = contract;
     draft.blockNumber = receipt.blockNumber; draft.blockHash = receipt.blockHash; draft.adoptionStatus = "verified"; delete draft.verificationError;
-    await persist(); return { status: "confirmed", hash: txHash, eventId: draft.eventId, contract, wallet: draft.wallet, chainId: 1, blockNumber: receipt.blockNumber };
+    await persist(); return receiptResult(draft);
   }
   function reconcile(session, draftId, txHash) { return serial(draftId, () => reconcileFact(session, draftId, txHash)); }
+  async function reconcileReplacementFact(session, draftId, replacementHash) {
+    const { draft } = find(session, draftId);
+    check(draft.submittedHash && /^0x[0-9a-fA-F]{64}$/.test(replacementHash ?? "") && !same(draft.submittedHash, replacementHash),
+      "Use the already-submitted fee replacement transaction ID", "REPLACEMENT_SCOPE", 409);
+    exactReview(draft); await network();
+    check(!draft.used || replacementFor(draft, replacementHash), "The original creation already has a terminal receipt", "REPLACEMENT_SCOPE", 409);
+    check(!draft.replacement || replacementFor(draft, replacementHash), "A different replacement is already recorded", "REPLACEMENT_SCOPE", 409);
+    if (!draft.submissionWitness) {
+      const original = await exactTransaction(draft, draft.submittedHash);
+      check(original, "The original nonce was not retained; preserve both IDs for review", "REPLACEMENT_ORIGINAL_UNAVAILABLE", 409);
+      await captureSubmissionWitness(draft, original);
+    }
+    check(draft.submissionWitness, "This original envelope is outside fee-replacement recovery", "REPLACEMENT_SCOPE", 409);
+    if (receiptContext) receiptContext.sealFactorySubmission(draft);
+    const evidence = await verifyV10CreationFeeReplacement({ provider: chain.provider, original: draft.submissionWitness, replacementHash });
+    check(![...drafts.values()].some(d => d !== draft && [d.submittedHash, d.confirmedHash, d.replacement?.hash].some(value => value && same(value, replacementHash))),
+      "Replacement already belongs to another review", "REPLACEMENT_SCOPE", 409);
+    if (!draft.replacement) draft.replacement = copy(evidence);
+    if (receiptContext) receiptContext.sealFactoryReplacement(draft);
+    await persist();
+    return reconcileFact(session, draftId, draft.submittedHash);
+  }
+  function reconcileReplacement(session, draftId, replacementHash) { return serial(draftId, () => reconcileReplacementFact(session, draftId, replacementHash)); }
   function getDraft(session, draftId) { return dto(find(session, draftId).draft); }
-  return { createDraft, validateDraft, recordSubmitted, reconcile, getDraft };
+  return { createDraft, validateDraft, recordSubmitted, reconcile, reconcileReplacement, getDraft };
 }

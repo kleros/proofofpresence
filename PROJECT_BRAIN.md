@@ -1,4 +1,36 @@
-# Private GitHub source backup — 30 October 2026
+# Kickback production deployment source — 31 October 2026
+
+The user authorized fixing the Git-based Netlify build and updating this repository
+with the latest production code so the parent-domain team can deploy it directly.
+Use `docs/NETLIFY_PRODUCTION_HANDOFF.md` and the placeholder-only `netlify.env.example`.
+Netlify now runs `npm run build:netlify:production`, publishes `dist/netlify-app`,
+and bundles `netlify/functions`; it copies the approved frontend/CSP without
+contract compilation or private runtime files. Existing v7/v8/demo commands remain.
+
+Production frontend assets match source `8655bc5be0e35e677ed4444a69014016bb717ced`;
+backend/runtime source matches `3faf784ada4d7103d7d22375af772570c5e8a649`, including
+SQL pool capacity for readers while indexers run. All 139 selected public/frontend,
+backend and gateway files were compared byte-for-byte; all 86 public assets match.
+The isolated update preserves upstream historical files and pinned public runtime
+proofs. Original operator history, private credentials, signing files, runtime data
+and transaction journals are excluded from this update.
+
+The current first event is `event-3aac5a07-5074-4241-9246-2798d4111039`, contract
+`0xc069A460c5B1c577791Ee61E7F9ADcb7866068df`, 4 November 2026, 18:00–22:00 IST.
+The original `event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5` keeps its separate contract
+and recovery path. The existing Railway service/database and Reown project stay
+in use. Domain activation requires the administrators' Netlify Functions variables
+and coordinated Railway `PUBLIC_ORIGIN`/DNS/Reown configuration in the handoff.
+This repository update performs no live deployment, database migration or transaction.
+
+GitHub API currently reports this repository PUBLIC; the private-backup wording
+below is historical. Never add secrets or private runtime material to source.
+Clean locked install passed; Node 22.23.4 packaging/browser-CSP tests passed 5/5;
+typecheck and gateway syntax passed. See `docs/TEST_REPORT.md` for exact commands.
+
+## Historical backup record
+
+### Private GitHub source backup — 30 October 2026
 
 The human authorized pushing the project and selected the PRIVATE repository
 https://github.com/markdavemanansala/proofofpresence. Upload completed and privacy/default `main`

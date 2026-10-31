@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import { chromium, expect } from "@playwright/test";
 import { startServer } from "../src/server.mjs";
 import { selectedEventResult } from "../public/selected-event.js";
+import { isSelectedBootstrapQuery } from "./fixtures/selected-bootstrap-query.mjs";
 
 // Real local contracts/backend and current frontend. Browser writes are limited
 // to the three explicitly selected synthetic demo-session changes below.
@@ -93,17 +94,15 @@ try {
           req.method() === "GET" &&
           !req.postData()
         ) {
-          const keys = [...url.searchParams.keys()];
+          const selectedEventId = url.searchParams.get("selectedEventId");
           allowed =
-            keys.length === 1 &&
-            keys[0] === "selectedEventId" &&
-            ["event-a", "event-b"].includes(
-              url.searchParams.get("selectedEventId"),
-            );
+            ["event-a", "event-b"].includes(selectedEventId) &&
+            isSelectedBootstrapQuery(url.searchParams, selectedEventId);
           if (allowed)
             reads.push({
               path: url.pathname,
-              selectedEventId: url.searchParams.get("selectedEventId"),
+              selectedEventId,
+              selectedOnly: url.searchParams.get("selectedOnly"),
             });
         }
         if (
@@ -199,7 +198,13 @@ try {
         );
         assert.deepEqual(
           reads.slice(readStart),
-          [{ path: "/api/bootstrap", selectedEventId: eventId }],
+          [
+            {
+              path: "/api/bootstrap",
+              selectedEventId: eventId,
+              selectedOnly: "1",
+            },
+          ],
           label + " needs exactly one selected read",
         );
         const boot = bootstraps[start].value;

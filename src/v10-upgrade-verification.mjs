@@ -6,6 +6,7 @@ import {
   loadV10UpgradeableArtifacts,
 } from "./v10-upgrade-artifacts.mjs";
 import { v10RuntimeCode } from "../scripts/mainnet/v10-runtime-code.mjs";
+import { v10ReadBatch, v10CodeHashBatch } from "./v10-read-batch.mjs";
 
 export const V10_MAINNET_SCOPE = Object.freeze({
   profile: "kleros-event-v10-uups",
@@ -19,6 +20,7 @@ const EVENT_FAMILY = ethers.id("kleros.event.v10.uups"),
   FACTORY_SCHEMA = ethers.id("kleros.factory.v10.storage.1");
 const CONFIG =
   "tuple(uint256 depositAmount,string eventName,uint256 eventStart,uint256 claimDeadline,tuple(address disputeResolver,bytes extraData,string[] metaEvidenceTemplate,bytes metaEvidenceSlots,string policyURI) arbitration)";
+const read = (contract, method, args = []) => ({ contract, method, args });
 const same = (a, b) =>
   typeof a === "string" &&
   typeof b === "string" &&
@@ -253,13 +255,9 @@ async function controllerState(provider, controller, artifact, at) {
     (item) => item.label === "_locked",
   );
   check(idle && idle.offset === 0, "Controller idle storage layout differs");
-  const [owner, pendingOwner, disabled, version, delay, lock] =
+  const [[owner, pendingOwner, disabled, version, delay], lock] =
     await Promise.all([
-      controller.owner(at),
-      controller.pendingOwner(at),
-      controller.upgradesDisabled(at),
-      controller.VERSION(at),
-      controller.UPGRADE_DELAY_SECONDS(at),
+      v10ReadBatch(provider, ["owner", "pendingOwner", "upgradesDisabled", "VERSION", "UPGRADE_DELAY_SECONDS"].map(method => read(controller, method)), at.blockTag),
       provider.send("eth_getStorageAt", [
         controller.target,
         ethers.toQuantity(BigInt(idle.slot)),
@@ -588,7 +586,7 @@ async function verify(chain, d, scope, child) {
     proxies = [d.factory, ...(child ? [d.contract] : [])];
   const currentCode = async (number) => {
     const [codes, slots] = await Promise.all([
-      Promise.all(targets.map(([target]) => provider.getCode(target, number))),
+      v10CodeHashBatch(provider, targets.map(([target]) => target), number),
       Promise.all(
         proxies.map((target) =>
           provider.send("eth_getStorageAt", [
@@ -601,7 +599,7 @@ async function verify(chain, d, scope, child) {
     ]);
     codes.forEach((code, i) =>
       check(
-        same(code, targets[i][1]),
+        same(code, ethers.keccak256(targets[i][1])),
         "V10 current runtime differs from reviewed source",
         "WRONG_CONTRACT",
       ),
@@ -621,39 +619,24 @@ async function verify(chain, d, scope, child) {
       ),
     );
     check(
-      same(ethers.keccak256(codes[1]), d.implementationCodeHash) &&
-        same(ethers.keccak256(codes[2]), d.factoryImplementationCodeHash),
+      same(codes[1], d.implementationCodeHash) &&
+        same(codes[2], d.factoryImplementationCodeHash),
       "V10 implementation digest differs",
     );
   };
   await currentCode(block.number);
-  const identity = async (c) =>
-      Promise.all([
-        c.VERSION(at),
-        c.UPGRADE_FAMILY(at),
-        c.implementationRevision(at),
-        c.storageSchema(at),
-      ]),
-    [
-      eventIdentity,
-      factoryIdentity,
-      authority,
-      eventAuthority,
-      uuids,
-      creationHash,
-      selected,
-    ] = await Promise.all([
-      identity(event),
-      identity(factory),
-      factory.upgradeAuthority(at),
-      child ? event.upgradeAuthority(at) : Promise.resolve(d.upgradeAuthority),
-      Promise.all([
-        eventImplementation.proxiableUUID(at),
-        factoryImplementation.proxiableUUID(at),
-      ]),
-      factory.proxyCreationCodeHash(at),
-      child ? Promise.resolve(null) : factory.eventImplementation(at),
-    ]);
+  const identities = await v10ReadBatch(provider, [
+    ...[event, factory].flatMap(c => ["VERSION", "UPGRADE_FAMILY", "implementationRevision", "storageSchema"].map(method => read(c, method))),
+    read(factory, "upgradeAuthority"),
+    read(child ? event : factory, "upgradeAuthority"),
+    read(eventImplementation, "proxiableUUID"),
+    read(factoryImplementation, "proxiableUUID"),
+    read(factory, "proxyCreationCodeHash"),
+    ...(!child ? [read(factory, "eventImplementation")] : []),
+  ], block.number);
+  const eventIdentity = identities.slice(0, 4), factoryIdentity = identities.slice(4, 8),
+    [authority, eventAuthority, eventUuid, factoryUuid, creationHash, selected = null] = identities.slice(8),
+    uuids = [eventUuid, factoryUuid];
   for (const [result, family, schema] of [
     [eventIdentity, EVENT_FAMILY, EVENT_SCHEMA],
     [factoryIdentity, FACTORY_FAMILY, FACTORY_SCHEMA],
@@ -768,15 +751,13 @@ async function verify(chain, d, scope, child) {
         ? [[d.contract, d.deploymentBlock, artifacts.proxy.deployedBytecode]]
         : []),
     ];
-  await Promise.all(
-    historyTargets.map(async ([target, number, expected]) =>
-      check(
-        same(await provider.getCode(target, number), expected),
-        "V10 historical runtime differs from source",
-        "WRONG_CONTRACT",
-      ),
-    ),
-  );
+  const historicalBlocks = [...new Set(historyTargets.map(([, number]) => number))];
+  await Promise.all(historicalBlocks.map(async number => {
+    const rows = historyTargets.filter(([, block]) => block === number);
+    const codes = await v10CodeHashBatch(provider, rows.map(([target]) => target), number);
+    codes.forEach((code, i) => check(same(code, ethers.keccak256(rows[i][2])),
+      "V10 historical runtime differs from source", "WRONG_CONTRACT"));
+  }));
   const initial = logsIn(
     factoryBirth.receipt,
     d.factory,
@@ -853,24 +834,13 @@ async function verify(chain, d, scope, child) {
       event.interface,
       d.initialImplementation,
     );
-    const values = await Promise.all([
-      event.depositAmount(at),
-      event.eventName(at),
-      event.eventStart(at),
-      event.claimDeadline(at),
-      event.disputeResolver(at),
-      event.arbitrator(at),
-      event.policyURI(at),
-      event.arbitratorExtraData(at),
-      event.CHALLENGE_PERIOD(at),
-      event.MATCH_PERIOD(at),
-      event.MAX_STAKERS(at),
-      event.originatingFactory(at),
-      factory.isEvent(d.contract, at),
-      factory.eventsById(factoryId, at),
-      factory.eventId(d.creator, d.eventKey, at),
-      factory.eventFor(d.creator, d.eventKey, at),
-    ]);
+    const values = await v10ReadBatch(provider, [
+      ...["depositAmount", "eventName", "eventStart", "claimDeadline", "disputeResolver", "arbitrator", "policyURI", "arbitratorExtraData", "CHALLENGE_PERIOD", "MATCH_PERIOD", "MAX_STAKERS", "originatingFactory"].map(method => read(event, method)),
+      read(factory, "isEvent", [d.contract]),
+      read(factory, "eventsById", [factoryId]),
+      read(factory, "eventId", [d.creator, d.eventKey]),
+      read(factory, "eventFor", [d.creator, d.eventKey]),
+    ], block.number);
     check(
       String(values[0]) === d.depositWei &&
         values[1] === d.eventName &&

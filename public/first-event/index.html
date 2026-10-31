@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#120E1C" />
+    <meta name="description" content="Deposit for Truth Pays: Queryable Data, Prediction Markets & Onchain Justice. Ethereum Mainnet, 0.01 ETH. Then return to Luma to complete your registration." />
+    <title>Truth Pays · Event deposit</title>
+    <link rel="icon" href="./assets/kleros-symbol.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./page.js" type="module"></script>
+    <script src="./wallet.js" type="module"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#deposit">Skip to deposit</a>
+    <div class="page-shell">
+      <header class="site-header">
+        <a href="/" aria-label="Kleros home" class="brand"><img src="./assets/kleros-logo.svg" alt="Kleros" width="119" height="34" /></a>
+        <span class="network"><span class="network-dot" aria-hidden="true"></span>Ethereum Mainnet</span>
+      </header>
+      <main id="deposit">
+        <div class="event-heading">
+          <p class="eyebrow">YOUR EVENT DEPOSIT</p>
+          <h1>Truth Pays</h1>
+          <p class="event-subtitle">Queryable Data, Prediction Markets<br class="desktop-break" /> &amp; Onchain Justice</p>
+          <p class="event-date" data-event-date><time datetime="2026-11-04T18:00:00+05:30">4 November 2026</time><span aria-hidden="true">·</span><span data-event-hours>18:00–22:00 India (IST)</span></p>
+        </div>
+
+        <section class="deposit-card" aria-labelledby="deposit-title">
+          <div class="card-intro">
+            <div><p class="eyebrow">DEPOSIT PER GUEST</p><h2 id="deposit-title"><span class="amount">0.01</span> <span class="currency">ETH</span></h2></div>
+            <span class="native-label">Native ETH only</span>
+          </div>
+          <p class="card-copy">Send your deposit, then return to Luma to complete your registration.</p>
+
+          <button type="button" class="button button-primary" data-connect-wallet>Connect wallet <span aria-hidden="true">↗</span></button>
+          <p class="wallet-status" data-wallet-status role="status" aria-live="polite"></p>
+          <button type="button" class="button button-primary" data-deposit hidden>Deposit 0.01 ETH</button>
+          <div class="transaction-status" data-tx-status role="status" aria-live="polite"></div>
+
+          <div class="divider"><span>or send from your wallet</span></div>
+          <div class="manual-deposit">
+            <div class="qr-wrap"><img src="./qr.svg" data-qr-contract="0xc069A460c5B1c577791Ee61E7F9ADcb7866068df" width="144" height="144" alt="QR code for this event’s Ethereum Mainnet deposit address" /></div>
+            <div class="manual-content">
+              <h3>Scan or copy the address</h3>
+              <p>Send <strong>0.01 ETH</strong> on <strong>Ethereum Mainnet</strong> from the wallet you’ll use for this event.</p>
+              <button type="button" class="button button-secondary" data-copy-address><span class="copy-icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="17" height="17" fill="none"><rect x="6.5" y="6.5" width="10" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M12.5 6.5v-2a2 2 0 0 0-2-2h-6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="1.5"/></svg></span>Copy deposit address</button>
+              <p class="copy-status" data-copy-status role="status" aria-live="polite"></p>
+            </div>
+          </div>
+          <div class="address-box"><span>EVENT CONTRACT</span><code data-contract-address tabindex="0">0xc069A460c5B1c577791Ee61E7F9ADcb7866068df</code></div>
+          <details class="deposit-details">
+            <summary>Deposit details</summary>
+            <dl><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Amount</dt><dd>0.01 ETH, plus your wallet’s network fee</dd><dt>Deposit closes</dt><dd data-deposit-closes>4 November 2026, 18:00 India (IST)</dd></dl>
+            <p>Your deposit is credited to the sending wallet as pending credit. Payment alone does not confirm event admission or attendance. Unused pending credit remains withdrawable by that wallet.</p>
+            <p>Keep your transaction ID for your Luma registration. Send native ETH from your own wallet; do not use another network or a token transfer.</p>
+          </details>
+        </section>
+
+        <a class="return-link" href="https://luma.com/qewnqhas">Return to Luma <span aria-hidden="true">↗</span></a>
+        <p class="return-note">Complete your registration with your deposit transaction ID.</p>
+        <p class="return-note"><a data-manage-event href="/#event=event-3aac5a07-5074-4241-9246-2798d4111039&amp;view=participant&amp;deposit=manage">Manage deposit and attendance</a></p>
+        <p class="return-note" data-legacy-event hidden>Paid the original event? <a href="/#event=event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5&amp;view=participant&amp;deposit=manage">View original receipts and recover unused credit</a>. Deposits do not move automatically.</p>
+      </main>
+      <footer><img src="./assets/kleros-symbol.svg" width="16" height="16" alt="" /><span>Event deposits, powered by Kleros</span></footer>
+    </div>
+  </body>
+</html>

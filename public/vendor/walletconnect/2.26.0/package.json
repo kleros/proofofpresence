@@ -1,0 +1,10 @@
+{
+  "name": "kleros-walletconnect-vendor",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@walletconnect/ethereum-provider": "2.26.0",
+    "@reown/appkit": "1.8.19",
+    "esbuild": "0.28.2"
+  }
+}

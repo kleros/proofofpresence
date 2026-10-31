@@ -1,13 +1,13 @@
 const PHASES = Object.freeze({
   preparing: [
-    "Preparing your review",
-    "Checking the event terms. Your form stays here while the review is prepared.",
+    "Preparing event",
+    "Your event details stay here.",
     0,
     true,
   ],
   validating: [
-    "Checking your review",
-    "Rechecking the reviewed transaction before your wallet opens.",
+    "Preparing transaction",
+    "Your wallet will open when the transaction is ready.",
     0,
     true,
   ],

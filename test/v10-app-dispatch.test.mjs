@@ -23,7 +23,8 @@ import { MAINNET_KLEROS, MAINNET_EXTRA_DATA } from "../scripts/mainnet/verify-kl
 const PROFILE = "kleros-event-v10-uups", publicOrigin = "https://v10-app.example.invalid", backendOrigin = "https://v10-backend.example.invalid";
 const proxySecret = "synthetic_v10_proxy_" + "1234567890abcdef".repeat(4);
 let rpc, provider, runtime, manifest, app, w, dir, stateFile, organizer, guest, ownerWallet, cookie, draft, created, reads = 0, forbidden = 0;
-let failTransactionRead = false, forgedType4 = false;
+let failTransactionRead = false, forgedType4 = false, deliveryReceiptHidden = false, deliveryReorgBlock = null, deliveryReceiptReorgHash = null;
+let observedBirth = null, observedBirthReads = 0, failLateBirthRead = false;
 before(async () => {
   rpc = ganache.provider({ logging: { quiet: true }, chain: { chainId: 1, hardfork: "shanghai" }, miner: { blockGasLimit: 60000000 }, wallet: { totalAccounts: 4, defaultBalance: 1000 } });
   provider = new ethers.BrowserProvider(rpc, undefined, { cacheTimeout: -1 }); provider.pollingInterval = 10;
@@ -54,7 +55,16 @@ before(async () => {
     if (["getSigner", "listAccounts", "broadcastTransaction"].includes(key)) return async () => { forbidden++; throw Error("No backend signing"); };
     const value = target[key]; return typeof value === "function" ? async (...args) => { reads++;
       if (key === "getTransaction" && failTransactionRead) throw Error("Synthetic transaction read failure");
+      if (key === "getTransactionReceipt" && deliveryReceiptHidden) return null;
+      if (key === "getTransactionReceipt" && args[0] === observedBirth) {
+        observedBirthReads++;
+        if (failLateBirthRead && observedBirthReads === 2) throw Error("Synthetic late provenance failure");
+      }
       const result = await value.apply(target, args);
+      if (key === "getTransactionReceipt" && deliveryReceiptReorgHash !== null && result)
+        return { ...result, blockHash: deliveryReceiptReorgHash };
+      if (key === "getBlock" && deliveryReorgBlock !== null && Number(args[0]) === deliveryReorgBlock && result)
+        return { ...result, hash: ethers.id("synthetic-confirm-delivery-reorg") };
       return key === "getTransaction" && forgedType4 && result ? new Proxy(result, { get(tx, name) { return name === "type" ? 4 : Reflect.get(tx, name); } }) : result;
     } : value;
   } });
@@ -185,6 +195,28 @@ test("V10 financial hashes persist before RPC failure and forged direct type4 ca
   assert.equal((await request(`/api/events/${eventId}/drafts/${other.data.id}/validate`, { method: "POST", session: ownerCookie, payload: {} })).status, 409);
 });
 
+test("V10 nonce-verified payer can receive owner approval and an unsigned exact-wallet registration review without fake contact identity", async () => {
+  const eventId = draft.eventId, before = await request(`/api/events/${eventId}`);
+  assert.equal(before.status, 200);
+  const person = before.data.participants.find(row => row.wallet.toLowerCase() === guest.address.toLowerCase());
+  assert(person); assert.equal(person.name, null); assert.equal(person.email, null);
+  assert.equal(person.walletVerified, true); assert.equal(person.identityVerified, false); assert.equal(person.deposit.verified, true);
+  const countBefore = await provider.getTransactionCount(organizer.address), balanceBefore = await provider.getBalance(created.contract);
+  const approved = await request(`/api/events/${eventId}/participants/${person.id}`, { method: "PATCH", payload: { admission: "approved" } });
+  assert.equal(approved.status, 200);
+  const prepared = await request(`/api/events/${eventId}/drafts`, { method: "POST", payload: { action: "register", params: { wallets: [guest.address] } } });
+  assert.equal(prepared.status, 201); assert.equal(prepared.data.action, "register");
+  assert.deepEqual(prepared.data.args[0], [guest.address]); assert.equal(prepared.data.valueWei, "0");
+  const tx = new ethers.Interface(loadV10UpgradeableArtifacts().event.abi).parseTransaction({ data: prepared.data.transaction.data });
+  assert.equal(tx.name, "registerStakers"); assert.deepEqual([...tx.args[0]], [guest.address]);
+  const after = await request(`/api/events/${eventId}`), retained = after.data.participants.find(row => row.id === person.id);
+  assert.equal(retained.admission, "approved"); assert.equal(retained.identityVerified, false); assert.equal(retained.name, null); assert.equal(retained.email, null);
+  assert.equal(retained.registered, false); assert.equal(after.data.state.poolWei, "0");
+  assert.equal(after.data.state.pendingTotalWei, before.data.state.pendingTotalWei);
+  assert.equal(await provider.getBalance(created.contract), balanceBefore);
+  assert.equal(await provider.getTransactionCount(organizer.address), countBefore, "Preparing the review must not sign or register anyone");
+});
+
 test("V10 public/private/mixed inventory and immutable template bindings never cross into another profile", async () => {
   const r = w.events.get(draft.eventId), start = reads;
   const privateRecord = { definition: { visibility: "private", get editorialStatus() { throw Error("Private content access"); } } };
@@ -198,6 +230,106 @@ test("V10 public/private/mixed inventory and immutable template bindings never c
   assert.equal((await request("/api/bootstrap")).data.events[0].role, "organizer");
   assert.throws(() => w.creationRecoveryScope(organizer.address, created.hash), { code: "NOT_FOUND" });
   assert.throws(() => w.caseArtifact(draft.eventId, { mode: "wallet", id: "own", wallet: organizer.address }, organizer.address), { code: "NOT_FOUND" });
+});
+
+test("selected V10 async bootstrap delivers the original canonical payments anchor successfully", async () => {
+  const eventId = draft.eventId, requestId = randomUUID();
+  const started = await request("/api/event-read-jobs", { method: "POST", payload: { requestId, operation: "bootstrap", selectedEventId: eventId } });
+  assert.equal(started.status, 202); assert.equal(started.data.kind, "event-read-job"); assert.equal(started.data.result, undefined);
+  let delivered;
+  for (let i = 0; i < 400; i++) {
+    const polled = await request("/api/event-read-jobs/" + requestId); assert.equal(polled.status, 200);
+    if (polled.data.state !== "pending") { delivered = polled.data; break; }
+    await new Promise(resolve => setTimeout(resolve, 25));
+  }
+  assert.equal(delivered?.state, "ready", JSON.stringify(delivered));
+  const result = delivered.result, selected = result.selectedEvent, detail = selected.detail;
+  assert(detail, JSON.stringify(selected.error)); assert.equal(selected.error, undefined);
+  assert.equal(detail.event.id, eventId); assert.equal(detail.event.role, "organizer");
+  assert.equal(detail.state.blockHash, undefined, "Selected detail intentionally omits the private state hash");
+  assert.equal(detail.payments.blockNumber, detail.state.blockNumber);
+  assert.equal(detail.payments.blockHash, (await provider.getBlock(detail.state.blockNumber)).hash);
+  assert.equal(detail.payments.contract.toLowerCase(), created.contract.toLowerCase());
+  assert.equal(detail.payments.chainId, 1); assert.equal(detail.payments.contractVersion, PROFILE);
+  assert.equal(result.capabilities.eventReadJobs, true); assert.equal(selected.instanceId, result.instanceId);
+  const same = { id: "delivery-anchor-review", mode: "wallet", wallet: organizer.address };
+  for (const mutate of [
+    value => { value.selectedEvent.detail.payments.blockNumber++; },
+    value => { value.selectedEvent.detail.payments.contract = manifest.factoryDeployment.factory; },
+  ]) {
+    const changed = structuredClone(result); mutate(changed);
+    await assert.rejects(() => w.finalizeReadResult("bootstrap", changed, same, eventId), { code: "SELECTED_EVENT_REORG" });
+  }
+  const reorged = structuredClone(result); reorged.selectedEvent.detail.payments.blockHash = ethers.id("synthetic-noncanonical-delivery-anchor");
+  const rejected = await w.finalizeReadResult("bootstrap", reorged, same, eventId);
+  assert.equal(rejected.selectedEvent.detail, null); assert.equal(rejected.selectedEvent.error.code, "SELECTED_EVENT_REORG");
+  const consumed = await request("/api/event-read-jobs/" + requestId);
+  assert.equal(consumed.data.state, "expired"); assert.equal(consumed.data.result, undefined);
+});
+
+test("queued V10 delivery refreshes public, staff and financial-owner access before returning private detail", async () => {
+  const eventId = draft.eventId, r = w.events.get(eventId), originalVisibility = r.definition.visibility;
+  const own = { id: "queued-original-owner", mode: "wallet", wallet: organizer.address };
+  // The earlier ownerWallet deposit test made that wallet a legitimate private
+  // participant. Use an unlinked wallet so this test isolates staff revocation.
+  const staff = { id: "queued-staff", mode: "wallet", wallet: await (await provider.getSigner(3)).getAddress() };
+  const a = loadV10UpgradeableArtifacts(), c = new ethers.Contract(r.deployment.contract, a.event.abi, organizer);
+  try {
+    r.definition.visibility = "public";
+    const publicRead = structuredClone(await w.bootstrap(null, { selectedEventId: eventId }));
+    assert.ok(publicRead.selectedEvent.detail);
+    r.definition.visibility = "private";
+    const hidden = await w.finalizeReadResult("bootstrap", publicRead, null, eventId);
+    assert.equal(hidden.selectedEvent.detail, null); assert.deepEqual(hidden.events, []);
+    r.definition.staff = [staff.wallet];
+    const staffRead = structuredClone(await w.bootstrap(staff, { selectedEventId: eventId }));
+    assert.equal(staffRead.selectedEvent.detail.event.role, "staff");
+    r.definition.staff = [];
+    assert.equal((await w.finalizeReadResult("bootstrap", staffRead, staff, eventId)).selectedEvent.detail, null);
+    await assert.rejects(() => w.finalizeReadResult("deposit", { id: "unsigned" }, staff, eventId), { code: "FORBIDDEN" });
+    const ownerRead = structuredClone(await w.bootstrap(own, { selectedEventId: eventId }));
+    assert.equal(ownerRead.selectedEvent.detail.event.role, "organizer");
+    await (await c.transferOwnership(guest.address)).wait();
+    await (await c.connect(guest).acceptOwnership()).wait();
+    assert.equal((await w.finalizeReadResult("bootstrap", ownerRead, own, eventId)).selectedEvent.detail, null);
+    await (await c.connect(guest).transferOwnership(organizer.address)).wait();
+    await (await c.acceptOwnership()).wait();
+    await w.state(eventId);
+  } finally { r.definition.visibility = originalVisibility; r.definition.staff = []; }
+});
+
+test("known-hash delivery rejects a removed or reorged receipt and survives current private access loss", async () => {
+  const eventId = draft.eventId, r = w.events.get(eventId);
+  const confirmed = structuredClone(r.transactions.find(item => item.action === "deposit" && item.status === "confirmed" &&
+    item.wallet.toLowerCase() === guest.address.toLowerCase()));
+  assert(confirmed?.draftId); assert(ethers.isHexString(confirmed.blockHash, 32));
+  assert.equal(confirmed.blockHash, (await provider.getBlock(confirmed.blockNumber)).hash);
+  const original = { id: "known-hash-original-wallet", mode: "wallet", wallet: guest.address };
+  const visibility = r.definition.visibility, participants = r.participants;
+  try {
+    r.definition.visibility = "private";
+    r.participants = new Map([...participants].filter(([, person]) => person.wallet.toLowerCase() !== guest.address.toLowerCase()));
+    assert.throws(() => w.record(eventId, original), { code: "FORBIDDEN" });
+    const saved = fs.readFileSync(stateFile), before = forbidden;
+    const valid = await w.finalizeReadResult("confirm", confirmed, original, eventId);
+    assert.equal(valid.status, "confirmed"); assert.equal(valid.hash, confirmed.hash);
+    assert.equal(valid.blockNumber, confirmed.blockNumber); assert.equal(valid.blockHash, (await provider.getBlock(valid.blockNumber)).hash);
+    assert.deepEqual(fs.readFileSync(stateFile), saved); assert.equal(forbidden, before);
+    await assert.rejects(() => w.finalizeReadResult("confirm", confirmed,
+      { ...original, wallet: organizer.address }, eventId), { code: "DRAFT_SCOPE" });
+    deliveryReceiptHidden = true;
+    await assert.rejects(() => w.finalizeReadResult("confirm", confirmed, original, eventId), { code: "TX_REORG" });
+    deliveryReceiptHidden = false; deliveryReorgBlock = confirmed.blockNumber;
+    await assert.rejects(() => w.finalizeReadResult("confirm", confirmed, original, eventId), { code: "TX_REORG" });
+    // Same hash and height can be included again after a reorg: both fresh RPC
+    // answers agree, but the original execution anchor still must not change.
+    deliveryReceiptReorgHash = ethers.id("synthetic-confirm-delivery-reorg");
+    await assert.rejects(() => w.finalizeReadResult("confirm", confirmed, original, eventId), { code: "TX_REORG" });
+    deliveryReorgBlock = null; deliveryReceiptReorgHash = null;
+    await assert.rejects(() => w.finalizeReadResult("confirm", { ...confirmed, status: "failed" }, original, eventId), { code: "TX_REORG" });
+    assert.equal((await w.finalizeReadResult("confirm", confirmed, original, eventId)).hash, confirmed.hash);
+    assert.deepEqual(fs.readFileSync(stateFile), saved); assert.equal(forbidden, before);
+  } finally { r.definition.visibility = visibility; r.participants = participants; deliveryReceiptHidden = false; deliveryReorgBlock = null; deliveryReceiptReorgHash = null; }
 });
 
 test("V10 durable restart retains the same private owned event and hash while old cookie/job/session cannot be reused", async () => {
@@ -224,4 +356,80 @@ test("organizer job scope defaults to V9 but exact V10 is isolated and rejects c
       codeHash: ethers.keccak256("0x"), financialEligible: false, accountType: "eoa" }) });
   try { await assert.rejects(separate.assertWallet(organizer.address), { code: "UNSUPPORTED_WALLET" }); }
   finally { await separate.close(); }
+});
+
+test("V10 selected-only HTTP bootstrap returns the verified private event without inspecting unrelated inventory", async () => {
+  const eventId = draft.eventId, unrelated = "unrelated-private-inventory";
+  const record = w.events.get(eventId), secret = "UNRELATED_PRIVATE_METADATA_MUST_NOT_BE_READ";
+  const readOnlyRecord = {
+    get definition() { throw Error(secret); },
+    get deployment() { throw Error(secret); },
+  };
+  w.events.set(unrelated, readOnlyRecord);
+  try {
+    const boot = await request(`/api/bootstrap?selectedEventId=${eventId}&selectedOnly=1`);
+    assert.equal(boot.status, 200);
+    assert.deepEqual(boot.data.events.map(event => event.id), [eventId]);
+    assert.deepEqual(boot.data.events[0], boot.data.selectedEvent.detail.event);
+    assert.equal(boot.data.selectedEvent.detail.deploymentTrust.status, "verified");
+    assert.equal(boot.data.selectedEvent.detail.event.contractVersion, PROFILE);
+    assert.equal(JSON.stringify(boot.data).includes(secret), false);
+    const denied = await request(`/api/bootstrap?selectedEventId=${eventId}&selectedOnly=1`, { session: null });
+    assert.equal(denied.data.selectedEvent.detail, null);
+    assert.equal(denied.data.selectedEvent.error.code, "FORBIDDEN");
+    assert.deepEqual(denied.data.events, []);
+    assert.equal(JSON.stringify(denied.data).includes(record.definition.title), false);
+    assert.equal(forbidden, 0);
+  } finally { w.events.delete(unrelated); }
+});
+
+test("direct V10 event GET removes only the duplicate state pass and retains late payment verification", async () => {
+  const eventId = draft.eventId, record = w.events.get(eventId);
+  const session = { id: "synthetic-original-handler-sequence", mode: "wallet", wallet: organizer.address };
+  observedBirth = record.deployment.deploymentTxHash;
+  try {
+    // The original HTTP handler performed this state/access preflight before detail().
+    observedBirthReads = 0;
+    await w.state(eventId);
+    w.record(eventId, session);
+    const original = await w.detail(eventId, session);
+    assert.equal(observedBirthReads, 3, "Original sequence performs three full child provenance passes");
+
+    observedBirthReads = 0;
+    const response = await request(`/api/events/${eventId}`);
+    assert.equal(response.status, 200);
+    assert.equal(observedBirthReads, 2, "Direct GET keeps initial state and late payment provenance");
+    assert.deepEqual(response.data, original, "The response and latest receipt semantics are unchanged");
+
+    observedBirthReads = 0;
+    failLateBirthRead = true;
+    const rejected = await request(`/api/events/${eventId}`);
+    assert.notEqual(rejected.status, 200, "Late verification failure cannot return the assembled private response");
+    assert.equal(observedBirthReads, 2);
+    assert.equal(JSON.stringify(rejected.data).includes(record.definition.title), false);
+    assert.equal(forbidden, 0);
+  } finally {
+    observedBirth = null;
+    observedBirthReads = 0;
+    failLateBirthRead = false;
+  }
+});
+
+test("direct V10 detail hydrates fresh financial ownership before private access checks", async () => {
+  const eventId = draft.eventId, record = w.events.get(eventId), c = w.contract(eventId);
+  const originalOrganizers = record.definition.organizers;
+  record.definition.organizers = [];
+  try {
+    await (await c.connect(organizer).transferOwnership(ownerWallet.address)).wait();
+    await (await c.connect(ownerWallet).acceptOwnership()).wait();
+    const nextOwnerCookie = await login(ownerWallet);
+    const next = await request(`/api/events/${eventId}`, { session: nextOwnerCookie });
+    assert.equal(next.status, 200);
+    assert.equal(next.data.permissions.owner, true);
+    assert.equal(next.data.state.owner, ownerWallet.address);
+    const previous = await request(`/api/events/${eventId}`);
+    assert.equal(previous.status, 403);
+    assert.equal(previous.data.code, "FORBIDDEN");
+    assert.equal(JSON.stringify(previous.data).includes(record.definition.title), false);
+  } finally { record.definition.organizers = originalOrganizers; }
 });

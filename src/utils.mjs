@@ -1,5 +1,6 @@
 // @ts-check
 import { createHash, randomUUID } from "node:crypto";
+import { firstEventManageMatches } from "./first-event-manage-scope.mjs";
 export const json = (value) =>
   JSON.stringify(value, (_, x) => (typeof x === "bigint" ? x.toString() : x));
 export const hash = (value) =>
@@ -85,8 +86,13 @@ export const csvCell = (value) => {
 
 // A nonce-authenticated paying wallet is not a verified Luma identity.
 // Historical profiles retain their original identity gate.
-export function hasVerifiedParticipantWallet(record, person) {
-  if (record?.deployment?.contractVersion === "kleros-event-v9-uups" &&
+export function hasVerifiedParticipantWallet(record, person, scope = undefined) {
+  if (firstEventManageMatches(record, scope) &&
+      person?.eventId === record.definition.id && person?.payerVerified === true &&
+      person.identitySource === "owner-reviewed-canonical-payer" && person.deposit?.verified === true &&
+      lower(person.deposit.wallet) === lower(person.wallet) && person.deposit.eventId === record.definition.id &&
+      lower(person.deposit.contract) === lower(record.deployment.contract)) return true;
+  if (["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(record?.deployment?.contractVersion) &&
       record.deployment.chainId === 1)
     return person?.walletVerified === true || person?.identityVerified === true;
   return person?.identityVerified === true;

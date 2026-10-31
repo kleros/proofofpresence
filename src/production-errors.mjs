@@ -12,6 +12,18 @@ function define(status, message, codes, alternatives) {
 }
 
 define(401, "Sign in with your wallet before continuing.", ["UNAUTHENTICATED"]);
+define(404, "This transaction flow expired. Keep your original transaction ID.", ["PUBLIC_FLOW_NOT_FOUND"]);
+define(403, "This wallet connection cannot access that event or action.", ["PUBLIC_FLOW_SCOPE"]);
+define(409, "Keep the original review and transaction ID for this wallet request.", ["PUBLIC_FLOW_CONFLICT"]);
+define(409, "This wallet's deposit is already fully funded.", ["CREDIT_AVAILABLE"]);
+define(409, "This event was replaced. Its original receipts and unused credit remain on its original recovery page. Open the current event before making a new deposit.", ["EVENT_REPLACED"]);
+define(422, "This wallet needs enough native ETH on Ethereum Mainnet for the deposit plus the network fee. ETH on another network cannot fund this transaction.", ["INSUFFICIENT_ETH"]);
+define(409, "The event contract reverted during the exact deposit simulation. No transaction was requested. Check the current event state before trying again.", ["DEPOSIT_SIMULATION_REVERTED"]);
+define(503, "The Ethereum deposit simulation service is unavailable. No transaction was requested. Try again later.", ["DEPOSIT_SIMULATION_UNAVAILABLE"]);
+define(503, "The Ethereum deposit simulation returned an invalid reply. No transaction was requested. Try again later.", ["DEPOSIT_SIMULATION_INVALID_REPLY"]);
+define(409, "This wallet is already registered for the event.", ["ALREADY_REGISTERED"]);
+define(409, "This wallet's registration was rejected. Unused credit can be recovered.", ["REGISTRATION_REJECTED"]);
+define(503, "Transaction preparation is busy. Try again shortly.", ["PUBLIC_FLOW_CAPACITY"]);
 define(403, "The sign-in request expired or is invalid. Authenticate again.", [
   "BAD_NONCE",
 ]);
@@ -76,6 +88,19 @@ define(
   [403, 409],
 );
 define(422, "Use a valid Ethereum wallet address.", ["INVALID_WALLET"]);
+define(409, "The fee replacement is not confirmed yet. Keep both transaction IDs and check again.", ["REPLACEMENT_UNCONFIRMED", "REPLACEMENT_NONCE_NOT_CONSUMED"]);
+define(409, "The replacement does not match the saved original call. Keep both transaction IDs for review.", [
+  "REPLACEMENT_SCOPE", "REPLACEMENT_MISMATCH", "REPLACEMENT_ORIGINAL_CHANGED", "REPLACEMENT_WRONG_CHAIN",
+  "V10_FACTORY_SUBMISSION_CHANGED", "V10_FACTORY_SUBMISSION_UNSEALED", "V10_FACTORY_REPLACEMENT_CHANGED",
+  "V10_FACTORY_REPLACEMENT_UNSEALED", "V10_FACTORY_REPLACEMENT_MISMATCH",
+]);
+define(422, "Use a valid same-call fee-replacement transaction ID.", ["REPLACEMENT_INPUT"]);
+define(409, "The original nonce was not retained. Preserve both transaction IDs for review.", ["REPLACEMENT_ORIGINAL_UNAVAILABLE"]);
+define(409, "The original creation already has a receipt. Check its original transaction ID.", ["REPLACEMENT_ORIGINAL_CONFIRMED"]);
+define(409, "The replacement receipt changed. Preserve both IDs and request a fresh check.", ["REPLACEMENT_REORG"]);
+define(409, "The replacement transaction failed. Preserve both transaction IDs for review.", ["REPLACEMENT_REVERTED"]);
+define(422, "The replacement used an unsupported wallet execution profile. Preserve both IDs for review.", ["REPLACEMENT_WALLET_PROFILE"]);
+define(503, "The fee replacement could not be checked. Keep both transaction IDs and check again later.", ["REPLACEMENT_UNAVAILABLE"]);
 define(
   422,
   "This wallet is outside the account profiles supported by this application.",
@@ -149,6 +174,17 @@ define(404, "The requested resource was not found or is unavailable.", [
 define(409, "This check belongs to different event terms. Preserve the original check.", ["ORGANIZER_JOB_CONFLICT"]);
 define(409, "An organizer check is already running. Check its status before starting another.", ["ORGANIZER_JOB_BUSY"]);
 define(503, "Organizer checks are at capacity. Keep your form and try again later.", ["ORGANIZER_JOB_CAPACITY"]);
+define(404, "This event check is unavailable for the current session.", ["EVENT_READ_JOB_NOT_FOUND"]);
+define(409, "This check belongs to different event terms. Preserve the original check.", ["EVENT_READ_JOB_CONFLICT"]);
+define(409, "An event check is still running. Wait for its status before starting another.", ["EVENT_READ_JOB_BUSY"]);
+define(503, "Event checks are at capacity. Keep any submitted transaction IDs and check later.", ["EVENT_READ_JOB_CAPACITY"]);
+define(404, "This organizer review is available only for the first reviewed Truth Pays event.", ["FIRST_EVENT_SCOPE"]);
+define(400, "Review the exact selected wallets, confirmation and organizer note before continuing.", ["INVALID_MANAGE_REVIEW"]);
+define(409, "Another payer review is being saved. Check its existing status before continuing.", ["MANAGE_BUSY"]);
+define(409, "The payer has conflicting records or another original receipt. Preserve the existing link for review.", ["PAYER_LINK_CONFLICT", "PAYER_RECEIPT_CONFLICT"]);
+define(409, "The current payer credit, receipt or owner changed. Refresh before reviewing again.", ["PAYER_CREDIT_CHANGED", "STALE_MANAGE_REVIEW"]);
+define(409, "Review actual attendance after the immutable event interval ends.", ["ATTENDANCE_INTERVAL_OPEN"]);
+define(409, "Every selected attendee needs approved canonical payer evidence and existing contract registration.", ["ATTENDEE_NOT_REGISTERED", "UNVERIFIED_ATTENDEE"]);
 define(403, "This RPC operation is not permitted.", [
   "RPC_METHOD_FORBIDDEN",
   "RPC_TRANSACTION_FORBIDDEN",

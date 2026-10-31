@@ -251,6 +251,15 @@ test(
           "Private selected access, summary and detail share one chainState",
         );
         counter.reset();
+        await request(app, "/api/events/event-a", {
+          cookie: cookies["organizer-a"],
+        });
+        assert.equal(
+          counter.phase(address),
+          1,
+          "Direct detail verifies its own snapshot without a duplicate route snapshot",
+        );
+        counter.reset();
         await request(app, "/api/bootstrap", {
           cookie: cookies["organizer-a"],
         });
@@ -259,11 +268,11 @@ test(
         });
         assert.equal(
           counter.phase(address),
-          4,
-          "The preserved serial path refreshes private bootstrap access, summary, route access and detail separately",
+          3,
+          "Legacy bootstrap access and summary remain separate; direct detail takes one snapshot",
         );
         console.log(
-          "selected-bootstrap: private selected chainState calls1; legacy serial calls4",
+          "selected-bootstrap: private selected chainState calls1; direct detail calls1; legacy serial calls3",
         );
       } finally {
         counter.restore();
@@ -315,7 +324,7 @@ test(
       const provider = w.provider,
         original = provider.send.bind(provider),
         calls = [];
-      let armed = true,
+      let armed = false,
         withdrawnAt;
       provider.send = async (method, params) => {
         calls.push({ method, params });
@@ -331,6 +340,24 @@ test(
       };
       let selected;
       try {
+        const standalone = (
+          await request(app, "/api/events/event-a", { cookie })
+        ).value;
+        assert.equal(standalone.participants[0].deposit.verified, true);
+        assert.ok(
+          calls.some(
+            ({ method, params }) =>
+              method === "eth_call" &&
+              same(params[0].to, r.deployment.contract) &&
+              params[0].data.startsWith(
+                c.interface.getFunction("pendingDeposits").selector,
+              ) &&
+              params[1] === "latest",
+          ),
+          "Direct detail preserves latest-credit receipt verification instead of inheriting selected snapshot semantics",
+        );
+        calls.length = 0;
+        armed = true;
         selected = (await request(app, selectedPath("event-a"), { cookie }))
           .value;
       } finally {

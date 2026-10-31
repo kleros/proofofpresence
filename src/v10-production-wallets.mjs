@@ -371,8 +371,18 @@ export function createV10ProductionWallets(input) {
   async function classifyWallet(wallet, observation = null) {
     check(hash(chain.manifest) === manifestHash && ethers.isAddress(wallet));
     wallet = ethers.getAddress(wallet);
+    if (observation !== null)
+      check(
+        exact(observation, ["blockNumber", "blockHash", "code"]) &&
+          Number.isSafeInteger(observation.blockNumber) && observation.blockNumber > 0 &&
+          ethers.isHexString(observation.blockHash, 32) && ethers.isHexString(observation.code),
+        "V10_WALLET_REORG",
+      );
     check(BigInt(await rpc("eth_chainId", [])) === 1n, "WRONG_CHAIN");
-    const at = header(await rpc("eth_getBlockByNumber", ["latest", false])),
+    // A caller's fresh observation already names its verification block. Read
+    // that exact block again; an ordinary new head is not a reorganization.
+    const at = header(await rpc("eth_getBlockByNumber", [observation === null
+        ? "latest" : ethers.toQuantity(observation.blockNumber), false])),
       tag = ethers.toQuantity(at.blockNumber),
       code = await rpc("eth_getCode", [wallet, tag]);
     check(ethers.isHexString(code), "V10_WALLET_UNAVAILABLE", 503);

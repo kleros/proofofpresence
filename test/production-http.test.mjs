@@ -457,6 +457,24 @@ async function fixture(t) {
   return { app, w, options, factories, request, post, challenge, login, count };
 }
 
+test("production selected-only loading is a strict opt-in and preserves the default bootstrap options", async (t) => {
+  const f = await fixture(t);
+  const selected = "/api/bootstrap?selectedEventId=" + eventId;
+  assert.equal((await f.request(selected)).status, 200);
+  assert.deepEqual(f.w.calls.filter(call => call.method === "bootstrap").at(-1).args[1], { selectedEventId: eventId });
+  assert.equal((await f.request(selected + "&selectedOnly=1")).status, 200);
+  assert.deepEqual(f.w.calls.filter(call => call.method === "bootstrap").at(-1).args[1], { selectedEventId: eventId, selectedOnly: true });
+  for (const route of [
+    "/api/bootstrap?selectedOnly=1",
+    selected + "&selectedOnly=0",
+    selected + "&selectedOnly=1&selectedOnly=1",
+  ]) {
+    const before = f.count("bootstrap");
+    assert.equal((await f.request(route)).status, 400);
+    assert.equal(f.count("bootstrap"), before);
+  }
+});
+
 test("production HTTP bootstrap preserves the explicit mainnet profile and keyless capability boundary", async (t) => {
   const f = await fixture(t);
   const response = await f.request("/api/bootstrap?selectedEventId=" + eventId);

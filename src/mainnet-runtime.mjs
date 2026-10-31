@@ -5,6 +5,7 @@ import { ethers } from "ethers";
 import { hash, lower, requireThat } from "./utils.mjs";
 import { verifyV9ArtifactSources } from "./upgrade-artifacts.mjs";
 import { createRpcReadScheduler } from "./rpc-read-scheduler.mjs";
+import { readJobSignal } from "./read-job-scope.mjs";
 import {
   eventV9LumaTemplate,
   V9_LUMA_ATTENDANCE_STANDARD,
@@ -581,6 +582,8 @@ function defaultProvider(
   connection.timeout = timeoutMs;
   connection.setThrottleParams({ maxAttempts: 1 });
   connection.getUrlFunc = async (request) => {
+    const jobSignal = readJobSignal();
+    jobSignal?.throwIfAborted();
     let payload;
     try {
       payload = JSON.parse(new TextDecoder().decode(request.body));
@@ -596,16 +599,20 @@ function defaultProvider(
     const controller = new AbortController();
     activeControllers.add(controller);
     // Start the timeout before queueing, so expired queued work cannot fetch.
-    const signal = AbortSignal.any([AbortSignal.timeout(timeoutMs), controller.signal]);
+    const signal = AbortSignal.any([AbortSignal.timeout(timeoutMs), controller.signal, ...(jobSignal ? [jobSignal] : [])]);
     let response, body;
     try {
-      const send = () => fetcher(endpoint, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-        redirect: "error",
-        signal,
-      });
+      signal.throwIfAborted();
+      const send = () => {
+        signal.throwIfAborted();
+        return fetcher(endpoint, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(payload),
+          redirect: "error",
+          signal,
+        });
+      };
       response = scheduler
         ? await scheduler.schedule({ method: (Array.isArray(payload) ? payload[0] : payload).method, signal }, send)
         : await send();
@@ -642,6 +649,12 @@ function defaultProvider(
     cacheTimeout: -1,
     batchMaxCount: 1,
   });
+  const rpcSend = provider.send.bind(provider);
+  provider.send = (method, params) => {
+    // Stop expired job continuations before they enter ethers' pending queue.
+    readJobSignal()?.throwIfAborted();
+    return rpcSend(method, params);
+  };
   const destroy = provider.destroy.bind(provider);
   provider.destroy = () => {
     scheduler?.close();

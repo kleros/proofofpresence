@@ -114,7 +114,49 @@ export async function handoffOne({
   isCurrent = () => true,
   recoveryAcknowledgement = null,
   onPhase = () => {},
+  deliveryContext = null,
 }) {
+  const readMethods = new Set([
+    "eth_chainId",
+    "eth_accounts",
+    "eth_getBlockByNumber",
+    "eth_getTransactionCount",
+    "eth_getBalance",
+    "eth_getCode",
+  ]);
+  // Only read-only wallet RPC is bounded. The actual wallet confirmation/send
+  // below deliberately has no timeout, retry or replacement behavior.
+  const readProvider = {
+    request: async (request) => {
+      check(
+        readMethods.has(request.method),
+        "Only reviewed wallet reads are supported.",
+      );
+      onPhase(`wallet-read:${request.method}`);
+      let timer;
+      try {
+        return await Promise.race([
+          Promise.resolve().then(() => provider.request(request)),
+          new Promise((_, reject) => {
+            timer = setTimeout(
+              () =>
+                reject(
+                  Object.assign(
+                    new Error(
+                      "A read-only wallet check timed out before confirmation. Keep this attempt recorded; do not send again.",
+                    ),
+                    { code: "WALLET_READ_TIMEOUT", method: request.method },
+                  ),
+                ),
+              10000,
+            );
+          }),
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
+    },
+  };
   check(
     review.signingEnabled === true &&
       isCurrent() &&
@@ -125,8 +167,8 @@ export async function handoffOne({
     "Wallet signing is not enabled for this reviewed plan.",
   );
   const [chain, accounts] = await Promise.all([
-    provider.request({ method: "eth_chainId" }),
-    provider.request({ method: "eth_accounts" }),
+    readProvider.request({ method: "eth_chainId" }),
+    readProvider.request({ method: "eth_accounts" }),
   ]);
   check(
     BigInt(chain) === 1n &&
@@ -138,30 +180,67 @@ export async function handoffOne({
     recoveryAcknowledgement === null ||
       (step === 2 &&
         recoveryAcknowledgement ===
-          "refreshed-before-wallet-confirmation-no-submission"),
-    "Only the separately reviewed lost-page Step 2 recovery is supported.",
+          "refreshed-before-wallet-confirmation-no-submission") ||
+      (step === 4 &&
+        recoveryAcknowledgement ===
+          "expired-before-wallet-request-no-submission"),
+    "Only the separately reviewed unstarted step recovery is supported.",
   );
   onPhase("server-preflight");
+  if (deliveryContext !== null)
+    check(
+      step === 4 &&
+        /^[a-f0-9]{64}$/.test(deliveryContext.capability) &&
+        /^[A-Za-z0-9_-]{1,200}$/.test(deliveryContext.documentId),
+      "The saved unsigned-review key and current document are required.",
+    );
   const input = {
     step,
     wallet: accounts[0],
     chainId: 1,
     planSha256: review.planSha256,
     approvalHash: review.approvalHash,
+    ...(deliveryContext
+      ? {
+          clientCapability: deliveryContext.capability,
+          clientDocumentId: deliveryContext.documentId,
+        }
+      : {}),
   };
-  const prepared =
-    recoveryAcknowledgement === null
-      ? await api.prepare(input)
-      : await api.recoverPrepared({
-          ...input,
-          acknowledgement: recoveryAcknowledgement,
-        });
-  let hash;
+  let prepared,
+    hash,
+    failurePhase = "prepare-response";
   try {
+    prepared =
+      recoveryAcknowledgement === null
+        ? await api.prepare(input)
+        : await api.recoverPrepared({
+            ...input,
+            acknowledgement: recoveryAcknowledgement,
+          });
+    if (deliveryContext) {
+      check(
+        prepared.capability === deliveryContext.capability &&
+          Number.isSafeInteger(prepared.reviewId) &&
+          prepared.reviewId > 0,
+        "The unsigned response has no current review generation. Resume the saved review.",
+      );
+      const delivered = await api.ackPreparedResponse({
+        step,
+        capability: deliveryContext.capability,
+        clientDocumentId: deliveryContext.documentId,
+        reviewId: prepared.reviewId,
+      });
+      check(
+        delivered?.recorded === true && delivered.step === step,
+        "The unsigned review response was not acknowledged. Resume this saved review; do not send again.",
+      );
+    }
+    failurePhase = "wallet-read";
     onPhase("wallet-read-checks");
     const tx = assertPrepared(review, step, prepared);
     check(isCurrent(), "The selected wallet context changed.");
-    const block = await provider.request({
+    const block = await readProvider.request({
       method: "eth_getBlockByNumber",
       params: ["latest", false],
     });
@@ -174,21 +253,21 @@ export async function handoffOne({
     const tag = block.number;
     const [latestChain, latestAccounts, pending, balance, code, targetNonce] =
       await Promise.all([
-        provider.request({ method: "eth_chainId" }),
-        provider.request({ method: "eth_accounts" }),
-        provider.request({
+        readProvider.request({ method: "eth_chainId" }),
+        readProvider.request({ method: "eth_accounts" }),
+        readProvider.request({
           method: "eth_getTransactionCount",
           params: [tx.from, tag],
         }),
-        provider.request({
+        readProvider.request({
           method: "eth_getBalance",
           params: [tx.from, "pending"],
         }),
-        provider.request({
+        readProvider.request({
           method: "eth_getCode",
           params: [tx.predictedAddress, tag],
         }),
-        provider.request({
+        readProvider.request({
           method: "eth_getTransactionCount",
           params: [tx.predictedAddress, tag],
         }),
@@ -202,7 +281,7 @@ export async function handoffOne({
         BigInt(targetNonce) === 0n,
       "Wallet, nonce or predicted address changed. Stop this handoff.",
     );
-    await pinnedWalletCheck(provider, review, prepared, tag);
+    await pinnedWalletCheck(readProvider, review, prepared, tag);
     const remaining = review.plan.transactions
       .slice(step - 1)
       .reduce(
@@ -217,16 +296,16 @@ export async function handoffOne({
           BigInt(tx.maxFeePerGasWei),
       "Balance or current fee no longer fits the approved ceiling.",
     );
-    await pinnedWalletCheck(provider, review, prepared, tag);
+    await pinnedWalletCheck(readProvider, review, prepared, tag);
     const [closing, closingChain, closingAccounts, closingNonce] =
       await Promise.all([
-        provider.request({
+        readProvider.request({
           method: "eth_getBlockByNumber",
           params: [tag, false],
         }),
-        provider.request({ method: "eth_chainId" }),
-        provider.request({ method: "eth_accounts" }),
-        provider.request({
+        readProvider.request({ method: "eth_chainId" }),
+        readProvider.request({ method: "eth_accounts" }),
+        readProvider.request({
           method: "eth_getTransactionCount",
           params: [tx.from, "pending"],
         }),
@@ -247,6 +326,12 @@ export async function handoffOne({
     const started = await api.walletRequestStarted({
       step,
       capability: prepared.capability,
+      ...(deliveryContext
+        ? {
+            clientDocumentId: deliveryContext.documentId,
+            reviewId: prepared.reviewId,
+          }
+        : {}),
     });
     check(
       started?.recorded === true &&
@@ -256,6 +341,7 @@ export async function handoffOne({
       "The durable wallet handoff was not acknowledged. Preserve this attempt; do not resend.",
     );
     onPhase("wallet-confirmation");
+    failurePhase = "wallet-confirmation";
     hash = await provider.request({
       method: "eth_sendTransaction",
       params: [
@@ -293,18 +379,47 @@ export async function handoffOne({
     return { status: "submitted", hash };
   } catch (error) {
     if (hash) return { status: "submitted-record-unavailable", hash };
+    const knownCapability = deliveryContext?.capability ?? prepared?.capability;
     try {
-      await api.walletError({
-        step,
-        capability: prepared.capability,
-        code: error?.code === 4001 ? 4001 : null,
-      });
+      if (
+        knownCapability &&
+        (!deliveryContext || Number.isSafeInteger(prepared?.reviewId))
+      )
+        await api.walletError({
+          step,
+          capability: knownCapability,
+          code:
+            error?.code === 4001
+              ? 4001
+              : error?.code === "WALLET_READ_TIMEOUT"
+                ? "WALLET_READ_TIMEOUT"
+                : !prepared
+                  ? "PREPARE_RESPONSE_UNAVAILABLE"
+                  : null,
+          ...(deliveryContext
+            ? {
+                clientDocumentId: deliveryContext.documentId,
+                reviewId: prepared.reviewId,
+                phase: failurePhase,
+                method: error?.method ?? null,
+              }
+            : {}),
+        });
     } catch {
       /* The existing prepared journal already prevents resending. */
     }
     if (error?.code === 4001) return { status: "rejected" };
-    throw new Error(
-      "The prepared handoff stopped without a known hash. Do not resend. Inspect the wallet and recover its original hash.",
+    throw Object.assign(
+      new Error(
+        deliveryContext && failurePhase === "prepare-response"
+          ? "The unsigned review response was unavailable. Its saved review key is retained. Use Resume Step 4 wallet review; no wallet request is repeated."
+          : error?.code === "WALLET_READ_TIMEOUT"
+            ? "A read-only wallet check timed out before confirmation. This attempt remains recorded. Do not resend; request recovery of the same step."
+            : "The prepared handoff stopped without a known hash. Do not resend. Inspect the wallet and recover its original hash.",
+      ),
+      error?.code === "WALLET_READ_TIMEOUT"
+        ? { code: error.code, method: error.method }
+        : {},
     );
   }
 }
@@ -336,6 +451,7 @@ async function boot() {
     return data;
   };
   const review = await request("/api/plan");
+  const clientDocumentId = crypto.randomUUID();
   let state = await request("/api/state"),
     connected = false,
     busy = false;
@@ -352,6 +468,7 @@ async function boot() {
       approvalHash: review.approvalHash,
       bridgeSourceSha256: review.bridgeSourceSha256,
       bridgeSources: review.bridgeSources,
+      clientDocumentId,
       provenance: review.plan.provenance,
       delegatedCreateReview: review.delegatedCreateReview,
       sourceHashes: review.plan.compilation.sourceHashes,
@@ -363,6 +480,7 @@ async function boot() {
     prepare: (v) => request("/api/prepare-step", v),
     recoverPrepared: (v) => request("/api/recover-prepared-step", v),
     walletRequestStarted: (v) => request("/api/wallet-request-started", v),
+    ackPreparedResponse: (v) => request("/api/ack-prepared-response", v),
     submitted: (v) => request("/api/record-submitted", v),
     walletError: (v) => request("/api/wallet-error", v),
   };
@@ -374,6 +492,54 @@ async function boot() {
   ];
   const providers = new Map();
   let selectedProvider = null;
+  const deliveryMode =
+    review.terms.lostPageRecovery?.kind ===
+    "v10-step4-unstarted-delivery-recovery";
+  function savedDeliveryContext(tx, row) {
+    const storageKey = `kleros-v10-unsigned-review:${review.planSha256}:${review.approvalHash}:${review.plan.deployer.toLowerCase()}:${tx.step}`;
+    const expected = {
+      planSha256: review.planSha256,
+      approvalHash: review.approvalHash,
+      wallet: review.plan.deployer.toLowerCase(),
+      chainId: 1,
+      step: tx.step,
+      nonce: tx.nonce,
+    };
+    const raw = localStorage.getItem(storageKey);
+    let saved;
+    if (raw !== null) {
+      try {
+        saved = JSON.parse(raw);
+      } catch {
+        throw new Error(
+          "The original unsigned-review storage is invalid; preserve it for review.",
+        );
+      }
+      check(
+        Object.keys(saved).length === 7 &&
+          Object.entries(expected).every(
+            ([key, value]) => saved[key] === value,
+          ) &&
+          /^[a-f0-9]{64}$/.test(saved.capability),
+        "The saved unsigned review belongs to another source or scope.",
+      );
+    } else {
+      check(
+        !row.deliveryPrepared,
+        "The original review key is missing in this browser. Return to the browser that prepared it; do not create another key.",
+      );
+      const capability = [...crypto.getRandomValues(new Uint8Array(32))]
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+      saved = { ...expected, capability };
+      localStorage.setItem(storageKey, JSON.stringify(saved));
+      check(
+        localStorage.getItem(storageKey) === JSON.stringify(saved),
+        "Durable unsigned-review storage is unavailable.",
+      );
+    }
+    return { capability: saved.capability, documentId: clientDocumentId };
+  }
   function addProvider(provider, name) {
     if (
       !provider ||
@@ -549,23 +715,29 @@ async function boot() {
         busy = true;
         render();
         message(
-          "Checking Ethereum; this can take 1–2 minutes. Keep this page open. MetaMask opens after the checks.",
+          "Checking Ethereum and prior receipts; this can take a few minutes. Keep this page open. MetaMask opens after the checks.",
         );
         try {
           const handoffProvider = selectedProvider;
+          const deliveryContext = deliveryMode
+            ? savedDeliveryContext(tx, row)
+            : null;
           const result = await handoffOne({
             api,
             provider: selectedProvider,
             review,
             step: tx.step,
             recoveryAcknowledgement,
+            deliveryContext,
             onPhase: (phase) =>
               message(
-                phase === "server-preflight"
-                  ? "Checking Ethereum; this can take 1–2 minutes. Keep this page open. MetaMask opens after the checks."
-                  : phase === "wallet-read-checks"
-                    ? "Ethereum checks passed. Checking the connected wallet before opening its confirmation. Keep this page open."
-                    : "Wallet request recorded. Review and confirm this one CREATE in MetaMask. Keep its original hash.",
+                phase.startsWith("wallet-read:")
+                  ? "Checking the connected wallet and Ethereum data. Each read has a timeout; no transaction has been requested yet."
+                  : phase === "server-preflight"
+                    ? "Checking Ethereum and prior receipts; this can take a few minutes. Keep this page open. MetaMask opens after the checks."
+                    : phase === "wallet-read-checks"
+                      ? "Ethereum checks passed. Checking the connected wallet before opening its confirmation. Keep this page open."
+                      : "Wallet request recorded. Review and confirm this one CREATE in MetaMask. Keep its original hash.",
               ),
             isCurrent: () =>
               connected &&
@@ -595,10 +767,10 @@ async function boot() {
       send.onclick = () => runHandoff();
       section.append(send);
       if (
-        tx.step === 2 &&
+        tx.step === review.terms.lostPageRecovery?.step &&
         row.state === "prepared" &&
         !row.hash &&
-        !row.recoveryPrepared &&
+        (deliveryMode || !row.recoveryPrepared) &&
         !row.walletRequestStarted &&
         review.terms.lostPageRecovery
       ) {
@@ -612,12 +784,21 @@ async function boot() {
         label.append(
           acknowledgement,
           document.createTextNode(
-            " I refreshed before MetaMask opened Step 2. I have not signed or submitted Step 2 in any window, and I have no transaction hash for it.",
+            tx.step === 2
+              ? " I refreshed before MetaMask opened Step 2. I have not signed or submitted Step 2 in any window, and I have no transaction hash for it."
+              : " The original Step 4 wallet request never opened. I have not signed or submitted Step 4 in any window, and I have no transaction hash for it.",
           ),
         );
-        explanation.textContent =
-          "This one-use recovery preserves Step 1 and the original Step 2 record. If you have a hash or a pending wallet request, use receipt recovery instead. Recheck the review box above before each wallet request.";
-        resume.textContent = "Resume Step 2 wallet review";
+        explanation.textContent = deliveryMode
+          ? "The same unsigned review key is saved in this browser before checking Ethereum. If its response is interrupted, explicitly resume this same review. Once a wallet request is recorded, it cannot be opened again. Existing steps and hashes stay preserved."
+          : `This one-use recovery preserves every confirmed step and the original Step ${tx.step} record. If you have a hash or a pending wallet request, use receipt recovery instead. Recheck the review box above before each wallet request.`;
+        if (row.reviewError) {
+          const error = document.createElement("p");
+          error.className = "status";
+          error.textContent = `Saved review stopped: ${row.reviewError.code} (${row.reviewError.phase}). Its original key is retained.`;
+          section.append(error);
+        }
+        resume.textContent = `Resume Step ${tx.step} wallet review`;
         resume.className = "send";
         const allowed = () =>
           !busy &&
@@ -634,7 +815,9 @@ async function boot() {
         resume.onclick = () => {
           if (acknowledgement.checked && allowed())
             return runHandoff(
-              "refreshed-before-wallet-confirmation-no-submission",
+              tx.step === 2
+                ? "refreshed-before-wallet-confirmation-no-submission"
+                : "expired-before-wallet-request-no-submission",
             );
         };
         section.append(explanation, label, resume);

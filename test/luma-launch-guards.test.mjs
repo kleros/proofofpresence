@@ -5,6 +5,8 @@ import {
   participantDeposit,
   knownAttendanceStandard,
   attendanceStandardText,
+  ownerAttendanceReviewState,
+  ownerAttendanceParams,
 } from "../public/luma-launch.js";
 import {
   lumaEventUrl,
@@ -30,6 +32,29 @@ const copy = (value) => structuredClone(value);
 const other = `0x${"f".repeat(40)}`;
 const hash = `0x${"7".repeat(64)}`;
 const origin = "https://launch.example.test";
+test("owner attendance selection stays tied to this event, registered wallets and immutable end", () => {
+  const eventId = "synthetic-owner-event", wallet = `0x${"a".repeat(40)}`;
+  const detail = { event: { id: eventId, endsAt: "2026-11-04T15:00:00.000Z" },
+    permissions: { owner: true }, state: { phase: "Open", now: 1793804400 }, participants: [
+      { eventId, wallet, registered: true },
+      { eventId, wallet: other, registered: false },
+      { eventId: "another-event", wallet: `0x${"b".repeat(40)}`, registered: true },
+    ] };
+  const before = JSON.stringify(detail);
+  assert.equal(ownerAttendanceReviewState(detail).reason, null);
+  const review = { confirmed: true, note: "Organizer verified event participation" };
+  assert.deepEqual(ownerAttendanceParams(detail, [wallet.toUpperCase()], review), {
+    attendedWallets: [wallet], attendanceReview: review });
+  for (const selection of [[], [other], [wallet, wallet.toUpperCase()], [`0x${"b".repeat(40)}`]])
+    assert.throws(() => ownerAttendanceParams(detail, selection, review));
+  for (const altered of [
+    { ...detail, state: { ...detail.state, now: detail.state.now - 1 } }, { ...detail, permissions: { owner: false } },
+    { ...detail, state: { phase: "Listed" } }, { ...detail, event: { id: eventId } },
+  ]) assert.throws(() => ownerAttendanceParams(altered, [wallet], review));
+  for (const altered of [{ ...review, confirmed: false }, { ...review, note: "short" }, { ...review, note: "x".repeat(1001) }])
+    assert.throws(() => ownerAttendanceParams(detail, [wallet], altered));
+  assert.equal(JSON.stringify(detail), before);
+});
 test("attendance disclosure recognizes only the exact server standard without a physical-only assumption", () => {
   const standard = {
     attendanceMode: "event-participation",

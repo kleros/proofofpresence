@@ -221,18 +221,19 @@ export async function assertV10WalletAccount({ provider, wallet, bootstrap }) {
         "V10_WALLET_UNAVAILABLE",
         "Secure browser digest support is required for this account check.",
       );
-    for (const pin of FRAMEWORK) {
+    const actualHashes = await Promise.all(FRAMEWORK.map(async (pin) => {
       const runtime = codeBytes(
           await read("eth_getCode", [pin.address, tag]),
           pin.bytes,
         ),
         digest = await globalThis.crypto.subtle.digest("SHA-256", runtime);
       current();
-      const actual = [...new Uint8Array(digest)]
+      return [...new Uint8Array(digest)]
         .map((byte) => byte.toString(16).padStart(2, "0"))
         .join("");
-      if (actual !== pin.sha256) unsupported();
-    }
+    }));
+    for (let index = 0; index < FRAMEWORK.length; index++)
+      if (actualHashes[index] !== FRAMEWORK[index].sha256) unsupported();
     accountType = ACCOUNT_TYPE;
   }
   const closing = header(await read("eth_getBlockByNumber", [tag, false]));

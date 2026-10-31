@@ -4,6 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { isSelectedBootstrapQuery } from "./fixtures/selected-bootstrap-query.mjs";
 import {
   LUMA_LAUNCH_EVENT_ID as eventId,
   LUMA_LAUNCH_URL as lumaUrl,
@@ -167,9 +168,10 @@ async function run() {
         req.method === "GET" &&
         url.pathname === "/api/bootstrap" &&
         ((scene === "root" && !url.search) ||
-          (url.searchParams.size === 1 &&
-            url.searchParams.get("selectedEventId") ===
-              selected.detail.event.id))
+          isSelectedBootstrapQuery(
+            url.searchParams,
+            selected.detail.event.id,
+          ))
       )
         return send(res, 200, selected.bootstrap);
       if (

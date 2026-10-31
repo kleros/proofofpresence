@@ -74,6 +74,23 @@ function transactionHash(value) {
 
 function detached(value) { return JSON.parse(JSON.stringify(value)); }
 
+function replacementEvidence(value, context, originalHash, canonicalHash) {
+  const integer = (item) => typeof item === "string" && /^(?:0|[1-9][0-9]*)$/.test(item);
+  if (context.abiVersion !== "kleros-event-v10-uups" || context.mode !== "hosted-production" || chainId(context.chainId) !== 1n ||
+      value?.verified !== true || value.kind !== "same-call-fee-replacement" || value.chainId !== 1 ||
+      transactionHash(value.originalHash) !== originalHash || transactionHash(value.hash) !== transactionHash(canonicalHash) ||
+      transactionHash(canonicalHash) === originalHash || !sameAddress(address(value.wallet, "replacement wallet"), context.wallet) ||
+      !Number.isSafeInteger(value.nonce) || value.nonce < 0 || !Number.isSafeInteger(value.blockNumber) || value.blockNumber <= 0 ||
+      typeof value.blockHash !== "string" || !/^0x[0-9a-f]{64}$/i.test(value.blockHash) ||
+      !integer(value.gasUsed) || BigInt(value.gasUsed) <= 0n || !integer(value.gasPriceWei) || !integer(value.feeWei) ||
+      BigInt(value.feeWei) !== BigInt(value.gasUsed) * BigInt(value.gasPriceWei))
+    fail("The replacement evidence does not match this original transaction.", "INVALID_TRANSACTION_REPLACEMENT");
+  return { verified: true, kind: value.kind, chainId: 1, originalHash,
+    hash: transactionHash(canonicalHash), wallet: value.wallet.toLowerCase(), nonce: value.nonce,
+    blockNumber: value.blockNumber, blockHash: value.blockHash.toLowerCase(),
+    gasUsed: value.gasUsed, gasPriceWei: value.gasPriceWei, feeWei: value.feeWei };
+}
+
 function storageError(error) {
   return Object.assign(new Error("Transaction storage is unavailable. Restore storage before signing; no transaction was requested."),
     { code: "TRANSACTION_STORAGE_UNAVAILABLE", cause: error });
@@ -119,6 +136,11 @@ export function createTransactionJournal(storage) {
         if (hashes.has(hash) || !statuses.has(entry.status)) throw new Error("Invalid journal entry.");
         hashes.add(hash);
         stringField(entry.draftId, "draft ID");
+        if (entry.replacement !== undefined || entry.canonicalHash !== undefined) {
+          if (entry.status !== "confirmed" || entry.action !== "createEvent") throw new Error("This transaction cannot have replacement proof.");
+          const evidence = replacementEvidence(entry.replacement, value.context, hash, entry.canonicalHash);
+          if (entry.blockNumber !== undefined && entry.blockNumber !== evidence.blockNumber) throw new Error("Replacement block changed.");
+        }
       }
     } catch { fail("The transaction journal contains invalid or cross-context entries.", "TRANSACTION_JOURNAL_CORRUPT"); }
     return value;
@@ -161,6 +183,7 @@ export function createTransactionJournal(storage) {
     const state = read(context), wanted = transactionHash(hash);
     const item = state.transactions.find(entry => entry.hash === wanted);
     if (!item) fail("The submitted transaction was not found in this context.", "TRANSACTION_NOT_RECORDED");
+    const previousStatus = item.status;
     if (patch.status !== undefined) {
       if (!statuses.has(patch.status)) fail("Invalid transaction journal status.", "INVALID_TRANSACTION_STATUS");
       if (item.status === "confirmed" && patch.status !== "confirmed")
@@ -169,9 +192,20 @@ export function createTransactionJournal(storage) {
         fail("A failed transaction cannot be changed by a stale response.", "TRANSACTION_ALREADY_FAILED");
       item.status = patch.status;
     }
+    if (patch.replacement !== undefined || patch.canonicalHash !== undefined) {
+      const evidence = replacementEvidence(patch.replacement, context, wanted, patch.canonicalHash);
+      if (item.status !== "confirmed" || item.action !== "createEvent" || (previousStatus === "confirmed" && !item.replacement))
+        fail("Only the original pending creation can gain a verified replacement.", "INVALID_TRANSACTION_REPLACEMENT");
+      if (item.replacement && JSON.stringify(item.replacement) !== JSON.stringify(evidence))
+        fail("The canonical replacement evidence cannot be changed.", "TRANSACTION_ALREADY_CONFIRMED");
+      item.canonicalHash = evidence.hash;
+      item.replacement = evidence;
+    }
     if (patch.blockNumber !== undefined) {
       if (!Number.isSafeInteger(patch.blockNumber) || patch.blockNumber < 0)
         fail("A valid confirmed block number is required.", "INVALID_TRANSACTION_STATUS");
+      if (item.replacement && patch.blockNumber !== item.replacement.blockNumber)
+        fail("The canonical replacement block cannot be changed.", "TRANSACTION_ALREADY_CONFIRMED");
       item.blockNumber = patch.blockNumber;
     }
     if (typeof patch.error === "string") item.error = patch.error.slice(0, 500);
@@ -234,6 +268,100 @@ function submittedError(error, hash, context, draftId) {
   return Object.assign(wrapped, {
     submittedHash: hash, transactionContext: context, draftId,
   });
+}
+
+// Bounds browser observation of an already-submitted hash. It cannot cancel or
+// resend that transaction, and terminal receipts still need the sender's checks.
+// A record callback with its own fallback must call assertBudget before that read.
+export async function waitForTransactionReceipt({
+  context, hash, draftId = undefined, record = async (_signal, _assertBudget) => {}, check, signal = null,
+  now = () => performance.now(), setTimer = setTimeout, clearTimer = clearTimeout,
+  timeoutMs = 180000, delays = [3000, 5000, 10000, 15000, 30000, 30000],
+}) {
+  const original = captureContext(context), expectedHash = transactionHash(hash);
+  if (typeof record !== "function" || typeof check !== "function" ||
+      !Number.isFinite(timeoutMs) || timeoutMs <= 0 || timeoutMs > 2147483647 ||
+      !Array.isArray(delays) || delays.length > 6 ||
+      delays.some(value => !Number.isFinite(value) || value < 0 || value > 2147483647))
+    fail("A bounded receipt checking policy is required.", "INVALID_TRANSACTION_CLIENT");
+  const backoff = [...delays], controller = new AbortController();
+  const error = (message, code) => Object.assign(new Error(message), { code });
+  const limit = () => error("Automatic receipt checking stopped. Keep and check the original transaction hash; its outcome is still unverified.", "TRANSACTION_RECEIPT_LIMIT");
+  let lastTime = 0, closed = false, stoppedError = null;
+  const clock = () => {
+    const value = now();
+    if (!Number.isFinite(value) || value < 0 || value < lastTime)
+      throw error("The receipt checking clock is unavailable. Check the original transaction.", "TRANSACTION_RECEIPT_UNAVAILABLE");
+    return (lastTime = value);
+  };
+  const deadline = clock() + timeoutMs;
+  let rejectStopped, limitTimer = null, sleepTimer = null;
+  const stopped = new Promise((_, reject) => { rejectStopped = reject; });
+  const stop = cause => {
+    if (closed || stoppedError) return;
+    stoppedError = cause;
+    controller.abort();
+    rejectStopped(cause);
+  };
+  const abort = () => stop(error("Receipt checking stopped. The original transaction has not been cancelled.", "TRANSACTION_RECEIPT_STOPPED"));
+  const budget = () => {
+    if (stoppedError) throw stoppedError;
+    if (closed) throw error("Receipt checking is no longer active.", "TRANSACTION_RECEIPT_STOPPED");
+    if (clock() >= deadline) throw limit();
+  };
+  const request = async callback => {
+    budget();
+    try {
+      const value = await callback(controller.signal, budget);
+      budget();
+      return value;
+    } catch (cause) {
+      budget();
+      throw cause;
+    }
+  };
+  signal?.addEventListener("abort", abort, { once: true });
+  if (signal?.aborted) abort();
+  limitTimer = setTimer(() => stop(limit()), timeoutMs);
+  const task = Promise.resolve().then(async () => {
+    await request(record); // Acknowledgment is attempted once, under the same deadline.
+    for (let attempt = 0; attempt <= backoff.length; attempt++) {
+      if (attempt) await new Promise(resolve => {
+        sleepTimer = setTimer(() => { sleepTimer = null; resolve(); }, backoff[attempt - 1]);
+      });
+      budget();
+      let result;
+      try { result = await request(check); }
+      catch (cause) {
+        if (cause?.code === "TX_PENDING") continue;
+        throw cause;
+      }
+      if (["confirmed", "failed"].includes(result?.status)) return result;
+      if (result?.status !== "pending")
+        fail("The original transaction has no verified receipt result.", "TRANSACTION_UNCONFIRMED");
+      let matchingChain = false;
+      try { matchingChain = chainId(result.chainId) === chainId(original.chainId); } catch {}
+      if (typeof result.hash !== "string" || result.hash.toLowerCase() !== expectedHash ||
+          result.eventId !== original.eventId || !matchingChain ||
+          typeof result.wallet !== "string" || !sameAddress(result.wallet, original.wallet) ||
+          (result.contract !== undefined && (typeof result.contract !== "string" || !sameAddress(result.contract, original.contract))) ||
+          (draftId !== undefined && result.draftId !== undefined && result.draftId !== draftId))
+        fail("The pending receipt does not match the original submitted transaction.", "TRANSACTION_CONFIRMATION_MISMATCH");
+    }
+    throw limit();
+  });
+  let completed = false;
+  try {
+    const result = await Promise.race([task, stopped]);
+    completed = true;
+    return result;
+  } finally {
+    closed = true;
+    clearTimer(limitTimer);
+    if (sleepTimer !== null) clearTimer(sleepTimer);
+    signal?.removeEventListener("abort", abort);
+    if (!completed && !controller.signal.aborted) controller.abort();
+  }
 }
 
 /**

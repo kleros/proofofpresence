@@ -1,3 +1,50 @@
+## Git-based Netlify production build — 31 October 2026
+
+This scoped update imports the verified production frontend/backend source into
+an isolated checkout of remote `main` at `55de2e9f35566361d646f8eab2f2ec3300b4bc2e`
+and adds a frontend-only Netlify build. No existing contract source or economic rule was altered;
+upstream historical files were preserved. No production deployment, database change,
+real wallet signature or blockchain transaction was performed.
+
+Commands actually run in the isolated checkout:
+
+- `npm ci --ignore-scripts --no-audit --no-fund`: PASS, 381 packages in 2 seconds.
+- `npm run build:netlify:production`: PASS without node_modules or compiled inputs.
+- `npm exec --yes --package=node@22 -- node --version`: `v22.23.4`.
+- `npm exec --yes --package=node@22 -- node --test test/v10-netlify-build.test.mjs test/walletconnect-csp.test.mjs`:
+  PASS 5/5 in 0.80 seconds, including local Chromium CSP checks.
+- `<cached Node 22.23.4 executable> --test test/first-event-static-target.test.mjs`: PASS 2/2 (recorded event identity, schedule, original recovery and QR).
+- `npm run typecheck`: PASS; repeated with Node 22 via `<cached Node 22.23.4 executable> node_modules/typescript/bin/tsc -p tsconfig.json`: PASS.
+- `node --check netlify/functions/workbench.mjs`: PASS.
+
+The clean-build fixture contains no `.git`, `.runtime`, dependencies, compiled
+contracts or compilers; its denied-network guard recorded zero attempts. Every one
+of the 86 production public assets and the exact approved V10 security headers
+match the build output. Missing required inputs/bad arguments fail before replacing
+existing output. Generic hosted/demo build commands and headers remain unchanged.
+A separate Git-blob comparison matched all 139 production public, backend and gateway
+files to `3faf784ada4d7103d7d22375af772570c5e8a649`. The four public hash-pinned V10
+runtime evidence inputs were preserved; two public event/QR proof fixtures were added.
+
+An initial clean-checkout combined-test attempt ran before dependency installation:
+its three dependency-free build checks passed, and the CSP file could not import
+Playwright. After the locked install, all five checks passed under Node 22 above.
+`git diff --cached --check` passes for maintained source. The verbatim deployed
+SDK is excluded from whitespace lint: its upstream notice includes literal
+conflict-marker text with identical sides, and its minified bundle has trailing
+whitespace. Its bytes/provenance stay unchanged; the Git index has no unmerged entries.
+
+A later npm-exec repeat hit sandbox DNS `ENOTFOUND` before tests started; rerunning
+with the already-cached Node 22.23.4 executable passed the two static event/QR
+checks and typecheck without network access.
+
+The contract suite/full historical browser suite was not rerun for this packaging
+change; prior production proofs remain separate historical evidence. Real Netlify
+build infrastructure, final-domain configuration and live wallet behavior were not
+exercised by these local checks.
+
+---
+
 ## V10 one-use recovery verification — 30 October 2026, 01:50 Bangkok
 
 Amended source approval is `12b705596a91a9263736ad6965171b99c326858b021c6a029870d1bbb59fab7a`.

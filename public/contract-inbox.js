@@ -1,4 +1,5 @@
-// Read-only deposit observations. The server owns canonical indexing, identity links and accounting.
+// Deposit observations and explicit owner review controls. The server owns
+// canonical indexing, payer attribution, identity links and accounting.
 const escape = (value) =>
   String(value ?? "").replace(
     /[&<>"']/g,
@@ -13,6 +14,7 @@ const short = (value) =>
     ? `${value.slice(0, 10)}…${value.slice(-8)}`
     : value;
 const linked = (row) => row.linked === true && !!text(row.participantId).trim();
+const walletOnly = (row) => linked(row) && !text(row.name).trim() && !text(row.email).trim();
 const positive = (value) => {
   try {
     return value != null && BigInt(value) > 0n;
@@ -337,7 +339,7 @@ export function mountContractInbox(element, options) {
           (item) => receiptState(item).kind === "review",
         ).length;
         const pertinent = rowStatus(row);
-        return `<tr data-contract-linked-id="${isLinked ? escape(row.participantId) : ""}"><td><div class="contract-person"><span class="contract-avatar" aria-hidden="true">${isLinked ? escape(text(row.name).trim()[0]?.toUpperCase() || "W") : "W"}</span><div><strong>${isLinked ? escape(row.name || "Linked guest") : escape(short(text(row.wallet)))}</strong>${isLinked ? `<small>${escape(row.email)}</small><code class="contract-reference">${escape(short(text(row.wallet)))}</code>` : '<small class="contract-link-note">Unlinked wallet</small>'}</div></div></td><td><strong>${escape(amount(row.receivedWei, symbol))} received</strong><small class="contract-link-note">Historical deposits · ${confirmed} confirmed${confirming ? ` · ${confirming} confirming` : ""}${needsReview ? ` · ${needsReview} receipt status needs review` : ""}</small><span class="contract-state" data-tone="${positive(row.owedWei) || positive(row.heldShareWei) || confirming || needsReview ? "warning" : "neutral"}">${escape(pertinent.label)}${pertinent.value == null ? "" : ` · ${escape(amount(pertinent.value, symbol))}`}</span></td><td><button type="button" class="button button-primary button-small" data-contract-action="review" data-contract-wallet="${escape(row.wallet)}">Review deposits</button></td></tr>`;
+        return `<tr data-contract-linked-id="${isLinked ? escape(row.participantId) : ""}"><td><div class="contract-person"><span class="contract-avatar" aria-hidden="true">${isLinked ? escape(text(row.name).trim()[0]?.toUpperCase() || "W") : "W"}</span><div><strong>${isLinked ? escape(row.name || (walletOnly(row) ? "Wallet-only payer" : "Linked guest")) : escape(short(text(row.wallet)))}</strong>${isLinked ? `<small>${walletOnly(row) ? "No Luma identity verified" : escape(row.email)}</small><code class="contract-reference">${escape(short(text(row.wallet)))}</code>` : '<small class="contract-link-note">Unlinked wallet</small>'}</div></div></td><td><strong>${escape(amount(row.receivedWei, symbol))} received</strong><small class="contract-link-note">Historical deposits · ${confirmed} confirmed${confirming ? ` · ${confirming} confirming` : ""}${needsReview ? ` · ${needsReview} receipt status needs review` : ""}</small><span class="contract-state" data-tone="${positive(row.owedWei) || positive(row.heldShareWei) || confirming || needsReview ? "warning" : "neutral"}">${escape(pertinent.label)}${pertinent.value == null ? "" : ` · ${escape(amount(pertinent.value, symbol))}`}</span><small class="contract-link-note">Contract registration: ${escape(row.registrationState ?? (row.registered === true ? "Registered" : "Not registered"))}</small></td><td><button type="button" class="button button-primary button-small" data-contract-action="review" data-contract-wallet="${escape(row.wallet)}">Review deposits</button></td></tr>`;
       })
       .join("")}</tbody></table>`;
     if (focusedWallet && !dialog.open)
@@ -360,6 +362,8 @@ export function mountContractInbox(element, options) {
         : "";
     notice.className = stale ? "contract-error" : "contract-notice";
     notice.hidden = !notice.textContent;
+    const adopt = dialogBody.querySelector('[data-contract-action="adopt"]');
+    if (adopt) adopt.disabled = stale || changed || snapshot?.actionable !== true;
   }
   function render() {
     if (!current()) return;
@@ -457,6 +461,11 @@ export function mountContractInbox(element, options) {
     })();
     return inFlight;
   }
+  function payerAdoptionReview(row, transactions) {
+    const receipt = transactions.find((item) => receiptState(item).kind === "confirmed" && /^0x[0-9a-f]{64}$/i.test(item.txHash ?? ""));
+    if (readonly || linked(row) || typeof options.onAdoptPayer !== "function" || !receipt || !positive(row.pendingCreditWei)) return "";
+    return `<section class="contract-payer-review"><h3>Add this payer to host review</h3><p>Record the canonically observed payer wallet for admission and registration review. This does not verify a Luma identity, approve admission or register the wallet on-chain.</p><p>Receipt reviewed: <code class="contract-review-reference">${escape(receipt.txHash)}</code></p><label for="${id}-payer-note">Payer review note</label><textarea id="${id}-payer-note" data-contract-adopt-note minlength="8" maxlength="1000">${escape(`Canonical deposit for event ${scope.eventId}; payer ${row.wallet}; receipt ${receipt.txHash}.`)}</textarea><label class="checkbox-label"><input type="checkbox" data-contract-adopt-confirmed><span>I reviewed this exact payer wallet and canonical receipt. No name or email is being attributed.</span></label><button type="button" class="button button-primary" data-contract-action="adopt" data-contract-wallet="${escape(row.wallet)}" data-contract-tx="${escape(receipt.txHash)}">Add wallet to host review</button><p data-contract-adopt-status role="status" aria-live="polite"></p></section>`;
+  }
   function openReview(row, button) {
     if (
       !current() ||
@@ -486,7 +495,7 @@ export function mountContractInbox(element, options) {
     const transactions = Array.isArray(row.transactions)
       ? row.transactions
       : [];
-    dialogBody.innerHTML = `<div class="contract-source-bar"><h2 id="${id}-dialog-title" tabindex="-1">Wallet deposits</h2><button type="button" class="button button-secondary" data-contract-action="close" aria-label="Close details">Close</button></div><p class="contract-sync-meta">${readonly ? "Sample snapshot" : "Observed"} at block ${escape(reviewAnchor.number)} · ${escape(when(snapshot.lastSyncedAt))}</p><p data-contract-review-status role="status" aria-live="polite" hidden></p>${linked(row) ? `<p><strong>${escape(row.name || "Linked guest")}</strong><br>${escape(row.email)}</p>` : '<p class="contract-link-note">Unlinked wallet. No verified guest name or email is attached to this address.</p>'}<dl class="contract-review-facts"><div><dt>Payer wallet</dt><dd class="contract-review-reference">${escape(row.wallet)} <button type="button" class="button button-secondary button-small" data-contract-action="copy" data-contract-copy-type="wallet" data-contract-copy-value="${escape(row.wallet)}">Copy wallet</button></dd></div>${exact("Historical amount received", row.receivedWei)}${exact("Current unused payer credit", row.pendingCreditWei)}${exact("Current committed principal", row.committedPrincipalWei)}${exact("Held case share", row.heldShareWei)}${exact("Still owed", row.owedWei)}<div><dt>Receipt linkage</dt><dd>${row.receiptLinked === true ? "Receipt linked in the application" : "No application receipt link recorded"}</dd></div><div><dt>Contract registration</dt><dd>${escape(row.registrationState ?? (row.registered === true ? "Registered" : "Not registered"))}</dd></div></dl><details><summary>Payment observations & exact event context</summary><dl class="contract-review-facts">${row.unallocatedWei == null ? "" : exact("Ledger unallocated observation (not payer-owned credit)", row.unallocatedWei)}${exact("Principal / credit returns recorded", row.returnedWei)}${exact("Attendance payments recorded", row.attendancePaidWei)}${exact("Unused credit withdrawals recorded", row.creditWithdrawnWei)}${exact("Claim payments recorded", row.claimsPaidWei)}${row.registrationBasisWei == null ? "" : exact("Historical registration basis", row.registrationBasisWei)}<div><dt>Event</dt><dd>${escape(scope.eventId)}</dd></div><div><dt>Chain</dt><dd>${escape(snapshot.chainId)} · ${escape(symbol)}</dd></div><div><dt>Contract</dt><dd class="contract-review-reference">${escape(snapshot.contract)}</dd></div><div><dt>Version</dt><dd>${escape(snapshot.contractVersion)}</dd></div><div><dt>Indexed block</dt><dd>${escape(snapshot.indexedBlock?.number)} · ${escape(when(snapshot.indexedBlock?.timestamp, true))}<code class="contract-reference">${escape(snapshot.indexedBlock?.hash)}</code></dd></div></dl>${row.pendingCreditWei == null && row.unallocatedWei != null ? '<p class="contract-notice">This version has no payer-owned credit balance. A ledger unallocated observation is separate from unused payer credit and does not establish who can withdraw it.</p>' : ""}</details><p class="contract-notice">These are independent observations. Do not add overlapping amounts together, infer remaining funds from historical deposits, or treat zero credit/principal as proof all payments are complete. Check payment activity for delivery and owed claims.</p><h3>Deposit receipts</h3>${transactions.length ? transactions.map((tx) => `<article><p><span class="contract-state" data-tone="${receiptState(tx).tone}">${receiptState(tx).label}</span> · ${escape(tx.confirmations ?? "Unavailable")} confirmations</p><code class="contract-review-reference">${escape(tx.txHash)}</code><p>${escape(amount(tx.amountWei, symbol))} · block ${escape(tx.blockNumber)} · log ${escape(tx.logIndex)}</p><button type="button" class="button button-secondary button-small" data-contract-action="copy" data-contract-copy-type="transaction" data-contract-copy-value="${escape(tx.txHash)}">Copy transaction ID</button></article>`).join("") : '<p class="contract-empty">No deposit receipt details are available in this snapshot.</p>'}<p class="contract-notice">Confirmed means the server observed the canonical receipt with its confirmation threshold; it is not a guarantee of finality. This index does not show unseen mempool transactions.</p>${linked(row) && options.onOpenLinked ? `<button type="button" class="button button-secondary" data-contract-action="linked" data-contract-wallet="${escape(row.wallet)}">Open linked guest</button>` : ""}<p data-contract-copy-status role="status"></p><div data-contract-copy-fallback></div>`;
+    dialogBody.innerHTML = `<div class="contract-source-bar"><h2 id="${id}-dialog-title" tabindex="-1">Wallet deposits</h2><button type="button" class="button button-secondary" data-contract-action="close" aria-label="Close details">Close</button></div><p class="contract-sync-meta">${readonly ? "Sample snapshot" : "Observed"} at block ${escape(reviewAnchor.number)} · ${escape(when(snapshot.lastSyncedAt))}</p><p data-contract-review-status role="status" aria-live="polite" hidden></p>${linked(row) ? `<p><strong>${escape(row.name || (walletOnly(row) ? "Wallet-only payer" : "Linked guest"))}</strong><br>${walletOnly(row) ? "Payer wallet record only. No Luma name or email has been verified." : escape(row.email)}</p>` : '<p class="contract-link-note">Unlinked wallet. No verified guest name or email is attached to this address.</p>'}<dl class="contract-review-facts"><div><dt>Payer wallet</dt><dd class="contract-review-reference">${escape(row.wallet)} <button type="button" class="button button-secondary button-small" data-contract-action="copy" data-contract-copy-type="wallet" data-contract-copy-value="${escape(row.wallet)}">Copy wallet</button></dd></div>${exact("Historical amount received", row.receivedWei)}${exact("Current unused payer credit", row.pendingCreditWei)}${exact("Current committed principal", row.committedPrincipalWei)}${exact("Held case share", row.heldShareWei)}${exact("Still owed", row.owedWei)}<div><dt>Receipt linkage</dt><dd>${row.receiptLinked === true ? "Receipt linked in the application" : "No application receipt link recorded"}</dd></div><div><dt>Contract registration</dt><dd>${escape(row.registrationState ?? (row.registered === true ? "Registered" : "Not registered"))}</dd></div></dl><details><summary>Payment observations & exact event context</summary><dl class="contract-review-facts">${row.unallocatedWei == null ? "" : exact("Ledger unallocated observation (not payer-owned credit)", row.unallocatedWei)}${exact("Principal / credit returns recorded", row.returnedWei)}${exact("Attendance payments recorded", row.attendancePaidWei)}${exact("Unused credit withdrawals recorded", row.creditWithdrawnWei)}${exact("Claim payments recorded", row.claimsPaidWei)}${row.registrationBasisWei == null ? "" : exact("Historical registration basis", row.registrationBasisWei)}<div><dt>Event</dt><dd>${escape(scope.eventId)}</dd></div><div><dt>Chain</dt><dd>${escape(snapshot.chainId)} · ${escape(symbol)}</dd></div><div><dt>Contract</dt><dd class="contract-review-reference">${escape(snapshot.contract)}</dd></div><div><dt>Version</dt><dd>${escape(snapshot.contractVersion)}</dd></div><div><dt>Indexed block</dt><dd>${escape(snapshot.indexedBlock?.number)} · ${escape(when(snapshot.indexedBlock?.timestamp, true))}<code class="contract-reference">${escape(snapshot.indexedBlock?.hash)}</code></dd></div></dl>${row.pendingCreditWei == null && row.unallocatedWei != null ? '<p class="contract-notice">This version has no payer-owned credit balance. A ledger unallocated observation is separate from unused payer credit and does not establish who can withdraw it.</p>' : ""}</details><p class="contract-notice">These are independent observations. Do not add overlapping amounts together, infer remaining funds from historical deposits, or treat zero credit/principal as proof all payments are complete. Check payment activity for delivery and owed claims.</p><h3>Deposit receipts</h3>${transactions.length ? transactions.map((tx) => `<article><p><span class="contract-state" data-tone="${receiptState(tx).tone}">${receiptState(tx).label}</span> · ${escape(tx.confirmations ?? "Unavailable")} confirmations</p><code class="contract-review-reference">${escape(tx.txHash)}</code><p>${escape(amount(tx.amountWei, symbol))} · block ${escape(tx.blockNumber)} · log ${escape(tx.logIndex)}</p><button type="button" class="button button-secondary button-small" data-contract-action="copy" data-contract-copy-type="transaction" data-contract-copy-value="${escape(tx.txHash)}">Copy transaction ID</button></article>`).join("") : '<p class="contract-empty">No deposit receipt details are available in this snapshot.</p>'}<p class="contract-notice">Confirmed means the server observed the canonical receipt with its confirmation threshold; it is not a guarantee of finality. This index does not show unseen mempool transactions.</p>${linked(row) && options.onOpenLinked ? `<button type="button" class="button button-secondary" data-contract-action="linked" data-contract-wallet="${escape(row.wallet)}">Open host review</button>` : ""}${payerAdoptionReview(row, transactions)}<p data-contract-copy-status role="status"></p><div data-contract-copy-fallback></div>`;
     if (!dialog.open) dialog.showModal();
     renderReviewStatus();
     dialogBody.querySelector("h2")?.focus();
@@ -519,6 +528,39 @@ export function mountContractInbox(element, options) {
       modalVersion++;
       dialog.close();
       if (current()) options.onOpenLinked?.(participantId);
+      return;
+    }
+    if (action === "adopt" && row && !linked(row) && typeof options.onAdoptPayer === "function") {
+      const status = find("[data-contract-adopt-status]");
+      const note = text(find("[data-contract-adopt-note]")?.value).trim();
+      const confirmed = find("[data-contract-adopt-confirmed]")?.checked === true;
+      const txHash = text(button.dataset.contractTx);
+      const fresh = dialog.open && reviewAnchor && snapshot?.actionable === true && !snapshot.stale && !snapshot.error && !localError &&
+        text(snapshot.indexedBlock?.number) === text(reviewAnchor.number) && text(snapshot.indexedBlock?.hash) === text(reviewAnchor.hash);
+      if (!fresh || !row.transactions.some((tx) => tx.txHash === txHash && receiptState(tx).kind === "confirmed")) {
+        status.textContent = "Refresh and reopen this wallet’s current canonical deposit review.";
+        return;
+      }
+      if (!confirmed || note.length < 8 || note.length > 1000) {
+        status.textContent = "Confirm this exact payer review and add a note of 8–1000 characters.";
+        return;
+      }
+      const version = modalVersion;
+      button.disabled = true;
+      status.textContent = "Checking the canonical payer and adding its wallet for host review…";
+      try {
+        await options.onAdoptPayer({ wallet: row.wallet, txHash, confirmed: true, note });
+        if (current() && modalVersion === version) {
+          modalVersion++;
+          dialog.close();
+          await refresh({ manual: true });
+        }
+      } catch (error) {
+        if (current() && dialog.open && modalVersion === version) {
+          status.textContent = error.message || "The payer could not be added. Refresh before reviewing again.";
+          renderReviewStatus();
+        }
+      }
       return;
     }
     if (action === "copy") {

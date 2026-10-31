@@ -1,0 +1,29 @@
+{
+  "package": "@walletconnect/ethereum-provider",
+  "version": "2.26.0",
+  "appkitVersion": "1.8.19",
+  "buildTool": "esbuild@0.28.2",
+  "artifact": "https://registry.npmjs.org/@walletconnect/ethereum-provider/-/ethereum-provider-2.26.0.tgz",
+  "registryIntegrity": "sha512-C6Ld+Gv1OurPYvAbFGXRuvthIp4datYqDlmRGjWRWXkkIerijo05vwrH5cGNj9bK93FSfGScqaL2Ig2LvX3QhQ==",
+  "verifiedArtifactSha512": true,
+  "originalUmdSha256": "34bdefed6fda0c66fbf83342900ebb8095608b1053102a0432d164d5a718775c",
+  "originalUmdRequiresExternalGlobals": true,
+  "bundleSha256": "dc25163a911c0bbfad14625914d94553ae0a828a4f8a721807cc87747a214a59",
+  "bundleBytes": 2241569,
+  "gzipBytes": 647864,
+  "lockSha256": "248f9e4b894fed3c2d9b7cdbf50a6b34702c3dc9215838adc24e87bc5e5aa75f",
+  "build": "npm ci --ignore-scripts --no-audit --no-fund; node build.mjs (isolated temp directory, no repository dependency changes)",
+  "entry": "entry.mjs",
+  "scope": "browser provider and official connection UI only; script loaded after explicit More wallets",
+  "licenses": {
+    "ethereumProvider": "LICENSE.md",
+    "appkit": "APPKIT-LICENSE.md",
+    "dependencyNotices": "THIRD-PARTY-NOTICES.txt",
+    "bundledPackages": 82,
+    "noticeFiles": 85,
+    "upstreamNpmMissingLicenseFile": [
+      "encode-utf8@1.0.3",
+      "uint8arrays@3.1.1"
+    ]
+  }
+}

@@ -1,0 +1,2 @@
+import { build } from "esbuild";
+await build({entryPoints:["entry.mjs"],bundle:true,format:"iife",globalName:"KlerosWalletConnectVendor",platform:"browser",conditions:["browser","module"],target:["es2022"],minify:true,legalComments:"eof",define:{"process.env.NODE_ENV":JSON.stringify("production")},metafile:true,outfile:"walletconnect.bundle.js"}).then(async result=>{const fs=await import("node:fs/promises");await fs.writeFile("metafile.json",JSON.stringify(result.metafile,null,2)+"\n");});

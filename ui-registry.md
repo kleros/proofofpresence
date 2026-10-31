@@ -1,5 +1,110 @@
 # Kleros event workbench visual registry
 
+### Database Manage and event timezone
+
+Files: `public/first-event-manage.js`, `public/first-event-display.js`, `public/luma-setup.js` · Updated 30 October 2026.
+
+Reuse existing plum panels, serif headings, Geist body text, teal primary
+buttons and secondary review controls. Keep wallet/status hashes wrapped with
+overflow-wrap and existing mono text. Core actions stay on the database page.
+Attended checkboxes are a review selection; the primary attendance action posts
+one exact batch. Show ETH amounts in readable decimals and exact wallet lists
+before wallet confirmation. Explain challenge and matching deadlines separately.
+The timezone field offers common native choices plus an editable IANA datalist
+using the existing form style; preserve selected-zone walltime and UTC in the
+transaction terms. WalletConnect stays lazy and
+uses the matching dark/lavender theme; it adds no startup wallet request.
+
+Recovery keeps the same panel and secondary button styles on the saved-data page.
+Show “Recover unused deposit” visibly, disabled until a wallet is connected. Its
+existing review dialog lists the original contract, exact returned ETH and same
+wallet destination in wrapped monospace. Keep progress in the existing status
+line; loading an action must not replace the event page with an overlay.
+
+### Wallet chooser and returning depositors
+
+Files: `public/wallet-connection.css`, `public/first-event/wallet.js` · Updated 30 October 2026.
+
+| Property | Pattern |
+| --- | --- |
+| Background | Plum `#1C1829`; inset fields `#120E1C` |
+| Border | 1px `#473C5F`, 14px dialog radius; fields 1px `#84739E`, 8px radius |
+| Text | Primary `#EEEAF5`, secondary `#CAC5D5`; serif heading 32px, regular weight |
+| Spacing | Dialog padding 24px, body gap 14px, choice gap 10px |
+| Controls | Existing secondary buttons; minimum 44px targets; visible close control |
+| Focus | 3px `#C2B5F2` outline with 3px offset |
+| Backdrop | `rgba(9,6,18,.78)` |
+
+Use wallet names as plain text. Account-only Connect does not add policy or
+signature prompts. App links open the current page, preserving the event route.
+Prefer the singular current browser provider and allow late provider discovery;
+external wallet options stay available when the browser exposes no provider.
+Wallet return metadata retains the exact same-origin event URL.
+When the production browser has no provider, the first Connect opens the existing
+Reown picker directly. A cancelled attempt ends; browser-app links appear only on
+the next explicit Connect on that route. Keep existing dark/lavender picker tokens.
+Saved completed deposits replace payment controls with the original transaction
+ID and Copy transaction ID button. Unknown or pending originals retain recovery
+controls and take precedence over history. Do not label SQL history as current
+withdrawable credit or organizer authority.
+
+### Direct deposit, recorded recovery and check-in access
+
+Updated 30 October 2026. Deposit opens the wallet's transaction review directly;
+do not reintroduce an app deposit-review modal. Keep short preparing/submitted/
+confirmed status and original-hash recovery controls. Use existing amount/card
+and teal button styles. Recovery displays saved receipt history and labels it
+separately from withdrawable credit. Check in is visible per depositor row and
+in authenticated organizer controls, with event-hour availability explained in
+the confirmation form. Recorded confirmed creation offers Create new event;
+this opens a blank form and never relabels old links as freshly verified.
+
+### Wallet-only public connection
+
+Updated 30 October 2026. Public Connect opens account selection only, then shows
+`Connected · 0x…` and the deposit button or setup form. Do not display sign-in,
+policy or event verification messages on this control. Keep plain transaction
+progress after Deposit/Create: Preparing, Confirm in wallet, Submitted, Confirmed.
+Reuse existing teal primary buttons, plum cards and status/live-region styling.
+Your events appears beneath setup for the selected wallet using public recorded
+creation metadata. Its Manage link opens the database view; private controls
+remain a separate authenticated action. A connected address is never a verified
+organizer badge. Preserve original transaction IDs and pending controls on reload.
+
+### Fast setup and authenticated connection
+
+Updated 30 October 2026; `public/app.js`, `public/luma-setup.js`.
+
+Reuse the existing plum setup card, serif heading, Geist form controls and teal
+primary button. Setup configuration is display-only; explain that fresh checks
+run before wallet confirmation without displaying a verified status. Production
+V10 uses Create event in wallet as its single primary action; other versions keep
+the separate review flow. Keep the form in place
+while existing setup progress shows preparation, wallet review, submission and
+confirmation. Progress uses text and `role=status`, not color alone.
+Common timezones use a native select styled by `.luma-setup-form :is(input, select)`;
+retain searchable IANA input for custom zones and the same date invalidation rules.
+The launch capacity is an explicit read-only 150 field using the existing input
+style. A reviewed replacement preset shows its new-contract disclosure and original
+recovery link before the action; prefilled terms do not imply creation or migration.
+
+### Current event and previous-event recovery
+
+Files: `public/first-event/event.js`, `page.js`, `public/first-event-display.js`,
+`public/home-wallet.js` · Updated 30 October 2026 using imprint.
+
+Reuse the existing plum cards, `.field-help`, secondary links, wrapped `.mono`
+addresses and cyan current-event action. Normal discovery/counts/search shows one
+current Truth Pays event. Label prior receipts and creator history “Previous event —
+recovery only”; retain the exact original contract in that view. Previous links
+never become a new payment or attendance action. A visible recovery link on the
+current page keeps old credit accessible. Current static address, QR pixels and
+wallet transaction share one source identity; hide stale manual-payment controls.
+After authentication in the guarded app, clear the previous event and actor
+content before showing the connected-wallet card. Its single primary control
+continues to freshly checked event actions. Preserve the preferred first-event
+deposit card and its immediate post-connect Deposit button.
+
 Testnet environment notices must visibly name the authoritative controlled-arbitrator setup and
 state that it has no independent jury. Use the existing persistent notice pattern and trusted
 bootstrap text; exact chain/currency, policy and transaction review remain available.
@@ -331,6 +436,30 @@ Stages distinguish wallet sign-in from Ethereum/session verification. Errors nev
 signed-in form. Normal retry performs a fresh read; a changed server instance explicitly asks the
 user to reload. No automatic reload or transaction resend. Preserve saved transaction journals.
 
+### Immediate wallet and transaction feedback
+
+File: `public/app.js` · Updated30October2026 using the imprint skill.
+
+| Property | Pattern |
+| --- | --- |
+| Sign-in / result notice | Existing `#toast`, `role=status`, polite live region; raised plum surface, `--ink` text |
+| Border / shape / shadow | Existing1px `--boundary`, `--small-radius`, `--shadow`; no new tokens |
+| Copy / spacing | Existing Geist14px/1.7,16px20px toast padding; hashes wrap within the viewport |
+| Transaction stage | Existing `#transaction-status` and `.notice`; raised surface,1px line,16px padding, muted text |
+| Busy control | Existing disabled button, explicit stage label and sign-in `aria-busy`; normal focus styles |
+| Errors | Existing toast error variant and `.error-panel`; no success styling for pending or unknown outcomes |
+| Receipt-check limit | Existing amber `.notice.warning`; full wrapped original hash and disabled original execute control |
+
+Show wallet account/signature waits immediately. Authentication acknowledgment still requires the
+fresh session/event read before verified readiness. Transaction stages distinguish checking, wallet
+approval, a journaled submitted hash, and authoritative confirmation. A confirmed result can appear
+while event details refresh; the older displayed balance/admission remains a separate snapshot.
+Feedback belongs to the captured event, actor, server, route and review generation; late outcomes
+retain their journals without repainting another view. No automatic transaction retry, resend or style change.
+When receipt checks stop, say that success/failure remains unverified. Keep the hash visible and
+direct the user to close the review and check the original transaction. Only a canonical failed
+receipt can use the failed state; a browser deadline or interrupted read cannot establish failure.
+
 ### Shared public directory startup
 
 Files: `public/entry.js`, `public/public-home.js`, `public/app.js`. Updated29October2026.
@@ -372,3 +501,57 @@ Four numbered cards show exact CREATE nonce/address/gas/fee/runtime and a separa
 Mobile stacks controls and wraps full values without horizontal overflow. Mainnet, proposed total gas
 cap, immediate owner/renunciation terms and signing-disabled status are visible before wallet actions.
 Keep local receipt recovery and original hashes; do not add event creation or automatic sends.
+
+### First-event deposit page
+
+Files: `public/first-event/index.html`, `styles.css`, `wallet.js` · Updated 30 October 2026
+
+Reuse paper `#120E1C`, surface `#1C1829`, line `#473C5F`, lavender `#C2B5F2`, cyan `#5BD4EF`, local Geist and Instrument Serif. One 14px-radius deposit card uses 28px padding (22px mobile); 8px controls have 44–46px minimum targets and 3px lavender keyboard focus. The persistent network label, exact full contract address and amount remain explicit. QR, copy and wallet-button paths share one event identity. Initial rendering never waits for chain reads. Confirmed payments hide further payment controls and show the original transaction ID plus Luma return; pending/ambiguous outcomes retain original-hash recovery.
+
+The current IST replacement is the sole discovery result. Previous event links
+use the same site origin and open recovery with their original event/contract.
+Connect selects an injected wallet first; without one, open the existing Reown
+picker directly. Keep its cancellation and explicit browser-app fallback behavior.
+
+The canonical participant layout is `/first-event/`; simple Truth Pays participant links (including
+an omitted view) resolve directly here without a second event card. Keep the existing deposit card,
+QR, full address and Luma return unchanged. The disclosure's Manage/recover link explicitly uses
+`review=1` to enter the fresh guarded app. Additional action, recovery or transaction route data stays
+with that app; organizer links retain the separate public depositor list.
+
+### First-event organizer review
+
+Files: `public/app.js`, `public/contract-inbox.js`, `public/contract-inbox.css` · Updated 30 October 2026
+
+Reuse existing plum/lavender/cyan tokens, 14px cards, 8px controls, 44px targets and lavender focus. The actual deposit inbox stays in its own initially open native disclosure for this event; legacy table ordering remains for other profiles. Payer review shows exact wallet/receipt with a factual editable note and unchecked acknowledgment; absent contacts are labelled wallet-only, without inferring signature or Luma verification. Registered-wallet attendance checkboxes start unselected and stay disabled until the authoritative event end. The exact list, owner note, interval, principal share, wallet, recipient and policy remain in the existing guarded transaction dialog.
+
+
+### Immediate first-event display
+
+Files: `public/first-event-display.js`, `public/entry.js` · Updated 30 October 2026 using the imprint skill.
+
+Uses the existing `.luma-launch-event` header, `.panel` surface/border/radius, `.details-list` facts,
+`.button-secondary` controls, muted field-help and `.table-scroll` receipt table. No new palette,
+spacing scale or loading overlay. Long wallets wrap on mobile; receipts retain descriptive links.
+Public event facts appear independently of network reads. Deposit rows always name their snapshot
+block/time and cumulative received amount; stale/error states retain that qualification. A public
+view never grants owner status, wallet eligibility or financial permissions. Review buttons enter
+the existing fresh verification flow.
+
+### Home wallet, public creator events and saved deposits
+
+Files: `public/public-home.js`, `public/home-wallet.js` · Updated 30 October 2026 using imprint.
+
+Reuse `.luma-launch-card`, `.public-event-list`, `.public-event-row`, `.public-event-copy`,
+`.public-event-date`, `.badge`, `.field-help` and `.button-secondary`; no new visual tokens.
+Your events sits below Find your event and before Organizing an event. Connect wallet only selects
+the account and shows a short monospace address. Rows use public recorded creator metadata and a
+Manage event navigation link; they never claim verified ownership or grant permissions. Keep the
+public setup metadata read separate from Connect and clear the displayed wallet rows on account or
+network changes.
+
+Your deposits reuses the same card and event-row styles below Your events. Keep full transaction
+IDs wrapped in `.mono`, with `.button-secondary.button-small` copy controls and `.field-help`
+status text. Show only receipts for the connected wallet, label stale snapshots, and keep the
+receipt read independent of Connect. Received payments, attendance and current credit remain
+separate facts; the Manage attendance link opens the existing database view.

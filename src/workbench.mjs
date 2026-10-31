@@ -12,6 +12,8 @@ import {
 import { importCsv } from "./imports.mjs";
 import { createImportPreviewService } from "./import-preview.mjs";
 import { createBatchService, participantBatchEligibility } from "./batches.mjs";
+import { createPayerAdoptionService, manualAttendanceWallets, bindManualAttendanceReview } from "./first-event-manage.mjs";
+import { FIRST_EVENT_MANAGE_SCOPE, firstEventManageMatches, firstEventDisplayScopes, assertFirstEventDepositTarget } from "./first-event-manage-scope.mjs";
 import { projectPayments } from "./payments.mjs";
 import { v8DepositCredits } from "./v8-deposits.mjs";
 import { testnetChain, testnetStateStore } from "./testnet-runtime.mjs";
@@ -30,6 +32,8 @@ import { eventV10LumaTemplate, V10_LUMA_ATTENDANCE_STANDARD } from "./contracts-
 import { createProductionCasePublicationService } from "./production-case-publication.mjs";
 import { createFactoryRefresh } from "./shared-factory-refresh.mjs";
 import { publicCatalogSnapshot } from "./public-catalog.mjs";
+import { v10ReadBatch, v10CodeHashBatch } from "./v10-read-batch.mjs";
+import { directDepositSimulation } from "./direct-deposit-simulation.mjs";
 import {
   hash,
   id,
@@ -69,6 +73,11 @@ const ownerActions = new Set([
   "sweep",
   "transferOwnership",
 ]);
+// Production recovery is source-pinned to current/legacy children. The existing
+// trusted function dependency remains available only for isolated local tests.
+export const firstEventCreditRecoveryMatches = (record, trustedCurrentScope = FIRST_EVENT_MANAGE_SCOPE) =>
+  firstEventDisplayScopes().some(scope => firstEventManageMatches(record, scope)) ||
+  (typeof trustedCurrentScope === "function" && firstEventManageMatches(record, trustedCurrentScope));
 
 export async function createWorkbench({
   rpcPort = 0,
@@ -77,7 +86,8 @@ export async function createWorkbench({
   production = null,
   serverInstanceId = id(),
   productionOrigin = null,
-} = {}, { productionRuntime = null, productionStore = null, assertWallet: trustedAssertWallet = null } = {}) {
+} = {}, { productionRuntime = null, productionStore = null, assertWallet: trustedAssertWallet = null,
+  firstEventManageScope = FIRST_EVENT_MANAGE_SCOPE } = {}) {
   requireThat(
     contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
     "Unsupported contract version",
@@ -92,6 +102,9 @@ export async function createWorkbench({
   requireThat(trustedAssertWallet === null || typeof trustedAssertWallet === "function",
     "Wallet policy must be a trusted server dependency", "INVALID_INPUT", 400);
   const productionV10 = productionProfile === "kleros-event-v10-uups";
+  // Trusted test dependency only; ordinary runtime/config and HTTP always use the fixed scope.
+  const manageScope = typeof firstEventManageScope === "function" ? firstEventManageScope : Object.freeze({ ...firstEventManageScope });
+  const verifiedParticipantWallet = (record, person) => hasVerifiedParticipantWallet(record, person, manageScope);
   const productionFactoryVerifier = productionV10 ? verifyV10FactoryDeployment : verifyV9FactoryDeployment;
   const attendanceTemplate = productionV10 ? eventV10LumaTemplate : eventV9LumaTemplate;
   const attendanceStandard = productionV10 ? V10_LUMA_ATTENDANCE_STANDARD : V9_LUMA_ATTENDANCE_STANDARD;
@@ -113,6 +126,10 @@ export async function createWorkbench({
     ? testnetStateStore(testnet.stateFile, externalConfig.manifest)
     : null;
   const factoryDeployment = production ? production.manifest.factoryDeployment ?? Reflect.get(chain, "factoryDeployment") : null;
+  // These actors are capabilities held only by the public transaction adapter.
+  // They are never wallet-login sessions and cannot authorize private/owner work.
+  const publicTransactionActors = new WeakMap();
+  const publicActor = s => s && typeof s === "object" ? publicTransactionActors.get(s) : null;
   // Overlapping public bootstrap requests share one complete factory read. There
   // is no TTL or saved-result shortcut; financial draft checks remain separate.
   const refreshFactory = createFactoryRefresh(chain, factoryDeployment, productionFactoryVerifier);
@@ -161,7 +178,7 @@ export async function createWorkbench({
       canonical?.hash?.toLowerCase() === checked.blockHash,
       "Production wallet or implementation snapshot changed", "UPGRADE_TRUST_MISMATCH", 409);
   }
-  function externalMetadata(s = null) {
+  function externalMetadata(s = null, includeFactory = true) {
     if (!production) return external ? {
       arbitration: { mode: "controlled", notice: "Controlled test arbitrator; no independent jury" },
     } : {};
@@ -175,7 +192,7 @@ export async function createWorkbench({
       contractProfile: { ...eventV8Profile(activeContractVersion), verified: true },
       ...(productionV10 ? { abiVersion: activeContractVersion } : {}),
       governance: { ...production.manifest.governance },
-      ...(factoryDeployment ? {
+      ...(factoryDeployment && includeFactory ? {
         factory: { chainId: 1, address: factoryDeployment.factory, contractVersion: activeContractVersion,
           abiVersion: activeContractVersion, verified: Reflect.get(chain, "verifiedFactory") === true,
           deploymentTrust: Reflect.get(chain, "factoryTrust")?.deploymentTrust ?? { status: "unavailable" },
@@ -189,7 +206,7 @@ export async function createWorkbench({
       ...(productionV10 ? { features: { casePublication: false, originalCreationRecovery: false } } : {}),
       // Only a wallet's own saved reviews reveal these minimal identities.
       // They authorize receipt lookup, never a fresh financial action.
-      recoveryEvents: s?.wallet ? [...new Set([...drafts.values()]
+      recoveryEvents: s?.wallet && !publicActor(s) ? [...new Set([...drafts.values()]
         .filter(d => lower(d.wallet) === lower(s.wallet)).map(d => d.eventId))]
         .map(eventId => events.get(eventId)).filter(Boolean).map(r => ({
           id: r.definition.id, chainId: r.deployment.chainId,
@@ -226,6 +243,8 @@ export async function createWorkbench({
   function record(eventId, s) {
     const r = events.get(eventId);
     requireThat(r, "Unknown event", "NOT_FOUND", 404);
+    if (publicActor(s)) requireThat(r.definition.visibility === "public" && r.definition.editorialStatus === "published",
+      "Public transaction flows cannot access private events", "PUBLIC_FLOW_SCOPE", 403);
     if (
       r.definition.visibility === "private" ||
       r.definition.editorialStatus === "draft"
@@ -258,8 +277,111 @@ export async function createWorkbench({
     r.financialAccess = [result.owner, result.pendingOwner];
     return result;
   };
+  const ownCreditRecovery = (r, s, action, params) => productionV10 &&
+    s?.mode === "wallet" && !publicActor(s) && ethers.isAddress(s.wallet) &&
+    firstEventCreditRecoveryMatches(r, manageScope) && r.definition.visibility === "public" &&
+    r.definition.editorialStatus === "published" && action === "withdrawPending" &&
+    params && Object.keys(params).sort().join(",") === "amountWei,to" && lower(params.to) === lower(s.wallet);
+  function recoveryFinancial(r, s, owner, pendingOwner, credit) {
+    requireThat(ethers.isAddress(owner) && ethers.isAddress(pendingOwner) && typeof credit === "bigint" &&
+      credit >= 0n && credit < 2n ** 256n, "Current unused credit is unavailable", "SELECTED_EVENT_REORG", 409);
+    return { kind: "own-unused-credit-quote-v1", registryHash: hash(r.deployment), wallet: lower(s.wallet),
+      owner, pendingOwner, pendingCreditWei: String(credit) };
+  }
+  async function creditRecoveryQuote(eventId, s) {
+    const r = events.get(eventId), registryHash = hash(r.deployment), c = contract(eventId);
+    requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n,
+      "Production RPC chain changed", "WRONG_CHAIN", 409);
+    const block = await directDepositBlock("latest");
+    requireThat(block.number >= r.deployment.deploymentBlock,
+      "The unused-credit quote block is unavailable", "SELECTED_EVENT_REORG", 409);
+    const [owner, pendingOwner, credit] = await v10ReadBatch(chain.provider, [
+      { contract: c, method: "owner" }, { contract: c, method: "pendingOwner" },
+      { contract: c, method: "pendingDeposits", args: [s.wallet] },
+    ], block.number);
+    const financial = recoveryFinancial(r, s, owner, pendingOwner, credit);
+    const [canonical, network] = await Promise.all([
+      directDepositBlock(ethers.toQuantity(block.number)), chain.provider.send("eth_chainId", []),
+    ]);
+    requireThat(hash(r.deployment) === registryHash && canonical.hash === block.hash && BigInt(network) === 1n,
+      "The unused-credit quote changed", "SELECTED_EVENT_REORG", 409);
+    // A sealed amount/recipient quote grants no signing authority. Validation
+    // must independently prove the full source history and current contract.
+    return { ...financial, fingerprint: hash(financial), blockNumber: block.number, blockHash: block.hash,
+      depositWei: r.deployment.depositWei, upgrade: null, deploymentTrust: null, now: block.timestamp };
+  }
+  async function creditRecoveryState(eventId, s) {
+    const r = events.get(eventId), d = r.deployment, registryHash = hash(d);
+    // Keep the full source/history proof. An unused-credit withdrawal does not
+    // depend on anybody else's registration, payouts, attendance or disputes.
+    const c = await verifyDeployment(chain, d);
+    const trust = Reflect.get(chain, "deploymentTrust")?.get(registryHash), block = trust?.anchor;
+    requireThat(trust?.deploymentTrust?.status === "verified" && block &&
+      Number.isSafeInteger(block.number) && block.number > 0 && ethers.isHexString(block.hash, 32),
+      "Current recovery authority is unavailable", "SELECTED_EVENT_REORG", 409);
+    const [owner, pendingOwner, credit] = await v10ReadBatch(chain.provider, [
+      { contract: c, method: "owner" }, { contract: c, method: "pendingOwner" },
+      { contract: c, method: "pendingDeposits", args: [s.wallet] },
+    ], block.number);
+    const financial = recoveryFinancial(r, s, owner, pendingOwner, credit);
+    // Preserve chainState's current implementation and canonical-anchor close.
+    const head = await chain.provider.send("eth_getBlockByNumber", ["latest", false]);
+    requireThat(head?.number && BigInt(head.number) >= BigInt(block.number),
+      "Production snapshot head moved backwards", "DEPLOYMENT_REORG", 409);
+    const [eventSlot, factorySlot, implementationCode, canonical] = await Promise.all([
+      chain.provider.send("eth_getStorageAt", [d.contract, IMPLEMENTATION_SLOT, head.number]),
+      chain.provider.send("eth_getStorageAt", [d.factory, IMPLEMENTATION_SLOT, head.number]),
+      chain.provider.send("eth_getCode", [d.implementation, head.number]),
+      chain.provider.send("eth_getBlockByNumber", [ethers.toQuantity(block.number), false]),
+    ]);
+    requireThat(hash(r.deployment) === registryHash && ethers.isHexString(eventSlot, 32) && ethers.isHexString(factorySlot, 32) &&
+      BigInt(eventSlot) === BigInt(d.implementation) && BigInt(factorySlot) === BigInt(d.factoryImplementation) &&
+      ethers.keccak256(implementationCode) === d.implementationCodeHash && canonical?.hash === block.hash,
+      "Production implementation or recovery snapshot changed", "UPGRADE_TRUST_MISMATCH", 409);
+    r.financialAccess = [owner, pendingOwner];
+    return { ...financial, fingerprint: hash(financial), blockNumber: block.number,
+      blockHash: block.hash, depositWei: d.depositWei, upgrade: trust.upgrade,
+      deploymentTrust: trust.deploymentTrust, now: block.timestamp };
+  }
+  async function firstEventAuthority(eventId) {
+    const r = events.get(eventId);
+    requireThat(productionV10 && firstEventManageMatches(r, manageScope),
+      "Current authority requires the exact first event", "FIRST_EVENT_SCOPE", 404);
+    const binding = hash(r.deployment);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      // Each attempt runs the complete original provenance verifier. No role
+      // result, successful proof or financial snapshot is reused across calls.
+      const c = await verifyDeployment(chain, r.deployment);
+      const trust = Reflect.get(chain, "deploymentTrust")?.get(binding), anchor = trust?.anchor;
+      requireThat(trust?.deploymentTrust?.status === "verified" && anchor &&
+        Number.isSafeInteger(anchor.number) && anchor.number > 0 && ethers.isHexString(anchor.hash, 32),
+        "Current event authority is unavailable", "SELECTED_EVENT_REORG", 409);
+      const [currentOwner, pendingOwner] = await v10ReadBatch(chain.provider,
+        [{ contract: c, method: "owner" }, { contract: c, method: "pendingOwner" }], anchor.number);
+      const [canonical, latest, network] = await Promise.all([
+        chain.provider.getBlock(anchor.number), chain.provider.getBlock("latest"), chain.provider.send("eth_chainId", []),
+      ]);
+      requireThat(BigInt(network) === 1n && canonical?.hash === anchor.hash &&
+        ethers.isAddress(currentOwner) && ethers.isAddress(pendingOwner) && hash(r.deployment) === binding &&
+        firstEventManageMatches(r, manageScope),
+        "Current event authority changed", "SELECTED_EVENT_REORG", 409);
+      if (latest?.number > anchor.number && attempt === 0) continue;
+      requireThat(latest?.number === anchor.number && latest.hash === anchor.hash,
+        "A new event block arrived; refresh the current action", "SELECTED_EVENT_REORG", 409);
+      r.financialAccess = [currentOwner, pendingOwner];
+      return { owner: currentOwner, pendingOwner };
+    }
+    throw Object.assign(new Error("Current event authority changed"), { code: "SELECTED_EVENT_REORG", status: 409 });
+  }
   async function owner(eventId, s) {
+    requireThat(!publicActor(s), "Authenticate organizer access separately", "PUBLIC_FLOW_SCOPE", 403);
     authenticated(s);
+    if (productionV10 && firstEventManageMatches(events.get(eventId), manageScope)) {
+      const authority = await firstEventAuthority(eventId), r = record(eventId, s);
+      requireThat(lower(authority.owner) === lower(s.wallet),
+        "Only this event's current contract owner can do that", "NOT_OWNER", 403);
+      return r;
+    }
     await state(eventId);
     const r = record(eventId, s);
     requireThat(
@@ -271,7 +393,14 @@ export async function createWorkbench({
     return r;
   }
   async function staff(eventId, s) {
+    requireThat(!publicActor(s), "Authenticate staff access separately", "PUBLIC_FLOW_SCOPE", 403);
     authenticated(s);
+    if (productionV10 && firstEventManageMatches(events.get(eventId), manageScope)) {
+      const authority = await firstEventAuthority(eventId), r = record(eventId, s);
+      requireThat(r.definition.staff.some(wallet => lower(wallet) === lower(s.wallet)) || lower(authority.owner) === lower(s.wallet),
+        "Staff access is scoped to this event", "NOT_STAFF", 403);
+      return r;
+    }
     await state(eventId);
     const r = record(eventId, s);
     requireThat(
@@ -297,6 +426,9 @@ export async function createWorkbench({
     authenticated(s);
     const existing = [...r.participants.values()].find(p => lower(p.wallet) === lower(s.wallet));
     if (existing) return existing;
+    // Requesting accounts and preparing a transaction do not prove ownership.
+    // No shared participant/identity record is created until a signed receipt.
+    if (publicActor(s)) return { wallet: s.wallet, eventId: r.definition.id };
     requireThat(production && s.mode === "wallet", "A verified wallet is required", "WALLET_REQUIRED", 403);
     const person = { id: id(), eventId: r.definition.id, wallet: ethers.getAddress(s.wallet),
       name: null, email: null, walletVerified: true, identityVerified: false,
@@ -563,7 +695,7 @@ export async function createWorkbench({
         immutableTerms: { lumaUrl: r.definition.lumaUrl, startsAt: r.definition.startsAt, endsAt: r.definition.endsAt,
           timezone: r.definition.timezone, policySha256: hash(r.policy) } };
     }
-    const role =
+    const role = publicActor(s) ? "participant" :
       s && lower(s.wallet) === lower(st.owner)
         ? "organizer"
         : s && r.definition.staff.some((x) => lower(x) === lower(s.wallet))
@@ -595,9 +727,18 @@ export async function createWorkbench({
     };
   }
   async function bootstrap(s, options = {}) {
-    await refreshFactory();
+    // An existing V10 event verifies its own factory provenance below. Future
+    // child creation/default checks belong only to the separate setup page.
+    const selectedV10Only = productionV10 && options.selectedOnly === true && Object.hasOwn(options, "selectedEventId");
+    if (!selectedV10Only) await refreshFactory();
+    if (productionV10 && options.factoryOnly === true) return {
+      mode: "hosted-production", identities: [], events: [],
+      session: s ? { wallet: s.wallet, label: s.label, mode: s.mode } : null,
+      chain: production.manifest.chain, contractVersion: activeContractVersion,
+      ...externalMetadata(s), now: (await chain.provider.getBlock("latest")).timestamp,
+    };
     if (Object.hasOwn(options, "selectedEventId"))
-      return selectedBootstrap(s, options.selectedEventId);
+      return selectedBootstrap(s, options.selectedEventId, production && options.selectedOnly === true);
     if (production) {
       const { selectedEvent, ...directory } = await selectedBootstrap(s, "");
       return directory;
@@ -644,7 +785,7 @@ export async function createWorkbench({
   }
   // This map exists for one response only. It never survives a request, wallet
   // change, ownership change or server instance; its snapshots are all fresh.
-  async function selectedBootstrap(s, selectedEventId) {
+  async function selectedBootstrap(s, selectedEventId, selectedOnly = false) {
     const snapshots = new Map();
     const failed = new Set();
     const snapshot = (eventId) => {
@@ -679,7 +820,7 @@ export async function createWorkbench({
       detail: null,
       error: selectedError(error),
     }));
-    await Promise.all(
+    if (!selectedOnly) await Promise.all(
       [...events.values()]
         .filter(
           (r) =>
@@ -692,7 +833,7 @@ export async function createWorkbench({
           }),
         ),
     );
-    const visible = [...events.values()].filter((r) => {
+    const visible = selectedOnly ? [] : [...events.values()].filter((r) => {
       if (failed.has(r.definition.id)) return false;
       try {
         record(r.definition.id, s);
@@ -701,7 +842,11 @@ export async function createWorkbench({
         return false;
       }
     });
-    const summaries = Promise.all(
+    // An event deep link needs only its own financial state. The public catalog
+    // and organizer inventory retain their separate, existing request paths.
+    const summaries = selectedOnly
+      ? selected.then(({ detail }) => detail ? [detail.event] : [])
+      : Promise.all(
       visible.map(async (r) => {
         if (r.definition.id === selectedEventId)
           return (await selected).detail?.event ?? null;
@@ -756,7 +901,7 @@ export async function createWorkbench({
             ),
           }
         : {}),
-      ...externalMetadata(s),
+      ...externalMetadata(s, !(productionV10 && selectedOnly)),
       now: nowBlock.timestamp,
       selectedEvent: disclosed.selectedEvent,
     };
@@ -906,10 +1051,161 @@ export async function createWorkbench({
     return { directory: visible, selectedEvent };
   }
 
+  // A queued read cannot retain a past access decision until a later poll.
+  // Reuse the existing final disclosure checks immediately before delivery.
+  async function finalizeReadResult(operation, result, s, eventId) {
+    requireThat(productionV10, "Event background reads require V10", "NOT_FOUND", 404);
+    if (operation === "bootstrap") {
+      const selection = result.selectedEvent ?? { eventId: "", wallet: s?.wallet ?? null, detail: null };
+      let originalState = null;
+      if (selection.detail) {
+        const state = selection.detail.state, payments = selection.detail.payments;
+        const deployment = events.get(selection.eventId)?.deployment;
+        // Selected detail omits state.blockHash, but its payments projection was
+        // made at that exact state block. Bind that existing execution anchor
+        // to the same event before the normal canonical disclosure check.
+        requireThat(deployment && state && payments && Number.isSafeInteger(state.blockNumber) && state.blockNumber > 0 &&
+          payments.blockNumber === state.blockNumber && ethers.isHexString(payments.blockHash, 32) &&
+          payments.eventId === selection.eventId && payments.chainId === deployment.chainId &&
+          payments.contractVersion === deployment.contractVersion && lower(payments.contract) === lower(deployment.contract) &&
+          (state.blockHash === undefined || state.blockHash === payments.blockHash),
+          "Selected event execution anchor changed", "SELECTED_EVENT_REORG", 409);
+        originalState = { ...state, blockHash: payments.blockHash };
+      }
+      const disclosed = await selectedDisclosure(s, result.events ?? [], selection, originalState);
+      return { ...result, events: disclosed.directory,
+        ...(result.selectedEvent ? { selectedEvent: disclosed.selectedEvent } : {}),
+        session: s ? { wallet: s.wallet, label: s.label, mode: s.mode } : null,
+        ...externalMetadata(s, Object.hasOwn(result, "factory")) };
+    }
+    if (operation === "confirm") {
+      // A known-hash fact belongs to its original wallet even after private
+      // event access changes. Bind the stored review directly, without record().
+      authenticated(s);
+      const r = events.get(eventId), d = drafts.get(result?.draftId);
+      const entry = r?.transactions.find(item => lower(item.hash) === lower(result?.hash));
+      requireThat(r && d && entry && d.eventId === eventId && result.eventId === eventId &&
+        result.chainId === 1 && d.chainId === 1 && d.contractVersion === "kleros-event-v10-uups" &&
+        lower(d.wallet) === lower(s.wallet) && lower(result.wallet) === lower(d.wallet) &&
+        lower(result.contract) === lower(d.contract) && lower(d.contract) === lower(r.deployment.contract) &&
+        result.action === d.action && d.id === result.draftId && entry.draftId === d.id && entry.eventId === eventId &&
+        entry.chainId === d.chainId && lower(entry.contract) === lower(d.contract) && entry.action === d.action && lower(entry.wallet) === lower(d.wallet) &&
+        d.registryHash === hash(r.deployment) && /^0x[0-9a-fA-F]{64}$/.test(result.hash ?? "") &&
+        ["pending", "confirmed", "failed"].includes(result.status),
+        "Known transaction belongs to another wallet, review or event", "DRAFT_SCOPE", 409);
+      requireOriginalV10Hash(d, result.hash);
+      if (v10Receipts) v10Receipts.sealDraft(d);
+      const [receipt, network] = await Promise.all([
+        chain.provider.getTransactionReceipt(result.hash), chain.provider.send("eth_chainId", []),
+      ]);
+      requireThat(BigInt(network) === 1n, "Production RPC chain changed", "WRONG_CHAIN", 409);
+      const terminal = result.status !== "pending";
+      requireThat(!terminal || (receipt && Number.isSafeInteger(result.blockNumber) && result.blockNumber > 0 &&
+        ethers.isHexString(result.blockHash, 32) && receipt.blockHash === result.blockHash &&
+        receipt.blockNumber === result.blockNumber && receipt.status === (result.status === "confirmed" ? 1 : 0)),
+        "Known transaction receipt changed", "TX_REORG", 409);
+      if (receipt) {
+        requireThat(lower(receipt.hash ?? receipt.transactionHash) === lower(result.hash) &&
+          lower(receipt.from) === lower(d.wallet) && [0, 1].includes(receipt.status) &&
+          Number.isSafeInteger(receipt.blockNumber) && receipt.blockNumber > 0 && ethers.isHexString(receipt.blockHash, 32) &&
+          (result.blockHash === undefined || result.blockHash === receipt.blockHash),
+          "Known transaction receipt differs from its original scope", "TX_REORG", 409);
+        const [canonical, closingNetwork] = await Promise.all([
+          chain.provider.getBlock(receipt.blockNumber), chain.provider.send("eth_chainId", []),
+        ]);
+        requireThat(BigInt(closingNetwork) === 1n && canonical?.number === receipt.blockNumber && canonical.hash === receipt.blockHash,
+          "Known transaction receipt is no longer canonical", "TX_REORG", 409);
+        requireOriginalV10Hash(d, result.hash);
+        // Do not promote a previously pending result without its normal reconciliation.
+        return terminal ? { ...result, blockHash: receipt.blockHash } : result;
+      }
+      const pending = { ...result }; delete pending.blockNumber; delete pending.blockHash;
+      return pending;
+    }
+    if (operation !== "confirm") {
+      // Refresh financial owner/private membership for unsigned reviews. This
+      // grants no signing authority and does not replace normal draft validation.
+      // This is a directory authority check, not a selected-detail response.
+      // The empty selection keeps the ordinary current access checks without
+      // treating the deliberately absent detail as a denied selected event.
+      const disclosed = await selectedDisclosure(s, [{ id: eventId }],
+        { eventId: "", wallet: s?.wallet ?? null, detail: null }, null);
+      requireThat(disclosed.directory.some(item => item.id === eventId),
+        "Private or unpublished event", "FORBIDDEN", 403);
+      if (operation === "participant-draft") {
+        if (result?.action === "withdrawPending") {
+          const r = events.get(eventId), d = drafts.get(result.id), amount = d?.args?.[1];
+          requireThat(productionV10 && firstEventCreditRecoveryMatches(r, manageScope) && s?.mode === "wallet" && !publicActor(s) &&
+            d && hash(result) === hash(d) && d.eventId === eventId && d.sessionId === s.id && lower(d.wallet) === lower(s.wallet) &&
+            d.instanceId === serverInstanceId && d.origin === productionOrigin && d.chainId === 1 &&
+            d.contractVersion === "kleros-event-v10-uups" && d.abiVersion === "kleros-event-v10-uups" &&
+            lower(d.contract) === lower(r.deployment.contract) && d.action === "withdrawPending" && d.method === "withdrawPending" &&
+            d.valueWei === "0" && d.transaction?.value === "0" && d.transaction.chainId === 1 &&
+            lower(d.transaction.to) === lower(r.deployment.contract) && lower(d.transaction.from) === lower(s.wallet) &&
+            Array.isArray(d.args) && d.args.length === 2 && lower(d.args[0]) === lower(s.wallet) &&
+            typeof amount === "string" && /^[1-9][0-9]{0,77}$/.test(amount) && BigInt(amount) < 2n ** 256n &&
+            d.params && Object.keys(d.params).sort().join(",") === "amountWei,to" &&
+            lower(d.params.to) === lower(s.wallet) && d.params.amountWei === amount &&
+            d.transaction.data === contract(eventId).interface.encodeFunctionData("withdrawPending", [s.wallet, amount]) &&
+            !d.used && !d.submittedHash && !d.confirmedHash && d.expiresAt > Date.now(),
+          "The original credit withdrawal review changed", "DRAFT_SCOPE", 409);
+          v10Receipts.sealDraft(d);
+        } else requireThat(firstEventManageMatches(events.get(eventId), manageScope),
+          "Participant reviews require this first event", "FIRST_EVENT_SCOPE", 404);
+      }
+      if (["adopt-payer", "manage-draft", "deposit-inbox"].includes(operation)) {
+        requireThat(firstEventManageMatches(events.get(eventId), manageScope) &&
+          disclosed.directory.some(item => item.id === eventId && item.role === "organizer"),
+          "Only this event's current financial owner may receive the organizer review", "NOT_OWNER", 403);
+      }
+      if (operation === "deposit" && result?.depositReview) {
+        const d = drafts.get(result.id), review = result.depositReview;
+        const selected = review.selectedEvent, detail = selected?.detail;
+        const { depositReview: ignored, ...returnedDraft } = result;
+        requireThat(d && hash(returnedDraft) === hash(d) && d.eventId === eventId &&
+          d.action === "deposit" && d.sessionId === s?.id && lower(d.wallet) === lower(s?.wallet) &&
+          d.instanceId === serverInstanceId && d.origin === productionOrigin &&
+          !d.used && !d.submittedHash && d.expiresAt > Date.now() &&
+          review.kind === "deposit-review-v1" && review.instanceId === serverInstanceId &&
+          review.origin === productionOrigin && review.mode === "hosted-production" &&
+          lower(review.session?.wallet) === lower(d.wallet) && selected?.eventId === eventId &&
+          lower(selected.wallet) === lower(d.wallet) && detail?.kind === "deposit-review-v1" &&
+          detail.state?.fingerprint === d.snapshot && detail.state.blockNumber === d.reviewBlock &&
+          ethers.isHexString(detail.state.blockHash, 32) &&
+          detail.ownWallet?.depositAction?.eligible === true &&
+          detail.ownWallet.depositAction.amountWei === d.valueWei &&
+          (publicActor(s) ? detail.event?.role === "participant" :
+            disclosed.directory.find(item => item.id === eventId)?.role === detail.event?.role),
+          "Deposit review scope changed", "STALE_DRAFT", 409);
+        v10Receipts.sealDraft(d);
+        const [canonical, network] = await Promise.all([
+          chain.provider.getBlock(detail.state.blockNumber), chain.provider.send("eth_chainId", []),
+        ]);
+        requireThat(BigInt(network) === 1n && canonical?.hash === detail.state.blockHash,
+          "Deposit review snapshot is no longer canonical", "SELECTED_EVENT_REORG", 409);
+      }
+    }
+    return result;
+  }
+
   async function detail(eventId, s, knownState = null) {
     const st = knownState ?? (await state(eventId)),
       r = record(eventId, s),
       event = await summary(r, s, st);
+    // A pinned response can replay this event's credit history once for all
+    // participants and its ledger. Keep latest reads fresh, and never retain
+    // histories beyond this detail call or share them with mutation checks.
+    const creditHistories = new Map();
+    const readCreditHistory = (blockTag) => {
+      if (blockTag === "latest")
+        return v8DepositCredits(contract(eventId), r.deployment, blockTag);
+      if (!creditHistories.has(blockTag))
+        creditHistories.set(
+          blockTag,
+          v8DepositCredits(contract(eventId), r.deployment, blockTag),
+        );
+      return creditHistories.get(blockTag);
+    };
     // Wallet-owned recovery is independent of names, contact records or admission.
     // Its values use the same canonical block as the surrounding financial state.
     /** @type {{wallet:string,owedWei:string,pendingCreditWei?:string,deposit?:any,depositAction?:any}|null} */
@@ -952,6 +1248,7 @@ export async function createWorkbench({
                 p.deposit.txHash,
                 true,
                 knownState ? st.blockNumber : "latest",
+                { readCreditHistory },
               );
             } catch (e) {
               verificationState =
@@ -999,7 +1296,7 @@ export async function createWorkbench({
         }),
     );
     const deposits = privileged
-      ? await depositLedger(eventId, st.blockNumber)
+      ? await depositLedger(eventId, st.blockNumber, { readCreditHistory })
       : [];
     if (production && ownWallet) {
       const person = participants.find(p => lower(p.wallet) === lower(s.wallet));
@@ -1058,9 +1355,9 @@ export async function createWorkbench({
     };
   }
   /** @param {string} eventId @param {number | "latest"} [blockTag]
-   * @param {{signal?: AbortSignal}} [options]
+   * @param {{signal?: AbortSignal, readCreditHistory?: (blockTag: number) => Promise<Map<any, any>>}} [options]
    */
-  async function depositLedger(eventId, blockTag = "latest", { signal } = {}) {
+  async function depositLedger(eventId, blockTag = "latest", { signal, readCreditHistory } = {}) {
     signal?.throwIfAborted();
     const r = events.get(eventId),
       c = contract(eventId),
@@ -1071,7 +1368,9 @@ export async function createWorkbench({
           : blockTag,
       at = { blockTag: end };
     if (isV8Version(r.deployment.contractVersion)) {
-      const credits = await v8DepositCredits(c, r.deployment, end, { signal });
+      const credits = await (readCreditHistory
+        ? readCreditHistory(end)
+        : v8DepositCredits(c, r.deployment, end, { signal }));
       return Promise.all(
         [...credits.values()].map(async (e) => {
           signal?.throwIfAborted();
@@ -1237,6 +1536,7 @@ export async function createWorkbench({
   }
   /** @param {string} eventId @param {any} p @param {string} txHash
    * @param {boolean} [allowLinked] @param {number | "latest"} [blockTag]
+   * @param {{readCreditHistory?: (blockTag: number) => Promise<Map<any, any>>}} [options]
    */
   async function verifyReceipt(
     eventId,
@@ -1244,6 +1544,7 @@ export async function createWorkbench({
     txHash,
     allowLinked = false,
     blockTag = "latest",
+    { readCreditHistory } = {},
   ) {
     requireThat(
       /^0x[0-9a-fA-F]{64}$/.test(txHash ?? ""),
@@ -1311,7 +1612,9 @@ export async function createWorkbench({
       409,
     );
     if (isV8Version(d.contractVersion)) {
-      const person = (await v8DepositCredits(c, d, blockTag)).get(
+      const person = (await (typeof blockTag === "number" && readCreditHistory
+        ? readCreditHistory(blockTag)
+        : v8DepositCredits(c, d, blockTag))).get(
         lower(p.wallet),
       );
       const lot = person?.lots.find(
@@ -1454,7 +1757,7 @@ export async function createWorkbench({
   async function checkin(eventId, s, input) {
     const r = await staff(eventId, s),
       p = participantFor(r, s, input.participantId);
-    requireThat(hasVerifiedParticipantWallet(r, p), "Participant wallet must be verified");
+    requireThat(verifiedParticipantWallet(r, p), "Participant wallet must be verified");
     requireThat(
       input.source === "staff-door",
       "Only authenticated door observations can use this endpoint",
@@ -1520,7 +1823,7 @@ export async function createWorkbench({
     const to = () => ethers.getAddress(params.to ?? s.wallet);
     const eligible = async (admission) => {
       let candidates = [...r.participants.values()].filter(
-        (p) => p.admission === admission && p.deposit && hasVerifiedParticipantWallet(r, p),
+        (p) => p.admission === admission && p.deposit && verifiedParticipantWallet(r, p),
       );
       if (params.wallets) {
         requireThat(
@@ -1573,6 +1876,7 @@ export async function createWorkbench({
     };
     switch (action) {
       case "deposit": {
+        if (productionV10) assertFirstEventDepositTarget(r);
         requireThat(
           !r.transactions.some(
             (t) =>
@@ -1650,13 +1954,26 @@ export async function createWorkbench({
               "UNRESOLVED_ADMISSION",
               409,
             );
-        const list = [
+        const manual = Object.hasOwn(params, "attendedWallets") || Object.hasOwn(params, "attendanceReview");
+        if (manual) requireThat(productionV10 && firstEventManageMatches(r, manageScope),
+          "Manual organizer attendance is limited to the first reviewed Truth Pays event.", "FIRST_EVENT_SCOPE", 404);
+        const list = manual ? manualAttendanceWallets(r, st, params) : [
           ...new Set(
             r.observations
               .map((o) => r.participants.get(o.participantId)?.wallet)
               .filter(Boolean),
           ),
         ].filter((w) => st.activeStakers.some((x) => lower(x) === lower(w)));
+        if (manual) {
+          for (const wallet of list) {
+            const person = [...r.participants.values()].find(person => lower(person.wallet) === lower(wallet));
+            requireThat(person && person.eventId === eventId && verifiedParticipantWallet(r, person) &&
+              person.admission === "approved" && person.deposit,
+              "Every selected attendee needs an approved canonical payer record and existing contract registration.",
+              "UNVERIFIED_ATTENDEE", 409);
+            await verifyReceipt(eventId, person, person.deposit.txHash, true);
+          }
+        }
         requireThat(
           list.length > 0,
           "No registered trusted attendees; use cancellation or no-list recovery for zero attendance",
@@ -1664,7 +1981,9 @@ export async function createWorkbench({
         );
         method = "postAttendance";
         args = [list, BigInt(st.poolWei) / BigInt(list.length)];
-        summaryText =
+        summaryText = manual
+          ? `Record this owner's present review that exactly ${list.length} registered wallets attended during ${r.definition.startsAt} through ${r.definition.endsAt}. No historical staff check-in is created. Publishing opens the one-day omission challenge window.`
+          :
           eventV8Profile(r.deployment.contractVersion)?.testOnly
             ? "TEST ONLY: post reviewed trusted attendance and open a 15-minute challenge window on Chiado. Follow the actual on-chain deadline. Personal history and merch have no effect."
             : "Post reviewed trusted attendance and open the one-day challenge window. Personal history and merch have no effect.";
@@ -1747,7 +2066,8 @@ export async function createWorkbench({
           409,
         );
         const amount = BigInt(params.amountWei ?? "0");
-        const credit = await c.pendingDeposits(s.wallet);
+        const credit = st.kind === "own-unused-credit-quote-v1" && st.wallet === lower(s.wallet)
+          ? BigInt(st.pendingCreditWei) : await c.pendingDeposits(s.wallet);
         requireThat(
           amount > 0n && amount <= credit,
           "Choose an amount within your unused deposit credit",
@@ -1859,16 +2179,31 @@ export async function createWorkbench({
     }
     return { target, method, args, value, summary: summaryText };
   }
-  async function createDraft(eventId, s, { action, params = {} }) {
+  async function createDraft(eventId, s, { action, params = {}, depositReview = false }) {
+    if (publicActor(s)) requireThat(publicActor(s).kind === "deposit" && action === "deposit" &&
+      publicActor(s).eventId === eventId, "Public flows can only prepare their exact deposit", "PUBLIC_FLOW_SCOPE", 403);
+    requireThat(!depositReview || (productionV10 && action === "deposit"),
+      "A deposit review requires the production V10 deposit flow", "DRAFT_SCOPE", 409);
+    const manualAttendance = action === "postAttendance" && (Object.hasOwn(params, "attendedWallets") || Object.hasOwn(params, "attendanceReview"));
+    if (manualAttendance)
+      params = structuredClone(params);
     authenticated(s);
-    await assertWallet(s.wallet);
-    let st = await state(eventId);
+    const recovery = ownCreditRecovery(events.get(eventId), s, action, params);
+    // Recovery preparation quotes only the amount/recipient. The unchanged
+    // validation pipeline proves current source, wallet and simulation before send.
+    if (!recovery) await assertWallet(s.wallet);
+    let st = recovery ? await creditRecoveryQuote(eventId, s) : await state(eventId, { includeBlockHash: depositReview });
     const r = record(eventId, s);
+    if (manualAttendance) {
+      requireThat(productionV10 && firstEventManageMatches(r, manageScope),
+        "Manual organizer attendance is limited to the first reviewed Truth Pays event.", "FIRST_EVENT_SCOPE", 404);
+      params = bindManualAttendanceReview(r, s, params);
+    }
     if (production && action === "deposit" && ![...r.participants.values()].some(p => lower(p.wallet) === lower(s.wallet))) {
       ensureWalletParticipant(r, s);
       // Observer membership changes the pending-credit projection even at zero.
       // Bind the review to the same wallet-aware snapshot validation will read.
-      st = await state(eventId);
+      st = await state(eventId, { includeBlockHash: depositReview });
     }
     const spec = await actionSpec(eventId, s, action, params, st);
     const tx = {
@@ -1878,17 +2213,19 @@ export async function createWorkbench({
       value: spec.value,
       chainId: r.deployment.chainId,
     };
-    try {
-      await chain.provider.call(tx);
-    } catch (e) {
-      throw Object.assign(
-        new Error(
-          `Contract refused ${spec.method}: ${e.revert?.name ?? e.shortMessage ?? "invalid current state"}`,
-        ),
-        { code: "SIMULATION_FAILED", status: 409 },
-      );
+    if (!recovery) {
+      try {
+        await chain.provider.call(tx);
+      } catch (e) {
+        throw Object.assign(
+          new Error(
+            `Contract refused ${spec.method}: ${e.revert?.name ?? e.shortMessage ?? "invalid current state"}`,
+          ),
+          { code: "SIMULATION_FAILED", status: 409 },
+        );
+      }
+      await finishDraftChecks(r, st, s.wallet);
     }
-    await finishDraftChecks(r, st, s.wallet);
     const draft = {
       id: id(),
       eventId,
@@ -1903,7 +2240,7 @@ export async function createWorkbench({
       valueWei: String(spec.value),
       method: spec.method,
       args: JSON.parse(json(spec.args)),
-      summary: spec.summary,
+      summary: recovery ? `Review ${ethers.formatEther(spec.args[1])} ETH of unused deposit to return to this wallet. The amount and contract are checked when you confirm.` : spec.summary,
       createdAt: Date.now(),
       reviewBlock: st.blockNumber,
       expiresAt: Date.now() + 300_000,
@@ -1919,11 +2256,40 @@ export async function createWorkbench({
       try { v10Receipts.sealDraft(draft); await store?.save(events, drafts); }
       catch (error) { drafts.delete(draft.id); throw error; }
     }
-    return { ...draft };
+    if (!depositReview) return { ...draft };
+    // This is the exact state and action that produced the sealed review, not a
+    // display cache or a second full event/payment projection. Validation still
+    // repeats the original fresh financial and provenance checks before send.
+    let event = await summary(r, s, st);
+    if (publicActor(s)) {
+      // Public transaction review discloses only the immutable public terms and
+      // fields required by the exact client review checks, never staff/contacts.
+      const fields = ["id", "title", "lumaUrl", "startsAt", "endsAt", "timezone", "visibility", "editorialStatus",
+        "depositWei", "contract", "chainId", "deploymentBlock", "contractVersion", "abiVersion", "contractProfile",
+        "claimDeadline", "policyURI", "templateHash", "depositOpensAt", "depositDeadline", "resolver", "arbitrator",
+        "financialPhase", "role", "attendanceStandard", "immutableTerms"];
+      event = Object.fromEntries(fields.filter(key => Object.hasOwn(event, key)).map(key => [key, event[key]]));
+    }
+    const depositAction = await productionDepositAction(r, s, st);
+    requireThat(depositAction.eligible && depositAction.amountWei === draft.valueWei,
+      "Deposit eligibility changed; prepare a fresh review", "STALE_DRAFT", 409);
+    const reviewDetail = { kind: "deposit-review-v1", event,
+      state: { blockNumber: st.blockNumber, blockHash: st.blockHash,
+        fingerprint: st.fingerprint, depositWei: st.depositWei },
+      deploymentTrust: st.deploymentTrust, upgrade: st.upgrade,
+      ownWallet: { wallet: s.wallet, depositAction }, participants: [], transactions: [] };
+    return { ...draft, depositReview: {
+      kind: "deposit-review-v1", mode: "hosted-production", instanceId: serverInstanceId,
+      origin: productionOrigin, chain: production.manifest.chain, contractVersion: activeContractVersion,
+      session: { wallet: s.wallet, mode: s.mode, label: s.label }, events: [event],
+      selectedEvent: { eventId, wallet: s.wallet, detail: reviewDetail },
+      ...externalMetadata(s, false), now: st.now,
+    } };
   }
   async function validateDraft(eventId, s, draftId) {
     authenticated(s);
-    await assertWallet(s.wallet);
+    const original = drafts.get(draftId), recovery = ownCreditRecovery(events.get(eventId), s, original?.action, original?.params);
+    if (!recovery) await assertWallet(s.wallet);
     const r = record(eventId, s),
       d = drafts.get(draftId);
     requireThat(
@@ -1946,7 +2312,7 @@ export async function createWorkbench({
         "The V10 review belongs to another server instance", "STALE_DRAFT", 409);
       v10Receipts.sealDraft(d);
     }
-    const st = await state(eventId);
+    const st = recovery ? await creditRecoveryState(eventId, s) : await state(eventId);
     requireThat(
       d.registryHash === hash(r.deployment) &&
         d.snapshot === st.fingerprint &&
@@ -2313,7 +2679,7 @@ export async function createWorkbench({
       contract: d.contract,
       status,
       recovered: true,
-      ...(receipt ? { blockNumber: receipt.blockNumber } : {}),
+      ...(receipt ? { blockNumber: receipt.blockNumber, ...(productionV10 ? { blockHash: receipt.blockHash } : {}) } : {}),
     });
     if (!r.transactions.includes(entry)) r.transactions.push(entry);
     if (receipt) {
@@ -2344,6 +2710,231 @@ export async function createWorkbench({
         }
     }
     return { ...entry };
+  }
+  function publicTransactionTarget(kind) {
+    requireThat(productionV10 && ["deposit", "create"].includes(kind),
+      "Public transactions require the reviewed V10 environment", "PUBLIC_FLOW_SCOPE", 403);
+    if (kind === "create") {
+      requireThat(factoryDeployment?.chainId === 1 && factoryDeployment.contractVersion === activeContractVersion &&
+        ethers.isAddress(factoryDeployment.factory), "The reviewed factory is unavailable", "PUBLIC_FLOW_SCOPE", 403);
+      return { contract: factoryDeployment.factory, target: factoryDeployment.factory };
+    }
+    const r = [...events.values()].find(item => firstEventManageMatches(item, manageScope));
+    requireThat(r && r.definition.visibility === "public" && r.definition.editorialStatus === "published",
+      "The public first event is unavailable", "PUBLIC_FLOW_SCOPE", 403);
+    return { eventId: r.definition.id, contract: r.deployment.contract, target: r.deployment.contract };
+  }
+  function createPublicTransactionActor(wallet, actorId, kind) {
+    const target = publicTransactionTarget(kind);
+    requireThat(ethers.isAddress(wallet) && BigInt(wallet) !== 0n && typeof actorId === "string" && actorId.length > 0,
+      "Choose a transaction wallet", "PUBLIC_FLOW_SCOPE", 403);
+    const actor = Object.freeze({ id: actorId, wallet: ethers.getAddress(wallet), mode: "wallet", label: "Transaction-only wallet" });
+    publicTransactionActors.set(actor, Object.freeze({ kind, ...target }));
+    return actor;
+  }
+  // Explicitly approved public direct-deposit policy: fresh present-state pins
+  // and financial eligibility, without claiming a historical provenance scan.
+  // The original full verifier and all other signing flows remain unchanged.
+  async function directDepositBlock(tag) {
+    const block = await chain.provider.send("eth_getBlockByNumber", [tag, false]);
+    requireThat(block && /^0x[0-9a-f]+$/i.test(block.number ?? "") && /^0x[0-9a-f]+$/i.test(block.timestamp ?? "") &&
+      ethers.isHexString(block.hash, 32), "The direct deposit block is unavailable", "SELECTED_EVENT_REORG", 409);
+    const number = Number(BigInt(block.number)), timestamp = Number(BigInt(block.timestamp));
+    requireThat(Number.isSafeInteger(number) && number > 0 && Number.isSafeInteger(timestamp) && timestamp > 0,
+      "The direct deposit block is invalid", "SELECTED_EVENT_REORG", 409);
+    return { number, timestamp, hash: block.hash };
+  }
+  async function directDepositPreflight(actor) {
+    const scope = publicActor(actor);
+    requireThat(scope?.kind === "deposit", "Direct deposits require the public first-event flow", "PUBLIC_FLOW_SCOPE", 403);
+    const target = publicTransactionTarget("deposit"), r = record(scope.eventId, actor), d = r.deployment;
+    requireThat(target.eventId === scope.eventId && lower(target.contract) === lower(scope.contract),
+      "The direct deposit target changed", "PUBLIC_FLOW_SCOPE", 403);
+    const registryHash = hash(d), revision = r.revision, c = contract(scope.eventId);
+    const eligibleRecord = () => requireThat(r.definition.visibility === "public" && r.definition.editorialStatus === "published" &&
+      r.definition.registrationStatus === "open" && hash(r.deployment) === registryHash && r.revision === revision &&
+      !r.transactions.some(t => t.action === "deposit" && lower(t.wallet) === lower(actor.wallet) && ["pending", "mined"].includes(t.status)),
+      "A deposit is closed, changed or already submitted", "PENDING_DEPOSIT", 409);
+    eligibleRecord();
+    requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n, "Production RPC chain changed", "WRONG_CHAIN", 409);
+    const block = await directDepositBlock("latest");
+    requireThat(block && Number.isSafeInteger(block.number) && block.number >= d.deploymentBlock &&
+      ethers.isHexString(block.hash, 32), "A current canonical deposit block is unavailable", "SELECTED_EVENT_REORG", 409);
+    const tag = ethers.toQuantity(block.number), factory = new ethers.Contract(d.factory,
+      ["function upgradeAuthority() view returns(address)", "function isEvent(address) view returns(bool)"], chain.provider);
+    const addresses = [d.contract, d.implementation, d.factory, d.factoryImplementation, d.upgradeAuthority];
+    const expectedHashes = [d.codeHash, d.implementationCodeHash, d.factoryCodeHash,
+      d.factoryImplementationCodeHash, d.upgradeAuthorityCodeHash];
+    requireThat(addresses.every(ethers.isAddress) && expectedHashes.every(value => ethers.isHexString(value, 32)),
+      "The direct deposit source pins are unavailable", "UPGRADE_TRUST_MISMATCH", 409);
+    const [values, codeHashes, eventSlot, factorySlot] = await Promise.all([
+      v10ReadBatch(chain.provider, [
+        { contract: c, method: "depositAmount" }, { contract: c, method: "eventStart" },
+        { contract: c, method: "phase" }, { contract: c, method: "status", args: [actor.wallet] },
+        { contract: c, method: "pendingDeposits", args: [actor.wallet] },
+        { contract: c, method: "originatingFactory" }, { contract: c, method: "upgradeAuthority" },
+        { contract: factory, method: "isEvent", args: [d.contract] }, { contract: factory, method: "upgradeAuthority" },
+      ], block.number),
+      v10CodeHashBatch(chain.provider, addresses, block.number),
+      chain.provider.send("eth_getStorageAt", [d.contract, IMPLEMENTATION_SLOT, tag]),
+      chain.provider.send("eth_getStorageAt", [d.factory, IMPLEMENTATION_SLOT, tag]),
+    ]);
+    requireThat(codeHashes.every((value, i) => lower(value) === lower(expectedHashes[i])) &&
+      ethers.isHexString(eventSlot, 32) && BigInt(eventSlot) === BigInt(d.implementation) &&
+      ethers.isHexString(factorySlot, 32) && BigInt(factorySlot) === BigInt(d.factoryImplementation) &&
+      lower(values[5]) === lower(d.factory) && lower(values[6]) === lower(d.upgradeAuthority) &&
+      values[7] === true && lower(values[8]) === lower(d.upgradeAuthority),
+      "Current deposit implementation or source pins changed", "UPGRADE_TRUST_MISMATCH", 409);
+    const [depositWei, start, phase, status, credit] = values;
+    requireThat(String(depositWei) === d.depositWei && Number(start) === d.eventStart &&
+      d.depositDeadline === d.eventStart, "Current deposit terms differ from this event", "UPGRADE_TRUST_MISMATCH", 409);
+    requireThat(Number(phase) === 0 && block.timestamp >= d.depositOpensAt && block.timestamp < d.depositDeadline,
+      "Deposits close at the event start", "OUTSIDE_DEPOSIT_WINDOW", 409);
+    requireThat(![1, 2].includes(Number(status)), "This wallet is already registered", "ALREADY_REGISTERED", 409);
+    requireThat(Number(status) !== 3, "This wallet was rejected", "REGISTRATION_REJECTED", 409);
+    requireThat(credit < depositWei, "The deposit is already fully funded", "CREDIT_AVAILABLE", 409);
+    const amountWei = String(depositWei - credit), transaction = { to: d.contract, from: actor.wallet,
+      data: c.interface.encodeFunctionData("deposit", []), value: amountWei, chainId: 1 };
+    const simulationFailure = await directDepositSimulation(chain.provider, transaction, tag);
+    const [canonical, network] = await Promise.all([
+      directDepositBlock(tag), chain.provider.send("eth_chainId", []),
+    ]);
+    requireThat(BigInt(network) === 1n && canonical?.hash === block.hash,
+      "The direct deposit block changed", "SELECTED_EVENT_REORG", 409);
+    eligibleRecord();
+    requireThat(!simulationFailure, "The exact deposit simulation could not be verified.",
+      simulationFailure?.code, simulationFailure?.status);
+    const snapshot = hash({ registryHash, revision, wallet: lower(actor.wallet), depositWei: String(depositWei),
+      pendingCreditWei: String(credit), status: String(status), phase: String(phase), eventStart: String(start) });
+    return { r, registryHash, revision, transaction, context: { kind: "direct-deposit-v1", eventId: scope.eventId,
+      chainId: 1, contract: d.contract, wallet: actor.wallet, origin: productionOrigin, instanceId: serverInstanceId,
+      depositWei: String(depositWei), amountWei, pendingCreditWei: String(credit),
+      blockNumber: block.number, blockHash: block.hash, snapshot } };
+  }
+  async function createDirectDeposit(actor) {
+    const scope = publicActor(actor);
+    requireThat(scope?.kind === "deposit", "Direct deposits require the public first-event flow", "PUBLIC_FLOW_SCOPE", 403);
+    const target = publicTransactionTarget("deposit"), r = record(scope.eventId, actor), d = r.deployment;
+    requireThat(target.eventId === scope.eventId && lower(target.contract) === lower(scope.contract),
+      "The direct deposit target changed", "PUBLIC_FLOW_SCOPE", 403);
+    const registryHash = hash(d), revision = r.revision, c = contract(scope.eventId);
+    const currentRecord = () => requireThat(r.definition.visibility === "public" && r.definition.editorialStatus === "published" &&
+      r.definition.registrationStatus === "open" && hash(r.deployment) === registryHash && r.revision === revision &&
+      !r.transactions.some(t => t.action === "deposit" && lower(t.wallet) === lower(actor.wallet) && ["pending", "mined"].includes(t.status)),
+      "A deposit is closed, changed or already submitted", "PENDING_DEPOSIT", 409);
+    currentRecord();
+    // This is an amount quote, not signing authority. The unchanged final
+    // directDepositPreflight below checks every current code/slot/financial pin
+    // and simulates the exact sealed transaction before the sender may proceed.
+    requireThat(BigInt(await chain.provider.send("eth_chainId", [])) === 1n, "Production RPC chain changed", "WRONG_CHAIN", 409);
+    const block = await directDepositBlock("latest"), tag = ethers.toQuantity(block.number);
+    requireThat(block.number >= d.deploymentBlock && block.timestamp >= d.depositOpensAt && block.timestamp < d.depositDeadline,
+      "Deposits close at the event start", "OUTSIDE_DEPOSIT_WINDOW", 409);
+    const rawCredit = await chain.provider.send("eth_call", [{ to: d.contract,
+      data: c.interface.encodeFunctionData("pendingDeposits", [actor.wallet]) }, tag]);
+    const credit = c.interface.decodeFunctionResult("pendingDeposits", rawCredit)[0], depositWei = BigInt(d.depositWei);
+    requireThat(credit < depositWei, "The deposit is already fully funded", "CREDIT_AVAILABLE", 409);
+    const [canonical, network] = await Promise.all([directDepositBlock(tag), chain.provider.send("eth_chainId", [])]);
+    requireThat(BigInt(network) === 1n && canonical.hash === block.hash,
+      "The direct deposit quote block changed", "SELECTED_EVENT_REORG", 409);
+    currentRecord();
+    const amountWei = String(depositWei - credit);
+    // The quote seals the required Open/unregistered state, rather than claiming
+    // those getters were checked here. Final validation must prove this same
+    // fingerprint using its fresh complete current-state preflight.
+    const snapshot = hash({ registryHash, revision, wallet: lower(actor.wallet), depositWei: String(depositWei),
+      pendingCreditWei: String(credit), status: "0", phase: "0", eventStart: String(d.eventStart) });
+    const context = { kind: "direct-deposit-v1", verification: "amount-quote", eventId: scope.eventId, chainId: 1,
+      contract: d.contract, wallet: actor.wallet, origin: productionOrigin, instanceId: serverInstanceId,
+      depositWei: String(depositWei), amountWei, pendingCreditWei: String(credit),
+      blockNumber: block.number, blockHash: block.hash, snapshot };
+    const transaction = { to: d.contract, from: actor.wallet, data: c.interface.encodeFunctionData("deposit", []), value: amountWei, chainId: 1 };
+    const draft = { scopeKind: "event-call", id: id(), eventId: context.eventId, action: "deposit", params: { directDeposit: true, preparation: "amount-quote" },
+      wallet: actor.wallet, sessionId: actor.id, chainId: 1, contract: d.contract, abiVersion: d.abiVersion,
+      contractVersion: d.contractVersion, valueWei: context.amountWei, method: "deposit", args: [],
+      summary: `Deposit ${ethers.formatEther(context.amountWei)} ETH toward this event's commitment.`,
+      createdAt: Date.now(), expiresAt: Date.now() + 300_000, reviewBlock: context.blockNumber,
+      snapshot: context.snapshot, revision, registryHash,
+      transaction, used: false, mode: "hosted-production", instanceId: serverInstanceId,
+      origin: productionOrigin, directDepositContext: context };
+    drafts.set(draft.id, draft);
+    try { v10Receipts.sealDraft(draft); await store?.save(events, drafts); }
+    catch (error) { drafts.delete(draft.id); throw error; }
+    return structuredClone(draft);
+  }
+  async function validateDirectDeposit(actor, draftId) {
+    const { d } = publicReview(actor, draftId);
+    requireThat(d.params?.directDeposit === true && !d.used && !d.submittedHash && !d.publicFlowHash && d.expiresAt > Date.now(),
+      "The direct deposit request expired or was already submitted", "STALE_DRAFT", 409);
+    const checked = await directDepositPreflight(actor);
+    requireThat(d.snapshot === checked.context.snapshot && d.registryHash === checked.registryHash &&
+      d.revision === checked.revision && hash(d.transaction) === hash(checked.transaction),
+      "The deposit amount or current state changed", "STALE_DRAFT", 409);
+    const canonical = await directDepositBlock(ethers.toQuantity(d.reviewBlock));
+    requireThat(canonical?.hash === d.directDepositContext?.blockHash,
+      "The original direct deposit block changed", "SELECTED_EVENT_REORG", 409);
+    return { transaction: structuredClone(d.transaction) };
+  }
+  function publicReview(actor, draftId) {
+    const scope = publicActor(actor), d = drafts.get(draftId);
+    requireThat(scope && d && d.sessionId === actor.id && lower(d.wallet) === lower(actor.wallet) &&
+      d.instanceId === serverInstanceId && d.origin === productionOrigin &&
+      (scope.kind === "deposit" ? d.action === "deposit" && d.eventId === scope.eventId : d.action === "createEvent") &&
+      lower(d.contract) === lower(scope.contract), "The review belongs to another public flow", "PUBLIC_FLOW_SCOPE", 403);
+    v10Receipts.sealDraft(d);
+    return { scope, d };
+  }
+  async function inspectPublicSubmission(actor, draftId, txHash) {
+    const { scope, d } = publicReview(actor, draftId);
+    requireThat(/^0x[0-9a-f]{64}$/i.test(txHash ?? "") &&
+      (!d.publicFlowHash || lower(d.publicFlowHash) === lower(txHash)),
+      "Keep the original transaction hash for this flow", "PUBLIC_FLOW_CONFLICT", 409);
+    // Persist the original hash without setting global pending state, reserving
+    // somebody else's hash, or claiming the address has signed anything.
+    if (!d.publicFlowHash) { d.publicFlowHash = txHash.toLowerCase(); await store?.save(events, drafts); }
+    const tx = await chain.provider.getTransaction(txHash);
+    if (!tx) return { scope, d, visible: false };
+    // Run the unchanged signed-transaction inspector against a detached sealed
+    // review. The real shared review is not promoted until that proof succeeds.
+    const inspectedDraft = structuredClone(d);
+    inspectedDraft.submittedHash = txHash.toLowerCase();
+    const inspectedDrafts = new Map(drafts); inspectedDrafts.set(d.id, inspectedDraft);
+    const inspector = createV10ReceiptContext({ chain, origin: productionOrigin, instanceId: serverInstanceId, drafts: inspectedDrafts });
+    await inspector.inspectDraftTransaction(inspectedDraft, tx, { canonical: Number.isSafeInteger(tx.blockNumber) });
+    publicReview(actor, draftId);
+    return { scope, d, visible: true };
+  }
+  const publicPending = (d, txHash) => ({ status: "pending", hash: txHash.toLowerCase(), wallet: d.wallet,
+    eventId: d.eventId, chainId: 1, contract: d.contract, action: d.action, draftId: d.id });
+  async function publicTransactionSubmitted(actor, draftId, txHash) {
+    const { scope, d, visible } = await inspectPublicSubmission(actor, draftId, txHash);
+    if (!visible) return publicPending(d, txHash);
+    return scope.kind === "create" ? onboarding().recordSubmitted(actor, draftId, txHash)
+      : recordSubmitted(scope.eventId, actor, draftId, txHash);
+  }
+  async function reconcilePublicTransaction(actor, draftId, txHash) {
+    const { scope, d, visible } = await inspectPublicSubmission(actor, draftId, txHash);
+    if (!visible) return publicPending(d, txHash);
+    // The original submission endpoint runs once. Further receipt checks keep
+    // its saved-hash reconciliation, including already terminal results.
+    if (!d.submittedHash) await publicTransactionSubmitted(actor, draftId, txHash);
+    const result = scope.kind === "create" ? await onboarding().reconcile(actor, draftId, txHash)
+      : await reconcileSubmission(scope.eventId, actor, draftId, txHash);
+    if (scope.kind === "deposit" && result.status === "confirmed") {
+      const r = record(scope.eventId, actor);
+      let person = [...r.participants.values()].find(p => lower(p.wallet) === lower(actor.wallet));
+      const candidate = person ?? { id: id(), eventId: scope.eventId, wallet: actor.wallet,
+        name: null, email: null, walletVerified: false, identityVerified: false,
+        identitySource: "signed-transaction-receipt", lumaIdentity: null, admission: "pending", deposit: null };
+      const evidence = await verifyReceipt(scope.eventId, candidate, txHash, true);
+      if (!person) { r.participants.set(candidate.id, candidate); person = candidate; r.revision++; }
+      if (!person.deposit || lower(person.deposit.txHash) === lower(txHash)) {
+        person.deposit = evidence;
+        if (!person.walletVerified) { person.walletVerified = true; person.identitySource = "signed-transaction-receipt"; }
+        await store?.save(events, drafts);
+      }
+    }
+    return result;
   }
   async function advance(seconds) {
     requireThat(
@@ -2518,16 +3109,39 @@ export async function createWorkbench({
     events,
     provider: chain.provider,
     assertWallet,
+    publicTransactionTarget,
+    createPublicTransactionActor,
+    createDirectDeposit,
+    validateDirectDeposit,
+    publicTransactionSubmitted,
+    reconcilePublicTransaction,
     session,
     record,
     contract,
     state,
     owner,
     bootstrap,
+    finalizeReadResult,
     publicCatalog: () => {
       requireThat(production, "Not found", "NOT_FOUND", 404);
       return publicCatalogSnapshot({ manifest: production.manifest, events, drafts,
         instanceId: serverInstanceId });
+    },
+    setupMetadata: () => {
+      requireThat(productionV10 && factoryDeployment, "Not found", "NOT_FOUND", 404);
+      const metadata = externalMetadata(null);
+      const managedEvents = publicCatalogSnapshot({ manifest: production.manifest, events, drafts,
+        instanceId: serverInstanceId }).events.map(({ id, title, startsAt, timezone, visibility, editorialStatus }) => ({
+          id, title, startsAt, timezone, visibility, editorialStatus, creator: events.get(id)?.deployment.creator,
+        }));
+      return { mode: "hosted-production", identities: [], events: [], session: null,
+        chain: production.manifest.chain, contractVersion: activeContractVersion, ...metadata, managedEvents,
+        // Configuration for rendering and sign-in only. Current chain trust is
+        // obtained separately by the original verifier on explicit Review.
+        factory: { chainId: 1, address: factoryDeployment.factory,
+          contractVersion: activeContractVersion, abiVersion: activeContractVersion,
+          verified: false, deploymentTrust: { status: "unavailable" }, upgrade: null },
+        recoveryEvents: [], now: 0 };
     },
     detail,
     depositLedger,
@@ -2539,16 +3153,33 @@ export async function createWorkbench({
     checkin,
     personal,
     createDraft,
+    createDepositReview: (eventId, s) => createDraft(eventId, s, { action: "deposit", params: {}, depositReview: true }),
     validateDraft,
     executeDraft,
     confirmDraft,
     recordSubmitted,
     submissionStatus,
     reconcileSubmission,
-    createFactoryDraft: (s, input) => onboarding().createDraft(s, input),
+    createFactoryDraft: async (s, input) => {
+      const draft = await onboarding().createDraft(s, input);
+      if (!productionV10) return draft;
+      const context = draft.creationContext;
+      requireThat(context?.kind === "verified-creation-context-v1" && context.draftId === draft.id &&
+        context.snapshot === draft.snapshot && context.instanceId === serverInstanceId && context.origin === productionOrigin &&
+        lower(context.wallet) === lower(s.wallet) && lower(context.factory?.address) === lower(factoryDeployment.factory),
+        "Creation context differs from its successful review", "DRAFT_SCOPE", 409);
+      return { ...draft, creationContext: { mode: "hosted-production", identities: [], events: [],
+        chain: production.manifest.chain, contractVersion: activeContractVersion, ...externalMetadata(s),
+        session: { wallet: s.wallet, label: s.label, mode: s.mode }, ...context } };
+    },
     validateFactoryDraft: (s, draftId) => onboarding().validateDraft(s, draftId),
     recordFactorySubmitted: (s, draftId, txHash) => onboarding().recordSubmitted(s, draftId, txHash),
     reconcileFactorySubmission: (s, draftId, txHash) => onboarding().reconcile(s, draftId, txHash),
+    reconcileFactoryReplacement: (s, draftId, txHash) => {
+      const service = onboarding();
+      requireThat(typeof service.reconcileReplacement === "function", "Fee-replacement recovery requires V10", "NOT_FOUND", 404);
+      return service.reconcileReplacement(s, draftId, txHash);
+    },
     getFactoryDraft: (s, draftId) => onboarding().getDraft(s, draftId),
     creationRecoveryScope: (wallet, txHash) => {
       requireThat(creationRecovery, "Creation recovery is unavailable", "NOT_FOUND", 404);
@@ -2579,6 +3210,9 @@ export async function createWorkbench({
   w.previewBatch = batches.preview;
   w.commitBatch = batches.commit;
   w.batchStatus = batches.status;
+  w.firstEventManageAvailable = eventId => productionV10 && firstEventManageMatches(events.get(eventId), manageScope);
+  w.firstEventCreditRecoveryAvailable = eventId => productionV10 && firstEventCreditRecoveryMatches(events.get(eventId), manageScope);
+  w.adoptPayer = createPayerAdoptionService(w, manageScope);
   if (store)
     for (const name of [
       "registerParticipant",

@@ -1,4 +1,5 @@
 import { mountSetupProgress } from "./setup-progress.js";
+import { chooseWalletProvider } from "./wallet-connection.js";
 
 const validHash = (v) => typeof v === "string" && /^0x[0-9a-f]{64}$/i.test(v);
 const validAddress = (v) =>
@@ -19,7 +20,7 @@ const escape = (v) =>
 /** Separate read-only authentication; never enters the ordinary app or signing APIs. */
 export function mountCreationRecovery(
   host,
-  { provider = () => window.ethereum } = {},
+  { provider = null } = {},
 ) {
   const $ = (selector) => host.querySelector(selector);
   let alive = true,
@@ -29,6 +30,7 @@ export function mountCreationRecovery(
     panel = null,
     walletProvider = null;
   const controllers = new Set();
+  const walletController = new AbortController();
   const current = (generation) =>
     alive && host.isConnected && generation === epoch;
   const status = (message) => {
@@ -218,7 +220,10 @@ export function mountCreationRecovery(
       if (!current(generation)) throw Error("Wallet recovery context changed.");
     };
     try {
-      const p = provider();
+      const p = provider ? provider() : await chooseWalletProvider({ ownerDocument: host.ownerDocument,
+        isCurrent: () => current(generation), signal: walletController.signal });
+      if (!p) return;
+      assertCurrent();
       if (!p?.request)
         throw Error("Open this page with your browser wallet available.");
       listen(p);
@@ -341,6 +346,7 @@ export function mountCreationRecovery(
   if (validHash(initial)) $("[name=transaction]").value = initial;
   return {
     dispose() {
+      walletController.abort();
       alive = false;
       epoch++;
       clearView();

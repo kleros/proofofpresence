@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "offline-replacement-qr-verification",
+  "checkedAt": "2026-10-30T11:18:52.612Z",
+  "eventId": "event-3aac5a07-5074-4241-9246-2798d4111039",
+  "chainId": 1,
+  "contract": "0xc069A460c5B1c577791Ee61E7F9ADcb7866068df",
+  "valueWei": "10000000000000000",
+  "svgSha256": "522b42b9885083bc0e328788c52b55b1113d56a48d7b6d9309bbe2f4b7195127",
+  "rasterSha256": "9810298963a51dbb0e8c9655537626b17fa14743789fec0e3c6cfe302a432c40",
+  "rasterizedFrom": "saved public/first-event/qr.svg via Chromium",
+  "encoder": "qrcode 1.5.3, error correction M, margin 4",
+  "decoder": "macOS Vision VNDetectBarcodesRequest",
+  "decodedPayload": "ethereum:0xc069A460c5B1c577791Ee61E7F9ADcb7866068df@1?value=10000000000000000",
+  "financialActions": 0,
+  "publicNetworkRequests": 0
+}

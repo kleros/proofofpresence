@@ -13,6 +13,7 @@ import { loadV10UpgradeableArtifacts } from "../src/v10-upgrade-artifacts.mjs";
 import { v10MainnetStateStore } from "../src/v10-mainnet-runtime.mjs";
 import { assertProductionEOAWallet } from "../src/production-wallets.mjs";
 import { V10_LUMA_ATTENDANCE_STANDARD } from "../src/contracts-v10-luma.mjs";
+import { createV10ReceiptContext } from "../src/v10-receipt-context.mjs";
 import { MAINNET_KLEROS } from "../scripts/mainnet/verify-kleros.mjs";
 
 const PROFILE = "kleros-event-v10-uups", gas = { gasLimit: 8_000_000 }, send = async tx => (await tx).wait();
@@ -57,9 +58,15 @@ before(async () => {
       return block;
     };
     if (key === "getTransaction") return async hash => {
+      if (faults.pendingEnvelope?.hash === hash) return faults.pendingEnvelope.tx;
       const tx = await provider.getTransaction(hash); faults.txReads = (faults.txReads ?? 0) + 1;
       if (tx && faults.envelopeHash === hash) return { ...tx, to: MAINNET_KLEROS.resolver, data: "0x1234" };
       return tx;
+    };
+    if (key === "send") return async (method, params) => {
+      if (method === "eth_getTransactionByHash" && faults.pendingEnvelope?.hash === params[0])
+        return structuredClone(faults.pendingEnvelope.raw);
+      return provider.send(method, params);
     };
     if (key === "getTransactionReceipt") return async hash => {
       if (faults.nullReceipt) return null;
@@ -149,7 +156,10 @@ test("pending and provenance-failed V10 creation preserves one hash and recovers
   assert.equal((await f.service.reconcile(f.session, draft.id, tx.hash)).status, "pending"); delete faults.nullReceipt;
   await assert.rejects(f.service.createDraft(f.session, await f.terms()), code("PENDING_FACTORY_CREATION"));
   const readCount = faults.txReads; await assert.rejects(f.service.recordSubmitted(f.session, draft.id, ethers.id("different-hash")), code("TX_MISMATCH")); assert.equal(faults.txReads, readCount);
-  faults.factoryCode = true; await assert.rejects(f.service.reconcile(f.session, draft.id, tx.hash)); delete faults.factoryCode;
+  const originalFactoryCode = await provider.getCode(factory.target);
+  await rpc.request({ method: "evm_setAccountCode", params: [factory.target, "0x00"] });
+  try { await assert.rejects(f.service.reconcile(f.session, draft.id, tx.hash)); }
+  finally { await rpc.request({ method: "evm_setAccountCode", params: [factory.target, originalFactoryCode] }); }
   assert.equal(f.events.size, 0); const saved = f.store.load(); assert.equal(saved.drafts[0][1].submittedHash, tx.hash); assert.equal(saved.drafts[0][1].adoptionStatus, "unavailable");
   const freshEvents = new Map(), freshDrafts = new Map(saved.drafts), restarted = createV10FactoryOnboardingService({ ...f.options, events: freshEvents, drafts: freshDrafts, instanceId: "restarted-instance" });
   const originalExpiry = saved.drafts[0][1].expiresAt, clock = Date.now;
@@ -192,7 +202,103 @@ test("non-direct creation requires an exact trusted factual proof; raw transacti
   await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("TX_MISMATCH")); assert.equal(f.drafts.get(draft.id).submittedHash, tx.hash);
   bad = false; mutate = true;
   await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("TX_MISMATCH")); assert.equal(f.drafts.get(draft.id).submittedHash, tx.hash);
-  mutate = false; await f.service.recordSubmitted(f.session, draft.id, tx.hash);
+  // This adapter deliberately supplies a synthetic projection rather than the
+  // signed outer envelope. It cannot manufacture durable nonce recovery facts.
+  mutate = false; await assert.rejects(f.service.recordSubmitted(f.session, draft.id, tx.hash), code("REPLACEMENT_ORIGINAL_CHANGED"));
+  assert.equal(f.drafts.get(draft.id).submissionWitness, undefined);
+  delete faults.envelopeHash;
+  await f.service.recordSubmitted(f.session, draft.id, tx.hash);
   const result = await f.service.reconcile(f.session, draft.id, tx.hash); assert.equal(result.status, "confirmed"); assert.ok(proofs >= 3);
-  assert.equal((await backend.getTransaction(tx.hash)).data, "0x1234"); assert.equal(forbiddenCalls, 0);
+  assert.equal((await backend.getTransaction(tx.hash)).data, draft.transaction.data); assert.equal(forbiddenCalls, 0);
+}));
+
+test("signed pending witness plus actual canonical replacement preserves review/hash and adopts the child once across restart", async () => isolated(async f => {
+  const origin = "https://synthetic-replacement.invalid";
+  const context = createV10ReceiptContext({ chain, origin, instanceId: f.options.instanceId, drafts: f.drafts });
+  chain.assertTransactionIntent = context.assertTransactionIntent;
+  const service = createV10FactoryOnboardingService({ ...f.options, origin, receiptContext: context });
+  const draft = await service.createDraft(f.session, await f.terms()), seal = structuredClone(draft.v10Intent);
+  // Ganache can mine both same-nonce pool entries. Model only its pending
+  // original RPC observation using a real synthetic signature; the replacement,
+  // child, receipts, nonce consumption and full provenance execute on chain1.
+  const populated = await organizer.populateTransaction({ ...draft.transaction, type: 2 });
+  const parsed = ethers.Transaction.from(await organizer.signTransaction(populated));
+  const original = { hash: parsed.hash, from: parsed.from, to: parsed.to, data: parsed.data, value: parsed.value,
+    chainId: parsed.chainId, type: 2, nonce: parsed.nonce, gasLimit: parsed.gasLimit, maxFeePerGas: parsed.maxFeePerGas,
+    maxPriorityFeePerGas: parsed.maxPriorityFeePerGas, accessList: parsed.accessList, signature: parsed.signature,
+    blockHash: null, blockNumber: null };
+  faults.pendingEnvelope = { hash: original.hash, tx: original, raw: { hash: original.hash, from: original.from, to: original.to,
+    input: original.data, value: ethers.toQuantity(original.value), chainId: "0x1", type: "0x2", nonce: ethers.toQuantity(original.nonce),
+    gas: ethers.toQuantity(original.gasLimit), maxFeePerGas: ethers.toQuantity(original.maxFeePerGas),
+    maxPriorityFeePerGas: ethers.toQuantity(original.maxPriorityFeePerGas), accessList: original.accessList,
+    r: parsed.signature.r, s: parsed.signature.s, v: ethers.toQuantity(parsed.signature.v), yParity: ethers.toQuantity(parsed.signature.yParity),
+    blockHash: null, blockNumber: null } };
+  const submitted = await service.recordSubmitted(f.session, draft.id, original.hash);
+  assert.equal(submitted.replacementRecovery.witnessRetained, true);
+  assert.equal(submitted.replacementRecovery.reviewSealRetained, true);
+  assert.equal(submitted.replacementRecovery.nonce, original.nonce);
+  assert.equal(service.getDraft(f.session, draft.id).submissionWitness.nonce, original.nonce);
+  assert.equal(f.store.load().drafts.find(([id]) => id === draft.id)[1].submissionWitness.hash, original.hash);
+  delete faults.pendingEnvelope;
+  const replacement = await organizer.sendTransaction({ ...draft.transaction, nonce: original.nonce, type: 2,
+    maxFeePerGas: original.maxFeePerGas * 2n, maxPriorityFeePerGas: original.maxPriorityFeePerGas * 2n });
+  await replacement.wait();
+  assert.equal(await provider.getTransactionReceipt(original.hash), null);
+  const result = await service.reconcileReplacement(f.session, draft.id, replacement.hash);
+  assert.equal(result.status, "confirmed"); assert.equal(result.hash, original.hash); assert.equal(result.canonicalHash, replacement.hash);
+  assert.equal(result.replacement.originalHash, original.hash); assert.equal(result.replacement.nonce, original.nonce);
+  assert.equal(f.events.get(draft.eventId).deployment.deploymentTxHash, replacement.hash);
+  const savedDraft = service.getDraft(f.session, draft.id);
+  assert.equal(savedDraft.submittedHash, original.hash); assert.equal(savedDraft.confirmedHash, replacement.hash);
+  assert.deepEqual(savedDraft.v10Intent, seal); assert.equal(f.events.size, 1);
+  await assert.rejects(service.reconcileReplacement({ ...f.session, wallet: guest.address }, draft.id, replacement.hash), code("DRAFT_SCOPE"));
+  await assert.rejects(service.validateDraft(f.session, draft.id), code("STALE_DRAFT"));
+  const state = f.store.load(), drafts = new Map(state.drafts), events = new Map(f.events);
+  const restartedContext = createV10ReceiptContext({ chain, origin, instanceId: "replacement-restart", drafts });
+  chain.assertTransactionIntent = restartedContext.assertTransactionIntent;
+  const restarted = createV10FactoryOnboardingService({ ...f.options, origin, drafts, events, instanceId: "replacement-restart", receiptContext: restartedContext });
+  const again = await restarted.reconcile({ ...f.session, id: "new-session" }, draft.id, original.hash);
+  assert.deepEqual(again, result); assert.equal(events.size, 1);
+  const next = await restarted.createDraft({ ...f.session, id: "new-session" }, await f.terms());
+  assert.notEqual(next.id, draft.id); assert.equal(restarted.getDraft(f.session, draft.id).submittedHash, original.hash);
+  assert.equal(forbiddenCalls, 0);
+}));
+
+test("missing original nonce witness never releases a pending create draft from an unrelated or unavailable hash", async () => isolated(async f => {
+  const draft = await f.service.createDraft(f.session, await f.terms());
+  const unknownOriginal = ethers.id("unavailable-original-submission"), unknownReplacement = ethers.id("unavailable-replacement");
+  await f.service.recordSubmitted(f.session, draft.id, unknownOriginal);
+  await assert.rejects(f.service.reconcileReplacement(f.session, draft.id, unknownReplacement), code("REPLACEMENT_ORIGINAL_UNAVAILABLE"));
+  assert.equal(f.service.getDraft(f.session, draft.id).submittedHash, unknownOriginal);
+  assert.equal(f.service.getDraft(f.session, draft.id).replacement, undefined);
+  await assert.rejects(f.service.createDraft(f.session, await f.terms()), code("PENDING_FACTORY_CREATION"));
+  assert.equal(f.events.size, 0); assert.equal(forbiddenCalls, 0);
+}));
+
+test("pre-release terminal type2 records without nonce witnesses remain read-reconcilable and unmodified", async () => isolated(async f => {
+  const origin = "https://legacy-terminal-recovery.invalid";
+  const context = createV10ReceiptContext({ chain, origin, instanceId: f.options.instanceId, drafts: f.drafts });
+  chain.assertTransactionIntent = context.assertTransactionIntent;
+  const service = createV10FactoryOnboardingService({ ...f.options, origin, receiptContext: context });
+  const draft = await service.createDraft(f.session, await f.terms()), tx = await organizer.sendTransaction(draft.transaction);
+  await tx.wait(); await service.recordSubmitted(f.session, draft.id, tx.hash);
+  const original = await service.reconcile(f.session, draft.id, tx.hash);
+  const oldBytes = JSON.parse(fs.readFileSync(f.filename, "utf8"));
+  // A fixture for the exact durable schema before nonce recovery existed.
+  const oldDraft = oldBytes.drafts.find(([id]) => id === draft.id)[1];
+  delete oldDraft.submissionWitness; delete oldDraft.v10Submission;
+  const filename = path.join(path.dirname(f.filename), "pre-release-terminal.json");
+  fs.writeFileSync(filename, JSON.stringify(oldBytes), { mode: 0o600 });
+  const store = v10MainnetStateStore(filename, chain.manifest), drafts = new Map(store.load().drafts);
+  const restartedContext = createV10ReceiptContext({ chain, origin, instanceId: "legacy-restart", drafts });
+  chain.assertTransactionIntent = restartedContext.assertTransactionIntent;
+  const restarted = createV10FactoryOnboardingService({ ...f.options, origin, store, drafts,
+    instanceId: "legacy-restart", receiptContext: restartedContext });
+  const { replacementRecovery: _modernWitness, ...legacyResult } = original;
+  assert.deepEqual(await restarted.recordSubmitted(f.session, draft.id, tx.hash), legacyResult);
+  assert.deepEqual(await restarted.reconcile(f.session, draft.id, tx.hash), legacyResult);
+  assert.equal(drafts.get(draft.id).submissionWitness, undefined);
+  assert.equal(drafts.get(draft.id).v10Submission, undefined);
+  assert.equal(store.load().drafts.find(([id]) => id === draft.id)[1].submissionWitness, undefined);
+  assert.equal(drafts.get(draft.id).submittedHash, tx.hash); assert.equal(forbiddenCalls, 0);
 }));

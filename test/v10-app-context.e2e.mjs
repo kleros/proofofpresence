@@ -5,6 +5,7 @@ import path from "node:path";
 import http from "node:http";
 import { fileURLToPath } from "node:url";
 import { createHash, randomUUID } from "node:crypto";
+import { isSelectedBootstrapQuery } from "./fixtures/selected-bootstrap-query.mjs";
 import {
   makeLumaLaunchFixture,
   makeLumaParticipantDraft,
@@ -152,8 +153,7 @@ function permitted(
   if (target.pathname === "/api/bootstrap")
     return setupFailure
       ? !target.search
-      : target.searchParams.size === 1 &&
-          target.searchParams.get("selectedEventId") === eventId;
+      : isSelectedBootstrapQuery(target.searchParams, eventId);
   if (target.pathname === "/api/events/" + eventId) return !target.search;
   return names.has(target.pathname) && !target.search;
 }

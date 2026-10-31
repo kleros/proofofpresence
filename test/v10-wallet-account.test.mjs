@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { webcrypto, createHash } from "node:crypto";
 import { assertV10WalletAccount } from "../public/v10-wallet-account.js";
+import { assertV10WalletAccount as assertCopiedV10WalletAccount } from "../public/first-event/deps/v10-wallet-account.js";
 
 const V10 = "kleros-event-v10-uups";
 const wallet = "0x1111111111111111111111111111111111111111";
@@ -187,6 +188,39 @@ test("only the exact explicit account metadata and three source-bound runtime by
     8,
     "no TTL or code-result reuse",
   );
+});
+
+test("both runtime copies start all three same-block framework reads before any is released", async () => {
+  assert.deepEqual(fs.readFileSync(new URL("../public/v10-wallet-account.js", import.meta.url)),
+    fs.readFileSync(new URL("../public/first-event/deps/v10-wallet-account.js", import.meta.url)));
+  for (const classify of [assertV10WalletAccount, assertCopiedV10WalletAccount]) {
+    let release, started, timeout;
+    const barrier = new Promise(resolve => { release = resolve; }),
+      allStarted = new Promise(resolve => { started = resolve; }), calls = [];
+    const f = fixture({ code: designation, active: true, transform: (method, params, result) => {
+      if (method !== "eth_getCode" || params[0] === wallet) return result;
+      calls.push(structuredClone(params));
+      if (calls.length === framework.length) started();
+      return barrier.then(() => result);
+    } });
+    const completion = classify({ provider: f.provider, wallet, bootstrap: f.bootstrap });
+    completion.catch(() => {});
+    try {
+      await Promise.race([allStarted, new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(Error("Framework reads did not start concurrently")), 1000);
+      })]);
+      assert.deepEqual(calls, framework.map(row => [row.address.toLowerCase(), "0x64"]));
+      assert.deepEqual(f.calls.filter(call => call.method === "eth_getBlockByNumber").map(call => call.params), [["latest", false]],
+        "Closing canonical and account checks must wait for every blocked framework read");
+      assert.equal(f.calls.filter(call => call.method === "eth_accounts").length, 1);
+    } finally { clearTimeout(timeout); release(); }
+    const result = await completion;
+    assert.equal(result.accountType, "metamask-protected-self-v1.3");
+    assert.equal(f.calls.filter(call => call.method === "eth_getCode").length, 4);
+    assert.equal(f.calls.filter(call => call.method === "eth_accounts").length, 2);
+    assert.equal(f.calls.filter(call => call.method === "eth_chainId").length, 2);
+    assert.deepEqual(f.calls.filter(call => call.method === "eth_getBlockByNumber").map(call => call.params), [["latest", false], ["0x64", false]]);
+  }
 });
 
 test("every account-policy agreement is required; arbitrary metadata cannot substitute address or runtime pins", async () => {

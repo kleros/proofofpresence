@@ -605,3 +605,351 @@ test("default source-owned policy is lazy and leaves delegated signing disabled"
   assert.ok(reads > 0);
   assert.equal(f.d.submittedHash, undefined);
 });
+
+const feeReplacementHash = ethers.id("synthetic-fee-only-replacement");
+const manager = "0x3333333333333333333333333333333333333333";
+function factoryFixture(options = {}) {
+  const savedDraft = draft("factory-replacement-review", {
+    scopeKind: "factory-create",
+    action: "createEvent",
+    method: "createEvent",
+    factory: target,
+    valueWei: "0",
+    transaction: {
+      from: wallet,
+      to: target,
+      data: "0x80464ff5cafe",
+      value: "0",
+      chainId: 1,
+      gasLimit: "130000",
+    },
+  });
+  return journal(fixture({ ...options, savedDraft }));
+}
+function submission(f) {
+  f.d.submissionWitness = {
+    hash: txHash,
+    wallet,
+    nonce: 3,
+    reviewBlock: 10,
+    type: 2,
+    to: manager,
+    valueWei: "0",
+    dataHash: ethers.keccak256("0xabcdef"),
+    gasLimit: "100000",
+    accessListHash: hash([]),
+  };
+  f.context.sealFactorySubmission(f.d);
+  return f;
+}
+function replacement(f) {
+  f.d.replacement = {
+    verified: true,
+    kind: "same-call-fee-replacement",
+    chainId: 1,
+    originalHash: txHash,
+    hash: feeReplacementHash,
+    wallet,
+    nonce: 3,
+    blockNumber: 20,
+    blockHash,
+    gasUsed: "80000",
+    gasPriceWei: "2",
+    feeWei: "160000",
+    type: 2,
+    to: manager,
+    valueWei: "0",
+    dataHash: ethers.keccak256("0xabcdef"),
+    gasLimit: "100000",
+    accessListHash: hash([]),
+    accountType: "eoa",
+    anchor: { blockNumber: 20, blockHash },
+  };
+  f.context.sealFactoryReplacement(f.d);
+  return f;
+}
+const replacementActual = (overrides = {}) =>
+  actual({
+    hash: feeReplacementHash,
+    to: manager,
+    value: 0n,
+    data: "0xabcdef",
+    ...overrides,
+  });
+const replacementExpected = (f) => ({
+  chainId: 1,
+  transactionHash: feeReplacementHash,
+  from: wallet,
+  to: target,
+  valueWei: "0",
+  data: f.d.transaction.data,
+});
+
+test("factory fee replacement seals preserve original review/hash and invoke fresh canonical inspector for the explicit alias", async () => {
+  const f = replacement(submission(factoryFixture()));
+  const originalSeal = hash(f.d.v10Intent);
+  assert.deepEqual(f.d.v10Submission, {
+    reviewHash: f.d.v10Intent.reviewHash,
+    witnessHash: hash(f.d.submissionWitness),
+  });
+  assert.deepEqual(f.d.v10Replacement, {
+    reviewHash: f.d.v10Intent.reviewHash,
+    witnessHash: f.d.v10Submission.witnessHash,
+    replacementHash: hash(f.d.replacement),
+  });
+  assert.ok(
+    Object.isFrozen(f.d.v10Submission) && Object.isFrozen(f.d.v10Replacement),
+  );
+  assert.equal(f.context.sealFactorySubmission(f.d), f.d.v10Submission);
+  assert.equal(f.context.sealFactoryReplacement(f.d), f.d.v10Replacement);
+  for (let i = 0; i < 2; i++) {
+    const result = await f.context.assertTransactionIntent(
+      replacementActual(),
+      replacementExpected(f),
+    );
+    assert.deepEqual(result, proofFor(replacementExpected(f)));
+  }
+  assert.equal(f.calls.length, 2);
+  assert.ok(f.calls.every((call) => call.kind === "canonical"));
+  assert.equal(f.calls[0].input.actual.to, manager);
+  assert.equal(f.calls[0].input.expected.to, target);
+  assert.equal(f.d.submittedHash, txHash);
+  assert.equal(f.d.confirmedHash, undefined);
+  assert.equal(hash(f.d.v10Intent), originalSeal);
+  f.d.confirmedHash = feeReplacementHash;
+  f.d.used = true;
+  assert.equal(
+    (await f.context.inspectDraftTransaction(f.d, replacementActual()))
+      .verified,
+    true,
+  );
+  assert.equal(f.d.submittedHash, txHash);
+});
+
+test("factory alias is canonical-only and exact original outer envelope plus proven block are checked before wallet policy", async () => {
+  for (const changed of [
+    { nonce: 4 },
+    { type: 4 },
+    { to: target },
+    { from: target },
+    { value: 1n },
+    { data: "0x1234" },
+    { gasLimit: 100001n },
+    { accessList: [{ address: target, storageKeys: [] }] },
+    { blockNumber: 21 },
+    { blockHash: ethers.id("other-block") },
+  ]) {
+    const f = replacement(submission(factoryFixture()));
+    await rejects(
+      () => f.context.inspectDraftTransaction(f.d, replacementActual(changed)),
+      "V10_FACTORY_REPLACEMENT_MISMATCH",
+    );
+    assert.equal(f.calls.length, 0);
+  }
+  const f = replacement(submission(factoryFixture()));
+  await rejects(
+    () =>
+      f.context.inspectDraftTransaction(f.d, replacementActual(), {
+        canonical: false,
+      }),
+    "V10_FACTORY_REPLACEMENT_MISMATCH",
+  );
+  assert.equal(f.calls.length, 0);
+});
+
+test("factory submission and replacement evidence cannot be added to event calls or used unsealed", async () => {
+  const event = journal(fixture());
+  assert.throws(() => submission(event), {
+    code: "V10_FACTORY_SUBMISSION_CHANGED",
+  });
+  const unsealed = submission(factoryFixture());
+  replacement(unsealed);
+  delete unsealed.d.v10Replacement;
+  await rejects(
+    () =>
+      unsealed.context.assertTransactionIntent(
+        replacementActual(),
+        replacementExpected(unsealed),
+      ),
+    "V10_FACTORY_REPLACEMENT_CHANGED",
+  );
+  assert.equal(unsealed.calls.length, 0);
+  event.d.replacement = structuredClone(unsealed.d.replacement);
+  await rejects(
+    () => event.context.inspectDraftTransaction(event.d, replacementActual()),
+    "V10_RECEIPT_CONTEXT_UNKNOWN_HASH",
+  );
+  const late = factoryFixture();
+  late.d.submissionWitness = structuredClone(unsealed.d.submissionWitness);
+  late.d.replacement = structuredClone(unsealed.d.replacement);
+  assert.throws(() => late.context.sealFactorySubmission(late.d), {
+    code: "V10_FACTORY_SUBMISSION_UNSEALED",
+  });
+});
+
+test("mutated factory witnesses, evidence and seals fail before inspection or resealing", async () => {
+  for (const mutate of [
+    (f) => f.d.submissionWitness.nonce++,
+    (f) => (f.d.submissionWitness.dataHash = ethers.id("other-call")),
+    (f) => (f.d.submissionWitness.extra = true),
+    (f) =>
+      (f.d.v10Submission = {
+        ...f.d.v10Submission,
+        witnessHash: hash("wrong"),
+      }),
+    (f) => (f.d.replacement.feeWei = "1"),
+    (f) => (f.d.replacement.hash = ethers.id("other-replacement")),
+    (f) => (f.d.replacement.originalHash = ethers.id("other-original")),
+    (f) => f.d.replacement.nonce++,
+    (f) => (f.d.replacement.anchor.blockHash = ethers.id("other-anchor")),
+    (f) => (f.d.replacement.extra = true),
+    (f) =>
+      (f.d.v10Replacement = {
+        ...f.d.v10Replacement,
+        replacementHash: hash("wrong"),
+      }),
+    (f) =>
+      (f.d.v10Replacement = {
+        ...f.d.v10Replacement,
+        reviewHash: hash("other-review"),
+      }),
+    (f) => (f.d.submittedHash = feeReplacementHash),
+  ]) {
+    const f = replacement(submission(factoryFixture()));
+    mutate(f);
+    assert.throws(() => f.context.sealFactoryReplacement(f.d));
+    await assert.rejects(() =>
+      f.context.inspectDraftTransaction(f.d, replacementActual()),
+    );
+    assert.equal(f.calls.length, 0);
+  }
+});
+
+test("factory alias ownership includes original and replacement hashes even before terminal adoption", async () => {
+  for (const collision of [txHash, feeReplacementHash]) {
+    const f = replacement(submission(factoryFixture())),
+      other = draft("foreign-review");
+    f.drafts.set(other.id, other);
+    f.context.sealDraft(other);
+    other.submittedHash = collision;
+    await rejects(
+      () => f.context.inspectDraftTransaction(f.d, replacementActual()),
+      "V10_RECEIPT_CONTEXT_AMBIGUOUS",
+    );
+    assert.equal(f.calls.length, 0);
+  }
+  const f = submission(factoryFixture()),
+    other = draft("collision-review");
+  f.drafts.set(other.id, other);
+  f.context.sealDraft(other);
+  other.submittedHash = feeReplacementHash;
+  assert.throws(() => replacement(f), {
+    code: "V10_RECEIPT_CONTEXT_AMBIGUOUS",
+  });
+  assert.equal(f.d.v10Replacement, undefined);
+});
+
+test("first-time factory seals reject foreign chain/account/call evidence and do not write a partial seal", () => {
+  for (const changed of [
+    { chainId: 10200 },
+    { wallet: target },
+    { to: target },
+    { type: 4 },
+    { nonce: 4 },
+    { valueWei: "1" },
+    { dataHash: ethers.id("foreign-data") },
+    { gasLimit: "99999" },
+    { accessListHash: hash("foreign-access-list") },
+    { originalHash: feeReplacementHash },
+    { hash: txHash },
+    { blockNumber: 10 },
+    { gasUsed: "100001" },
+    { gasPriceWei: "-1" },
+    { feeWei: "1" },
+    { anchor: { blockNumber: 19, blockHash } },
+    { accountType: "foreign-account" },
+    { delegateCodeHash: ethers.id("unexpected-eoa-delegate") },
+  ]) {
+    const f = replacement(submission(factoryFixture()));
+    delete f.d.v10Replacement;
+    Object.assign(f.d.replacement, changed);
+    assert.throws(() => f.context.sealFactoryReplacement(f.d), {
+      code: "V10_FACTORY_REPLACEMENT_CHANGED",
+    });
+    assert.equal(f.d.v10Replacement, undefined);
+  }
+  const f = replacement(submission(factoryFixture()));
+  delete f.d.v10Submission;
+  assert.throws(() => f.context.sealFactoryReplacement(f.d), {
+    code: "V10_FACTORY_SUBMISSION_CHANGED",
+  });
+  const zero = replacement(submission(factoryFixture()));
+  delete zero.d.v10Replacement;
+  zero.d.replacement.gasPriceWei = "0";
+  zero.d.replacement.feeWei = "0";
+  assert.ok(zero.context.sealFactoryReplacement(zero.d));
+});
+
+test("serialized factory replacement seals validate after restart without reconstructing an alias cache", async () => {
+  const original = replacement(submission(factoryFixture()));
+  original.d.confirmedHash = feeReplacementHash;
+  original.d.used = true;
+  const saved = JSON.parse(JSON.stringify(original.d));
+  const restarted = fixture({ instanceId: "new-runtime", savedDraft: saved });
+  assert.equal(
+    restarted.context.sealFactorySubmission(saved),
+    saved.v10Submission,
+  );
+  assert.equal(
+    restarted.context.sealFactoryReplacement(saved),
+    saved.v10Replacement,
+  );
+  assert.equal(
+    (
+      await restarted.context.assertTransactionIntent(
+        replacementActual(),
+        replacementExpected(restarted),
+      )
+    ).verified,
+    true,
+  );
+  assert.equal(restarted.policies[0].instanceId, "instance-original");
+  assert.equal(saved.submittedHash, txHash);
+  assert.equal(saved.confirmedHash, feeReplacementHash);
+});
+
+test("factory evidence remains unchanged through the fresh inspector await and delegated proof shape is exact", async () => {
+  let f;
+  f = replacement(
+    submission(
+      factoryFixture({
+        transform: async ({ expected }) => {
+          f.d.replacement.gasPriceWei = "3";
+          return proofFor(expected);
+        },
+      }),
+    ),
+  );
+  await assert.rejects(() =>
+    f.context.inspectDraftTransaction(f.d, replacementActual()),
+  );
+  const delegated = submission(factoryFixture());
+  replacement(delegated);
+  delete delegated.d.v10Replacement;
+  delegated.d.replacement.accountType = "metamask-protected-self-v1.3";
+  assert.throws(() => delegated.context.sealFactoryReplacement(delegated.d), {
+    code: "V10_FACTORY_REPLACEMENT_CHANGED",
+  });
+  delegated.d.replacement.delegateCodeHash =
+    "0x0b77e469f5603ed1e9ff0e7ee56238b61a8cf7cb3185b33e53e2eeaad50109ab";
+  delegated.context.sealFactoryReplacement(delegated.d);
+  assert.equal(
+    (
+      await delegated.context.inspectDraftTransaction(
+        delegated.d,
+        replacementActual(),
+      )
+    ).verified,
+    true,
+  );
+});

@@ -4,6 +4,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
+import { isSelectedBootstrapQuery } from "./fixtures/selected-bootstrap-query.mjs";
 import {
   makeCaseEnvelope,
   caseScope,
@@ -224,8 +225,7 @@ async function run() {
       if (
         req.method === "GET" &&
         url.pathname === "/api/bootstrap" &&
-        url.searchParams.size === 1 &&
-        url.searchParams.get("selectedEventId") === identity.eventId
+        isSelectedBootstrapQuery(url.searchParams, identity.eventId)
       )
         return send(res, 200, selected.bootstrap);
       if (

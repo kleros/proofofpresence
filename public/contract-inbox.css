@@ -513,6 +513,32 @@
 }
 
 /* Keep accessible labels portable when this source is mounted independently. */
+.contract-payer-review {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+.contract-payer-review p,
+.contract-payer-review label {
+  font-size: 13px;
+}
+.contract-payer-review textarea {
+  margin: 8px 0 14px;
+}
+.contract-payer-review .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.contract-payer-review .checkbox-label input {
+  flex: 0 0 auto;
+  width: 18px;
+  min-height: 18px;
+  margin-top: 3px;
+}
 [data-contract-inbox] .sr-only {
   position: absolute;
   width: 1px;

@@ -14,7 +14,7 @@ import { loadV10UpgradeableArtifacts } from "../../src/v10-upgrade-artifacts.mjs
 import { MAINNET_KLEROS, MAINNET_EXTRA_DATA } from "../../scripts/mainnet/verify-kleros.mjs";
 
 export const V10_APP_PROFILE = "kleros-event-v10-uups";
-export async function createV10AppFixture({ origin = "https://v10-browser.example.invalid" } = {}) {
+export async function createV10AppFixture({ origin = "https://v10-browser.example.invalid", firstEventManageScope } = {}) {
   assert.equal(new URL(origin).origin, origin); assert.equal(new URL(origin).protocol, "https:");
   const backendOrigin = "https://v10-loopback-backend.example.invalid", proxySecret = "synthetic_v10_browser_proxy_" + "0123456789abcdef".repeat(4);
   let rpc, provider, app, w, organizer, dir, stateFile, auth = null, review = null, armed = null;
@@ -58,7 +58,8 @@ export async function createV10AppFixture({ origin = "https://v10-browser.exampl
   } catch (error) { await close(); throw error; }
   async function launch() {
     app = await startServer({ port: 0, rpcPort: 0, production: { manifest, stateFile }, deployment: { mode: "hosted-production", publicOrigin: origin, backendOrigin, proxySecret, runtimeRoot: dir } }, {
-      workbenchFactory: async options => { w = await createWorkbench(options, { productionRuntime: async () => runtime }); return w; },
+      workbenchFactory: async options => { w = await createWorkbench(options, { productionRuntime: async () => runtime,
+        ...(firstEventManageScope === undefined ? {} : { firstEventManageScope }) }); return w; },
     });
   }
   async function forward(route, { method = "GET", headers = {}, body } = {}) {
@@ -113,7 +114,13 @@ export async function createV10AppFixture({ origin = "https://v10-browser.exampl
     const tx = await organizer.sendTransaction(review.transaction);
     stats.sent.push({ hash: tx.hash, draftId: review.id, eventId: review.eventId }); return tx.hash;
   }
-  return { origin, manifest, provider, stats, organizerAddress: organizer.address, forward, wallet,
+  // Test-only local signer. Keys remain in this fixture closure and never reach responses or files.
+  async function sendSyntheticTransaction(index, transaction) {
+    const accounts = Object.values(rpc.getInitialAccounts());
+    assert(Number.isInteger(index) && index >= 0 && index < accounts.length);
+    return new ethers.Wallet(accounts[index].secretKey, provider).sendTransaction(transaction);
+  }
+  return { origin, manifest, provider, stats, organizerAddress: organizer.address, forward, wallet, sendSyntheticTransaction,
     reviewedDraft: () => structuredClone(review), armCreation: id => { assert(review && review.id === id); armed = id; },
     workbench: () => w, savedState: () => fs.existsSync(stateFile) ? JSON.parse(fs.readFileSync(stateFile, "utf8")) : null,
     restart: async () => { await app.close(); app = null; auth = null; review = null; await launch(); }, close };

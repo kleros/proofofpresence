@@ -186,6 +186,56 @@ test(
 );
 
 test(
+  "selected-only bootstrap verifies the chosen event without reading unrelated public, private or draft financial state",
+  { timeout: 60000 },
+  async () => {
+    const originalProvider = runtime.provider;
+    const a = w.events.get(A), b = w.events.get(B);
+    const definition = { visibility: a.definition.visibility, editorialStatus: a.definition.editorialStatus };
+    const observations = [];
+    runtime.provider = new Proxy(originalProvider, {
+      get(target, key) {
+        const value = Reflect.get(target, key);
+        if (typeof value !== "function") return value;
+        return (...args) => {
+          const addresses = key === "call" ? [args[0]?.to]
+            : ["getCode", "getStorage", "getStorageAt", "getBalance"].includes(String(key)) ? [args[0]]
+            : key === "getLogs" ? [args[0]?.address].flat()
+            : key === "send" && args[0] === "eth_call" ? [args[1]?.[0]?.to]
+            : key === "send" && ["eth_getCode", "eth_getStorageAt", "eth_getBalance"].includes(args[0]) ? [args[1]?.[0]] : [];
+          observations.push(...addresses.filter(address => typeof address === "string").map(lower));
+          return value.apply(target, args);
+        };
+      },
+    });
+    try {
+      await w.bootstrap(sessions.owner, { selectedEventId: B });
+      assert(observations.includes(lower(a.deployment.contract)), "The retained full request reads A");
+      for (const [visibility, editorialStatus] of [["public", "published"], ["private", "published"], ["public", "draft"]]) {
+        Object.assign(a.definition, { visibility, editorialStatus });
+        observations.length = 0;
+        const result = await w.bootstrap(sessions.owner, { selectedEventId: B, selectedOnly: true });
+        assert.deepEqual(result.events.map(event => event.id), [B]);
+        assert.deepEqual(result.events[0], result.selectedEvent.detail.event);
+        assert.equal(result.selectedEvent.detail.deploymentTrust.status, "verified");
+        assert.equal(result.selectedEvent.detail.payments.blockNumber, result.selectedEvent.detail.state.blockNumber);
+        assert.equal(observations.includes(lower(a.deployment.contract)), false, `${visibility}/${editorialStatus} A has zero financial reads`);
+        assert(observations.includes(lower(b.deployment.contract)), "B retains fresh financial verification");
+      }
+      const missing = await w.bootstrap(sessions.owner, { selectedEventId: "missing-event", selectedOnly: true });
+      assert.deepEqual(missing.events, []);
+      assert.equal(missing.selectedEvent.detail, null);
+      assert.equal(missing.selectedEvent.error.code, "NOT_FOUND");
+      const directory = await w.bootstrap(sessions.owner);
+      assert.deepEqual(directory.events.map(event => event.id).sort(), [A, B]);
+    } finally {
+      runtime.provider = originalProvider;
+      Object.assign(a.definition, definition);
+    }
+  },
+);
+
+test(
   "an unreviewed private A cannot deny valid B or disclose private A in production bootstrap",
   { timeout: 60000 },
   async () => {
@@ -223,12 +273,18 @@ test(
         selectedA.events.map((event) => event.id),
         [B],
       );
+      const scopedA = await w.bootstrap(sessions.owner, {
+        selectedEventId: A,
+        selectedOnly: true,
+      });
+      assert.equal(scopedA.selectedEvent.detail, null);
+      assert.deepEqual(scopedA.events, []);
       const directory = await w.bootstrap(sessions.owner);
       assert.deepEqual(
         directory.events.map((event) => event.id),
         [B],
       );
-      for (const response of [selectedB, selectedA, directory]) {
+      for (const response of [selectedB, selectedA, scopedA, directory]) {
         const encoded = JSON.stringify(response);
         assert.equal(encoded.includes(secret), false);
         assert.equal(encoded.includes(a.definition.title), false);

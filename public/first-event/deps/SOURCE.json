@@ -1,0 +1,44 @@
+{
+  "sourceCommit": "3a8ec9ecdb394615dc921d16cb410eeaf5b0f01f",
+  "unchangedFiles": [
+    {
+      "path": "event-read.js",
+      "source": "public/event-read.js",
+      "sha256": "27ca66ce5de3f601da50932225c5de27914b5ccb918f60a336e1ad370848b492"
+    },
+    {
+      "path": "selected-event.js",
+      "source": "public/selected-event.js",
+      "sha256": "e590d4717c47abae18dd7547bff9128781d576c8d7687e8c3a67b1a7b6b6cf18"
+    },
+    {
+      "path": "environment.js",
+      "source": "public/environment.js",
+      "sha256": "39c52279367396d944b1ded077da55105a7d3d6f0604af4e31a98767d854f969"
+    },
+    {
+      "path": "contract-profiles.js",
+      "source": "public/contract-profiles.js",
+      "sha256": "ce2f72b60a2b8e74c533cbd77d65415e8aad4011fe09bfd8ab600e59a4c6a8ec"
+    },
+    {
+      "path": "transaction-context.js",
+      "source": "public/transaction-context.js",
+      "sha256": "e9c6aa32450915ce1b0261744dc31138b4309d170d6927b58124dc91a13fd4fb"
+    },
+    {
+      "path": "luma-launch.js",
+      "source": "public/luma-launch.js",
+      "sha256": "134cf6fdaaa6c38dee8463038af5bc6a6fc3468a5b6a5fec7c34c56d29cfc0b4"
+    }
+  ],
+  "modifiedFiles": [
+    {
+      "path": "v10-wallet-account.js",
+      "source": "public/v10-wallet-account.js",
+      "baseSha256": "e158b18deb2daa4bda75ae3d912b580ead58874328774a7554059fd7ec46e903",
+      "sha256": "88f223ee15166e14bfb3b4c35b383573bf9fee8edceb8c08f4c9fcf38c6cb916",
+      "change": "Read the three independent pinned framework runtimes concurrently at the same block; preserve all account and context guards."
+    }
+  ]
+}

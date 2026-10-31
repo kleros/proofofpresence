@@ -7,6 +7,7 @@ import { hash, lower, requireThat } from "./utils.mjs";
 import { caseTemplate } from "../references/kickback/scripts/lib.mjs";
 import { verifyUpgradeableDeployment, IMPLEMENTATION_SLOT } from "./upgrade-verification.mjs";
 import { verifyV10Deployment, V10_MAINNET_SCOPE } from "./v10-upgrade-verification.mjs";
+import { v10ReadBatch } from "./v10-read-batch.mjs";
 import {
   EVENT_V8_VERSION,
   EVENT_V8_TEST15M_VERSION,
@@ -746,7 +747,13 @@ export async function chainState(
   // These reads are independent and all target the same freshly selected block.
   // Batching reduces remote-RPC latency without reusing any mutable snapshot.
   const [values, history, attendeeList, challengerList, balance, pendingTotal] =
-    await Promise.all([
+    d.contractVersion === EVENT_V10_VERSION ? await (async () => {
+      const [results, balance] = await Promise.all([
+        v10ReadBatch(chain.provider, [...keys, "stakers", "attendees", "challengers", "pendingTotal"].map(method => ({ contract: c, method, args: [] })), block.number),
+        chain.provider.getBalance(d.contract, block.number),
+      ]);
+      return [results.slice(0, keys.length), ...results.slice(keys.length, keys.length + 3), balance, results.at(-1)];
+    })() : await Promise.all([
       Promise.all(keys.map((key) => c[key](at))),
       c.stakers(at),
       c.attendees(at),
@@ -769,7 +776,13 @@ export async function chainState(
         ),
       ]
     : [];
-  const [activeStatuses, pendingCreditValues] = await Promise.all([
+  const [activeStatuses, pendingCreditValues] = d.contractVersion === EVENT_V10_VERSION ? await (async () => {
+    const results = await v10ReadBatch(chain.provider, [
+      ...uniqueStakers.map(wallet => ({ contract: c, method: "status", args: [wallet] })),
+      ...creditWallets.map(wallet => ({ contract: c, method: "pendingDeposits", args: [wallet] })),
+    ], block.number);
+    return [results.slice(0, uniqueStakers.length), results.slice(uniqueStakers.length)];
+  })() : await Promise.all([
     Promise.all(uniqueStakers.map((wallet) => c.status(wallet, at))),
     Promise.all(creditWallets.map((wallet) => c.pendingDeposits(wallet, at))),
   ]);

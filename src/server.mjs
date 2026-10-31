@@ -9,9 +9,15 @@ import { ethers } from "ethers";
 import { assertDemoChainInstance } from "../public/hosted-wallet.js";
 import { createWorkbench } from "./workbench.mjs";
 import { createDepositInbox } from "./deposit-inbox.mjs";
+import { createFirstEventDisplay } from "./first-event-display.mjs";
+import { FIRST_EVENT_MANAGE_SCOPE, firstEventDisplayScopes, firstEventDisplayScopeForQuery } from "./first-event-manage-scope.mjs";
+import { createFirstEventPostgres } from "./first-event-postgres.mjs";
+import { createKickbackDisplay } from "./kickback-display.mjs";
+import { createPublicTransactionService } from "./public-transactions.mjs";
 import { productionErrorResponse } from "./production-errors.mjs";
 import { createOrganizerJobService } from "./organizer-jobs.mjs";
-import { V10_WALLET_CAPABILITIES } from "./v10-production-wallets.mjs";
+import { createEventReadJobService } from "./event-read-jobs.mjs";
+import { V10_WALLET_CAPABILITIES, V10_WALLET_SUPPORT } from "./v10-production-wallets.mjs";
 import {
   json,
   requireThat,
@@ -22,7 +28,7 @@ import {
   csvCell,
 } from "./utils.mjs";
 import { V7 } from "./chain.mjs";
-import { isV8Version } from "./contracts-v8.mjs";
+import { isV8Version, eventV8Profile } from "./contracts-v8.mjs";
 import {
   consoleSettings,
   renderConsole,
@@ -65,8 +71,20 @@ const staticPaths = new Set([
   "/app.js",
   "/entry.js",
   "/public-home.js",
+  "/home-wallet.js",
+  "/wallet-connection.js",
+  "/wallet-connection.css",
+  "/walletconnect.js",
+  "/event-timezone.js",
+  "/first-event-manage.js",
+  "/vendor/walletconnect/2.26.0/walletconnect.bundle.js",
+  "/vendor/walletconnect/2.26.0/LICENSE.md",
+  "/vendor/walletconnect/2.26.0/provenance.json",
   "/ui-keyboard.js",
   "/selected-event.js",
+  "/event-read.js",
+  "/public-transactions.js",
+  "/first-event-display.js",
   "/loading.css",
   "/contract-inbox.js",
   "/contract-profiles.js",
@@ -112,7 +130,7 @@ export async function startServer({
   testnet = null,
   production = null,
   deployment = {},
-} = {}, { workbenchFactory = createWorkbench } = {}) {
+} = {}, { workbenchFactory = createWorkbench, firstEventStore = null } = {}) {
   const mode = deployment.mode ?? process.env.MODE ?? "local-demo";
   requireThat(
     ["local-demo", "hosted-demo", "testnet", "hosted-testnet", "hosted-production"].includes(mode),
@@ -216,17 +234,107 @@ export async function startServer({
         entry.session.id === session.id && entry.session.mode === "wallet" &&
         entry.session.wallet.toLowerCase() === session.wallet.toLowerCase() && entry.expiry > Date.now()),
       execute: async (operation, { session, input, draftId, hash: txHash }) => {
-        if (operation === "prepare") return w.createFactoryDraft(session, input);
+        if (operation === "prepare") {
+          const draft = await w.createFactoryDraft(session, input);
+          return { ...draft, ...(Reflect.get(draft, "creationContext") ? {
+            creationContext: bootstrapDTO(Reflect.get(draft, "creationContext"), session, false, session),
+          } : {}) };
+        }
         if (operation === "validate") {
           const draft = await w.validateFactoryDraft(session, draftId);
           return { draft, transaction: draft.transaction };
         }
-        const result = await w.reconcileFactorySubmission(session, draftId, txHash);
+        const result = operation === "replacement"
+          ? await w.reconcileFactoryReplacement(session, draftId, txHash)
+          : await w.reconcileFactorySubmission(session, draftId, txHash);
+        if (result.status === "confirmed") await kickbackDisplay?.initialize();
         return { ...result, ...(result.status === "confirmed"
           ? { participantUrl: `${publicUrl.origin}/#event=${encodeURIComponent(result.eventId)}&view=participant` } : {}) };
       },
     }) : null;
+  const eventSessionCurrent = (session) => session === null || [...sessions.values()].some((entry) =>
+    entry.session === session && entry.expiry > Date.now());
+  const eventReadJobs = isProduction && v10Production
+    ? createEventReadJobService({ instanceId, isSessionCurrent: eventSessionCurrent,
+      execute: async (operation, { session, selectedEventId, eventId, draftId, hash: txHash, ...input }) => {
+        if (operation === "bootstrap") {
+          const selected = selectedEventId !== null;
+          const result = selected ? await w.bootstrap(session, { selectedEventId, selectedOnly: true }) : await w.bootstrap(session, input.factoryOnly === true ? { factoryOnly: true } : undefined);
+          return bootstrapDTO(result, session, selected, eventSessionCurrent(session) ? session : null);
+        }
+        if (operation === "deposit") {
+          const result = await w.createDepositReview(eventId, session);
+          return { ...result, depositReview: bootstrapDTO(Reflect.get(result, "depositReview"), session, true,
+            eventSessionCurrent(session) ? session : null) };
+        }
+        if (operation === "participant-draft" && input.action === "withdrawPending") {
+          requireThat(session?.mode === "wallet" && ethers.isAddress(session.wallet) && eventSessionCurrent(session),
+            "Sign in to recover your own credit", "UNAUTHENTICATED", 401);
+          requireThat(w.firstEventCreditRecoveryAvailable?.(eventId) === true,
+            "Credit recovery requires a reviewed current or previous event", "FIRST_EVENT_SCOPE", 404);
+          const credit = await w.contract(eventId).pendingDeposits(session.wallet);
+          requireThat(eventSessionCurrent(session), "Wallet session changed", "UNAUTHENTICATED", 401);
+          requireThat(typeof credit === "bigint" && credit > 0n && credit < 2n ** 256n,
+            "No unused credit is available for this wallet", "INSUFFICIENT_CREDIT", 409);
+          return w.createDraft(eventId, session, { action: "withdrawPending",
+            params: { to: session.wallet, amountWei: String(credit) } });
+        }
+        if (["adopt-payer", "manage-draft", "participant-draft", "deposit-inbox"].includes(operation))
+          requireThat(w.firstEventManageAvailable(eventId), "First event management is unavailable", "FIRST_EVENT_SCOPE", 404);
+        if (operation === "adopt-payer") return w.adoptPayer(eventId, session,
+          { wallet: input.wallet, txHash: input.txHash, confirmed: input.confirmed, note: input.note },
+          () => requireThat(eventSessionCurrent(session), "Wallet session changed", "UNAUTHENTICATED", 401));
+        if (["manage-draft", "participant-draft"].includes(operation)) {
+          return w.createDraft(eventId, session, { action: input.action, params: input.params });
+        }
+        if (operation === "deposit-inbox") return depositInbox.read(eventId, session, { refresh: input.refresh });
+        if (operation === "validate") {
+          const result = await w.validateDraft(eventId, session, draftId);
+          return { transaction: result.d.transaction, draft: { id: result.d.id, expiresAt: result.d.expiresAt } };
+        }
+        return w.reconcileSubmission(eventId, session, draftId, txHash);
+      },
+      deliver: async (operation, result, { session, eventId, signal }) => {
+        signal.throwIfAborted();
+        const disclosed = await w.finalizeReadResult(operation, result, session, eventId);
+        signal.throwIfAborted();
+        requireThat(eventSessionCurrent(session), "Wallet session changed", "UNAUTHENTICATED", 401);
+        return operation === "bootstrap"
+          ? bootstrapDTO(disclosed, session, eventId !== null, eventSessionCurrent(session) ? session : null)
+          : disclosed;
+      },
+    }) : null;
   const depositInbox = createDepositInbox(w, { environment: mode, instanceId });
+  const displayStore = isProduction && v10Production ? firstEventStore ??
+    (process.env.FIRST_EVENT_DATABASE_URL ? createFirstEventPostgres({ connectionString: process.env.FIRST_EVENT_DATABASE_URL }) : null) : null;
+  const firstEventDisplays = new Map();
+  let kickbackDisplay = null;
+  if (displayStore) {
+    try {
+      await displayStore.initialize();
+      for (const eventScope of firstEventDisplayScopes()) firstEventDisplays.set(eventScope.eventId,
+        createFirstEventDisplay(w, { instanceId, origin: publicUrl.origin, store: displayStore, eventScope,
+          recoveryOnly: eventScope.eventId !== FIRST_EVENT_MANAGE_SCOPE.eventId }));
+      if (ethers.isAddress(organizerFactory)) {
+        kickbackDisplay = createKickbackDisplay(w, { origin: publicUrl.origin, store: displayStore });
+        await kickbackDisplay.initialize();
+      }
+    } catch {
+      await displayStore.close().catch(() => {});
+      await w.close();
+      throw Object.assign(new Error("The event display database is unavailable."), { code: "FIRST_EVENT_DATABASE_UNAVAILABLE", status: 503 });
+    }
+  }
+  const publicTransactions = isProduction && v10Production ? createPublicTransactionService(w, {
+    origin: publicUrl.origin, instanceId, bootstrapDTO,
+    walletContext: () => ({ mode: "hosted-production", instanceId,
+      chain: { chainId: 1 }, environment: { chainId: 1, production: true, network: "ethereum-mainnet" },
+      contractVersion: productionProfile, abiVersion: productionProfile,
+      contractProfile: { ...eventV8Profile(productionProfile), verified: true },
+      walletSupport: { ...V10_WALLET_SUPPORT },
+      capabilities: { ...V10_WALLET_CAPABILITIES, transactionsReady: false, createEvents: false, manageEvents: false } }),
+    onCreationConfirmed: async () => { await kickbackDisplay?.initialize(); },
+  }) : null;
   let instanceMarker = null;
   if (hosted && !external) {
     // Chain1337 can already exist in a visitor's wallet. A unique zero-value
@@ -314,6 +422,88 @@ export async function startServer({
       "set-cookie",
       `kleros_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${hosted ? "; Secure" : ""}`,
     );
+  }
+  function bootstrapDTO(bootstrap, s, selected, selectedSession) {
+  if ((selected || isProduction) && selectedSession !== s)
+    bootstrap = {
+      ...bootstrap,
+      session: selectedSession
+        ? {
+            wallet: selectedSession.wallet,
+            label: selectedSession.label,
+            mode: selectedSession.mode,
+          }
+        : null,
+      events: [],
+      ...(isProduction ? { recoveryEvents: [] } : {}),
+      ...("selectedEvent" in bootstrap ? { selectedEvent: {
+        eventId: bootstrap.selectedEvent.eventId,
+        wallet: selectedSession?.wallet ?? null,
+        detail: null,
+        error: {
+          code: "SELECTED_EVENT_SESSION_CHANGED",
+          status: 401,
+          message: "Wallet session changed; refresh and try again",
+        },
+      } } : {}),
+    };
+  /** @type {Record<string, unknown>} */
+  const capabilities = external
+    ? {
+        sharedDemo: false,
+        browserWallet: true,
+        createEvents: false,
+        timeControls: false,
+        ...(isProduction ? {
+          organizerJobs: organizerJobs !== null,
+          creationReplacementRecovery: v10Production,
+          production: true, walletTransactions: true, serverSigning: false,
+          lumaDepositPortal: true, walletFirstDeposits: true,
+          createEvents: bootstrap.factory?.verified === true && bootstrap.organizerSetup?.policyStatus === "verified",
+          financialInterface: "kleros-native-v1",
+          transactionsReady: !Reflect.get(w.chain, "eventVerification") ||
+            [...Reflect.get(w.chain, "eventVerification").values()].some(entry => entry.status === "verified") ||
+            bootstrap.factory?.verified === true || (v10Production && bootstrap.selectedEvent?.detail?.deploymentTrust?.status === "verified"),
+          supportedAccountTypes: ["eoa"], contractWallets: false,
+          erc1271: false, eip7702: false, reset: false, timeTravel: false,
+          mockRulings: false,
+          ...(v10Production ? { ...V10_WALLET_CAPABILITIES, eventReadJobs: true,
+            canonicalPayerAdoption: w.firstEventManageAvailable?.(bootstrap.selectedEvent?.eventId) === true,
+            manualAttendanceReview: w.firstEventManageAvailable?.(bootstrap.selectedEvent?.eventId) === true,
+            casePublication: false, originalCreationRecovery: false } : {}),
+        } : {}),
+      }
+    : hosted
+      ? { sharedDemo: true, browserWallet: true }
+      : {};
+  if (isV8Version(bootstrap.contractVersion)) {
+    capabilities.contractInbox = true;
+    capabilities.batchActions = true;
+  }
+  if (selected) capabilities.selectedEventBootstrap = true;
+  return {
+    ...bootstrap,
+    mode,
+    instanceId,
+    ...(selected && "selectedEvent" in bootstrap
+      ? {
+          selectedEvent: {
+            ...bootstrap.selectedEvent,
+            instanceId,
+            wallet: selectedSession?.wallet ?? null,
+          },
+        }
+      : {}),
+    chain: {
+      ...bootstrap.chain,
+      rpcUrl:
+        hosted && !external
+          ? `${publicUrl.origin}/rpc`
+          : bootstrap.chain.rpcUrl,
+      ...(hosted && !external ? { instanceMarker } : {}),
+    },
+    ...(Object.keys(capabilities).length ? { capabilities } : {}),
+  };
   }
   function guardMutation(req, upload = false) {
     requireThat(
@@ -458,6 +648,13 @@ export async function startServer({
         requireThat(url.search === "", "Catalog does not accept query parameters", "INVALID_INPUT", 400);
         return send(res, 200, w.publicCatalog());
       }
+      // Public cumulative deposit receipts only; never a session, financial snapshot or action permission.
+      if (p === "/api/first-event/depositors") {
+        requireThat(firstEventDisplays.size && req.method === "GET", "Not found", "NOT_FOUND", 404);
+        const selected = firstEventDisplayScopeForQuery(url.search), display = firstEventDisplays.get(selected.eventId);
+        requireThat(display, "Not found", "NOT_FOUND", 404);
+        return send(res, 200, await display.read());
+      }
       const s = getSession(req);
       const authOrigin = hosted ? publicUrl.origin : `http://${host}`;
       if (
@@ -466,6 +663,30 @@ export async function startServer({
         req.method === "DELETE"
       )
         guardMutation(req, p === "/local-upload");
+      if (p === "/api/public-transactions" || p.startsWith("/api/public-transactions/")) {
+        requireThat(publicTransactions && url.search === "", "Public transaction flow is unavailable", "PUBLIC_FLOW_NOT_FOUND", 404);
+        if (p === "/api/public-transactions") {
+          requireThat(req.method === "POST", "Use an explicit transaction request", "METHOD_NOT_ALLOWED", 405);
+          return send(res, 201, publicTransactions.create(await body(req)));
+        }
+        const route = p.match(/^\/api\/public-transactions\/([0-9a-f]{64})(?:\/(event-read-jobs|organizer-jobs|submitted|direct-deposit)(?:\/([A-Za-z0-9_-]+))?)?$/);
+        requireThat(route, "Public transaction flow not found", "PUBLIC_FLOW_NOT_FOUND", 404);
+        const [, token, operation, requestId] = route;
+        if (!operation && req.method === "GET") return send(res, 200, publicTransactions.read(token));
+        if (operation === "direct-deposit" && req.method === "POST") {
+          if (!requestId) return send(res, 200, await publicTransactions.directDeposit(token, await body(req)));
+          if (requestId === "validate") return send(res, 200, await publicTransactions.directValidate(token, await body(req)));
+        }
+        if (operation === "submitted" && !requestId && req.method === "POST")
+          return send(res, 200, await publicTransactions.submitted(token, await body(req)));
+        if (["event-read-jobs", "organizer-jobs"].includes(operation)) {
+          if (!requestId && req.method === "POST") return send(res, 202, operation === "event-read-jobs"
+            ? publicTransactions.eventStart(token, await body(req)) : publicTransactions.organizerStart(token, await body(req)));
+          if (requestId && req.method === "GET") return send(res, 200, operation === "event-read-jobs"
+            ? await publicTransactions.eventStatus(token, requestId) : publicTransactions.organizerStatus(token, requestId));
+        }
+        return send(res, 405, { error: "Method is not available", code: "METHOD_NOT_ALLOWED" });
+      }
       if (s?.mode === "recovery-only") {
         // Default deny BEFORE bootstrap, jobs, event routes or any workbench call.
         // A wallet-bearing read session must never reach loose historical auth.
@@ -481,6 +702,16 @@ export async function startServer({
         );
       }
 
+      if (p === "/api/kickback-setup") {
+        requireThat(kickbackDisplay && req.method === "GET", "Not found", "NOT_FOUND", 404);
+        requireThat(url.search === "", "Setup display does not accept query parameters", "INVALID_INPUT", 400);
+        const metadata = await kickbackDisplay.read();
+        requireThat(getSession(req) === s, "Wallet session changed", "UNAUTHENTICATED", 401);
+        const result = bootstrapDTO({ ...metadata, session: s ? { wallet: s.wallet, label: s.label, mode: s.mode } : null }, s, false, s);
+        return send(res, 200, { ...result, kind: "kickback-setup-display", displayOnly: true,
+          capabilities: { ...result.capabilities, transactionsReady: false, createEvents: false, manageEvents: false } });
+      }
+
       if (isProduction) {
         requireThat(!(p === "/api/events" && req.method === "POST"),
           "Production deployments require a separately reviewed deployment plan", "DEMO_ONLY", 403);
@@ -488,6 +719,33 @@ export async function startServer({
           "Demo controls are unavailable in production", "DEMO_ONLY", 403);
         requireThat(!/^\/(?:local-upload|local-ipfs|local-policy)(?:\/|$)/.test(p),
           "Local preview files are unavailable in production", "NOT_FOUND", 404);
+      }
+      const eventReadJobRoute = p.match(/^\/api\/event-read-jobs(?:\/([a-zA-Z0-9_-]+))?$/);
+      if (eventReadJobRoute) {
+        requireThat(eventReadJobs, "Not found", "NOT_FOUND", 404);
+        requireThat(url.search === "", "Use an exact event read request", "INVALID_INPUT", 400);
+        const requestId = eventReadJobRoute[1];
+        if (!requestId && req.method === "POST") {
+          const input = await body(req);
+          requireThat(getSession(req) === s, "Wallet session changed", "UNAUTHENTICATED", 401);
+          if (input.operation === "participant-draft" && input.action === "withdrawPending") {
+            requireThat(s?.mode === "wallet" && ethers.isAddress(s.wallet), "Sign in to recover your own credit", "UNAUTHENTICATED", 401);
+            requireThat(w.firstEventCreditRecoveryAvailable?.(input.eventId) === true,
+              "Credit recovery requires a reviewed current or previous event", "FIRST_EVENT_SCOPE", 404);
+          } else if (["adopt-payer", "manage-draft", "participant-draft", "deposit-inbox"].includes(input.operation))
+            requireThat(w.firstEventManageAvailable?.(input.eventId) === true,
+              "First event management is unavailable", "FIRST_EVENT_SCOPE", 404);
+          const result = eventReadJobs.start(s, input);
+          requireThat(getSession(req) === s, "Wallet session changed", "UNAUTHENTICATED", 401);
+          return send(res, 202, result);
+        }
+        if (requestId && req.method === "GET") {
+          requireThat(getSession(req) === s, "Wallet session changed", "UNAUTHENTICATED", 401);
+          const result = await eventReadJobs.status(s, requestId);
+          requireThat(getSession(req) === s, "Wallet session changed", "UNAUTHENTICATED", 401);
+          return send(res, 200, result);
+        }
+        return send(res, 405, { error: "Method is not available", code: "METHOD_NOT_ALLOWED" });
       }
       if (p === "/api/bootstrap" && req.method === "GET") {
         const selected = url.searchParams.has("selectedEventId");
@@ -497,90 +755,36 @@ export async function startServer({
           "INVALID_INPUT",
           400,
         );
+        const selectedOnly = url.searchParams.getAll("selectedOnly");
+        requireThat(
+          selectedOnly.length === 0 ||
+            (selected && selectedOnly.length === 1 && selectedOnly[0] === "1"),
+          "Selected-only loading requires one event and selectedOnly=1",
+          "INVALID_INPUT",
+          400,
+        );
+        if (isProduction && v10Production && url.searchParams.get("background") === "1")
+          return send(res, 200, { kind: "event-read-transport", enabled: true, chainId: 1,
+            contractVersion: productionProfile, instanceId,
+            // Public account-policy context lets sign-in start without a full
+            // event proof. It contains no event access or transaction review.
+            walletContext: { mode: "hosted-production", instanceId,
+              chain: { chainId: 1 }, environment: { chainId: 1, production: true, network: "ethereum-mainnet" },
+              contractVersion: productionProfile, abiVersion: productionProfile,
+              contractProfile: { ...eventV8Profile(productionProfile), verified: true },
+              walletSupport: { ...V10_WALLET_SUPPORT },
+              capabilities: { ...V10_WALLET_CAPABILITIES, transactionsReady: false, createEvents: false, manageEvents: false },
+            } });
         /** @type {any} */
         let bootstrap = await w.bootstrap(
           s,
           selected
-            ? { selectedEventId: url.searchParams.get("selectedEventId") }
+            ? { selectedEventId: url.searchParams.get("selectedEventId"),
+                ...(isProduction && selectedOnly.length ? { selectedOnly: true } : {}) }
             : undefined,
         );
         const selectedSession = selected || isProduction ? getSession(req) : s;
-        if ((selected || isProduction) && selectedSession !== s)
-          bootstrap = {
-            ...bootstrap,
-            session: selectedSession
-              ? {
-                  wallet: selectedSession.wallet,
-                  label: selectedSession.label,
-                  mode: selectedSession.mode,
-                }
-              : null,
-            events: [],
-            ...(isProduction ? { recoveryEvents: [] } : {}),
-            ...("selectedEvent" in bootstrap ? { selectedEvent: {
-              eventId: bootstrap.selectedEvent.eventId,
-              wallet: selectedSession?.wallet ?? null,
-              detail: null,
-              error: {
-                code: "SELECTED_EVENT_SESSION_CHANGED",
-                status: 401,
-                message: "Wallet session changed; refresh and try again",
-              },
-            } } : {}),
-          };
-        /** @type {Record<string, unknown>} */
-        const capabilities = external
-          ? {
-              sharedDemo: false,
-              browserWallet: true,
-              createEvents: false,
-              timeControls: false,
-              ...(isProduction ? {
-                organizerJobs: organizerJobs !== null,
-                production: true, walletTransactions: true, serverSigning: false,
-                lumaDepositPortal: true, walletFirstDeposits: true,
-                createEvents: bootstrap.factory?.verified === true && bootstrap.organizerSetup?.policyStatus === "verified",
-                financialInterface: "kleros-native-v1",
-                transactionsReady: !Reflect.get(w.chain, "eventVerification") ||
-                  [...Reflect.get(w.chain, "eventVerification").values()].some(entry => entry.status === "verified") ||
-                  bootstrap.factory?.verified === true,
-                supportedAccountTypes: ["eoa"], contractWallets: false,
-                erc1271: false, eip7702: false, reset: false, timeTravel: false,
-                mockRulings: false,
-                ...(v10Production ? { ...V10_WALLET_CAPABILITIES, casePublication: false, originalCreationRecovery: false } : {}),
-              } : {}),
-            }
-          : hosted
-            ? { sharedDemo: true, browserWallet: true }
-            : {};
-        if (isV8Version(bootstrap.contractVersion)) {
-          capabilities.contractInbox = true;
-          capabilities.batchActions = true;
-        }
-        if (selected) capabilities.selectedEventBootstrap = true;
-        return send(res, 200, {
-          ...bootstrap,
-          mode,
-          instanceId,
-          ...(selected && "selectedEvent" in bootstrap
-            ? {
-                selectedEvent: {
-                  ...bootstrap.selectedEvent,
-                  instanceId,
-                  wallet: selectedSession?.wallet ?? null,
-                },
-              }
-            : {}),
-          chain: {
-            ...bootstrap.chain,
-            rpcUrl:
-              hosted && !external
-                ? `${publicUrl.origin}/rpc`
-                : bootstrap.chain.rpcUrl,
-            ...(hosted && !external ? { instanceMarker } : {}),
-          },
-          ...(Object.keys(capabilities).length ? { capabilities } : {}),
-        });
+        return send(res, 200, bootstrapDTO(bootstrap, s, selected, selectedSession));
       }
       if (p === "/api/session" && req.method === "POST") {
         requireThat(
@@ -815,13 +1019,17 @@ export async function startServer({
           return send(res, 200, organizerJobs.status(s, requestId));
         return send(res, 405, { error: "Method is not available", code: "METHOD_NOT_ALLOWED" });
       }
-      const factoryRoute = p.match(/^\/api\/organizer\/events\/drafts(?:\/([a-zA-Z0-9_-]+)(?:\/(validate|submitted|reconcile))?)?$/);
+      const factoryRoute = p.match(/^\/api\/organizer\/events\/drafts(?:\/([a-zA-Z0-9_-]+)(?:\/(validate|submitted|reconcile|replacement))?)?$/);
       if (factoryRoute) {
         requireThat(isProduction, "Organizer setup requires the verified production factory", "FACTORY_UNAVAILABLE", 503);
         requireThat(s?.mode === "wallet", "Sign in with your wallet first", "UNAUTHENTICATED", 401);
         const [, draftId, action] = factoryRoute;
-        if (!draftId && req.method === "POST")
-          return send(res, 201, await w.createFactoryDraft(s, await body(req)));
+        if (!draftId && req.method === "POST") {
+          const draft = await w.createFactoryDraft(s, await body(req));
+          return send(res, 201, { ...draft, ...(Reflect.get(draft, "creationContext") ? {
+            creationContext: bootstrapDTO(Reflect.get(draft, "creationContext"), s, false, s),
+          } : {}) });
+        }
         if (draftId && !action && req.method === "GET")
           return send(res, 200, await w.getFactoryDraft(s, draftId));
         if (draftId && req.method === "POST" && action) {
@@ -832,7 +1040,12 @@ export async function startServer({
           }
           if (action === "submitted")
             return send(res, 200, await w.recordFactorySubmitted(s, draftId, input.hash));
-          const result = await w.reconcileFactorySubmission(s, draftId, input.hash);
+          if (action === "replacement") requireThat(v10Production && input && typeof input === "object" && !Array.isArray(input) &&
+            Object.keys(input).length === 1 && typeof input.hash === "string",
+            "Use the exact V10 fee-replacement transaction ID", "INVALID_INPUT", 400);
+          const result = action === "replacement"
+            ? await w.reconcileFactoryReplacement(s, draftId, input.hash)
+            : await w.reconcileFactorySubmission(s, draftId, input.hash);
           return send(res, 200, { ...result, ...(result.status === "confirmed"
             ? { participantUrl: `${publicUrl.origin}/#event=${encodeURIComponent(result.eventId)}&view=participant` } : {}) });
         }
@@ -942,10 +1155,12 @@ export async function startServer({
           if (recoveryDraft) return send(res, 200, await w.recordSubmitted(eventId, s, recoveryDraft[1], input.hash));
           return send(res, 200, await w.reconcileSubmission(eventId, s, input.draftId, input.hash));
         }
-        await w.state(eventId);
-        w.record(eventId, s);
+        // detail() already reads fresh state and checks event access. The
+        // shared preflight below belongs to the remaining event operations.
         if (!tail && req.method === "GET")
           return send(res, 200, await w.detail(eventId, s));
+        await w.state(eventId);
+        w.record(eventId, s);
         if (!tail && req.method === "PATCH") {
           const r = await w.owner(eventId, s),
             b = await body(req);
@@ -1393,16 +1608,21 @@ export async function startServer({
       });
     });
   } catch (e) {
+    await Promise.all([...firstEventDisplays.values()].map(display => display.close()));
+    await displayStore?.close();
     await w.close();
     throw e;
   }
+  for (const display of firstEventDisplays.values()) display.start();
   return {
     mode,
     server,
     workbench: w,
     url: `http://127.0.0.1:${listeningPort}`,
     close: async () => {
+      await Promise.all([...firstEventDisplays.values()].map(display => display.close()));
       await new Promise((resolve) => server.close(resolve));
+      await displayStore?.close();
       await w.close();
     },
   };

@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "kind": "public-catalog",
+  "mode": "hosted-production",
+  "instanceId": "2c6dcd93-4663-4234-909e-e3ef5797b2cb",
+  "contractVersion": "kleros-event-v10-uups",
+  "governance": {
+    "kind": "single-owner-immediate",
+    "initialOwner": "0x2bb03593892724d225071068E59ab1E48aF05b55",
+    "upgradeDelaySeconds": 0,
+    "renounceable": true
+  },
+  "environment": {
+    "production": true,
+    "network": "ethereum-mainnet",
+    "chainId": 1
+  },
+  "chain": {
+    "chainId": 1,
+    "name": "Ethereum",
+    "rpcUrl": "https://ethereum-rpc.publicnode.com",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  },
+  "generatedAt": "2026-10-30T11:14:20.331Z",
+  "catalog": {
+    "metadataOnly": true,
+    "currentFinancialState": "not-loaded",
+    "source": "recorded-adoption"
+  },
+  "events": [
+    {
+      "id": "event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5",
+      "title": "Truth Pays: Queryable Data, Prediction Markets & Onchain Justice",
+      "startsAt": "2026-11-04T11:00:00.000Z",
+      "endsAt": "2026-11-04T15:00:00.000Z",
+      "timezone": "Asia/Bangkok",
+      "depositWei": "10000000000000000",
+      "chainId": 1,
+      "contract": "0xCd7418413fBFA814D41799C9dFaCc4654f295c11",
+      "contractVersion": "kleros-event-v10-uups",
+      "abiVersion": "kleros-event-v10-uups",
+      "visibility": "public",
+      "editorialStatus": "published",
+      "adoption": {
+        "kind": "recorded-adoption",
+        "txHash": "0xb4c49e0e207b21bdd8a7f7755fa58b52e5fed07374529feaeb949600dfda6e8b",
+        "blockNumber": 26302868,
+        "blockHash": "0x2afc33af95d16203ed6998c4605b1572f247d09efde613dfb760d58a8759e684"
+      }
+    },
+    {
+      "id": "event-3aac5a07-5074-4241-9246-2798d4111039",
+      "title": "Truth Pays: Queryable Data, Prediction Markets & Onchain Justice",
+      "startsAt": "2026-11-04T12:30:00.000Z",
+      "endsAt": "2026-11-04T16:30:00.000Z",
+      "timezone": "Asia/Kolkata",
+      "depositWei": "10000000000000000",
+      "chainId": 1,
+      "contract": "0xc069A460c5B1c577791Ee61E7F9ADcb7866068df",
+      "contractVersion": "kleros-event-v10-uups",
+      "abiVersion": "kleros-event-v10-uups",
+      "visibility": "public",
+      "editorialStatus": "published",
+      "adoption": {
+        "kind": "recorded-adoption",
+        "txHash": "0x79a20177c15ae2201fb6f8731f0ef17e719298fc60df2abdb1a3e61c8bd0cd2f",
+        "blockNumber": 26305185,
+        "blockHash": "0x3f52e49429d21e97448988ef13ac9ccbbdd8deaed93eb4b720049a1a26b9cd0c"
+      }
+    }
+  ]
+}
