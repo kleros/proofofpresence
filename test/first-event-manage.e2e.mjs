@@ -101,6 +101,11 @@ try {
   });
   page = await context.newPage(); page.on("pageerror", error => proof.errors.push(error.message));
   await page.goto(ORIGIN, { waitUntil: "networkidle" });
+  const reviewChallenge = async () => {
+    const tools = page.locator("[data-manage-participant-tools]");
+    if (!(await tools.evaluate(node => node.open))) await tools.locator(":scope > summary").click();
+    await page.locator('[data-manage-action="challenge"]').click();
+  };
   await expect(page.locator("[data-manage-register]")).toBeHidden();
   pass(proof.requests.filter(item => item.pathname.startsWith("/api/")).every(item => item.pathname === "/api/first-event/depositors"), "Saved Manage renders with only the SQL receipt GET and no auth, chain or selected bootstrap");
   const beforeConnect = proof.requests.length;
@@ -135,21 +140,21 @@ try {
   await page.locator("[data-manage-confirm]").click(); await expect(page.locator("[data-manage-status]")).toContainText("Confirmed transaction");
   pass((await page.evaluate(() => window.sends)).length === 2 && currentDraft.method === "postAttendance" && (await page.evaluate(() => window.handoffs)).length === 0, "One reviewed attendance batch sends the exact selected list; no per-row on-chain check-in or legacy navigation occurs");
   tamper = "recipient";
-  await page.locator('[data-manage-action="challenge"]').click();
+  await reviewChallenge();
   await expect(page.locator("[data-manage-status]")).toContainText("differs from the exact reviewed");
   pass((await page.evaluate(() => window.sends)).length === 2 && await page.locator("[data-manage-confirm]").count() === 1 && !(await page.locator("[data-manage-review]").evaluate(node => node.open)), "A changed draft recipient is rejected before a wallet transaction request");
   tamper = null;
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   tamper = "validate"; await page.locator("[data-manage-confirm]").click();
   await expect(page.locator("[data-manage-status]")).toContainText("Authoritative transaction terms differ");
   pass((await page.evaluate(() => window.sends)).length === 2, "Changed final validation bytes prevent any wallet send");
   tamper = null;
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   await page.evaluate(other => { window.selectedWallet = other; window.emitWallet("accountsChanged", [other]); }, other);
   await expect(page.locator("[data-manage-connect]")).toBeVisible();
   pass(!(await page.locator("[data-manage-review]").evaluate(node => node.open)) && (await page.evaluate(() => window.sends)).length === 2, "Changing the wallet removes the unsigned review and old-wallet controls without sending");
   await page.evaluate(wallet => { window.selectedWallet = wallet; }, wallet); await page.locator("[data-manage-connect]").click();
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   failReceipt = true; await page.locator("[data-manage-confirm]").click();
   await expect(page.locator("[data-manage-status]")).toContainText("Synthetic receipt transport unavailable");
   await expect(page.locator("[data-manage-check-original]")).toBeVisible();
@@ -162,7 +167,7 @@ try {
   await expect(page.locator("[data-manage-status]")).toContainText("Confirmed original transaction");
   pass((await page.evaluate(() => window.sends)).length === 0 && jobs.at(-1).operation === "confirm", "Explicit original receipt recovery reconciles the recorded draft/hash without resending");
   await page.evaluate(() => { window.failUnknown = true; });
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   await page.locator("[data-manage-confirm]").click(); await expect(page.locator("[data-manage-status]")).toContainText("Synthetic wallet response unavailable");
   await expect(page.locator('[data-manage-action="challenge"]')).toBeDisabled();
   const heldRecord = await page.evaluate(() => Object.entries(localStorage).find(([key]) => key.startsWith("kleros-first-event-manage-intent:v1:")));

@@ -13,12 +13,12 @@ body.launch-mode {
 .launch-mode #main,
 .launch-mode .footer {
   width: 100%;
-  max-width: 900px;
+  max-width: 960px;
   margin-inline: auto;
 }
 .launch-mode .topbar {
-  min-height: 80px;
-  padding: 16px 24px;
+  min-height: 96px;
+  padding: 24px 32px;
   flex-wrap: nowrap;
 }
 .launch-mode .mobile-brand {
@@ -40,16 +40,35 @@ body.launch-mode {
   margin-right: auto;
 }
 .launch-mode #main {
-  padding: 32px 24px 56px;
+  padding: 48px 32px 64px;
 }
 .launch-mode .footer {
-  padding: 20px 24px;
+  padding: 24px 32px;
   font-size: 12px;
 }
 .luma-launch,
 .luma-setup {
   min-width: 0;
   max-width: 100%;
+  font-family: Geist, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.luma-setup,
+.luma-launch[data-launch-root] {
+  width: 100%;
+  max-width: 760px;
+  margin-inline: auto;
+}
+.luma-launch-heading {
+  max-width: 650px;
+  margin: 0 auto 36px;
+  text-align: center;
+}
+.luma-launch-heading > p {
+  max-width: 460px;
+  margin-inline: auto;
+  font-size: 15px;
 }
 .luma-launch > *,
 .luma-setup > * {
@@ -61,15 +80,28 @@ body.launch-mode {
 }
 .luma-launch h1,
 .luma-setup h1 {
-  margin: 0 0 12px;
-  font-size: clamp(34px, 5vw, 48px);
-  line-height: 1.12;
+  margin: 0 0 16px;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: clamp(48px, 6.5vw, 65px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
   overflow-wrap: anywhere;
 }
 .luma-launch h2,
 .luma-setup h2 {
   margin-bottom: 12px;
-  font-size: 28px;
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+.luma-launch h3,
+.luma-setup h3 {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-size: 25px;
+  font-weight: 400;
+  line-height: 1.2;
 }
 .luma-launch p,
 .luma-setup p {
@@ -82,11 +114,11 @@ body.launch-mode {
 .luma-launch-recovery,
 .luma-setup-share {
   min-width: 0;
-  margin: 20px 0;
-  padding: 24px;
+  margin: 24px 0;
+  padding: 28px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 20px;
+  border-radius: 14px;
 }
 .luma-launch-card > :last-child,
 .luma-launch-event > :last-child,
@@ -97,20 +129,25 @@ body.launch-mode {
   margin-bottom: 0;
 }
 .luma-launch-card {
-  box-shadow: var(--shadow);
+  box-shadow: 0 12px 36px #09061014;
 }
 .luma-launch-event {
-  background: var(--deep);
+  margin: 22px 0 28px;
+  padding: 0 0 28px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
   box-shadow: none;
 }
 .luma-launch-state,
 .luma-launch-receipt,
 .luma-setup-share {
-  border-color: var(--launch-accent, var(--purple));
+  border-color: var(--line);
 }
 .luma-launch-recovery,
 .luma-setup-recovery {
-  border-color: var(--amber);
+  border-color: #f0c08a66;
 }
 .luma-launch-steps {
   display: flex;
@@ -146,9 +183,54 @@ body.launch-mode {
 .luma-setup-review :is(button, .button) {
   min-height: 44px;
   max-width: 100%;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
   white-space: normal;
   overflow-wrap: anywhere;
   line-height: 1.5;
+}
+.luma-launch .button-primary,
+.luma-setup .button-primary,
+.luma-setup-review .button-primary {
+  min-height: 46px;
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--on-accent);
+}
+.luma-launch .button-secondary,
+.luma-setup .button-secondary,
+.luma-setup-review .button-secondary {
+  background: transparent;
+}
+.luma-launch .button-secondary:hover:not(:disabled),
+.luma-setup .button-secondary:hover:not(:disabled),
+.luma-setup-review .button-secondary:hover:not(:disabled) {
+  background: #c2b5f20d;
+  border-color: var(--purple);
+}
+.luma-launch :is(input:not([type="checkbox"]), select, textarea),
+.luma-setup :is(input:not([type="checkbox"]), select, textarea),
+.luma-setup-review :is(input:not([type="checkbox"]), select, textarea) {
+  min-height: 46px;
+  border-radius: 8px;
+  background-color: var(--deep);
+  border-color: var(--boundary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.luma-launch :is(.field-help, .small),
+.luma-setup :is(.field-help, .small) {
+  font-size: 12px;
+  line-height: 1.65;
+}
+.luma-launch .eyebrow,
+.luma-setup .eyebrow {
+  margin-bottom: 16px;
+  color: var(--purple);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
 }
 .luma-launch :is(a, button, input, select, textarea, summary):focus-visible,
 .luma-setup :is(a, button, input, select, textarea, summary):focus-visible,
@@ -181,8 +263,12 @@ body.launch-mode {
 .luma-setup-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 24px;
+  gap: 22px 20px;
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
 }
 .luma-setup-form > * {
   min-width: 0;
@@ -217,9 +303,9 @@ body.launch-mode {
 .luma-setup-recovery {
   min-width: 0;
   margin: 16px 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   color: var(--muted);
   background: var(--deep);
   overflow-wrap: anywhere;
@@ -230,7 +316,7 @@ body.launch-mode {
   background: var(--red-soft);
 }
 .luma-setup-recovery {
-  border-color: var(--amber);
+  border-color: #f0c08a66;
 }
 .luma-setup-recovery h2 {
   font-size: 24px;
@@ -239,9 +325,9 @@ body.launch-mode {
   width: min(720px, calc(100vw - 32px));
   max-width: 100%;
   max-height: calc(100svh - 32px);
-  padding: 24px;
+  padding: 28px;
   border: 1px solid var(--boundary);
-  border-radius: 20px;
+  border-radius: 14px;
   background: var(--surface);
   color: var(--ink);
   overflow-y: auto;
@@ -311,7 +397,7 @@ body.launch-mode {
   flex-wrap: wrap;
   gap: 10px 24px;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--deep);
   border: 1px solid var(--line);
   color: var(--muted);
@@ -329,9 +415,9 @@ body.launch-mode {
     padding: 24px 16px 40px;
   }
   .luma-launch-event h1 {
-    font-size: clamp(26px, 7.2vw, 32px);
-    line-height: 1.15;
-    margin-bottom: 8px;
+    font-size: 56px;
+    line-height: 1.05;
+    margin-bottom: 16px;
   }
   .luma-launch-steps {
     display: grid;
@@ -353,14 +439,27 @@ body.launch-mode {
   .luma-launch-receipt,
   .luma-launch-recovery,
   .luma-setup-share {
-    padding: 20px;
+    padding: 22px;
     margin: 16px 0;
+  }
+  .luma-launch-event {
+    padding: 0 0 24px;
+    margin: 20px 0 24px;
+  }
+  .luma-launch-heading {
+    margin-bottom: 28px;
+  }
+  .luma-launch h1,
+  .luma-setup h1 {
+    font-size: 56px;
   }
   .luma-setup-form {
     grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+    gap: 20px;
+    padding: 22px;
   }
-  .luma-setup-form :is(input, select) {
+  .luma-launch :is(input:not([type="checkbox"]), select, textarea),
+  .luma-setup :is(input:not([type="checkbox"]), select, textarea) {
     font-size: 16px;
   }
   .luma-setup-actions > .button-primary,
@@ -368,7 +467,7 @@ body.launch-mode {
     flex: 1 1 100%;
   }
   .luma-setup-review {
-    padding: 20px;
+    padding: 22px;
   }
   .luma-setup-terms {
     grid-template-columns: minmax(0, 1fr);
@@ -379,9 +478,9 @@ body.launch-mode {
 /* Display-only organizer progress; transaction and receipt work stays with its caller. */
 .setup-progress {
   min-width: 0;
-  padding: 24px;
-  border: 1px solid var(--teal);
-  border-radius: 20px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
   background: var(--surface);
 }
 .setup-progress[data-tone="attention"] {
@@ -458,7 +557,7 @@ body.launch-mode {
 }
 @media (max-width: 600px) {
   .setup-progress {
-    padding: 20px;
+    padding: 22px;
   }
   .setup-progress-steps {
     gap: 8px;
@@ -546,7 +645,8 @@ body.launch-mode {
 }
 .launch-mode .public-event-copy h3 {
   margin: 0 0 8px;
-  font-size: 20px;
+  font-size: 25px;
+  line-height: 1.2;
 }
 .launch-mode .public-event-date {
   margin: 0 0 8px;
@@ -578,5 +678,473 @@ body.launch-mode {
     justify-self: start;
     max-width: 100%;
     white-space: normal;
+  }
+}
+
+/* Saved event views share the deposit page's surfaces, without a boxed masthead. */
+.luma-manage-page {
+  width: 100%;
+  max-width: 1040px;
+  margin-inline: auto;
+}
+.luma-page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.luma-page-nav .back-link {
+  margin: 0;
+  font-size: 13px;
+}
+.luma-network-note {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.4px;
+}
+.luma-page-heading > p {
+  max-width: 680px;
+}
+.luma-page-heading .luma-event-name {
+  margin: 0 0 20px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.luma-event-facts.details-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.7fr) minmax(0, 1.7fr);
+  gap: 20px 28px;
+  margin-top: 24px;
+}
+.luma-event-facts.details-list > div {
+  display: block;
+  min-width: 0;
+}
+.luma-event-facts dt {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.luma-event-facts dd {
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.luma-event-facts dd > span {
+  display: block;
+}
+.luma-event-facts .mono {
+  font-size: 12px;
+}
+.luma-launch .panel {
+  margin: 24px 0;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: none;
+}
+.luma-launch .panel-header {
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 16px;
+}
+.luma-launch .panel-header h2 {
+  font-size: 30px;
+}
+.luma-launch .panel p {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.luma-launch .panel .field-help {
+  margin-top: 18px;
+  font-size: 12px;
+}
+.luma-launch .luma-manage-grid {
+  display: grid;
+  gap: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.luma-wallet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.luma-wallet-bar > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.luma-wallet-summary {
+  flex: 1 1 300px;
+}
+.luma-wallet-bar .eyebrow {
+  margin-bottom: 8px;
+}
+.luma-wallet-bar h2 {
+  margin: 0 0 6px;
+  font-size: 27px;
+}
+.luma-wallet-bar p {
+  max-width: 540px;
+  margin: 0;
+}
+.luma-wallet-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+.luma-wallet-actions > .button {
+  flex: 0 1 auto;
+}
+.luma-wallet-actions .mono {
+  font-size: 12px;
+}
+.luma-manage-guests > .panel {
+  margin: 0;
+}
+.luma-manage-secondary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 20px;
+}
+.luma-manage-section {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.luma-manage-section > :last-child {
+  margin-bottom: 0;
+}
+.luma-manage-section h3 {
+  margin: 0 0 12px;
+}
+.luma-attendance-review .section-heading {
+  display: block;
+  text-align: left;
+}
+.luma-attendance-review .section-heading .eyebrow {
+  margin-bottom: 8px;
+}
+.luma-manage-section h4 {
+  margin: 24px 0 10px;
+  font-family: Geist, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+.luma-manage-section > summary {
+  color: var(--heading);
+  font-family: Geist, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
+  cursor: pointer;
+}
+details.luma-manage-section:not([open]) {
+  padding-block: 12px;
+}
+details.luma-manage-section[open] > summary {
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.luma-manage-section form {
+  margin-top: 20px;
+}
+.luma-manage-section label {
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.luma-manage-section label > :is(input:not([type="checkbox"]), select, textarea) {
+  margin-top: 7px;
+}
+.luma-attendance-review label:has(> input[type="checkbox"]),
+.luma-depositor-row label:has(> input[type="checkbox"]) {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 400;
+}
+.luma-attendance-review input[type="checkbox"],
+.luma-depositor-row input[type="checkbox"] {
+  margin: 2px 0 0;
+}
+.luma-manage-section [data-manage-access-form] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.6fr);
+  align-items: start;
+  gap: 0 12px;
+}
+.luma-manage-section [data-manage-access-form] > button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.luma-team-panel ul {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.luma-team-panel li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  min-width: 0;
+}
+.luma-team-panel li .mono {
+  min-width: 0;
+  font-size: 11px;
+}
+.luma-manage-feedback {
+  margin: 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.luma-manage-feedback:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.luma-manage-pending:empty {
+  display: none;
+}
+.luma-snapshot-note {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.luma-manage-pending:not(:empty) {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--deep);
+  overflow-wrap: anywhere;
+}
+.luma-depositor-list table {
+  table-layout: fixed;
+  font-size: 12px;
+}
+.luma-depositor-list th {
+  padding: 12px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.luma-depositor-list th:first-child {
+  width: 23%;
+  padding-left: 0;
+}
+.luma-depositor-list th:nth-child(2) {
+  width: 12%;
+}
+.luma-depositor-list th:nth-child(3) {
+  width: 11%;
+}
+.luma-depositor-row > td {
+  padding: 20px 10px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.luma-depositor-row > td:first-child {
+  padding-left: 0;
+}
+.luma-depositor-row > td:last-child {
+  padding-right: 0;
+}
+.luma-depositor-row .mono {
+  font-size: 11px;
+}
+.luma-depositor-row .button {
+  min-height: 44px;
+  margin-top: 10px;
+  padding: 9px 10px;
+  font-size: 12px;
+}
+.luma-checkin-cell > [data-manage-checkin-state] {
+  display: block;
+}
+.luma-receipt-links a {
+  display: inline-block;
+  margin-right: 5px;
+}
+.luma-status-label {
+  display: inline-block;
+  color: var(--green);
+  font-size: 12px;
+}
+.luma-receipt-history {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+  padding-left: 18px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.luma-empty-state {
+  margin: 24px 0;
+  padding-block: 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+body.launch-mode > .wallet-review {
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100svh - 32px);
+  padding: 28px;
+  border: 1px solid var(--boundary);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.65;
+}
+body.launch-mode > .wallet-review::backdrop,
+.luma-setup-review::backdrop {
+  background: #100c19c7;
+}
+body.launch-mode > .wallet-review h2 {
+  margin: 0 0 16px;
+  font-size: 34px;
+  line-height: 1.15;
+}
+body.launch-mode > .wallet-review .details-list {
+  margin: 24px 0;
+  gap: 16px;
+}
+body.launch-mode > .wallet-review .mono {
+  font-size: 12px;
+}
+body.launch-mode > .wallet-review label {
+  margin: 20px 0;
+  font-size: 13px;
+}
+body.launch-mode > .wallet-review .button {
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+@media (max-width: 860px) {
+  .luma-depositor-list .table-scroll {
+    overflow: visible;
+  }
+  .luma-depositor-list thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .luma-depositor-list tbody {
+    display: grid;
+    gap: 16px;
+  }
+  .luma-depositor-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 20px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--deep);
+  }
+  .luma-depositor-row > td,
+  .luma-depositor-row > td:first-child,
+  .luma-depositor-row > td:last-child {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+  }
+  .luma-depositor-row > td::before {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    content: attr(data-label);
+  }
+  .luma-depositor-row > .luma-wallet-cell {
+    grid-column: 1 / -1;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .luma-depositor-row .mono {
+    font-size: 12px;
+  }
+  .luma-manage-secondary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+@media (max-width: 600px) {
+  .luma-event-facts.details-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 16px;
+  }
+  .luma-event-facts > div:last-child {
+    grid-column: 1 / -1;
+  }
+  .luma-launch .panel,
+  .luma-manage-section {
+    padding: 22px;
+  }
+  .luma-launch .luma-manage-grid {
+    padding: 0;
+    gap: 20px;
+  }
+  .luma-wallet-bar {
+    align-items: flex-start;
+    padding: 20px 22px;
+  }
+  .luma-wallet-actions {
+    width: 100%;
+  }
+  .luma-wallet-actions > .button-primary {
+    width: 100%;
+  }
+  .luma-depositor-row {
+    gap: 18px 14px;
+    padding: 18px;
+  }
+  .luma-depositor-row > td:nth-child(n + 4) {
+    grid-column: 1 / -1;
+  }
+  .luma-manage-section [data-manage-access-form] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.launch-mode > .wallet-review {
+    padding: 22px;
+  }
+  body.launch-mode > .wallet-review .details-list > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+  body.launch-mode > .wallet-review .details-list dd {
+    text-align: left;
   }
 }

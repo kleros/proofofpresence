@@ -45,3 +45,22 @@ The exact address and QR remain inside that disclosure; the compact Contract tru
 link stays visible outside it. Completed payment states hide the whole manual
 option. Keep prior-event recovery in a secondary native disclosure without changing
 its original event/contract destination.
+
+## Shared event pages
+
+Home, event setup, Manage Event and deposit recovery use `public/luma-launch.css`
+with the same palette and local fonts as the deposit page. Keep page headings in
+Instrument Serif, supporting text in Geist, and wallet addresses in wrapped mono.
+Use 14px surface cards with 28px padding (22px on phones), 8px input/button radii,
+cyan primary actions and lavender focus outlines. Functional dashboards may be
+wider than the guest deposit card.
+
+Manage Event uses an unboxed event heading and a compact facts strip. Its wallet
+bar precedes the guest list in both visual and keyboard order. Guest rows retain
+separate admission, door check-in and owner attendance states; on phones they
+become labeled cards. Receipt and address links remain fully available.
+
+Owner attendance review follows the guests. Team and ownership settings and
+participant tools use native disclosures to keep the initial page focused.
+Pending ownership acceptance opens the team disclosure automatically. Hidden and
+disabled controls retain their existing permissions and transaction safeguards.
