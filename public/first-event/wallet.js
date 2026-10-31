@@ -1,9 +1,12 @@
 import { EVENT } from "./event.js";
+import { loadDepositSnapshot, setDepositWallet } from "./journey.js";
+import { renderDepositReceipt } from "./receipt-card.js";
 import { assertDirectDepositDraft } from "./direct-deposit.js";
 import { recordedDepositReference, savedDepositReference } from "./receipts.js";
 import { chooseWalletProvider } from "../wallet-connection.js";
 import { eventReadJob } from "../event-read.js";
 import { createPublicTransactionFlow, resetUnusedPublicTransactionFlow } from "../public-transactions.js";
+import { acquireDepositOwnership, assertDepositOwnership } from "../deposit-ownership.js";
 import { selectedEventResult } from "./deps/selected-event.js";
 import { productionContextIssue } from "./deps/environment.js";
 import { assertV10WalletAccount } from "./deps/v10-wallet-account.js";
@@ -124,52 +127,17 @@ dialog.addEventListener("cancel", event => {
 // Closing the review invalidates an unsigned intent. Already returned hashes stay journaled.
 dialog.addEventListener("close", () => {
   draft = null;
-  try { resetUnsignedFlow(); }
-  catch (error) { txStatus(error.message); depositButton.hidden = true; }
+  void resetIdleUnsignedFlow();
 });
 
 const status = (text) => { if (walletStatus) walletStatus.textContent = text; };
-const txStatus = (text, hash = null) => {
-  if (!transactionStatus) return;
-  transactionStatus.replaceChildren(document.createTextNode(text));
-  if (typeof hash === "string" && /^0x[0-9a-f]{64}$/i.test(hash)) {
-    const link = document.createElement("a");
-    link.href = `https://etherscan.io/tx/${hash}`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = ` View transaction ${hash}`;
-    transactionStatus.append(link);
-    const copy = document.createElement("button"), fallback = document.createElement("input"), copyStatus = document.createElement("span");
-    copy.type = "button";
-    copy.className = "button button-secondary";
-    copy.dataset.copyTx = "";
-    copy.textContent = "Copy transaction ID";
-    fallback.type = "text";
-    fallback.readOnly = true;
-    fallback.value = hash;
-    fallback.hidden = true;
-    fallback.setAttribute("aria-label", "Transaction ID to copy");
-    copyStatus.setAttribute("role", "status");
-    copyStatus.setAttribute("aria-live", "polite");
-    copy.addEventListener("click", async () => {
-      copy.disabled = true;
-      const stillCurrent = () => copy.isConnected && copy.parentElement === transactionStatus;
-      try {
-        if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
-        await navigator.clipboard.writeText(hash);
-        if (stillCurrent()) { copy.textContent = "Transaction ID copied"; copyStatus.textContent = " Paste this transaction ID into Luma."; }
-      } catch {
-        if (stillCurrent()) {
-          fallback.hidden = false;
-          fallback.focus();
-          fallback.select();
-          copyStatus.textContent = " Copy the selected transaction ID, then paste it into Luma.";
-        }
-      } finally { if (stillCurrent()) copy.disabled = false; }
-    });
-    transactionStatus.append(copy, fallback, copyStatus);
-  }
+const txStatus = (text, hash = null, explicitState = null) => {
+  const state = explicitState ?? (hash && confirmedHash === hash
+    ? paymentReference?.status === "recorded" ? "recorded" : "confirmed"
+    : "submitted");
+  renderDepositReceipt(transactionStatus, { message: text, hash, status: state });
 };
+
 function scope() {
   if (!wallet || !connection || connection.epoch !== epoch || !same(connection.wallet, wallet) ||
       !connection.instanceId || connection.mode !== EVENT.mode || !transactionFlow)
@@ -196,23 +164,47 @@ function heldIntent(captured) {
     fail("The wallet request record is invalid. Preserve storage and check your wallet activity.");
   return value;
 }
-function holdIntent(captured, id) {
-  const key = intentKey(captured), raw = JSON.stringify({ phase: "awaiting-wallet", draftId: id });
+function holdIntent(captured, id, ownership) {
+  assertDepositOwnership(ownership, { wallet: captured.wallet });
+  // This last read and write run under the cross-document lock, after every
+  // awaited account check. Never overwrite an original request or known hash.
+  restorePaymentReference();
+  if (paymentReference || pending(captured) || heldIntent(captured))
+    fail("Check the original deposit or wallet request before another payment.");
+  const key = intentKey(captured), raw = JSON.stringify({ phase: "awaiting-wallet", draftId: id, owner: ownership.nonce });
   localStorage.setItem(key, raw);
   if (localStorage.getItem(key) !== raw) fail("Durable wallet request storage is unavailable. No transaction was requested.");
+  return { key, raw };
 }
 function pending(captured) {
   return journal.list(captured).find(entry => entry.action === "deposit" && !["confirmed", "failed"].includes(entry.status)) ?? null;
 }
-function resetUnsignedFlow() {
+function resetUnsignedFlow(ownership) {
   if (busy || !transactionFlow || !connection?.instanceId || confirmedHash) return;
   const captured = scope();
+  assertDepositOwnership(ownership, { wallet: captured.wallet });
   if (heldIntent(captured) || pending(captured)) return;
-  resetUnusedPublicTransactionFlow({ wallet: captured.wallet, kind: "deposit" });
+  resetUnusedPublicTransactionFlow({ wallet: captured.wallet, kind: "deposit", token: transactionFlow.token, ownership });
   transactionFlow = null;
   bootstrap = detail = draft = null;
   connection = Object.freeze({ wallet, provider, epoch });
   paint();
+}
+async function resetIdleUnsignedFlow() {
+  if (busy || !transactionFlow || !connection?.instanceId || confirmedHash) return;
+  const flow = transactionFlow, captured = scope(), capturedEpoch = epoch;
+  let ownership = null;
+  try {
+    ownership = await acquireDepositOwnership({ wallet: captured.wallet,
+      isCurrent: () => current(capturedEpoch, captured) && transactionFlow === flow && !busy });
+    if (current(capturedEpoch, captured) && transactionFlow === flow && !busy) resetUnsignedFlow(ownership);
+  } catch (error) {
+    // A newer operation owns the slot; its original state must not be changed by
+    // a delayed close event from this unsigned view.
+    if (!["DEPOSIT_REQUEST_BUSY", "DEPOSIT_OWNERSHIP_STALE"].includes(error.code) && current(capturedEpoch, captured)) {
+      txStatus(error.message); depositButton.hidden = true;
+    }
+  } finally { await ownership?.release(); }
 }
 function checkEarlierScopes(captured) {
   const count = localStorage.length;
@@ -239,7 +231,7 @@ function checkEarlierScopes(captured) {
 }
 function showPaymentComplete(complete) {
   connectButton.hidden = complete || connection !== null;
-  for (const node of document.querySelectorAll(".divider,.manual-deposit,.address-box")) node.hidden = complete;
+  for (const node of document.querySelectorAll(".manual-option,.divider,.manual-deposit,.address-box")) node.hidden = complete;
 }
 function restorePaymentReference() {
   if (!wallet || !journal) return;
@@ -248,6 +240,7 @@ function restorePaymentReference() {
   confirmedHash = ["confirmed", "recorded"].includes(paymentReference?.status) ? paymentReference.hash : null;
 }
 function paint() {
+  setDepositWallet(wallet);
   showPaymentComplete(false);
   depositButton.hidden = true;
   depositButton.disabled = busy;
@@ -338,6 +331,7 @@ function invalidate() {
   readController.abort();
   readController = new AbortController();
   bootstrap = detail = wallet = draft = null;
+  setDepositWallet(null);
   connection = null;
   transactionFlow = null;
   confirmedHash = null;
@@ -365,6 +359,7 @@ async function connect() {
   listeningProvider?.removeListener?.("chainChanged", invalidate);
   listeningProvider = null;
   bootstrap = detail = wallet = draft = null;
+  setDepositWallet(null);
   connection = null;
   transactionFlow = null;
   confirmedHash = null;
@@ -419,8 +414,10 @@ async function prepare() {
     provider === selectedProvider && connection.provider === selectedProvider;
   let captured = null;
   let preparationFailed = false;
+  let ownership = null;
   try {
     if (!connected()) fail("Connect your wallet first.");
+    ownership = await acquireDepositOwnership({ wallet: selectedWallet, isCurrent: connected });
     await savedReceiptsReady;
     if (!connected()) fail("The wallet changed. Connect again.");
     restorePaymentReference();
@@ -443,7 +440,7 @@ async function prepare() {
     }
     if (Number(BigInt(chain)) !== EVENT.chainId) fail("Select Ethereum Mainnet before depositing.");
     const flow = transactionFlow ?? await createPublicTransactionFlow({ api, wallet: selectedWallet, kind: "deposit",
-      isCurrent: connected, signal: readController.signal });
+      isCurrent: connected, signal: readController.signal, ownership });
     if (!connected()) fail("The wallet changed. Connect again.");
     if (typeof flow?.api !== "function" || flow.mode !== EVENT.mode || !same(flow.wallet, selectedWallet) ||
         typeof flow.instanceId !== "string" || !/^[A-Za-z0-9_-]{1,160}$/.test(flow.instanceId))
@@ -474,7 +471,7 @@ async function prepare() {
     // This response already passed the complete current-state validation.
     // The shared sender still checks the account and durably retains hashes.
     busy = false;
-    await execute(prepared);
+    await execute(prepared, ownership);
   } catch (error) {
     preparationFailed = true;
     if (current(capturedEpoch, captured)) {
@@ -483,10 +480,11 @@ async function prepare() {
     }
   }
   finally { busy = false; connectButton.disabled = false;
-    if (preparationFailed && current(capturedEpoch, captured)) {
-      try { resetUnsignedFlow(); } catch { /* Preserve any submitted or uncertain request. */ }
+    if (preparationFailed && ownership && current(capturedEpoch, captured)) {
+      try { resetUnsignedFlow(ownership); } catch { /* Preserve any submitted or uncertain request. */ }
     }
-    if (current(capturedEpoch, captured)) { try { paint(); } catch (error) { status(error.message); depositButton.hidden = true; } } }
+    if (current(capturedEpoch, captured)) { try { paint(); } catch (error) { status(error.message); depositButton.hidden = true; } }
+    await ownership?.release(); }
 }
 
 function observe(capturedEpoch, captured, id, hash) {
@@ -503,14 +501,19 @@ function observe(capturedEpoch, captured, id, hash) {
     check: reconcile });
 }
 
-async function execute(prepared = null) {
+async function execute(prepared = null, ownership = null) {
   if (busy || !draft) return;
   busy = true;
   const capturedEpoch = epoch, captured = scope(), reviewed = draft, rawProvider = provider;
-  let submittedHash = null, walletRequested = false, rejectedUnsigned = false, retryUnused = false;
+  let submittedHash = null, walletRequested = false, rejectedUnsigned = false, retryUnused = false, ownIntent = null;
+  const releaseIntent = () => {
+    assertDepositOwnership(ownership, { wallet: captured.wallet });
+    if (ownIntent && localStorage.getItem(ownIntent.key) === ownIntent.raw) localStorage.removeItem(ownIntent.key);
+  };
   const isCurrent = () => current(capturedEpoch, captured) && draft?.id === reviewed.id && provider === rawProvider;
   const progress = (message) => { if (isCurrent()) { txStatus(message, submittedHash); const node = dialog.querySelector("[data-review-status]"); if (node) node.textContent = message; } };
   try {
+    assertDepositOwnership(ownership, { wallet: captured.wallet });
     paint();
     const confirmButton = dialog.querySelector("[data-confirm-deposit]");
     if (confirmButton) confirmButton.disabled = true;
@@ -527,7 +530,7 @@ async function execute(prepared = null) {
         await assertV10WalletAccount({ provider: rawProvider, wallet: captured.wallet, bootstrap: checkedFlow.walletContext });
         if (!isCurrent() || transactionFlow !== checkedFlow) fail("The wallet or event changed. Try again.");
         assertDirectDepositDraft(reviewed, captured);
-        holdIntent(captured, reviewed.id);
+        ownIntent = holdIntent(captured, reviewed.id, ownership);
         walletRequested = true;
         progress("Confirm in wallet");
       }
@@ -554,7 +557,7 @@ async function execute(prepared = null) {
       recordSubmitted: (_eventId, _id, hash) => {
         submittedHash = hash;
         // The unchanged sender has already durably recorded this hash before this callback.
-        localStorage.removeItem(intentKey(captured));
+        releaseIntent();
         if (isCurrent()) progress("Transaction submitted");
       },
       confirm: (_eventId, id, hash) => observe(capturedEpoch, captured, id, hash),
@@ -569,7 +572,7 @@ async function execute(prepared = null) {
   } catch (error) {
     retryUnused = !walletRequested && !submittedHash && !error.submittedHash && !error.hash;
     if (!submittedHash && walletRequested && Number(error.code) === 4001) {
-      localStorage.removeItem(intentKey(captured));
+      releaseIntent();
       rejectedUnsigned = true;
     }
     if (current(capturedEpoch, captured)) {
@@ -584,7 +587,7 @@ async function execute(prepared = null) {
     busy = false;
     connectButton.disabled = false;
     if ((rejectedUnsigned || retryUnused) && current(capturedEpoch, captured)) {
-      try { resetUnsignedFlow(); }
+      try { resetUnsignedFlow(ownership); }
       catch (error) { txStatus(error.message); depositButton.hidden = true; }
     }
     const close = dialog.querySelector("[data-close-review]");
@@ -597,12 +600,15 @@ async function checkOriginal() {
   if (busy) return;
   busy = true;
   const capturedEpoch = epoch;
-  let captured = null, entry = null;
+  let captured = null, entry = null, ownership = null;
   try {
-    if (!connection?.instanceId) {
-      const selectedWallet = wallet, selectedProvider = provider;
-      const connected = () => current(capturedEpoch) && connection && same(wallet, selectedWallet) && provider === selectedProvider;
-      const flow = await createPublicTransactionFlow({ api, wallet: selectedWallet, kind: "deposit", isCurrent: connected, signal: readController.signal });
+    const selectedWallet = wallet, selectedProvider = provider;
+    const connected = () => current(capturedEpoch) && connection && same(wallet, selectedWallet) && provider === selectedProvider;
+    ownership = await acquireDepositOwnership({ wallet: selectedWallet, isCurrent: connected });
+    // Rebind the existing opaque flow to this lease. Checking an original hash
+    // never reuses a released send lease or silently replaces a hashed flow.
+    {
+      const flow = await createPublicTransactionFlow({ api, wallet: selectedWallet, kind: "deposit", isCurrent: connected, signal: readController.signal, ownership });
       if (!connected() || flow.mode !== EVENT.mode || !same(flow.wallet, selectedWallet)) fail("The original deposit connection changed.");
       transactionFlow = flow;
       connection = Object.freeze({ wallet: selectedWallet, provider: selectedProvider, instanceId: flow.instanceId, mode: flow.mode, epoch: capturedEpoch });
@@ -619,7 +625,7 @@ async function checkOriginal() {
     journal.update(captured, entry.hash, { status: result.status, blockNumber: result.blockNumber, error: null });
     if (current(capturedEpoch, captured)) {
       if (result.status === "confirmed") { confirmedHash = entry.hash; showPaymentComplete(true); }
-      txStatus(result.status === "confirmed" ? "Deposit confirmed" : "The original deposit transaction reverted on chain.", entry.hash);
+      txStatus(result.status === "confirmed" ? "Deposit confirmed" : "The original deposit transaction reverted on chain.", entry.hash, result.status === "confirmed" ? "confirmed" : "failed");
     }
   } catch (error) {
     if (current(capturedEpoch, captured)) {
@@ -628,7 +634,8 @@ async function checkOriginal() {
     }
   }
   finally { busy = false; connectButton.disabled = false;
-    if (current(capturedEpoch, captured)) { try { paint(); } catch (error) { status(error.message); depositButton.hidden = true; } } }
+    if (current(capturedEpoch, captured)) { try { paint(); } catch (error) { status(error.message); depositButton.hidden = true; } }
+    await ownership?.release(); }
 }
 
 connectButton?.addEventListener("click", connect);
@@ -636,14 +643,11 @@ depositButton?.addEventListener("click", prepare);
 checkButton.addEventListener("click", checkOriginal);
 // One anonymous database read starts before wallet selection, so returning guests
 // can copy their receipt without a new transaction flow or a blockchain scan.
-const savedReceiptsReady = (async () => {
-  const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 3000);
-  try {
-    const response = await fetch("/api/first-event/depositors", { method: "GET", credentials: "omit", cache: "no-store", signal: controller.signal });
-    if (!response.ok) return;
-    receiptSnapshot = await response.json();
-    if (wallet && !busy) { restorePaymentReference(); paint(); }
-  } catch { /* Fresh transaction validation remains the final payment gate. */ }
-  finally { clearTimeout(timeout); }
-})();
+const savedReceiptsReady = loadDepositSnapshot().then(snapshot => {
+  receiptSnapshot = snapshot;
+  if (wallet && !busy) { restorePaymentReference(); paint(); }
+}).catch(() => {
+  // Keep background display errors contained, as in the original receipt loader.
+  // The explicit deposit action still validates this raw snapshot before any flow.
+});
 // No provider, account request, authentication or financial action runs on load.

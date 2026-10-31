@@ -61,6 +61,10 @@ test("opaque public transaction flows retain actual V10 proof, scope and no-logi
   };
 
   await t.test("minting has exact inputs, high-entropy tokens and no signature, cookie or account authority", async () => {
+    const noRequester = await f.forward(BASE, { method: "POST", body: JSON.stringify({ wallet: guestWallet, kind: "deposit" }),
+      headers: { "x-kleros-requester-key": "" } });
+    assert.equal(noRequester.status, 503);
+    assert.equal(JSON.parse(noRequester.body.toString()).code, "PUBLIC_FLOW_REQUESTER_UNAVAILABLE");
     for (const payload of [null, {}, { wallet: guestWallet }, { wallet: guestWallet, kind: "owner" },
       { wallet: "invalid", kind: "deposit" }, { wallet: ethers.ZeroAddress, kind: "deposit" },
       { wallet: guestWallet, kind: "deposit", eventId: "foreign" }, { wallet: guestWallet, kind: "create", authenticated: true }]) {
@@ -222,14 +226,20 @@ test("opaque public transaction flows retain actual V10 proof, scope and no-logi
     const normal = await request("/api/bootstrap"); assert.equal(normal.data.session, null);
   });
 
-  await t.test("mint capacity is bounded to 128 live opaque flows", async () => {
+  await t.test("one requester cannot consume the shared opaque-flow capacity", async () => {
     let minted = 0, last;
     for (let i = 0; i <= 128; i++) {
       last = await request(BASE, { wallet: guestWallet, kind: "deposit" });
       if (last.status !== 201) break;
       assert.match(last.data.token, /^[a-f0-9]{64}$/); minted++;
     }
-    assert(minted < 128); assert.equal(last.status, 503, last.body.toString());
+    assert(minted < 128); assert.equal(last.status, 429, last.body.toString());
+    assert.equal(last.data.code, "PUBLIC_FLOW_RATE_LIMIT");
+    const otherClient = await f.forward(BASE, { method: "POST", body: JSON.stringify({ wallet: guestWallet, kind: "deposit" }),
+      headers: { "x-kleros-requester-key": "b".repeat(64) } });
+    assert.equal(otherClient.status, 201);
+    const retained = await request(`${BASE}/${depositToken}`);
+    assert.equal(retained.status, 200, "Existing paid capabilities stay readable after new mints are limited");
     assert.equal(f.stats.authSignatures, 0); assert.equal(f.stats.backendSigningCalls, 0);
   });
 
@@ -238,7 +248,7 @@ test("opaque public transaction flows retain actual V10 proof, scope and no-logi
     // Trusted clock injection tests expiry only; all financial behavior above uses the actual HTTP server.
     const service = createPublicTransactionService(w, { origin: f.origin, instanceId: "synthetic-expiring-public-flow",
       now: () => clock, walletContext: () => ({ chainId: 1 }), bootstrapDTO: value => value });
-    const flow = service.create({ wallet: guestWallet, kind: "deposit" }), before = submittedReferences();
+    const flow = service.create({ wallet: guestWallet, kind: "deposit" }, "a".repeat(64)), before = submittedReferences();
     assert.equal(flow.expiresAt, clock + 30 * 60_000);
     clock = flow.expiresAt - 1; assert.equal(service.read(flow.token).token, flow.token);
     clock = flow.expiresAt;
@@ -246,7 +256,7 @@ test("opaque public transaction flows retain actual V10 proof, scope and no-logi
     await assert.rejects(service.submitted(flow.token, { draftId: depositDraft.id, hash: originalDeposit.hash }),
       { code: "PUBLIC_FLOW_NOT_FOUND", status: 404 });
     assert.deepEqual(submittedReferences(), before);
-    const fresh = service.create({ wallet: guestWallet, kind: "deposit" });
+    const fresh = service.create({ wallet: guestWallet, kind: "deposit" }, "a".repeat(64));
     assert.notEqual(fresh.token, flow.token); assert.equal(fresh.expiresAt, clock + 30 * 60_000);
     assert.equal(f.stats.authSignatures, 0); assert.equal(f.stats.backendSigningCalls, 0);
   });

@@ -84,6 +84,7 @@ const staticPaths = new Set([
   "/selected-event.js",
   "/event-read.js",
   "/public-transactions.js",
+  "/deposit-ownership.js",
   "/first-event-display.js",
   "/loading.css",
   "/contract-inbox.js",
@@ -667,7 +668,7 @@ export async function startServer({
         requireThat(publicTransactions && url.search === "", "Public transaction flow is unavailable", "PUBLIC_FLOW_NOT_FOUND", 404);
         if (p === "/api/public-transactions") {
           requireThat(req.method === "POST", "Use an explicit transaction request", "METHOD_NOT_ALLOWED", 405);
-          return send(res, 201, publicTransactions.create(await body(req)));
+          return send(res, 201, publicTransactions.create(await body(req), req.headers["x-kleros-requester-key"]));
         }
         const route = p.match(/^\/api\/public-transactions\/([0-9a-f]{64})(?:\/(event-read-jobs|organizer-jobs|submitted|direct-deposit)(?:\/([A-Za-z0-9_-]+))?)?$/);
         requireThat(route, "Public transaction flow not found", "PUBLIC_FLOW_NOT_FOUND", 404);
@@ -1127,6 +1128,23 @@ export async function startServer({
       const match = p.match(/^\/api\/events\/([a-zA-Z0-9_-]+)(?:\/(.*))?$/);
       if (match) {
         const [, eventId, tail = ""] = match;
+        if (tail === "checkins" && req.method === "POST" && w.firstEventManageAvailable(eventId)) {
+          requireThat(url.search === "", "Use one exact door observation request", "INVALID_INPUT", 400);
+          const assertSession = () => requireThat(s?.mode === "wallet" && getSession(req) === s,
+            "Wallet session changed", "UNAUTHENTICATED", 401);
+          assertSession(); const observation = await w.checkin(eventId, s, await body(req), assertSession);
+          assertSession(); return send(res, 201, observation);
+        }
+        if ((tail === "access" && ["GET", "PATCH"].includes(req.method)) || (tail === "staff-checkins" && req.method === "POST")) {
+          requireThat(url.search === "", "Use one exact event access request", "INVALID_INPUT", 400);
+          const assertSession = () => requireThat(s?.mode === "wallet" && getSession(req) === s,
+            "Wallet session changed", "UNAUTHENTICATED", 401);
+          assertSession();
+          const value = tail === "staff-checkins" ? await w.staffCheckin(eventId, s, await body(req), assertSession)
+            : req.method === "PATCH" ? await w.patchEventAccess(eventId, s, await body(req), assertSession)
+            : await w.eventAccess(eventId, s, assertSession);
+          assertSession(); return send(res, 200, value);
+        }
         if (tail === "deposit-inbox" && req.method === "GET")
           return send(res, 200, await depositInbox.read(eventId, s));
         if (tail === "deposit-inbox/refresh" && req.method === "POST") {
@@ -1160,8 +1178,8 @@ export async function startServer({
         // shared preflight below belongs to the remaining event operations.
         if (!tail && req.method === "GET")
           return send(res, 200, await w.detail(eventId, s));
-        await w.state(eventId);
-        w.record(eventId, s);
+        const eventState = await w.state(eventId);
+        w.record(eventId, s, eventState);
         if (!tail && req.method === "PATCH") {
           const r = await w.owner(eventId, s),
             b = await body(req);

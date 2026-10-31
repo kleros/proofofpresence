@@ -141,16 +141,23 @@ test("promoted and original pages, SQL receipts, tokens and pending records rema
   page = await pageAt();
   const token = await page.evaluate(async ({ wallet, hash }) => {
     const { EVENT, LEGACY_EVENT } = await import("/first-event/event.js"), { createPublicTransactionFlow, resetUnusedPublicTransactionFlow } = await import("/public-transactions.js");
+    const { acquireDepositOwnership } = await import("/deposit-ownership.js");
     const { createTransactionJournal } = await import("/transaction-context.js"), { recordedDepositReference } = await import("/first-event/receipts.js");
     const oldKey = "kleros-public-transaction-v1:" + JSON.stringify([location.origin, "deposit", wallet.toLowerCase()]);
     const old = JSON.stringify({ token: "a".repeat(64), hash, wallet, kind: "deposit", instanceId: "old-instance" }); localStorage.setItem(oldKey, old);
-    const calls = [];
-    const api = async (path, options) => { calls.push(path); return { schemaVersion: 1, kind: "public-transaction-flow", flowKind: "deposit", token: "b".repeat(64), wallet, mode: EVENT.mode,
+    const calls = [], kinds = [];
+    const api = async (path, options) => { const kind = JSON.parse(options.body).kind; calls.push(path); kinds.push(kind); return { schemaVersion: 1, kind: "public-transaction-flow", flowKind: kind, token: "b".repeat(64), wallet, mode: EVENT.mode,
       instanceId: "new-instance", chainId: 1, contractVersion: EVENT.abiVersion, eventId: EVENT.id, contract: EVENT.contract,
       walletContext: { mode: EVENT.mode, instanceId: "new-instance", chain: { chainId: 1 }, contractVersion: EVENT.abiVersion, abiVersion: EVENT.abiVersion,
         capabilities: { transactionsReady: false, createEvents: false, manageEvents: false } } }; };
-    await createPublicTransactionFlow({ api, wallet, kind: "deposit" });
-    resetUnusedPublicTransactionFlow({ wallet, kind: "deposit" });
+    // Existing creation callers do not acquire a deposit lease.
+    const creation = await createPublicTransactionFlow({ api, wallet, kind: "create" });
+    resetUnusedPublicTransactionFlow({ wallet, kind: "create" });
+    const ownership = await acquireDepositOwnership({ wallet });
+    try {
+      const flow = await createPublicTransactionFlow({ api, wallet, kind: "deposit", ownership });
+      resetUnusedPublicTransactionFlow({ wallet, kind: "deposit", token: flow.token, ownership });
+    } finally { await ownership.release(); }
     const journal = createTransactionJournal(localStorage), context = { eventId: LEGACY_EVENT.id, contract: LEGACY_EVENT.contract, chainId: 1,
       abiVersion: LEGACY_EVENT.abiVersion, mode: LEGACY_EVENT.mode, wallet, instanceId: "old-instance" };
     journal.record(context, { hash, draftId: "original-deposit-draft", action: "deposit" }); journal.update(context, hash, { status: "confirmed", blockNumber: 100 });
@@ -166,9 +173,11 @@ test("promoted and original pages, SQL receipts, tokens and pending records rema
     try { await eventReadJob({ instanceId: "new-instance", wallet, expectedContext: LEGACY_EVENT, operation: "manage-draft",
       payload: { eventId: EVENT.id, action: "register", params: { wallets: [wallet] } }, api: async () => { throw Error("Cross-event job must not start"); } }); }
     catch { crossRejected = true; }
-    return { calls, unchanged: localStorage.getItem(oldKey) === old, oldReference: oldReference?.hash, newReference, reads, crossRejected };
+    return { calls, kinds, creationCompatible: creation.flowKind === "create", unchanged: localStorage.getItem(oldKey) === old, oldReference: oldReference?.hash, newReference, reads, crossRejected };
   }, { wallet: WALLET, hash: HASH });
-  assert.deepEqual(token.calls, ["/api/public-transactions"]); assert(token.unchanged); assert.equal(token.oldReference, HASH); assert.equal(token.newReference, null);
+  assert.deepEqual(token.calls, ["/api/public-transactions", "/api/public-transactions"]);
+  assert.deepEqual(token.kinds, ["create", "deposit"]); assert(token.creationCompatible);
+  assert(token.unchanged); assert.equal(token.oldReference, HASH); assert.equal(token.newReference, null);
   assert.deepEqual(token.reads, [CURRENT.id, LEGACY_EVENT.id]); assert(token.crossRejected);
   await page.close();
 

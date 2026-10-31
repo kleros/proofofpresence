@@ -70,6 +70,7 @@ try {
     if (url.pathname === "/") return route.fulfill({ contentType: "text/html", body: `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/luma-launch.css"></head><body class="launch-mode"><main id="root"></main><script type="module">import {mountFirstEventDisplay} from '/first-event-display.js';window.handoffs=[];window.display=mountFirstEventDisplay({root:document.querySelector('#root'),view:location.hash==='#recovery'?'recovery':'organizer',onReview:intent=>window.handoffs.push(intent)});</script></body></html>` });
     if (url.pathname === "/api/first-event/depositors") return json(snapshot);
     if (url.pathname === "/api/bootstrap" && url.search === "?background=1") return json({ kind: "event-read-transport", enabled: true, chainId: 1, contractVersion: EVENT.abiVersion, instanceId: scope.instanceId, walletContext: policy });
+    if (url.pathname === `/api/events/${EVENT.id}/access`) return json({ kind: "event-access", eventId: EVENT.id, chainId: 1, contract: EVENT.contract, instanceId: scope.instanceId, wallet, owner: wallet, pendingOwner: "0x" + "0".repeat(40), role: "owner", revision: 0, admins: [], staff: [], checkins: [] });
     if (url.pathname === "/api/kickback-setup") return json({ kind: "kickback-setup-display", mode: EVENT.mode, instanceId: scope.instanceId, session: session ? { mode: "wallet", wallet } : null });
     if (url.pathname === "/api/auth/challenge") return json({ nonce: "synthetic-auth-nonce", message: "Sign in to the synthetic first event" });
     if (url.pathname === "/api/auth/verify") { session = true; return json({ wallet }); }
@@ -100,13 +101,19 @@ try {
   });
   page = await context.newPage(); page.on("pageerror", error => proof.errors.push(error.message));
   await page.goto(ORIGIN, { waitUntil: "networkidle" });
-  await expect(page.locator("[data-manage-register]")).toBeVisible();
+  const reviewChallenge = async () => {
+    const tools = page.locator("[data-manage-participant-tools]");
+    if (!(await tools.evaluate(node => node.open))) await tools.locator(":scope > summary").click();
+    await page.locator('[data-manage-action="challenge"]').click();
+  };
+  await expect(page.locator("[data-manage-register]")).toBeHidden();
   pass(proof.requests.filter(item => item.pathname.startsWith("/api/")).every(item => item.pathname === "/api/first-event/depositors"), "Saved Manage renders with only the SQL receipt GET and no auth, chain or selected bootstrap");
   const beforeConnect = proof.requests.length;
   await page.locator("[data-manage-connect]").click(); await expect(page.locator("[data-manage-wallet]")).toContainText(wallet);
   await page.waitForLoadState("networkidle");
   assert.deepEqual(await page.evaluate(() => window.walletMethods), ["eth_requestAccounts"]);
   pass(!proof.requests.slice(beforeConnect).some(item => item.pathname.startsWith("/api/")), "Manage Connect is accounts-only with zero API, signature, chain or send requests");
+  await page.locator("[data-manage-access-load]").click(); await expect(page.locator("[data-manage-access-status]")).toContainText("Contract owner");
   await page.locator("[data-manage-register]").click();
   await expect(page.locator("[data-manage-payer-form]")).toBeVisible();
   pass(!jobs.length && (await page.evaluate(() => window.sends)).length === 0, "Canonical payer checkbox/note review precedes adoption, admission and any transaction");
@@ -133,21 +140,21 @@ try {
   await page.locator("[data-manage-confirm]").click(); await expect(page.locator("[data-manage-status]")).toContainText("Confirmed transaction");
   pass((await page.evaluate(() => window.sends)).length === 2 && currentDraft.method === "postAttendance" && (await page.evaluate(() => window.handoffs)).length === 0, "One reviewed attendance batch sends the exact selected list; no per-row on-chain check-in or legacy navigation occurs");
   tamper = "recipient";
-  await page.locator('[data-manage-action="challenge"]').click();
+  await reviewChallenge();
   await expect(page.locator("[data-manage-status]")).toContainText("differs from the exact reviewed");
   pass((await page.evaluate(() => window.sends)).length === 2 && await page.locator("[data-manage-confirm]").count() === 1 && !(await page.locator("[data-manage-review]").evaluate(node => node.open)), "A changed draft recipient is rejected before a wallet transaction request");
   tamper = null;
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   tamper = "validate"; await page.locator("[data-manage-confirm]").click();
   await expect(page.locator("[data-manage-status]")).toContainText("Authoritative transaction terms differ");
   pass((await page.evaluate(() => window.sends)).length === 2, "Changed final validation bytes prevent any wallet send");
   tamper = null;
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   await page.evaluate(other => { window.selectedWallet = other; window.emitWallet("accountsChanged", [other]); }, other);
   await expect(page.locator("[data-manage-connect]")).toBeVisible();
   pass(!(await page.locator("[data-manage-review]").evaluate(node => node.open)) && (await page.evaluate(() => window.sends)).length === 2, "Changing the wallet removes the unsigned review and old-wallet controls without sending");
   await page.evaluate(wallet => { window.selectedWallet = wallet; }, wallet); await page.locator("[data-manage-connect]").click();
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   failReceipt = true; await page.locator("[data-manage-confirm]").click();
   await expect(page.locator("[data-manage-status]")).toContainText("Synthetic receipt transport unavailable");
   await expect(page.locator("[data-manage-check-original]")).toBeVisible();
@@ -160,7 +167,7 @@ try {
   await expect(page.locator("[data-manage-status]")).toContainText("Confirmed original transaction");
   pass((await page.evaluate(() => window.sends)).length === 0 && jobs.at(-1).operation === "confirm", "Explicit original receipt recovery reconciles the recorded draft/hash without resending");
   await page.evaluate(() => { window.failUnknown = true; });
-  await page.locator('[data-manage-action="challenge"]').click(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
+  await reviewChallenge(); await expect(page.locator("[data-manage-confirm]")).toBeVisible();
   await page.locator("[data-manage-confirm]").click(); await expect(page.locator("[data-manage-status]")).toContainText("Synthetic wallet response unavailable");
   await expect(page.locator('[data-manage-action="challenge"]')).toBeDisabled();
   const heldRecord = await page.evaluate(() => Object.entries(localStorage).find(([key]) => key.startsWith("kleros-first-event-manage-intent:v1:")));

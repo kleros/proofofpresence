@@ -41,8 +41,8 @@ export function recordedDepositReference({ storage, journal, wallet, event = EVE
   return references.find(item => item.status === "awaiting-wallet") ?? references.find(item => item.status === "submitted") ??
     references.sort((a, b) => b.blockNumber - a.blockNumber || b.submittedAt - a.submittedAt)[0] ?? null;
 }
-export function savedDepositReference(data, wallet, event = EVENT) {
-  if (!address(wallet) || data?.schemaVersion !== 1 || data.kind !== "first-event-depositors" || data.displayOnly !== true ||
+function depositSnapshot(data, wallet, event) {
+  if ((wallet !== null && !address(wallet)) || data?.schemaVersion !== 1 || data.kind !== "first-event-depositors" || data.displayOnly !== true ||
       data.mode !== event.mode || !stable(data.instanceId) || data.eventId !== event.id || data.chainId !== event.chainId ||
       !same(data.contract, event.contract) || !["current", "stale"].includes(data.status) ||
       !Number.isFinite(Date.parse(data.checkedAt)) || Date.parse(data.checkedAt) > Date.now() + 5000 ||
@@ -51,7 +51,7 @@ export function savedDepositReference(data, wallet, event = EVENT) {
       ["permissions", "capabilities", "session", "deploymentTrust", "actionable"].some(key => Object.hasOwn(data, key)))
     throw Error("The saved deposit receipts belong to another event or are unavailable.");
   const wallets = new Set(), receipts = new Set();
-  let found = null, count = 0;
+  let found = null, count = 0, totalReceived = 0n;
   for (const row of data.depositors) {
     if (!address(row.wallet) || wallets.has(row.wallet.toLowerCase()) || !amount(row.totalReceivedWei) ||
         !Array.isArray(row.deposits) || !row.deposits.length || (count += row.deposits.length) > 2000)
@@ -66,7 +66,17 @@ export function savedDepositReference(data, wallet, event = EVENT) {
       if (!latest || lot.blockNumber > latest.blockNumber || (lot.blockNumber === latest.blockNumber && lot.logIndex > latest.logIndex)) latest = lot;
     }
     if (total !== BigInt(row.totalReceivedWei)) throw Error("The saved deposit totals do not match their receipts.");
+    totalReceived += total;
     if (same(row.wallet, wallet) && total >= BigInt(event.depositWei)) found = { hash: latest.txHash, status: "recorded", instanceId: data.instanceId };
   }
-  return found;
+  return { reference: found, walletCount: wallets.size, totalReceivedWei: totalReceived.toString() };
+}
+export function savedDepositReference(data, wallet, event = EVENT) {
+  if (!address(wallet)) throw Error("The saved deposit wallet is unavailable.");
+  return depositSnapshot(data, wallet, event).reference;
+}
+// Historical receipt totals only: repeated deposits and refunded credit remain in history.
+export function depositSnapshotSummary(data, event = EVENT) {
+  const { walletCount, totalReceivedWei } = depositSnapshot(data, null, event);
+  return Object.freeze({ walletCount, totalReceivedWei });
 }

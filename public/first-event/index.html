@@ -24,6 +24,12 @@
           <h1>Truth Pays</h1>
           <p class="event-subtitle">Queryable Data, Prediction Markets<br class="desktop-break" /> &amp; Onchain Justice</p>
           <p class="event-date" data-event-date><time datetime="2026-11-04T18:00:00+05:30">4 November 2026</time><span aria-hidden="true">·</span><span data-event-hours>18:00–22:00 India (IST)</span></p>
+          <div class="commitment-pool" aria-label="Event commitments and deposits">
+            <div><strong data-commitment-count>—</strong><span>Commitments</span></div>
+            <span class="pool-separator" aria-hidden="true"></span>
+            <div><strong><span data-commitment-total>—</span> <small>ETH</small></strong><span>Total deposited</span></div>
+          </div>
+          <p class="pool-note" data-pool-note>Unique depositor wallets · Total deposited to date, not the current reward pool.</p>
         </div>
 
         <section class="deposit-card" aria-labelledby="deposit-title">
@@ -31,14 +37,20 @@
             <div><p class="eyebrow">DEPOSIT PER GUEST</p><h2 id="deposit-title"><span class="amount">0.01</span> <span class="currency">ETH</span></h2></div>
             <span class="native-label">Native ETH only</span>
           </div>
-          <p class="card-copy">Send your deposit, then return to Luma to complete your registration.</p>
+          <p class="kickback-promise">Show up. Get your deposit back <span>+ earn a kickback.</span></p>
+          <p class="card-copy">Eligible registered attendees share the no-show deposits. Complete your registration on Luma after depositing.</p>
 
           <button type="button" class="button button-primary" data-connect-wallet>Connect wallet <span aria-hidden="true">↗</span></button>
           <p class="wallet-status" data-wallet-status role="status" aria-live="polite"></p>
           <button type="button" class="button button-primary" data-deposit hidden>Deposit 0.01 ETH</button>
           <div class="transaction-status" data-tx-status role="status" aria-live="polite"></div>
+          <div class="admission-card" aria-labelledby="admission-label">
+            <span class="admission-icon" aria-hidden="true">◎</span>
+            <div><p class="eyebrow" id="admission-label">YOUR ADMISSION</p><strong data-admission-status>Connect your wallet</strong><p data-admission-note>Payment alone does not confirm admission. Your organizer approves registration separately.</p></div>
+          </div>
 
-          <div class="divider"><span>or send from your wallet</span></div>
+          <details class="manual-option">
+            <summary>Pay by QR or wallet address</summary>
           <div class="manual-deposit">
             <div class="qr-wrap"><img src="./qr.svg" data-qr-contract="0xc069A460c5B1c577791Ee61E7F9ADcb7866068df" width="144" height="144" alt="QR code for this event’s Ethereum Mainnet deposit address" /></div>
             <div class="manual-content">
@@ -49,18 +61,41 @@
             </div>
           </div>
           <div class="address-box"><span>EVENT CONTRACT</span><code data-contract-address tabindex="0">0xc069A460c5B1c577791Ee61E7F9ADcb7866068df</code></div>
-          <details class="deposit-details">
-            <summary>Deposit details</summary>
+          </details>
+          <nav class="trust-links" aria-label="Event trust links"><a href="https://etherscan.io/address/0xc069A460c5B1c577791Ee61E7F9ADcb7866068df" target="_blank" rel="noopener noreferrer">Contract ↗</a><a href="#event-rules">Deposit rules ↓</a><a href="https://luma.com/qewnqhas" target="_blank" rel="noopener noreferrer">Event on Luma ↗</a></nav>
+          <details class="deposit-details" id="event-rules">
+            <summary>Deposit rules &amp; details</summary>
             <dl><dt>Network</dt><dd>Ethereum Mainnet · Chain 1</dd><dt>Amount</dt><dd>0.01 ETH, plus your wallet’s network fee</dd><dt>Deposit closes</dt><dd data-deposit-closes>4 November 2026, 18:00 India (IST)</dd></dl>
             <p>Your deposit is credited to the sending wallet as pending credit. Payment alone does not confirm event admission or attendance. Unused pending credit remains withdrawable by that wallet.</p>
             <p>Keep your transaction ID for your Luma registration. Send native ETH from your own wallet; do not use another network or a token transfer.</p>
           </details>
         </section>
 
-        <a class="return-link" href="https://luma.com/qewnqhas">Return to Luma <span aria-hidden="true">↗</span></a>
+        <div class="registration-next">
+        <a class="return-link" href="https://luma.com/qewnqhas">Complete Luma registration <span aria-hidden="true">↗</span></a>
         <p class="return-note">Complete your registration with your deposit transaction ID.</p>
         <p class="return-note"><a data-manage-event href="/#event=event-3aac5a07-5074-4241-9246-2798d4111039&amp;view=participant&amp;deposit=manage">Manage deposit and attendance</a></p>
-        <p class="return-note" data-legacy-event hidden>Paid the original event? <a href="/#event=event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5&amp;view=participant&amp;deposit=manage">View original receipts and recover unused credit</a>. Deposits do not move automatically.</p>
+        <details class="previous-event" data-legacy-event hidden><summary>Paid the previous event?</summary><p><a href="/#event=event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5&amp;view=participant&amp;deposit=manage">View original receipts and recover unused credit</a>. Deposits do not move automatically.</p></details>
+        </div>
+
+        <section class="journey-card timeline-card" aria-labelledby="how-it-works-title">
+          <div class="section-heading"><h2 id="how-it-works-title">How it works</h2></div>
+          <p class="event-countdown" data-event-countdown role="timer">4 November · 18:00 India (IST)</p>
+          <ol class="timeline-list">
+            <li><span class="timeline-marker" aria-hidden="true">1</span><div><h3>Deposit &amp; register</h3><p>Deposit 0.01 ETH, then complete your Luma registration.</p><p class="step-date" data-timeline-event>4 November, 18:00–22:00 India (IST). Deposits close when the event starts.</p></div></li>
+            <li><span class="timeline-marker" aria-hidden="true">2</span><div><h3>Show up</h3><p data-timeline-attendance>Attend the event. Once attendance is posted, you have 24 hours to challenge a missing entry.</p></div></li>
+            <li><span class="timeline-marker" aria-hidden="true">3</span><div><h3>Receive your ETH + kickback</h3><p data-timeline-claim>After attendance is finalized, eligible attendees receive their deposit and share of the no-show deposits.</p></div></li>
+          </ol>
+          <p class="timeline-note" data-timeline-deadline>The challenge deadline appears after attendance is posted. Payouts follow finalization.</p>
+          <div class="kickback-example" aria-labelledby="kickback-example-title">
+            <div class="example-heading"><span class="example-label">A SIMPLE EXAMPLE</span><span class="example-bonus">+25% example</span></div>
+            <h3 id="kickback-example-title">10 commit. 8 show up.</h3>
+            <p>10 registered guests × 0.01 ETH = <strong>0.1 ETH deposited.</strong> The two no-show deposits are shared by the eight attendees.</p>
+            <div class="example-equation"><div><strong>0.01</strong><span>Your deposit</span></div><span aria-hidden="true">+</span><div><strong>0.0025</strong><span>Your kickback</span></div><span aria-hidden="true">=</span><div class="example-result"><strong>0.0125 <small>ETH</small></strong><span>Each attendee receives</span></div></div>
+            <p class="example-note">Illustrative, before gas fees. Final amounts depend on confirmed attendance and resolved disputes. If everyone attends, there is no extra kickback.</p>
+          </div>
+        </section>
+
       </main>
       <footer><img src="./assets/kleros-symbol.svg" width="16" height="16" alt="" /><span>Event deposits, powered by Kleros</span></footer>
     </div>

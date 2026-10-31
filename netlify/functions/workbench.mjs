@@ -1,3 +1,6 @@
+import { createHmac } from "node:crypto";
+import { isIP } from "node:net";
+
 const METHODS = new Set(["GET", "HEAD", "POST", "PATCH", "DELETE"]);
 const WRITE = new Set(["POST", "PATCH", "DELETE"]);
 const fail = (status, message, code = "GATEWAY_REJECTED", extra = {}) =>
@@ -28,6 +31,20 @@ const allowedPath = (p) =>
   p.startsWith("/local-ipfs/") ||
   p.startsWith("/local-policy/") ||
   p === "/ethers.js";
+// Use platform context, never caller headers. Group IPv6 privacy addresses by
+// /64, and normalize IPv4-mapped IPv6 so spelling changes cannot reset a limit.
+function requesterNetwork(ip) {
+  if (typeof ip !== "string" || ip.includes("%")) return null;
+  if (isIP(ip) === 4) return `v4:${ip}`;
+  if (isIP(ip) !== 6) return null;
+  const canonical = new URL(`http://[${ip}]/`).hostname.slice(1, -1);
+  const [left, right] = canonical.split("::"), a = left ? left.split(":") : [], b = right ? right.split(":") : [];
+  const words = canonical.includes("::") ? [...a, ...Array(8 - a.length - b.length).fill("0"), ...b] : a;
+  const values = words.map(word => parseInt(word, 16));
+  if (values.slice(0, 5).every(value => value === 0) && values[5] === 65535)
+    return `v4:${values[6] >> 8}.${values[6] & 255}.${values[7] >> 8}.${values[7] & 255}`;
+  return `v6:${values.slice(0, 4).map(value => value.toString(16)).join(":")}`;
+}
 async function limitedBody(request, limit) {
   const chunks = [];
   let size = 0;
@@ -62,7 +79,7 @@ export function createGateway({
     site = origin(publicOrigin, "public");
   if (typeof proxySecret !== "string" || proxySecret.length < 32)
     throw new Error("Configure a strong proxy secret");
-  return async function gateway(request) {
+  return async function gateway(request, context) {
     const url = new URL(request.url),
       method = request.method.toUpperCase(),
       rpc = url.pathname === "/rpc";
@@ -99,6 +116,12 @@ export function createGateway({
     )
       return fail(415, "Unexpected content type", "BAD_CONTENT_TYPE", cors);
     const headers = new Headers({ "x-kleros-proxy-key": proxySecret });
+    if (url.pathname === "/api/public-transactions" && method === "POST") {
+      const network = requesterNetwork(context?.ip);
+      if (!network) return fail(503, "Wallet connection is temporarily unavailable. Try again shortly.", "PUBLIC_FLOW_REQUESTER_UNAVAILABLE");
+      headers.set("x-kleros-requester-key", createHmac("sha256", proxySecret)
+        .update(`public-flow-requester-v1\n${site}\n${network}`).digest("hex"));
+    }
     for (const key of ["content-type", "accept", "origin", "cookie"])
       if (request.headers.has(key) && !(rpc && key === "cookie"))
         headers.set(key, request.headers.get(key));
@@ -165,13 +188,13 @@ export function createGateway({
   };
 }
 
-export default async (request) => {
+export default async (request, context) => {
   try {
     return await createGateway({
       backendOrigin: process.env.KLEROS_BACKEND_URL,
       publicOrigin: process.env.KLEROS_PUBLIC_ORIGIN,
       proxySecret: process.env.KLEROS_PROXY_SECRET,
-    })(request);
+    })(request, context);
   } catch {
     return fail(
       503,

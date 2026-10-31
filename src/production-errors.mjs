@@ -24,6 +24,8 @@ define(503, "The Ethereum deposit simulation returned an invalid reply. No trans
 define(409, "This wallet is already registered for the event.", ["ALREADY_REGISTERED"]);
 define(409, "This wallet's registration was rejected. Unused credit can be recovered.", ["REGISTRATION_REJECTED"]);
 define(503, "Transaction preparation is busy. Try again shortly.", ["PUBLIC_FLOW_CAPACITY"]);
+define(429, "Too many wallet requests from this connection. Try again shortly.", ["PUBLIC_FLOW_RATE_LIMIT"]);
+define(503, "Wallet connection is temporarily unavailable. Try again shortly.", ["PUBLIC_FLOW_REQUESTER_UNAVAILABLE"]);
 define(403, "The sign-in request expired or is invalid. Authenticate again.", [
   "BAD_NONCE",
 ]);
@@ -42,6 +44,12 @@ define(403, "This action requires current staff access to this event.", [
   "NOT_STAFF",
 ]);
 define(403, "A signed wallet session is required.", ["WALLET_REQUIRED"]);
+define(400, "Use the exact event role, wallet, revision or door check-in fields.", ["INVALID_EVENT_ACCESS"]);
+define(403, "Only the current owner can manage admins; admins can manage staff only.", ["EVENT_ACCESS_FORBIDDEN"]);
+define(409, "Event access changed. Refresh the current roles before saving.", ["STALE_EVENT_ACCESS"]);
+define(409, "Another event role or check-in save is in progress. Refresh before retrying.", ["EVENT_ACCESS_BUSY"]);
+define(409, "The event role or check-in list reached its supported limit.", ["EVENT_ACCESS_CAPACITY"]);
+define(503, "Event access could not be saved safely. Refresh before trying again.", ["EVENT_ACCESS_SAVE_FAILED"]);
 define(
   403,
   "This read-only session can inspect only its original event creation. Sign out before using other wallet actions.",

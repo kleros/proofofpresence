@@ -71,20 +71,21 @@ export function mountFirstEventDisplay({ root, view = "participant", onReview, e
   const organizer = view === "organizer";
   const recovery = view === "recovery";
   let disposed = false, inflight = null, controller = null, instanceId = null, wallet = null, saved = null, manage = null;
-  root.innerHTML = `<article class="luma-launch" data-first-event-display>
-    <a class="back-link" href="#">← All events</a>
-    <header class="luma-launch-event"><div class="eyebrow">ETHEREUM MAINNET · TRUTH PAYS</div>
+  root.innerHTML = `<article class="luma-launch luma-manage-page" data-first-event-display>
+    <nav class="luma-page-nav" aria-label="Event navigation"><a class="back-link" href="#">← All events</a><span class="luma-network-note">Ethereum Mainnet</span></nav>
+    <header class="luma-launch-event luma-page-heading"><div class="eyebrow">${organizer ? "EVENT MANAGEMENT" : recovery ? "YOUR EVENT DEPOSIT" : "TRUTH PAYS"}</div>
       <h1>${organizer ? "Manage Event" : recovery ? "Your deposit" : "Truth Pays"}</h1>
-      <p>${escape(EVENT.title)}</p><p>${escape(EVENT.dateLabel ?? "Event date unavailable")} · ${escape(EVENT.hoursLabel ?? "Event hours unavailable")}</p>
+      <p class="luma-event-name">${escape(EVENT.title)}</p>
       ${EVENT.id !== DEFAULT_EVENT.id ? '<p class="field-help">Previous event — recovery only. These receipts and unused credits remain at this original contract; they have not moved to the replacement event.</p>' : ""}
-      <dl class="details-list"><div><dt>Deposit per guest</dt><dd>0.01 ETH</dd></div>
+      <dl class="details-list luma-event-facts"><div><dt>Event time</dt><dd>${escape(EVENT.dateLabel ?? "Event date unavailable")} <span>${escape(EVENT.hoursLabel ?? "Event hours unavailable")}</span></dd></div>
+      <div><dt>Deposit per guest</dt><dd>0.01 ETH</dd></div>
       <div><dt>Event contract</dt><dd><a class="mono" href="https://etherscan.io/address/${EVENT.contract}" target="_blank" rel="noopener noreferrer">${EVENT.contract}</a></dd></div></dl>
     </header>
-    ${organizer || recovery ? `<section class="panel" aria-labelledby="depositor-title"><div class="panel-header"><h2 id="depositor-title">${recovery ? "Your deposit receipts" : "Depositors"}</h2><button class="button button-secondary button-small" type="button" data-display-refresh>Refresh list</button></div>
+    ${organizer || recovery ? `<section class="panel luma-depositor-list" data-display-guests aria-labelledby="depositor-title"><div class="panel-header"><div><p class="eyebrow">${recovery ? "SAVED RECEIPTS" : "EVENT GUESTS"}</p><h2 id="depositor-title">${recovery ? "Your deposit receipts" : "Guests & deposits"}</h2></div><button class="button button-secondary button-small" type="button" data-display-refresh>Refresh list</button></div>
       <p class="small muted" data-display-status role="status" aria-live="polite">Receipts are refreshed separately from these event details.</p>
       <div data-display-rows></div><p class="field-help">This public list shows confirmed amounts received. Admission, contract registration and refunds are checked separately when you review an action.</p></section>` : `<section class="panel"><h2>Your event deposit</h2><p>Deposit 0.01 ETH from the wallet you will use for this event, then finish your registration on Luma.</p><div class="button-row"><a class="button button-primary" href="/first-event/">Open deposit</a><a class="button button-secondary" href="${EVENT.lumaUrl}" target="_blank" rel="noopener noreferrer">Open event on Luma ↗</a></div></section>`}
     ${organizer || recovery ? '<div data-display-manage></div>' : ""}
-    ${!organizer ? `<section class="panel"><button class="button button-secondary" type="button" ${recovery ? 'data-manage-action="withdrawPending" data-manage-withdraw disabled' : "data-display-review"}>${recovery ? "Recover unused deposit" : "Manage deposit or recover credit"}</button>
+    ${!organizer ? `<section class="panel luma-recovery-action"><button class="button button-secondary" type="button" ${recovery ? 'data-manage-action="withdrawPending" data-manage-withdraw disabled' : "data-display-review"}>${recovery ? "Recover unused deposit" : "Manage deposit or recover credit"}</button>
     <p class="field-help">${recovery ? "Connect the wallet that paid, then review recovery to that same wallet. Your current unused credit is checked before the transaction; past receipts are not your withdrawable balance." : "Current contract and wallet checks run before transaction reviews."}</p></section>
     ` : ""}
   </article>`;
@@ -101,14 +102,14 @@ export function mountFirstEventDisplay({ root, view = "participant", onReview, e
     status.textContent = `${data.status === "stale" ? "Saved snapshot; refresh unavailable. " : ""}Checked ${time} · block ${data.blockNumber.toLocaleString()}`;
     if (recovery) {
       const row = data.depositors.find(item => same(item.wallet, wallet));
-      rows.innerHTML = !wallet ? "<p>Connect your wallet to see its saved receipts.</p>" : !row ? "<p>No saved deposit receipts for this wallet yet.</p>" : `<p>Total received: ${eth(row.totalReceivedWei)} ETH</p><ul>${row.deposits.map(lot => `<li>${eth(lot.amountWei)} ETH · <a href="https://etherscan.io/tx/${lot.txHash}" target="_blank" rel="noopener noreferrer">Transaction ${lot.txHash}</a></li>`).join("")}</ul>`;
+      rows.innerHTML = !wallet ? "<p>Connect your wallet to see its saved receipts.</p>" : !row ? "<p>No saved deposit receipts for this wallet yet.</p>" : `<p>Total received: ${eth(row.totalReceivedWei)} ETH</p><ul class="luma-receipt-history">${row.deposits.map(lot => `<li>${eth(lot.amountWei)} ETH · <a href="https://etherscan.io/tx/${lot.txHash}" target="_blank" rel="noopener noreferrer">Transaction ${lot.txHash}</a></li>`).join("")}</ul>`;
       manage?.update(); return;
     }
-    rows.innerHTML = data.depositors.length ? `<p class="small muted">${data.depositors.length} depositor ${data.depositors.length === 1 ? "wallet" : "wallets"}</p><div class="table-scroll"><table aria-label="Confirmed depositor wallets"><thead><tr><th scope="col">Wallet</th><th scope="col">Total received</th><th scope="col">Receipts</th><th scope="col">Admission</th><th scope="col">Attended</th></tr></thead><tbody>${data.depositors.map(row => {
+    rows.innerHTML = data.depositors.length ? `<p class="small muted luma-guest-count">${data.depositors.length} depositor ${data.depositors.length === 1 ? "wallet" : "wallets"}</p><div class="table-scroll"><table class="luma-guest-table" aria-label="Confirmed depositor wallets"><thead><tr><th scope="col">Wallet</th><th scope="col">Total received</th><th scope="col">Receipts</th><th scope="col">Admission</th><th scope="col">Door check-in</th><th scope="col">Owner attendance list</th></tr></thead><tbody>${data.depositors.map(row => {
       const staker = data.eventState?.stakers?.find(item => same(item.wallet, row.wallet));
       const registered = [1, "Staker"].includes(staker?.status);
-      return `<tr><td data-label="Wallet"><a class="mono" href="https://etherscan.io/address/${row.wallet}" target="_blank" rel="noopener noreferrer">${row.wallet}</a></td><td data-label="Total received">${eth(row.totalReceivedWei)} ETH</td><td data-label="Receipts">${row.deposits.map((deposit, index) => `<a href="https://etherscan.io/tx/${deposit.txHash}" target="_blank" rel="noopener noreferrer">Receipt ${index + 1}</a>`).join(" · ")}</td><td data-label="Admission">${registered ? "Registered" : `<button class="button button-secondary button-small" type="button" data-manage-register="${row.wallet}">Approve &amp; register</button>`}</td><td data-label="Attended"><label><input type="checkbox" value="${row.wallet}" data-manage-attended ${!registered ? "disabled" : ""}> Attended</label></td></tr>`;
-    }).join("")}</tbody></table></div>` : "<p>No confirmed deposits at this snapshot.</p>";
+      return `<tr class="luma-depositor-row"><td class="luma-wallet-cell" data-label="Wallet"><a class="mono" href="https://etherscan.io/address/${row.wallet}" target="_blank" rel="noopener noreferrer">${row.wallet}</a></td><td data-label="Total received">${eth(row.totalReceivedWei)} ETH</td><td class="luma-receipt-links" data-label="Receipts">${row.deposits.map((deposit, index) => `<a href="https://etherscan.io/tx/${deposit.txHash}" target="_blank" rel="noopener noreferrer">Receipt ${index + 1}</a>`).join(" · ")}</td><td data-label="Admission">${registered ? '<span class="luma-status-label">Registered</span>' : `<span data-manage-owner-register-hint>Owner approval required</span><button class="button button-secondary button-small" type="button" data-manage-register="${row.wallet}">Approve &amp; register</button>`}</td><td class="luma-checkin-cell" data-label="Door check-in"><span class="small" data-manage-checkin-state>Load permissions to view check-ins. </span><button class="button button-secondary button-small" type="button" data-manage-staff-checkin="${row.wallet}" hidden disabled>Check in</button></td><td class="luma-attendance-cell" data-label="Owner attendance list"><span data-manage-final-hint>Owner review required</span><label data-manage-final-label hidden><input type="checkbox" value="${row.wallet}" data-manage-attended disabled> Include in final list</label></td></tr>`;
+    }).join("")}</tbody></table></div>` : '<p class="luma-empty-state">No confirmed deposits at this snapshot.</p>';
     manage?.update();
   }
   function refresh() {
@@ -144,6 +145,10 @@ export function mountFirstEventDisplay({ root, view = "participant", onReview, e
   if (organizer || recovery) manage = mountFirstEventManage({ root: root.querySelector("[data-display-manage]"), view, event: EVENT,
     getSnapshot: () => saved, isCurrent: current, onRefresh: refresh,
     onWallet: selected => { wallet = selected; if (saved && current()) render(saved); } });
+  // Presentation only: keep the live guest elements and their existing event
+  // delegation in the same article, after the wallet bar in keyboard order.
+  const guestPanel = root.querySelector("[data-display-guests]"), guestSlot = root.querySelector("[data-manage-guests]");
+  if (guestPanel && guestSlot) guestSlot.append(guestPanel);
   if (organizer || recovery) void refresh();
   return Object.freeze({ refresh, dispose() { disposed = true; controller?.abort(); manage?.dispose(); refreshButton?.removeEventListener("click", refresh); reviewButton?.removeEventListener("click", review); } });
 }

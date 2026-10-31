@@ -44,8 +44,14 @@ function payloadOf(body) {
   }
   if (operation === "manage-draft") {
     const action = own(body, "action"), params = own(body, "params");
-    check(["register", "reject", "postAttendance"].includes(action) && params && typeof params === "object" && !Array.isArray(params),
+    check(["register", "reject", "postAttendance", "transferOwnership", "acceptOwnership"].includes(action) && params && typeof params === "object" && !Array.isArray(params),
       "INVALID_INPUT", 400, "Choose a reviewed registration, rejection or attendance action.");
+    if (["transferOwnership", "acceptOwnership"].includes(action)) {
+      check(action === "transferOwnership" ? exact(params, ["to"]) && address(own(params, "to")) : exact(params, []),
+        "INVALID_INPUT", 400, "Choose one exact ownership transfer or acceptance.");
+      Object.assign(payload, { action, params: copy(params) });
+      return payload;
+    }
     const manual = action === "postAttendance";
     check(exact(params, manual ? ["attendedWallets", "attendanceReview"] : ["wallets"]),
       "INVALID_INPUT", 400, "Use the exact selected-wallet review.");

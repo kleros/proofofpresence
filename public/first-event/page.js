@@ -1,6 +1,7 @@
 // Presentation helpers only. Wallet connection, review and financial actions are
 // owned by the separate, event-scoped controller.
 import { EVENT, LEGACY_EVENT, firstEventById, firstEventRecoveryPath } from './event.js';
+import { mountDepositJourney } from './journey.js';
 const copyButton = document.querySelector('[data-copy-address]');
 const address = document.querySelector('[data-contract-address]');
 const copyStatus = document.querySelector('[data-copy-status]');
@@ -34,6 +35,7 @@ if (legacy && EVENT.id !== LEGACY_EVENT.id) {
 const qr = document.querySelector('[data-qr-contract]');
 if (address?.textContent.trim().toLowerCase() !== EVENT.contract.toLowerCase() || qr?.dataset.qrContract?.toLowerCase() !== EVENT.contract.toLowerCase()) {
   if (copyButton) copyButton.disabled = true;
+  document.querySelector('.manual-option')?.setAttribute('hidden', '');
   document.querySelector('.manual-deposit')?.setAttribute('hidden', '');
   document.querySelector('.address-box')?.setAttribute('hidden', '');
   if (copyStatus) copyStatus.textContent = 'Reload this page to refresh the event deposit address.';
@@ -55,4 +57,10 @@ copyButton?.addEventListener('click', async () => {
     address.focus();
     copyStatus.textContent = 'Address selected. Copy the selected text below.';
   }
+});
+
+if (!requestedId || requestedId === EVENT.id) mountDepositJourney();
+document.querySelector('a[href="#event-rules"]')?.addEventListener('click', () => {
+  const rules = document.querySelector('#event-rules');
+  if (rules) rules.open = true;
 });
