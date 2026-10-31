@@ -1,8 +1,0 @@
-{
-  "reason": "Legacy harness expects #event-switch; compact production portal deliberately has no event-switch. Its fixture has no Luma URL and safely renders deposit-unavailable. No source/test edits.",
-  "sources": {
-    "public/app.js": "1a7f6dfede6422aa765200e0d90ee2bb630c76cfa98c2bd857f15eb03042c843",
-    "public/luma-setup.js": "ec776cf1a89898c592cdc8fce5b79eb618b87ef226c31f8a582a80b6b6462673",
-    "test/production-ui.e2e.mjs": "6fc01b177a7a883d9ef26386d4a25c251fde6391e3ec4b09c3559f3d70b4cbd5"
-  }
-}

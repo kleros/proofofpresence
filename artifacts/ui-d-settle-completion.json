@@ -1,8 +1,0 @@
-{
-  "status": "passed-full-controlled-d-flow-with-read-only-completions",
-  "originalUIRunStatus": "stopped",
-  "proof": "artifacts/ui-d/settle-completions/2026-10-29T04-56-38-478Z-23d75c35/proof.json",
-  "proofSha256": "b55d3c5b1ea86666242ecbb24a14b1ffe7c2c844b41ba389f6024e91cc7f3c78",
-  "settlementHash": "0xc27fb4878a820914c134be76e693057c6a700948f1d56350aabdf62f04063a0e",
-  "financialBroadcastsDuringCompletion": 0
-}

@@ -1,28 +1,42 @@
 node_modules/
-node_modules
+**/node_modules/
 dist/
 .netlify/
-**/node_modules/
 **/build/
 **/.next/
 .DS_Store
 .env*
 !.env.example
 .runtime/
-artifacts/screenshots/
-artifacts/stress/
-# Preserve the final combined evidence; keep intermediate diagnostics local.
-artifacts/*.log
-!artifacts/final-verification.log
-artifacts/ui-safety-results.json
-test-results/
-playwright-report/
 private/
 **/private/
 **/out/
 **/out-*/
-KLEROS_CODEX_HANDOFF.zip
+test-results/
+playwright-report/
 references/**/.git/
 
-# Generated design-prototype browser screenshots; review report is committed explicitly.
-KLEROS_REDESIGN_HANDOFF/qa/browser-results/
+# Internal agent/workspace notes remain private.
+AGENTS.md
+PROJECT_BRAIN.md
+ui-registry.md
+project-brain/
+.agents/
+.codex/
+KLEROS_*_HANDOFF/
+
+# Credentials and generated operator output.
+.npmrc
+.netrc
+*.pem
+*.p12
+*.pfx
+*.keystore
+credentials*.json
+service-account*.json
+secrets*.json
+*.log
+*.tar.gz
+*.zip
+/artifacts/*
+!/artifacts/README.md

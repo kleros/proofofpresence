@@ -1,9 +1,0 @@
-{
-  "kind": "approved-temporary-ssh-registration-diagnostic",
-  "startedAt": "2026-10-29T15:04:26.469Z",
-  "publicFingerprint": "SHA256:rjUugcPOYhJtucYHhHbtX9Of701lrrg4BWlNeuIOCi4",
-  "registrationExit": 1,
-  "registrationDiagnostic": "No SSH keys found in your SSH agent or ~/.ssh/\n\nGenerate one with:\n  ssh-keygen -t ed25519\n\nThen run this command again.\n\n",
-  "localPrivateKeyDeleted": true,
-  "finishedAt": "2026-10-29T15:04:27.486Z"
-}

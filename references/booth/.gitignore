@@ -1,7 +1,0 @@
-.DS_Store
-.claude/
-public/
-*.zip
-*.xlsx
-__pycache__/
-dist/
