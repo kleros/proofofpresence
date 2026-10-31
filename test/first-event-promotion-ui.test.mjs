@@ -104,7 +104,7 @@ test("promoted and original pages, SQL receipts, tokens and pending records rema
   page = await pageAt();
   const discovery = await page.evaluate(async () => {
     const { EVENT, LEGACY_EVENT } = await import("/first-event/event.js"), { validatePublicCatalog, publicEventSearchEntries, searchPublicEvents } = await import("/event-search.js"),
-      { publicResultStatus } = await import("/public-home.js");
+      { publicResultStatus, renderPublicResults } = await import("/public-home.js");
     const records = [EVENT, LEGACY_EVENT].map(event => ({ ...event, contractVersion: event.abiVersion,
       title: event.id === LEGACY_EVENT.id ? "Previous-only search term" : event.title, visibility: "public", editorialStatus: "published",
       adoption: { kind: "recorded-adoption", txHash: "0x" + "a".repeat(64), blockHash: "0x" + "b".repeat(64), blockNumber: 1 },
@@ -115,12 +115,18 @@ test("promoted and original pages, SQL receipts, tokens and pending records rema
       chain: { chainId: 1, name: "Ethereum", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrl: "https://rpc.example.invalid" },
       catalog: { metadataOnly: true, currentFinancialState: "not-loaded", source: "recorded-adoption" }, events: records };
     const catalog = validatePublicCatalog(input), projected = publicEventSearchEntries(records);
+    const rendered = document.createElement("div");
+    rendered.innerHTML = renderPublicResults([...catalog.events, { ...catalog.events[0], id: "event-synthetic-generic" }], "");
+    const links = rendered.querySelectorAll("[data-public-event-open]");
     return { catalog: catalog.events.map(event => event.id), projected: projected.map(event => event.id),
       count: publicResultStatus(catalog.events, ""), previousSearch: searchPublicEvents(catalog.events, "Previous-only").length,
+      currentHref: links[0]?.getAttribute("href"), genericHref: links[1]?.getAttribute("href"),
       oldRecordUnchanged: input.events[1].visibility === "public" && input.events[1].editorialStatus === "published" };
   });
   assert.deepEqual(discovery.catalog, [CURRENT.id]); assert.deepEqual(discovery.projected, [CURRENT.id]);
   assert.equal(discovery.count, "1 public event."); assert.equal(discovery.previousSearch, 0); assert(discovery.oldRecordUnchanged);
+  assert.equal(discovery.currentHref, "/first-event/");
+  assert.equal(discovery.genericHref, "#event=event-synthetic-generic&view=participant");
   await page.evaluate(async () => { const { renderHomeWallet, mountHomeWallet } = await import("/home-wallet.js"); const main = document.querySelector("main"); main.innerHTML = renderHomeWallet(); mountHomeWallet(main); });
   await page.locator("[data-home-connect-wallet]").click();
   await expect(page.locator("[data-home-deposit-row]")).toHaveCount(2);
