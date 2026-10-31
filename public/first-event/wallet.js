@@ -1,4 +1,6 @@
 import { EVENT } from "./event.js";
+import { loadDepositSnapshot, setDepositWallet } from "./journey.js";
+import { renderDepositReceipt } from "./receipt-card.js";
 import { assertDirectDepositDraft } from "./direct-deposit.js";
 import { recordedDepositReference, savedDepositReference } from "./receipts.js";
 import { chooseWalletProvider } from "../wallet-connection.js";
@@ -129,47 +131,13 @@ dialog.addEventListener("close", () => {
 });
 
 const status = (text) => { if (walletStatus) walletStatus.textContent = text; };
-const txStatus = (text, hash = null) => {
-  if (!transactionStatus) return;
-  transactionStatus.replaceChildren(document.createTextNode(text));
-  if (typeof hash === "string" && /^0x[0-9a-f]{64}$/i.test(hash)) {
-    const link = document.createElement("a");
-    link.href = `https://etherscan.io/tx/${hash}`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    link.textContent = ` View transaction ${hash}`;
-    transactionStatus.append(link);
-    const copy = document.createElement("button"), fallback = document.createElement("input"), copyStatus = document.createElement("span");
-    copy.type = "button";
-    copy.className = "button button-secondary";
-    copy.dataset.copyTx = "";
-    copy.textContent = "Copy transaction ID";
-    fallback.type = "text";
-    fallback.readOnly = true;
-    fallback.value = hash;
-    fallback.hidden = true;
-    fallback.setAttribute("aria-label", "Transaction ID to copy");
-    copyStatus.setAttribute("role", "status");
-    copyStatus.setAttribute("aria-live", "polite");
-    copy.addEventListener("click", async () => {
-      copy.disabled = true;
-      const stillCurrent = () => copy.isConnected && copy.parentElement === transactionStatus;
-      try {
-        if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
-        await navigator.clipboard.writeText(hash);
-        if (stillCurrent()) { copy.textContent = "Transaction ID copied"; copyStatus.textContent = " Paste this transaction ID into Luma."; }
-      } catch {
-        if (stillCurrent()) {
-          fallback.hidden = false;
-          fallback.focus();
-          fallback.select();
-          copyStatus.textContent = " Copy the selected transaction ID, then paste it into Luma.";
-        }
-      } finally { if (stillCurrent()) copy.disabled = false; }
-    });
-    transactionStatus.append(copy, fallback, copyStatus);
-  }
+const txStatus = (text, hash = null, explicitState = null) => {
+  const state = explicitState ?? (hash && confirmedHash === hash
+    ? paymentReference?.status === "recorded" ? "recorded" : "confirmed"
+    : "submitted");
+  renderDepositReceipt(transactionStatus, { message: text, hash, status: state });
 };
+
 function scope() {
   if (!wallet || !connection || connection.epoch !== epoch || !same(connection.wallet, wallet) ||
       !connection.instanceId || connection.mode !== EVENT.mode || !transactionFlow)
@@ -239,7 +207,7 @@ function checkEarlierScopes(captured) {
 }
 function showPaymentComplete(complete) {
   connectButton.hidden = complete || connection !== null;
-  for (const node of document.querySelectorAll(".divider,.manual-deposit,.address-box")) node.hidden = complete;
+  for (const node of document.querySelectorAll(".manual-option,.divider,.manual-deposit,.address-box")) node.hidden = complete;
 }
 function restorePaymentReference() {
   if (!wallet || !journal) return;
@@ -248,6 +216,7 @@ function restorePaymentReference() {
   confirmedHash = ["confirmed", "recorded"].includes(paymentReference?.status) ? paymentReference.hash : null;
 }
 function paint() {
+  setDepositWallet(wallet);
   showPaymentComplete(false);
   depositButton.hidden = true;
   depositButton.disabled = busy;
@@ -338,6 +307,7 @@ function invalidate() {
   readController.abort();
   readController = new AbortController();
   bootstrap = detail = wallet = draft = null;
+  setDepositWallet(null);
   connection = null;
   transactionFlow = null;
   confirmedHash = null;
@@ -365,6 +335,7 @@ async function connect() {
   listeningProvider?.removeListener?.("chainChanged", invalidate);
   listeningProvider = null;
   bootstrap = detail = wallet = draft = null;
+  setDepositWallet(null);
   connection = null;
   transactionFlow = null;
   confirmedHash = null;
@@ -619,7 +590,7 @@ async function checkOriginal() {
     journal.update(captured, entry.hash, { status: result.status, blockNumber: result.blockNumber, error: null });
     if (current(capturedEpoch, captured)) {
       if (result.status === "confirmed") { confirmedHash = entry.hash; showPaymentComplete(true); }
-      txStatus(result.status === "confirmed" ? "Deposit confirmed" : "The original deposit transaction reverted on chain.", entry.hash);
+      txStatus(result.status === "confirmed" ? "Deposit confirmed" : "The original deposit transaction reverted on chain.", entry.hash, result.status === "confirmed" ? "confirmed" : "failed");
     }
   } catch (error) {
     if (current(capturedEpoch, captured)) {
@@ -636,14 +607,11 @@ depositButton?.addEventListener("click", prepare);
 checkButton.addEventListener("click", checkOriginal);
 // One anonymous database read starts before wallet selection, so returning guests
 // can copy their receipt without a new transaction flow or a blockchain scan.
-const savedReceiptsReady = (async () => {
-  const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 3000);
-  try {
-    const response = await fetch("/api/first-event/depositors", { method: "GET", credentials: "omit", cache: "no-store", signal: controller.signal });
-    if (!response.ok) return;
-    receiptSnapshot = await response.json();
-    if (wallet && !busy) { restorePaymentReference(); paint(); }
-  } catch { /* Fresh transaction validation remains the final payment gate. */ }
-  finally { clearTimeout(timeout); }
-})();
+const savedReceiptsReady = loadDepositSnapshot().then(snapshot => {
+  receiptSnapshot = snapshot;
+  if (wallet && !busy) { restorePaymentReference(); paint(); }
+}).catch(() => {
+  // Keep background display errors contained, as in the original receipt loader.
+  // The explicit deposit action still validates this raw snapshot before any flow.
+});
 // No provider, account request, authentication or financial action runs on load.
