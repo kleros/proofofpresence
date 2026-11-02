@@ -40,13 +40,13 @@ test('event end never invents a challenge or payout countdown; posting begins it
 });
 test('deposit receipts alone never become admission, attendance or payment confirmation', () => {
   const data = fixture();
-  assert.match(admissionState(data, wallet).title, /admission not confirmed/);
+  assert.match(admissionState(data, wallet).title, /confirmation pending/);
   data.eventState.stakers.push({ wallet, status: 1, attended: false, challenge: { state: 0, matchDeadline: 0 } });
   assert.equal(admissionState(data, wallet).title, 'Registered on contract');
   assert.match(admissionState(data, null).title, /Connect/);
   const wrongTerms = structuredClone(data); wrongTerms.eventState.eventStart++;
   assert.equal(savedEventState(wrongTerms), null);
-  assert.match(admissionState(wrongTerms, wallet).title, /admission not confirmed/);
+  assert.match(admissionState(wrongTerms, wallet).title, /confirmation pending/);
 });
 test('fallback threshold opens recovery and a cancelled Paid row is never advertised as active admission', () => {
   const data = fixture();

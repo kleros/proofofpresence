@@ -10,7 +10,7 @@ import { eventReadJob, eventBootstrap, FIRST_EVENT_READ_CONTEXT } from "./event-
 import { firstEventById } from "./first-event/event.js";
 import { createPublicTransactionFlow, resetCompletedPublicTransactionFlow, resetUnusedPublicTransactionFlow } from "./public-transactions.js";
 import { mountHomeWallet } from "./home-wallet.js";
-import { chooseWalletProvider } from "./wallet-connection.js";
+import { chooseWalletProvider, rememberWalletProvider, forgetWalletProvider } from "./wallet-connection.js";
 import { assertDemoChainInstance } from "./hosted-wallet.js";
 import {
   publicEventSearchEntries,
@@ -1366,6 +1366,7 @@ function installWalletSessionListeners(provider) {
   const invalidateSession = async () => {
     if (selectedWalletProvider && selectedWalletProvider !== provider) return;
     if (currentIdentity()?.mode !== "wallet" && !walletSessionObserved) return;
+    forgetWalletProvider(document);
     if (selectedWalletProvider === provider) selectedWalletProvider = null;
     cancelRead();
     walletSessionEpoch++;
@@ -1403,6 +1404,7 @@ function installWalletSessionListeners(provider) {
   };
   provider.on("accountsChanged", invalidateSession);
   provider.on("chainChanged", invalidateSession);
+  provider.on("disconnect", invalidateSession);
 }
 async function connectSetupWallet(button) {
   if (walletConnectionPending) return;
@@ -1423,19 +1425,21 @@ async function connectSetupWallet(button) {
       throw Error("The page changed. Connect again.");
     const wallet = accounts?.[0];
     if (!/^0x[0-9a-f]{40}$/i.test(wallet ?? "") || /^0x0{40}$/i.test(wallet)) throw Error("Choose a wallet account.");
+    rememberWalletProvider(provider, document);
     setupWalletConnection?.dispose?.();
     const reset = () => {
       if (setupWalletConnection?.provider !== provider) return;
       if (setupWalletConnection.switching === true) return;
+      forgetWalletProvider(document);
       if (selectedWalletProvider === provider) selectedWalletProvider = null;
       setupWalletConnection.dispose(); setupWalletConnection = null;
       walletSessionEpoch++;
       lumaSetupController?.dispose();
       if (simpleSetup()) { mountLaunchSetup(); sidebar(); }
     };
-    provider.on?.("accountsChanged", reset); provider.on?.("chainChanged", reset);
+    provider.on?.("accountsChanged", reset); provider.on?.("chainChanged", reset); provider.on?.("disconnect", reset);
     setupWalletConnection = { wallet, provider, instanceId, epoch,
-      dispose: () => { provider.removeListener?.("accountsChanged", reset); provider.removeListener?.("chainChanged", reset); } };
+      dispose: () => { provider.removeListener?.("accountsChanged", reset); provider.removeListener?.("chainChanged", reset); provider.removeListener?.("disconnect", reset); } };
     lumaSetupController?.dispose(); mountLaunchSetup(); sidebar();
   } finally {
     walletConnectionPending = false;
@@ -1586,6 +1590,7 @@ async function connectWallet(button = null) {
     const verified = await post("/api/auth/verify", { nonce, signature });
     assertConnectionCurrent();
     const acknowledgedWallet = sessionWalletFromAck(verified, accounts[0]);
+    rememberWalletProvider(provider, document);
     feedback("Wallet connected. Opening your signed-in view…", "Connected");
     walletSessionObserved = true;
     installWalletSessionListeners(provider);

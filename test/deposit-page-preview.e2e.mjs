@@ -79,7 +79,7 @@ try {
   await screenshot('before-event-desktop');
 
   await open('pending');
-  await expect(page.locator('[data-admission-status]')).toHaveText('Deposit received · admission not confirmed');
+  await expect(page.locator('[data-admission-status]')).toHaveText('Commitment received · confirmation pending');
   await expect(page.locator('.deposit-receipt')).toHaveAttribute('data-status', 'confirmed');
   await expect(page.locator('.receipt-hash').first()).toHaveAttribute('href', `https://etherscan.io/tx/${SAMPLE_HASH}`);
   await expect(page.locator('.receipt-hash').first()).toHaveText(SAMPLE_HASH);

@@ -182,7 +182,7 @@ export function createWalletConnectProvider({ ownerDocument = document, isCurren
       let rejectCancelled;
       const cancelled = new Promise((_, reject) => { rejectCancelled = reject; });
       cancelConnect = rejectCancelled;
-      const attempt = Promise.resolve().then(() => remote.enable());
+      const attempt = Promise.resolve().then(() => connected && remote.session ? remote.request({ method: "eth_accounts" }) : remote.enable());
       // An approval arriving after cancellation must not become a claimed connection.
       attempt.then(() => { if (!current() && !hadSession && remote.session) void remote.disconnect(); }, () => {});
       const timer = setInterval(() => { if (!current()) { remote.abortConnection?.(); rejectCancelled(staleError()); } }, 100);
@@ -200,6 +200,15 @@ export function createWalletConnectProvider({ ownerDocument = document, isCurren
     request(args) {
       try { assertCurrent(); } catch (error) { return Promise.reject(error); }
       if (args?.method === "eth_requestAccounts") return accountRequest();
+      if (args?.method === "eth_accounts" && !connected) return (async () => {
+        // Initialize only when a caller restores its saved WalletConnect choice.
+        // Existing SDK session/account reads never open pairing or call enable.
+        const remote = await ready(); assertCurrent();
+        if (!remote.session) return [];
+        const accounts = await remote.request({ method: "eth_accounts" }); assertCurrent();
+        if (!Array.isArray(accounts) || !accounts.length || accounts.some(value => typeof value !== "string" || !/^0x[0-9a-f]{40}$/i.test(value))) return [];
+        connected = true; return accounts;
+      })();
       if (!connected || !sdk) return Promise.reject(connectionError());
       // Once dispatched, return the original wallet result even if the view
       // changes. The unchanged sender must be able to journal a returned hash.

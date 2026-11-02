@@ -343,3 +343,24 @@ test('normal cancelled pairing cleanup permits one fresh retry with the same SDK
   assert.equal(initCalls, 1); assert.equal(modalCalls, 1); assert.equal(cleanupCalls, 1);
   assert.equal(sdk.disconnectCalls, 0); assert.deepEqual(sdk.requests, []); second.dispose();
 });
+
+test('restoring a saved WalletConnect choice reads an existing session without pairing or prompting', async () => {
+  const sdk = new MockSdk();
+  sdk.session = { namespaces: { eip155: { accounts: ['eip155:1:' + WALLET] } } };
+  sdk.requestHook = request => request.method === 'eth_accounts' ? [WALLET] : '0x1';
+  const f = fixture({ sdk });
+  assert.deepEqual(await f.provider.request({ method: 'eth_accounts' }), [WALLET]);
+  assert.equal(await f.provider.request({ method: 'eth_chainId' }), '0x1');
+  assert.deepEqual(await f.provider.request({ method: 'eth_requestAccounts' }), [WALLET]);
+  assert.equal(sdk.enableCalls, 0); assert.equal(sdk.disconnectCalls, 0);
+  assert.deepEqual(sdk.requests.map(request => request.method), ['eth_accounts', 'eth_chainId', 'eth_accounts']);
+  f.controller.abort();
+});
+
+test('read-only restoration with no persisted WalletConnect session cannot pair or enable wallet actions', async () => {
+  const f = fixture();
+  assert.deepEqual(await f.provider.request({ method: 'eth_accounts' }), []);
+  await assert.rejects(f.provider.request({ method: 'personal_sign', params: ['0x00', WALLET] }));
+  assert.equal(f.sdk.enableCalls, 0); assert.deepEqual(f.sdk.requests, []);
+  f.controller.abort();
+});

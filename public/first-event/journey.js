@@ -79,14 +79,15 @@ export function timelineState(state, now = Date.now() / 1000, event = EVENT) {
   return result;
 }
 export function admissionState(snapshot, wallet, event = EVENT) {
-  if (!wallet) return { title: 'Connect to see your status', note: 'A deposit and event admission are separate. Complete your registration on Luma.' };
+  if (!wallet) return { title: 'Connect to see your status', note: 'Commit with a deposit, then add your details on Luma so the organizer can match your wallet and confirm your place.' };
   const state = savedEventState(snapshot, event), row = state?.stakers.find(item => same(item.wallet, wallet));
   if (state?.phase === 'Cancelled') return { title: 'Event cancelled · check your refund', note: 'Check your wallet or open Manage deposit for refund recovery. A saved status does not confirm delivery.', status: 'cancelled' };
   if ([1, 2].includes(row?.status)) return { title: 'Registered on contract', note: 'Your wallet is on the saved registration list. Attendance and payout are separate.', status: 'registered' };
   if (row?.status === 3) return { title: 'Registration declined on contract', note: 'Open Manage deposit to check recovery. Confirm event admission with the organizer.', status: 'declined' };
   const paid = snapshot?.depositors?.some(item => same(item.wallet, wallet));
-  return { title: paid ? 'Deposit received · admission not confirmed' : 'Admission not confirmed',
-    note: 'Complete your Luma registration. The organizer must approve and register your wallet; payment alone does not reserve admission.', status: 'pending' };
+  return { title: paid ? 'Commitment received · confirmation pending' : 'Your commitment starts here',
+    note: paid ? 'Your deposit is recorded. Add your details and transaction ID on Luma so the organizer can confirm your place. Your place is confirmed when your wallet is registered.'
+      : 'Deposit to record your commitment, then add your details on Luma. Your place is confirmed when the organizer registers your wallet.', status: 'pending' };
 }
 let selectedWallet = null, activeMount = null;
 export function setDepositWallet(wallet) {

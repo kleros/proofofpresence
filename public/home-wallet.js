@@ -1,5 +1,5 @@
 // Public creator metadata is a navigation aid, never organizer authority.
-import { chooseWalletProvider } from "./wallet-connection.js";
+import { chooseWalletProvider, rememberWalletProvider, restoreWalletProvider, forgetWalletProvider } from "./wallet-connection.js";
 import { EVENT, FIRST_EVENTS, firstEventById, firstEventDepositorsPath, firstEventRecoveryPath } from "./first-event/event.js";
 import { savedDepositReference } from "./first-event/receipts.js";
 const same = (a, b) => typeof a === "string" && typeof b === "string" && a.toLowerCase() === b.toLowerCase();
@@ -110,10 +110,11 @@ export function mountHomeWallet(root, { isCurrent = () => Boolean(true), instanc
       }
     }
   };
-  const changed = () => { revision++; wallet = null; busy = false; message = ""; paint(); };
+  const changed = () => { revision++; forgetWalletProvider(root.ownerDocument); wallet = null; busy = false; message = ""; detach(); paint(); };
   const detach = () => {
     provider?.removeListener?.("accountsChanged", changed);
     provider?.removeListener?.("chainChanged", changed);
+    provider?.removeListener?.("disconnect", changed);
   };
   const connect = async () => {
     if (!current() || busy) return;
@@ -127,8 +128,10 @@ export function mountHomeWallet(root, { isCurrent = () => Boolean(true), instanc
       if (!current() || revision !== ownRevision) return;
       if (!address(accounts?.[0])) throw Error("No wallet account was selected.");
       wallet = accounts[0]; provider = selectedProvider;
+      rememberWalletProvider(provider, root.ownerDocument);
       provider.on?.("accountsChanged", changed);
       provider.on?.("chainChanged", changed);
+      provider.on?.("disconnect", changed);
     } catch (error) {
       if (current() && revision === ownRevision) { wallet = null; message = Number(error.code) === 4001 ? "Wallet connection cancelled." : error.message || "Wallet connection could not finish."; }
     } finally {
@@ -136,6 +139,18 @@ export function mountHomeWallet(root, { isCurrent = () => Boolean(true), instanc
     }
   };
   button.addEventListener("click", connect);
+  const restoreRevision = revision;
+  void restoreWalletProvider({ ownerDocument: root.ownerDocument, signal: walletController.signal,
+    isCurrent: () => current() && revision === restoreRevision }).then(restored => {
+    if (!restored) return;
+    try {
+      if (!restored.valid() || !current() || revision !== restoreRevision) return;
+      provider = restored.provider; wallet = restored.wallet;
+      provider.on?.("accountsChanged", changed); provider.on?.("chainChanged", changed); provider.on?.("disconnect", changed);
+      if (!restored.valid()) { changed(); return; }
+      paint();
+    } finally { restored.release(); }
+  });
   depositList.addEventListener("click", copy);
   // Starts independently on mount. Connect never starts or repeats this read.
   const timer = setTimeout(() => controller.abort(), 35000);

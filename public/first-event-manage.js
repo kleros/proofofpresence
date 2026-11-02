@@ -1,7 +1,7 @@
 // Cached receipts render the page. Every signed action obtains fresh private
 // authority through the original scoped jobs; this module never bootstraps an event.
 import { EVENT as DEFAULT_EVENT, firstEventById, firstEventRecoveryPath } from "./first-event/event.js";
-import { chooseWalletProvider } from "./wallet-connection.js";
+import { chooseWalletProvider, rememberWalletProvider, restoreWalletProvider, forgetWalletProvider } from "./wallet-connection.js";
 const same = (a, b) => typeof a === "string" && typeof b === "string" && a.toLowerCase() === b.toLowerCase();
 const address = value => typeof value === "string" && /^0x[0-9a-f]{40}$/i.test(value) && !/^0x0{40}$/i.test(value);
 const stable = value => typeof value === "string" && /^[A-Za-z0-9_-]{1,200}$/.test(value);
@@ -102,7 +102,8 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
   if (!known || !same(known.contract, EVENT.contract) || EVENT.chainId !== known.chainId || EVENT.abiVersion !== known.abiVersion)
     fail("The saved event identity is unavailable.");
   let disposed = false, revision = 0, provider = null, wallet = null, authenticated = false, policy = null, context = null;
-  let busy = false, draft = null, reviewed = null, servicePromise = null, receipt = null, access = null;
+  let busy = false, draft = null, reviewed = null, servicePromise = null, receipt = null, access = null, needsSignIn = false;
+  let permissionLoadRevision = null;
   const accessEnabled = view === "organizer" && EVENT.id === DEFAULT_EVENT.id;
   const checkinNonces = new Map();
   const abort = new AbortController(), selected = new Set();
@@ -126,9 +127,13 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
   const say = message => { if (current()) status.textContent = message; };
   const services = () => servicePromise ??= Promise.all([import("./event-read.js"), import("./v10-wallet-account.js"), import("./transaction-context.js")]).then(([read, account, transactions]) => ({ ...read, ...account, ...transactions, journal: transactions.createTransactionJournal(localStorage) }));
   const api = async (path, options = {}) => {
+    const requestRevision = revision;
     const response = await fetch(path, { credentials: "same-origin", cache: "no-store", ...options, headers: { "Content-Type": "application/json", ...options.headers } });
     const data = await response.json();
-    if (!response.ok) { if (response.status === 401) authenticated = false; throw Object.assign(Error(data.error ?? "The event action could not finish."), { code: data.code, status: response.status }); }
+    if (!response.ok) {
+      if ([401, 403].includes(response.status) && current(requestRevision)) { authenticated = false; access = draft = reviewed = null; selected.clear(); needsSignIn = response.status === 401; update(); }
+      throw Object.assign(Error(data.error ?? "The event action could not finish."), { code: data.code, status: response.status });
+    }
     return data;
   };
   function pendingFromStorage(journal) {
@@ -188,19 +193,20 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
     if (!accessEnabled) return;
     const value = currentAccess(), load = root.querySelector("[data-manage-access-load]");
     load.disabled = !wallet || busy;
+    load.textContent = needsSignIn ? "Sign in to manage" : "Refresh permissions";
     const text = root.querySelector("[data-manage-access-status]"), host = root.querySelector("[data-manage-access-controls]");
     if (!value) {
-      text.textContent = wallet ? "Load event permissions to manage access or record check-ins. Sign-in is requested only here or before a contract action." : "Connect your wallet, then load private event permissions when needed.";
+      text.textContent = wallet ? needsSignIn ? "Sign in once to load your private event permissions. This signature sends no transaction." : busy ? "Checking your event permissions…" : "Event permissions are unavailable. Refresh to check again." : "Connect your wallet to manage this event. An existing connection is restored automatically.";
       host.replaceChildren(); return;
     }
-    const labels = { owner: "Contract owner", admin: "Admin", staff: "Check-in staff", "pending-owner": "Pending owner", participant: "Participant" };
+    const labels = { owner: "Contract owner", admin: "Event admin", staff: "Check-in staff", "pending-owner": "Pending owner", participant: "Participant" };
     text.textContent = `${labels[value.role]} · permissions revision ${value.revision}`;
     const grants = ["owner", "admin"].includes(value.role);
-    const list = (role, items) => `<h4>${role === "admin" ? "Admins" : "Check-in staff"}</h4>${items.length ? `<ul class="luma-access-list">${items.map(item => `<li class="luma-access-row"><span class="mono">${escape(item)}</span>${value.role === "owner" || value.role === "admin" && role === "staff" ? ` <button type="button" class="button button-secondary button-small" data-manage-access-revoke="${role}" data-manage-target="${item}">Revoke ${role}</button>` : ""}</li>`).join("")}</ul>` : "<p>None assigned.</p>"}`;
+    const list = (role, items) => `<h4>${role === "admin" ? "Event admins" : "Check-in staff"}</h4>${items.length ? `<ul class="luma-access-list">${items.map(item => `<li class="luma-access-row"><span class="mono">${escape(item)}</span>${value.role === "owner" || value.role === "admin" && role === "staff" ? ` <button type="button" class="button button-secondary button-small" data-manage-access-revoke="${role}" data-manage-target="${item}">Revoke ${role}</button>` : ""}</li>`).join("")}</ul>` : "<p>None assigned.</p>"}`;
     host.innerHTML = `<div class="luma-access-owner"><p>Current contract owner: <span class="mono">${escape(value.owner)}</span></p>
       ${value.pendingOwner !== "0x" + "0".repeat(40) ? `<p>Pending owner: <span class="mono">${escape(value.pendingOwner)}</span></p>` : ""}
-      </div><div class="luma-access-roster">${value.role !== "participant" ? list("admin", value.admins) + list("staff", value.staff) : "<p>This wallet has no event team access.</p>"}</div>
-      ${grants ? `<form class="luma-team-form" data-manage-access-form><label>Wallet address<input name="wallet" required autocomplete="off" spellcheck="false" pattern="0x[a-fA-F0-9]{40}" placeholder="0x…"></label><label>Access<select name="role">${value.role === "owner" ? '<option value="admin">Admin</option>' : ""}<option value="staff">Check-in staff</option></select></label><button type="submit" class="button button-secondary">Grant access</button></form>` : ""}
+      </div><p>Team permissions are saved securely on the server. No contract transaction is required. Only the event owner can register attendees, post final attendance or transfer ownership. Event admins can manage check-in staff and record door check-ins.</p><div class="luma-access-roster">${value.role !== "participant" ? list("admin", value.admins) + list("staff", value.staff) : "<p>This wallet has no event team access.</p>"}</div>
+      ${grants ? `<form class="luma-team-form" data-manage-access-form><label>Wallet address<input name="wallet" required autocomplete="off" spellcheck="false" pattern="0x[a-fA-F0-9]{40}" placeholder="0x…"></label><label>Access<select name="role">${value.role === "owner" ? '<option value="admin">Event admin</option>' : ""}<option value="staff">Check-in staff</option></select></label><button type="submit" class="button button-secondary">Grant access</button></form>` : ""}
       ${value.role === "owner" ? `<form class="luma-ownership-panel" data-manage-transfer-form><h4>Transfer event ownership</h4><p>The nominated wallet must accept the transfer in its wallet. Team permissions must be assigned under the new owner.</p><label>New owner wallet<input name="to" required autocomplete="off" spellcheck="false" pattern="0x[a-fA-F0-9]{40}" placeholder="0x…"></label><button type="submit" class="button button-secondary" ${receipt ? "disabled" : ""}>Review ownership transfer</button></form>` : ""}
       ${value.role === "pending-owner" ? `<button type="button" class="button button-primary" data-manage-action="acceptOwnership" ${receipt ? "disabled" : ""}>Review ownership acceptance</button>` : ""}`;
     if (value.role === "pending-owner") root.querySelector("[data-manage-access]").open = true;
@@ -209,19 +215,20 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
   function acceptAccess(value, captured) {
     if (!current(captured)) fail("The selected wallet or event changed.");
     access = assertFirstEventAccess(value, context, EVENT);
+    needsSignIn = false;
     if (access.role !== "owner") selected.clear();
     draft = reviewed = null;
     update();
   }
-  async function loadAccess() {
+  async function loadAccess(allowSignIn = true) {
     if (!accessEnabled || busy) return;
-    const captured = revision; busy = true; update(); say("Loading event permissions…");
+    const captured = revision; permissionLoadRevision = captured; busy = true; update(); say("Loading event permissions…");
     try {
-      await privateScope(captured, true);
+      await privateScope(captured, true, allowSignIn);
       const value = await api(`/api/events/${encodeURIComponent(EVENT.id)}/access`, { signal: abort.signal });
       acceptAccess(value, captured); say("Event permissions loaded.");
-    } catch (error) { if (current(captured)) { access = null; say(error.message); } }
-    finally { busy = false; update(); }
+    } catch (error) { if (current(captured)) { access = null; if (error.code === "SIGN_IN_REQUIRED") needsSignIn = true; say(error.message); } }
+    finally { if (permissionLoadRevision === captured && current(captured)) { permissionLoadRevision = null; busy = false; update(); } }
   }
   async function changeAccess(role, target, enabled) {
     const prior = currentAccess();
@@ -294,10 +301,23 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
     participant.querySelectorAll("button").forEach(button => { button.disabled = busy || Boolean(receipt); });
   }
   const changed = () => {
-    revision++; authenticated = false; policy = context = draft = reviewed = access = null; selected.clear(); wallet = null;
+    // An obsolete read must not keep the new wallet waiting or unlock a newer
+    // permission read when its old response eventually arrives.
+    if (permissionLoadRevision === revision) { permissionLoadRevision = null; busy = false; }
+    revision++; forgetWalletProvider(root.ownerDocument); authenticated = false; needsSignIn = false; policy = context = draft = reviewed = access = null; selected.clear(); wallet = null;
     if (dialog.open) dialog.close(); dialog.replaceChildren(); connectButton.hidden = false; label.textContent = "";
     paintPending(null); onWallet(null); update();
   };
+  async function connected(selectedProvider, account, captured, restored = null) {
+    if (!current(captured)) return;
+    provider?.removeListener?.("accountsChanged", changed); provider?.removeListener?.("chainChanged", changed); provider?.removeListener?.("disconnect", changed);
+    provider = selectedProvider; wallet = account; authenticated = false; policy = context = access = null; needsSignIn = false;
+    provider.on?.("accountsChanged", changed); provider.on?.("chainChanged", changed); provider.on?.("disconnect", changed);
+    if (restored && !restored.valid()) { changed(); return; }
+    connectButton.hidden = true; label.textContent = `Connected · ${wallet}`; onWallet(wallet); update();
+    const { journal } = await services();
+    if (current(captured)) { paintPending(pendingFromStorage(journal)); if (accessEnabled) await loadAccess(false); }
+  }
   async function connect() {
     const captured = ++revision; connectButton.disabled = true;
     try {
@@ -306,31 +326,31 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
       const accounts = await selectedProvider.request({ method: "eth_requestAccounts" });
       if (!current(captured)) return;
       if (!address(accounts?.[0])) fail("Choose a wallet account.");
-      provider?.removeListener?.("accountsChanged", changed); provider?.removeListener?.("chainChanged", changed);
-      provider = selectedProvider; wallet = accounts[0]; authenticated = false; policy = context = access = null;
-      provider.on?.("accountsChanged", changed); provider.on?.("chainChanged", changed);
-      connectButton.hidden = true; label.textContent = `Connected · ${wallet}`; onWallet(wallet); update();
-      // Local journal reads do not initialize a wallet policy or call an API.
-      const { journal } = await services(); if (current(captured)) paintPending(pendingFromStorage(journal));
+      rememberWalletProvider(selectedProvider, root.ownerDocument);
+      await connected(selectedProvider, accounts[0], captured);
     } catch (error) { say(error.message); }
     finally { if (current()) connectButton.disabled = false; }
   }
-  async function privateScope(captured, allowPending = false) {
+  async function privateScope(captured, allowPending = false, allowSignIn = true) {
     if (!wallet || !provider) fail("Connect your wallet first. Signing in happens only when you review an action.");
     const s = await services();
-    policy = await s.eventWalletContext({ api, signal: abort.signal, isCurrent: () => current(captured), instanceId: getSnapshot()?.instanceId ?? null });
+    const checkedPolicy = await s.eventWalletContext({ api, signal: abort.signal, isCurrent: () => current(captured), instanceId: getSnapshot()?.instanceId ?? null });
     if (!current(captured)) fail("The selected wallet or event changed.");
+    policy = checkedPolicy;
     context = Object.freeze({ eventId: EVENT.id, wallet, chainId: 1, contract: EVENT.contract, abiVersion: EVENT.abiVersion, mode: EVENT.mode, instanceId: policy.instanceId });
     const pending = pendingFromStorage(s.journal); paintPending(pending);
     if (pending && !allowPending) fail("Check the original wallet request or transaction before preparing another action.");
     if (!authenticated) {
       const metadata = await api("/api/kickback-setup", { signal: abort.signal });
+      if (!current(captured)) fail("The selected wallet or event changed during sign-in.");
       if (metadata?.kind !== "kickback-setup-display" || metadata.mode !== EVENT.mode || metadata.instanceId !== context.instanceId) fail("The sign-in server changed. Refresh the saved list.");
       authenticated = metadata.session?.mode === "wallet" && same(metadata.session.wallet, wallet);
     }
     if (!authenticated) {
+      if (!allowSignIn) throw Object.assign(Error("Sign in to load your event permissions. The signature does not send a transaction."), { code: "SIGN_IN_REQUIRED" });
       say("Sign in to review this action. The signature does not send a transaction.");
       const challenge = await api("/api/auth/challenge", { method: "POST", body: JSON.stringify({ wallet }), signal: abort.signal });
+      if (!current(captured)) fail("The selected wallet changed before sign-in.");
       if (typeof challenge?.message !== "string" || !challenge.message.length || typeof challenge.nonce !== "string") fail("The sign-in challenge is unavailable.");
       await s.assertV10WalletAccount({ provider, wallet, bootstrap: policy });
       if (!current(captured)) fail("The selected wallet changed before sign-in.");
@@ -338,6 +358,7 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
       const signature = await provider.request({ method: "personal_sign", params: [message, wallet] });
       if (!current(captured)) fail("The selected wallet changed during sign-in.");
       const verified = await api("/api/auth/verify", { method: "POST", body: JSON.stringify({ nonce: challenge.nonce, signature }), signal: abort.signal });
+      if (!current(captured)) fail("The selected wallet changed during sign-in.");
       if (!same(verified?.wallet, wallet)) fail("The sign-in response belongs to another wallet.");
       authenticated = true;
     }
@@ -486,9 +507,17 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
   root.addEventListener("submit", formSubmit);
   dialog.addEventListener("click", dialogClick); dialog.addEventListener("cancel", dialogCancel);
   update();
+  const restoreRevision = revision;
+  void restoreWalletProvider({ ownerDocument: root.ownerDocument, signal: abort.signal, isCurrent: () => current(restoreRevision) })
+    .then(async restored => {
+      if (!restored) return;
+      try { if (restored.valid() && current(restoreRevision)) await connected(restored.provider, restored.wallet, restoreRevision, restored); }
+      finally { restored.release(); }
+    })
+    .catch(error => { if (current(restoreRevision)) say(error.message); });
   return Object.freeze({ update, dispose() {
     disposed = true; revision++; abort.abort(); owner.removeEventListener("click", click); owner.removeEventListener("change", selection);
-    provider?.removeListener?.("accountsChanged", changed); provider?.removeListener?.("chainChanged", changed);
+    provider?.removeListener?.("accountsChanged", changed); provider?.removeListener?.("chainChanged", changed); provider?.removeListener?.("disconnect", changed);
     root.removeEventListener("submit", formSubmit); dialog.removeEventListener("click", dialogClick); dialog.removeEventListener("cancel", dialogCancel); dialog.remove();
   } });
 }
