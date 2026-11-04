@@ -97,3 +97,20 @@
 .timeline-card .timeline-note{margin-top:17px;padding-top:12px}
 .timeline-card .kickback-example{margin-top:20px}
 @media(max-width:600px){.registration-next{margin-top:13px}.previous-event{font-size:10px}.previous-event>summary{font-size:10px}.previous-event p{font-size:10px}.timeline-card .timeline-list li{padding-bottom:17px}}
+
+/* After-event status reuses the existing deposit surfaces and wallet controls. */
+.post-event-view [data-payment-intro],.post-event-view .admission-card,.post-event-view [data-registration-link],.post-event-view [data-registration-note]{display:none}
+.post-event-connect-title{display:none}.post-event-view .post-event-connect-title{display:block;margin-top:24px;padding-top:20px;border-top:1px solid var(--line);font-size:13px}
+.post-event-status h2{font-family:'Instrument Serif',Georgia,serif;font-size:33px;font-weight:400;line-height:1.2;letter-spacing:-.02em}
+.post-event-message{font-size:13px;color:var(--muted);line-height:1.7;margin:12px 0 0}
+.post-event-status .event-countdown{display:block;overflow-wrap:anywhere;font-size:11px;margin-top:16px}
+.post-event-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:20px 0;padding:16px 0;border-block:1px solid var(--line)}
+.post-event-stats>div{min-width:0}.post-event-stats dt{font-size:10px;color:var(--muted)}.post-event-stats dd{font-size:24px;line-height:1.4;font-weight:550;font-variant-numeric:tabular-nums;margin:4px 0 0;color:var(--heading)}
+.post-event-wallet{padding:15px;border:1px solid var(--line);border-radius:8px;background:var(--deep);margin-top:18px}.post-event-wallet h3{font-size:13px;margin:0}.post-event-wallet p{font-size:11px;line-height:1.7;color:var(--muted);margin:7px 0 0}
+.post-event-estimate{padding-top:17px}.post-event-estimate p{font-size:10px;color:var(--muted);margin:0 0 4px}.post-event-estimate strong{display:block;font-size:30px;color:var(--teal);font-weight:500;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.post-event-note{font-size:11px;line-height:1.7;color:var(--muted);margin:12px 0 0}.post-event-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:19px}.post-event-actions .button-primary{width:auto;flex:1}.post-event-actions .button-secondary{flex:1}
+.post-event-update{border-top:1px solid var(--line);padding-top:16px;margin-top:20px}.post-event-update p{font-size:10px;line-height:1.6;color:var(--muted);margin:9px 0 0}
+.post-event-view .kickback-example{display:none}
+@media(max-width:600px){.post-event-status h2{font-size:29px}.post-event-message{font-size:12px}.post-event-actions{flex-direction:column}.post-event-actions .button{width:100%}.post-event-estimate strong{font-size:27px}.post-event-stats{gap:14px 10px}.post-event-status .event-countdown{font-size:10px}}
+
+.deposit-closed-view .manual-option,.deposit-closed-view .manual-deposit,.deposit-closed-view .address-box,.deposit-closed-view [data-deposit]{display:none!important}

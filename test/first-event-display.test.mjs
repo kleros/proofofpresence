@@ -216,7 +216,12 @@ test("canonical receipt, duplicate, chain and closing-anchor failures never repl
 test("background startup never blocks an existing DB read and close prevents late worker writes or replay", async () => {
   const f = fixture(); await f.api.refresh();
   let release, entered;
-  const begun = new Promise(resolve => { entered = resolve; });
+  // Production worker timers intentionally unref. Keep this observation bounded
+  // and alive without changing the worker's production shutdown behavior.
+  const begun = new Promise((resolve, reject) => {
+    const deadline = setTimeout(() => reject(Error("Background receipt worker did not start")), 1000);
+    entered = () => { clearTimeout(deadline); resolve(); };
+  });
   f.head(13); f.add(13, 2n, wallet, 105);
   f.wait(new Promise(resolve => { release = resolve; }));
   const getLogs = f.w.provider.getLogs;

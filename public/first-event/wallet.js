@@ -3,7 +3,7 @@ import { loadDepositSnapshot, setDepositWallet } from "./journey.js";
 import { renderDepositReceipt } from "./receipt-card.js";
 import { assertDirectDepositDraft } from "./direct-deposit.js";
 import { recordedDepositReference, savedDepositReference } from "./receipts.js";
-import { chooseWalletProvider } from "../wallet-connection.js";
+import { chooseWalletProvider, rememberWalletProvider, forgetWalletProvider } from "../wallet-connection.js";
 import { eventReadJob } from "../event-read.js";
 import { createPublicTransactionFlow, resetUnusedPublicTransactionFlow } from "../public-transactions.js";
 import { acquireDepositOwnership, assertDepositOwnership } from "../deposit-ownership.js";
@@ -231,7 +231,7 @@ function checkEarlierScopes(captured) {
 }
 function showPaymentComplete(complete) {
   connectButton.hidden = complete || connection !== null;
-  for (const node of document.querySelectorAll(".manual-option,.divider,.manual-deposit,.address-box")) node.hidden = complete;
+  for (const node of document.querySelectorAll(".manual-option,.divider,.manual-deposit,.address-box")) node.hidden = complete || Date.now() >= Date.parse(EVENT.startsAt);
 }
 function restorePaymentReference() {
   if (!wallet || !journal) return;
@@ -258,6 +258,10 @@ function paint() {
     checkButton.hidden = paymentReference.status !== "submitted";
     return;
   }
+  if (!connection.instanceId && Date.now() >= Date.parse(EVENT.startsAt)) {
+    txStatus("Deposits are closed. Your recorded attendance, challenge and recovery options are shown on this page.");
+    return;
+  }
   if (!connection.instanceId) {
     depositButton.textContent = `Deposit ${eth(EVENT.depositWei)} ETH`;
     depositButton.hidden = false;
@@ -271,6 +275,10 @@ function paint() {
   }
   if (heldIntent(captured)) {
     txStatus("A wallet request may still be open. Check your wallet activity before continuing; no second deposit will be requested here.");
+    return;
+  }
+  if (Date.now() >= Date.parse(EVENT.startsAt)) {
+    txStatus("Deposits are closed. Review your attendance or recover unused credit through the existing event tools.");
     return;
   }
   if (!bootstrap || !detail) {
@@ -327,6 +335,7 @@ async function api(path, options = {}) {
   } finally { clearTimeout(timer); outer?.removeEventListener("abort", abort); }
 }
 function invalidate() {
+  forgetWalletProvider(document);
   epoch++;
   readController.abort();
   readController = new AbortController();
@@ -357,6 +366,7 @@ async function connect() {
   readController = new AbortController();
   listeningProvider?.removeListener?.("accountsChanged", invalidate);
   listeningProvider?.removeListener?.("chainChanged", invalidate);
+  listeningProvider?.removeListener?.("disconnect", invalidate);
   listeningProvider = null;
   bootstrap = detail = wallet = draft = null;
   setDepositWallet(null);
@@ -380,12 +390,15 @@ async function connect() {
     if (listeningProvider !== provider) {
       listeningProvider?.removeListener?.("accountsChanged", invalidate);
       listeningProvider?.removeListener?.("chainChanged", invalidate);
+      listeningProvider?.removeListener?.("disconnect", invalidate);
       provider.on?.("accountsChanged", invalidate);
       provider.on?.("chainChanged", invalidate);
+      provider.on?.("disconnect", invalidate);
       listeningProvider = provider;
     }
     journal = createTransactionJournal(localStorage);
     wallet = selectedWallet;
+    rememberWalletProvider(provider, document);
     connection = Object.freeze({ wallet: selectedWallet, provider, epoch: capturedEpoch });
     restorePaymentReference();
     status(`Connected · ${wallet.slice(0, 6)}…${wallet.slice(-4)}`);
@@ -406,6 +419,7 @@ function job(operation, payload, capturedEpoch, captured, signal = readControlle
 }
 async function prepare() {
   if (busy) return;
+  if (Date.now() >= Date.parse(EVENT.startsAt)) { paint(); return; }
   busy = true;
   const capturedEpoch = epoch;
   const selectedWallet = wallet, selectedProvider = provider;

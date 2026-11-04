@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { FIRST_EVENT_MANAGE_SCOPE, firstEventManageMatches, checkedFirstEventScope } from "./first-event-manage-scope.mjs";
 import { hash, requireThat } from "./utils.mjs";
 import { withReadJobScope } from "./read-job-scope.mjs";
-import { collectFirstEventState, publicFirstEventState } from "./first-event-state.mjs";
+import { collectFirstEventDisplayState, publicFirstEventState, publicFirstEventPayoutState } from "./first-event-state.mjs";
 
 const iface = new ethers.Interface(["event Deposited(address indexed from,uint256 amount)"]);
 const depositedTopic = iface.getEvent("Deposited").topicHash;
@@ -94,10 +94,12 @@ export function createFirstEventDisplay(w, { instanceId, origin, store, now = Da
     });
     // Explicit whitelist: stored diagnostics, contact data and authority fields cannot enter HTTP.
     const eventState = publicFirstEventState(value.eventState, selected.record);
+    const payoutState = publicFirstEventPayoutState(value.payoutState, selected.record,
+      { eventState, blockNumber: value.blockNumber, blockHash: value.blockHash });
     return { schemaVersion: 1, kind: "first-event-depositors", displayOnly: true, mode: "hosted-production",
       eventId: selected.binding.eventId, chainId: 1, contract: d.contract,
       checkedAt: value.checkedAt, blockNumber: value.blockNumber, blockHash: value.blockHash, depositors,
-      ...(eventState ? { eventState } : {}) };
+      ...(eventState ? { eventState } : {}), ...(payoutState ? { payoutState } : {}) };
   }
   async function index(selected, prior, signal) {
     const provider = w.provider, d = selected.record.deployment;
@@ -157,8 +159,8 @@ export function createFirstEventDisplay(w, { instanceId, origin, store, now = Da
         payers.set(wallet.toLowerCase(), row); check(payers.size <= 1000);
       }
     }
-    let eventState;
-    try { eventState = await collectFirstEventState({ provider, chain: w.chain, record: selected.record, block, signal, assertCurrent: guard }); }
+    let eventState, payoutState;
+    try { ({ eventState, payoutState } = await collectFirstEventDisplayState({ provider, chain: w.chain, record: selected.record, block, signal, assertCurrent: guard })); }
     catch { signal?.throwIfAborted(); guard(); } // Optional hints never poison canonical receipt refresh.
     const closing = await provider.getBlock(block.number); guard();
     check(closing?.number === block.number && same(closing.hash, block.hash));
@@ -167,7 +169,7 @@ export function createFirstEventDisplay(w, { instanceId, origin, store, now = Da
       eventId: selected.binding.eventId, chainId: 1, contract: d.contract,
       checkedAt: new Date(now()).toISOString(), blockNumber: block.number, blockHash: block.hash,
       depositors: [...payers.values()].sort((a, b) => a.wallet.toLowerCase().localeCompare(b.wallet.toLowerCase())),
-      ...(eventState ? { eventState } : {}) };
+      ...(eventState ? { eventState } : {}), ...(payoutState ? { payoutState } : {}) };
   }
   function refresh() {
     const selected = scope();

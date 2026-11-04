@@ -33,13 +33,27 @@
         </div>
 
         <section class="deposit-card" aria-labelledby="deposit-title">
-          <div class="card-intro">
+          <div data-payment-intro><div class="card-intro">
             <div><p class="eyebrow">DEPOSIT PER GUEST</p><h2 id="deposit-title"><span class="amount">0.01</span> <span class="currency">ETH</span></h2></div>
             <span class="native-label">Native ETH only</span>
           </div>
           <p class="kickback-promise">Show up. Get your deposit back <span>+ earn a kickback.</span></p>
-          <p class="card-copy">Commit with your deposit, then add your details on Luma so the organizer can confirm your place. Eligible registered attendees share the no-show deposits.</p>
+          <p class="card-copy">Commit with your deposit, then add your details on Luma so the organizer can confirm your place. Eligible registered attendees share the no-show deposits.</p></div>
 
+          <section class="post-event-status" data-post-event hidden aria-labelledby="post-event-title">
+            <p class="eyebrow">AFTER THE EVENT</p>
+            <h2 id="post-event-title" data-post-event-title>Attendance status</h2>
+            <p class="post-event-message" data-post-event-message></p>
+            <p class="event-countdown" data-post-event-countdown role="timer" hidden></p>
+            <dl class="post-event-stats" data-post-event-stats hidden></dl>
+            <div class="post-event-wallet"><h3 data-post-event-wallet-title></h3><p data-post-event-wallet-note></p></div>
+            <div class="post-event-estimate" data-post-event-estimate hidden><p data-post-event-amount-label></p><strong data-post-event-amount></strong></div>
+            <p class="post-event-note" data-post-event-estimate-note></p>
+            <div class="post-event-actions"><a class="button button-primary" data-post-event-primary href="/#">Review attendance</a><a class="button button-secondary" data-post-event-secondary href="/#">Review payout &amp; recovery</a></div>
+            <div class="post-event-update"><button type="button" class="button button-secondary" data-post-event-refresh>Refresh status</button><p data-post-event-snapshot></p></div>
+          </section>
+          <p class="post-event-note" data-deposit-closed-note hidden>Deposits closed when the event started. Connect your wallet to check its recorded deposit and attendance.</p>
+          <h3 class="post-event-connect-title" data-post-event-connect-title>Your wallet &amp; original deposit receipt</h3>
           <button type="button" class="button button-primary" data-connect-wallet>Connect wallet <span aria-hidden="true">↗</span></button>
           <p class="wallet-status" data-wallet-status role="status" aria-live="polite"></p>
           <button type="button" class="button button-primary" data-deposit hidden>Deposit 0.01 ETH</button>
@@ -72,8 +86,8 @@
         </section>
 
         <div class="registration-next">
-        <a class="return-link" href="https://luma.com/qewnqhas">Add your details on Luma <span aria-hidden="true">↗</span></a>
-        <p class="return-note">Share your details and deposit transaction ID so the organizer can confirm your place.</p>
+        <a class="return-link" data-registration-link href="https://luma.com/qewnqhas">Add your details on Luma <span aria-hidden="true">↗</span></a>
+        <p class="return-note" data-registration-note>Share your details and deposit transaction ID so the organizer can confirm your place.</p>
         <p class="return-note"><a data-manage-event href="/#event=event-3aac5a07-5074-4241-9246-2798d4111039&amp;view=participant&amp;deposit=manage">Manage deposit and attendance</a></p>
         <details class="previous-event" data-legacy-event hidden><summary>Paid the previous event?</summary><p><a href="/#event=event-b338a3d3-bbbf-4b4b-844c-5b098d515ea5&amp;view=participant&amp;deposit=manage">View original receipts and recover unused credit</a>. Deposits do not move automatically.</p></details>
         </div>

@@ -113,6 +113,7 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
     <p class="small mono luma-manage-feedback" data-manage-status role="status" aria-live="polite"></p><div class="luma-manage-pending" data-manage-pending></div>
     <div class="luma-manage-guests" data-manage-guests></div>
     <p class="small luma-snapshot-note" data-manage-state>Saved event details are for display. Your current role and contract rules are checked when you review an action.</p>
+    <section class="luma-manage-section" data-manage-settlement><div class="section-heading"><p class="eyebrow">AFTER THE EVENT</p><h3>Payouts &amp; challenges</h3></div><p>The owner posts final attendance after the event. That starts the 24-hour challenge window. Once all matching windows allow it, one payout-release transaction sends ETH to confirmed attendees; open Court cases keep their own shares reserved.</p><div class="button-row"><a class="button button-secondary" data-manage-payouts href="/#${new URLSearchParams({ event: EVENT.id, view: 'cases' })}">Open payouts &amp; challenge cases</a><a class="button button-secondary" data-manage-full-recovery href="/#${new URLSearchParams({ event: EVENT.id, view: 'participant', review: '1' })}">Refunds &amp; failed transfers</a></div></section>
     ${view === "organizer" ? `<form class="luma-manage-section luma-attendance-review" data-manage-attendance><div class="section-heading"><p class="eyebrow">OWNER REVIEW</p><h3>Final attendance list</h3></div><p>The contract owner selects registered wallets for the final attendance list, then posts it after the event ends. Recorded door check-ins stay separate from this selection.</p>
       <label>Attendance review note<textarea name="note" maxlength="1000" minlength="8" required placeholder="Explain how you verified attendance during the event."></textarea></label>
       <label class="luma-confirmation"><input type="checkbox" name="confirmed" required> I confirm the selected registered wallets attended during the event. Omitted wallets retain their challenge rights.</label>
@@ -284,9 +285,11 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
       const checked = permissions?.checkins.find(item => same(item.wallet, button.dataset.manageStaffCheckin));
       const registered = state?.stakers?.some(item => same(item.wallet, button.dataset.manageStaffCheckin) && item.status === 1);
       button.hidden = !permissions || !["owner", "admin", "staff"].includes(permissions.role) || !registered || Boolean(checked);
-      button.disabled = busy || !registered || Boolean(checked);
+      const now = Math.floor(Date.now() / 1000);
+      const duringEvent = Number.isSafeInteger(state?.eventStart) && Number.isSafeInteger(state?.endsAt) && now >= state.eventStart && now <= state.endsAt;
+      button.disabled = busy || !registered || Boolean(checked) || !duringEvent;
       const label = button.parentElement.querySelector("[data-manage-checkin-state]");
-      if (label) label.textContent = checked ? `Recorded ${new Date(checked.recordedAt).toLocaleString()} by ${checked.actorWallet}` : permissions ? "No door check-in recorded. " : "Load permissions to view check-ins. ";
+      if (label) label.textContent = checked ? `Recorded ${new Date(checked.recordedAt).toLocaleString()} by ${checked.actorWallet}` : permissions ? duringEvent ? "No door check-in recorded. " : "Door check-ins are recorded during event hours. Afterward, the owner reviews final attendance. " : "Load permissions to view check-ins. ";
     });
     const post = root.querySelector("[data-manage-post]");
     if (post) { post.closest("form").hidden = !isOwner; post.disabled = !isOwner || busy || Boolean(receipt) || !state || ![0, "Open"].includes(state.phase) || !Number.isSafeInteger(state.endsAt) || Date.now() < state.endsAt * 1000 || selected.size === 0; }
@@ -294,6 +297,11 @@ export function mountFirstEventManage({ root, view, getSnapshot, onWallet = () =
     stateLabel.textContent = state ? `Saved contract phase: ${state.phase}. ${state.endsAt ? "Event ends " + new Date(state.endsAt * 1000).toLocaleString() + ". " : ""}Every action checks current contract state.` : "Current attendance state is not indexed yet. Registration can be reviewed now; refresh the list for attendance controls. Current role and contract rules are checked on every action.";
     if (!wallet) { participant.replaceChildren(); return; }
     const own = state?.stakers?.find(item => same(item.wallet, wallet));
+    // Arriving from the deposit page's omission/case link should expose the
+    // existing reviewed controls without triggering a signature or payment.
+    if (view === "recovery" && own && !own.attended &&
+        (state?.phase === "Listed" || own.challenge?.state > 0))
+      root.querySelector("[data-manage-participant-tools]").open = true;
     participant.innerHTML = `<h3>Your wallet</h3><p class="mono">${escape(wallet)}</p>${own ? `<p>Saved status: ${own.status}${own.attended ? " · included in attendance" : " · not included in attendance"}</p>` : "<p>No registered staker status in the saved snapshot.</p>"}
       ${state?.challengeEndsAt ? `<p>Saved omission challenge deadline: ${escape(new Date(state.challengeEndsAt * 1000).toLocaleString())}.</p>` : ""}
       <button type="button" class="button button-secondary" data-manage-action="challenge">Review incorrect absence</button>

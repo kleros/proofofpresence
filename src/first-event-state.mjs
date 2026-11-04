@@ -60,10 +60,64 @@ export function publicFirstEventState(value, record) {
   } catch { return null; }
 }
 
+/** Optional same-block settlement counters. Historical deposits and a Paid enum
+ * never establish the current reward pool or successful payment delivery. */
+export function publicFirstEventPayoutState(value, record, { eventState, blockNumber, blockHash } = {}) {
+  try {
+    if (value === undefined) return null;
+    const state = publicFirstEventState(eventState, record), d = record?.deployment;
+    check(state && integer(blockNumber) && bytes32(blockHash) &&
+      keys(value, ["schemaVersion", "kind", "eventId", "chainId", "contract", "blockNumber", "blockHash", "depositWei",
+        "stakerCount", "attendeeCount", "payoutShareWei", "heldBackWei", "cases"]) &&
+      value.schemaVersion === 1 && value.kind === "first-event-payout-state" &&
+      value.eventId === record.definition.id && value.chainId === 1 && same(value.contract, d.contract) &&
+      value.blockNumber === blockNumber && same(value.blockHash, blockHash) &&
+      uint(value.depositWei) && value.depositWei === d.depositWei && BigInt(value.depositWei) > 0n &&
+      integer(value.stakerCount, true) && value.stakerCount <= 150 &&
+      integer(value.attendeeCount, true) && value.attendeeCount <= value.stakerCount &&
+      uint(value.payoutShareWei) && uint(value.heldBackWei) &&
+      Array.isArray(value.cases) && value.cases.length <= 150 && Object.keys(value.cases).length === value.cases.length);
+    const registered = state.stakers.filter(row => state.phase === "Cancelled" ? row.status === 2 :
+      row.status === 1 || (state.phase === "Finalized" && row.status === 2));
+    const attended = state.stakers.filter(row => row.attended);
+    check(value.stakerCount === registered.length && value.attendeeCount === attended.length &&
+      attended.every(row => [1, 2].includes(row.status)));
+    const disputed = state.stakers.filter(row => row.challenge.state === 2), waiting = state.stakers.filter(row => row.challenge.state === 1), seen = new Set();
+    const cases = [];
+    for (const item of value.cases) {
+      check(keys(item, ["wallet", "arbitratorDisputeId", "heldShareWei"]) && address(item.wallet) &&
+        !seen.has(item.wallet.toLowerCase()) && uint(item.arbitratorDisputeId) && uint(item.heldShareWei));
+      const row = disputed.find(row => same(row.wallet, item.wallet));
+      check(row && row.status === 1 && !row.attended);
+      seen.add(item.wallet.toLowerCase());
+      cases.push({ wallet: ethers.getAddress(item.wallet), arbitratorDisputeId: item.arbitratorDisputeId, heldShareWei: item.heldShareWei });
+    }
+    check(cases.length === disputed.length && cases.length + waiting.length + value.attendeeCount <= value.stakerCount &&
+      waiting.every(row => row.status === 1 && !row.attended));
+    const pool = BigInt(value.depositWei) * BigInt(value.stakerCount), held = BigInt(value.heldBackWei);
+    check(pool <= ethers.MaxUint256 && held <= pool &&
+      cases.reduce((total, item) => total + BigInt(item.heldShareWei), 0n) === held);
+    if (state.phase === "Open" || state.phase === "Cancelled") {
+      check(value.attendeeCount === 0 && cases.length === 0 && waiting.length === 0 && value.payoutShareWei === "0" && value.heldBackWei === "0" &&
+        (state.phase !== "Cancelled" || state.stakers.every(row => row.status !== 1)));
+    } else if (state.phase === "Listed") {
+      check(value.attendeeCount > 0 && value.payoutShareWei === "0" && value.heldBackWei === "0");
+    } else {
+      check(value.attendeeCount > 0 && waiting.length === 0 && BigInt(value.payoutShareWei) >= BigInt(value.depositWei) &&
+        BigInt(value.payoutShareWei) * BigInt(value.attendeeCount) + held <= pool &&
+        cases.every(item => BigInt(item.heldShareWei) >= BigInt(value.payoutShareWei)));
+    }
+    return { schemaVersion: 1, kind: "first-event-payout-state", eventId: record.definition.id, chainId: 1,
+      contract: ethers.getAddress(d.contract), blockNumber, blockHash,
+      depositWei: value.depositWei, stakerCount: value.stakerCount, attendeeCount: value.attendeeCount,
+      payoutShareWei: value.payoutShareWei, heldBackWei: value.heldBackWei, cases };
+  } catch { return null; }
+}
+
 /** Bounded background-worker read at the SAME canonical receipt checkpoint.
  * No historical provenance scan, bootstrap, private access or action execution.
  * @param {{provider:any,chain:any,record:any,block:any,signal?:AbortSignal,assertCurrent?:()=>any}} options */
-export async function collectFirstEventState({ provider, chain, record, block, signal, assertCurrent = () => {} }) {
+async function collectState({ provider, chain, record, block, signal, assertCurrent = () => {} }, includePayoutState) {
   const fixed = terms(record), d = record.deployment, governance = chain?.governance;
   check(chain?.production === true && chain.chainId === 1 && keys(governance, ["kind", "initialOwner", "upgradeDelaySeconds", "renounceable"]) &&
     governance.kind === "single-owner-immediate" && same(governance.initialOwner, d.initialUpgradeOwner) &&
@@ -95,7 +149,8 @@ export async function collectFirstEventState({ provider, chain, record, block, s
   const event = new ethers.Contract(d.contract, a.event.abi, provider), factory = new ethers.Contract(d.factory, a.factory.abi, provider),
     controller = new ethers.Contract(d.upgradeAuthority, a.controller.abi, provider);
   const eventKeys = ["VERSION", "UPGRADE_FAMILY", "implementationRevision", "storageSchema", "upgradeAuthority", "eventStart", "claimDeadline",
-    "depositAmount", "owner", "phase", "challengeEndsAt", "challengeDeposit", "stakers", "CHALLENGE_PERIOD", "MATCH_PERIOD"];
+    "depositAmount", "owner", "phase", "challengeEndsAt", "challengeDeposit", "stakers", "CHALLENGE_PERIOD", "MATCH_PERIOD",
+    ...(includePayoutState ? ["stakerCount", "attendeeCount", "payoutShare", "heldBack", "pendingChallenges"] : [])];
   const identityKeys = ["VERSION", "UPGRADE_FAMILY", "implementationRevision", "storageSchema", "upgradeAuthority"];
   const controllerKeys = ["VERSION", "UPGRADE_DELAY_SECONDS", "owner", "pendingOwner", "upgradesDisabled"];
   const specs = (contract, names) => names.map(method => ({ contract, method, args: [] }));
@@ -122,5 +177,21 @@ export async function collectFirstEventState({ provider, chain, record, block, s
       wallet, status: seconds(rows[i * 3]), attended: rows[i * 3 + 1],
       challenge: { state: seconds(challenge.state), depositWei: String(challenge.deposit), matchDeadline: seconds(challenge.matchEndsAt), localId: String(challenge.localDisputeID) },
     }; }) }, record);
-  check(result); guard(); return result;
+  check(result); guard();
+  if (!includePayoutState) return result;
+  check(seconds(raw.pendingChallenges) === result.stakers.filter(row => [1, 2].includes(row.challenge.state)).length);
+  const payoutState = publicFirstEventPayoutState({ schemaVersion: 1, kind: "first-event-payout-state",
+    eventId: record.definition.id, chainId: 1, contract: d.contract, blockNumber: block.number, blockHash: block.hash,
+    depositWei: String(raw.depositAmount), stakerCount: seconds(raw.stakerCount), attendeeCount: seconds(raw.attendeeCount),
+    payoutShareWei: String(raw.payoutShare), heldBackWei: String(raw.heldBack),
+    cases: stakers.flatMap((wallet, i) => {
+      const challenge = rows[i * 3 + 2];
+      return seconds(challenge.state) === 2 ? [{ wallet, arbitratorDisputeId: String(challenge.arbitratorDisputeID),
+        heldShareWei: String(challenge.heldShare) }] : [];
+    }) }, record, { eventState: result, blockNumber: block.number, blockHash: block.hash });
+  check(payoutState); guard(); return { eventState: result, payoutState };
 }
+
+// Existing callers and stored eventState retain their exact original shape.
+export async function collectFirstEventState(options) { return collectState(options, false); }
+export async function collectFirstEventDisplayState(options) { return collectState(options, true); }
