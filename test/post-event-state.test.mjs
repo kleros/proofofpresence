@@ -8,7 +8,7 @@ const absent = () => ({ state: 0, depositWei: '0', matchDeadline: 0, localId: '0
 function fixture(phase = 'Listed') {
   const rows = Array.from({ length: 10 }, (_, i) => ({ wallet: W(i + 1), status: phase === 'Finalized' && i < 8 ? 2 : 1, attended: phase !== 'Open' && i < 8, challenge: absent() }));
   const state = { phase, owner: W(15), eventStart: now - 5 * 3600, endsAt: now - 3600, claimDeadline: now + 6 * 86400,
-    challengeEndsAt: ['Listed', 'Finalized'].includes(phase) ? now + 86400 : 0, stakers: rows };
+    challengeEndsAt: ['Listed', 'Finalized'].includes(phase) ? now + 86400 : 0, chainTimestamp: now, stakers: rows };
   return { schemaVersion: 1, kind: 'first-event-depositors', displayOnly: true, mode: event.mode, instanceId: 'synthetic-post-event',
     eventId: event.id, chainId: 1, contract: event.contract, status: 'current', checkedAt: new Date(now * 1000).toISOString(), blockNumber: 100, blockHash: H('b'),
     eventState: state, depositors: rows.map((row, i) => ({ wallet: row.wallet, totalReceivedWei: event.depositWei,
@@ -116,4 +116,29 @@ test('stale snapshots never present an amount as current; cancelled and disconne
   const cancelled = fixture('Open'); cancelled.eventState.phase = 'Cancelled'; cancelled.eventState.stakers.forEach(row => row.status = 2);
   assert.equal(model(cancelled).state, 'cancelled'); assert.equal(model(cancelled).amountWei, null);
   assert.equal(eventReviewPath(event, 'cases'), '/#' + new URLSearchParams({ event: event.id, view: 'cases', review: '1' }));
+});
+test('release readiness needs a fresh chain checkpoint strictly past the challenge boundary', () => {
+  const data = fixture(); data.eventState.challengeEndsAt = now + 1;
+  assert.equal(model(data, W(1), now).state, 'challenge-open');
+  assert.equal(model(data, W(1), now + 1).state, 'challenge-open');
+  assert.equal(model(data, W(1), now + 2).state, 'awaiting-update', 'fast local clock cannot establish chain readiness');
+  data.eventState.chainTimestamp = now + 2; data.checkedAt = new Date((now + 2) * 1000).toISOString();
+  assert.equal(model(data, W(1), now + 2).state, 'release-ready');
+  data.status = 'stale';
+  const stale = model(data, W(1), now + 2);
+  assert.equal(stale.state, 'awaiting-update'); assert.equal(stale.amountWei, null);
+  assert.doesNotMatch(stale.title, /ready for review/); assert.match(stale.releaseNote, /Refresh/);
+});
+test('payout timing follows challenge and matching gates, while a disputed wallet has no promised payout date', () => {
+  const data = fixture();
+  const attendee = model(data);
+  assert.equal(attendee.releaseAt, data.eventState.challengeEndsAt); assert.match(attendee.releaseLabel, /Earliest payout release/);
+  assert.match(attendee.releaseNote, /transaction is required/); assert.match(attendee.primary.label, /payout details/);
+  data.eventState.challengeEndsAt = now - 1; challenge(data, 10, 1, now + 3600);
+  assert.equal(model(data).releaseAt, now + 3600);
+  data.eventState.stakers[9].challenge.state = 2; data.payoutState.cases = [{ wallet: W(10), arbitratorDisputeId: '42', heldShareWei: '0' }];
+  const disputed = model(data, W(10));
+  assert.equal(disputed.releaseAt, null); assert.match(disputed.releaseNote, /no confirmed payout date/);
+  const paid = fixture('Finalized'); paid.eventState.challengeEndsAt = now - 1;
+  assert.match(model(paid).releaseLabel, /round released/); assert.match(model(paid).releaseNote, /If it failed/);
 });

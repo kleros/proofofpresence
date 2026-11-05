@@ -78,6 +78,7 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
     deadlineLabel: '', target: null, stats: [], amountWei: null, amountLabel: '', amountNote: '',
     walletKind: wallet ? 'unavailable' : 'disconnected', walletTitle: wallet ? 'Your status needs a fresh update' : 'Connect to see your attendance',
     walletNote: wallet ? 'Your wallet connection alone does not establish registration, attendance or payment.' : 'Use the wallet that made your deposit. Connecting sends no transaction.',
+    releaseLabel: '', releaseAt: null, releaseNote: '',
     primary: button('Manage your deposit', recovery), secondary: button('Review payout & recovery', eventReviewPath(event, 'participant')) };
   if (!state) return model;
   const payout = savedPayoutState(snapshot, event), row = walletAddress(wallet) ? state.stakers.find(item => same(item.wallet, wallet)) : null;
@@ -85,7 +86,8 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
   const openCases = state.stakers.filter(item => item.challenge.state === 2), lastMatch = waiting.reduce((max, item) => Math.max(max, item.challenge.matchDeadline), 0);
   model.state = state.phase === 'Open' ? now > state.claimDeadline ? 'no-list' : 'awaiting-attendance'
     : state.phase === 'Cancelled' ? 'cancelled' : state.phase === 'Finalized' ? 'finalized'
-      : now <= state.challengeEndsAt ? 'challenge-open' : now <= lastMatch ? 'matching-open' : 'release-ready';
+      : now <= state.challengeEndsAt ? 'challenge-open' : now <= lastMatch ? 'matching-open'
+        : !stale && uint(state.chainTimestamp) && state.chainTimestamp > Math.max(state.challengeEndsAt, lastMatch) ? 'release-ready' : 'awaiting-update';
   if (model.state === 'awaiting-attendance') {
     model.title = 'The organizer is preparing attendance';
     model.message = 'The owner must post the registered attendees who were present. Your 24-hour challenge window starts when that list is posted on-chain.';
@@ -105,6 +107,11 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
     model.message = 'The release transaction attempted payment to established attendees. A saved payout status does not prove ETH reached your wallet.';
     model.primary = button('Review transfers & failed payments', payouts);
     model.amountNote = 'If a delivery failed, that payment remains owed to the recipient and can be claimed through the reviewed recovery flow.';
+  } else if (model.state === 'awaiting-update') {
+    model.title = 'Refresh to check payout availability';
+    model.message = 'The last recorded deadline has passed on your device. Refresh to check the latest on-chain attendance and any challenge matching windows.';
+    model.amountNote = 'The countdown reaching zero does not release ETH. A fresh status check and a payout-release transaction are still required.';
+    model.primary = button('View payout details', payouts);
   } else {
     const challengesOpen = model.state === 'challenge-open', matchingOpen = model.state === 'matching-open';
     model.title = challengesOpen ? 'Attendance is posted · challenge window open' : matchingOpen ? 'A challenge is waiting for a match' : 'Attendance payouts are ready for review';
@@ -151,6 +158,23 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
     model.walletKind = 'attended'; model.walletTitle = state.phase === 'Finalized' ? 'Your attendance is included in the payout round' : 'You are on the attendance list';
     model.walletNote = state.phase === 'Finalized' ? 'Check actual wallet transfers. If delivery failed, review the reserved owed payment; this screen does not confirm delivery.'
       : 'You do not need to challenge your attendance. Your deposit and any kickback are sent when someone releases the payout round.';
+    if (state.phase === 'Listed') {
+      if (model.state === 'challenge-open') {
+        model.title = 'Your attendance is confirmed';
+        model.message = 'Your wallet is included in the on-chain attendance list. The event is now in its 24-hour challenge period.';
+      }
+      model.releaseLabel = model.state === 'release-ready' ? 'Ready for payout release'
+        : model.state === 'awaiting-update' ? 'Payout availability needs an update' : 'Earliest payout release';
+      model.releaseAt = ['challenge-open', 'matching-open'].includes(model.state) ? Math.max(state.challengeEndsAt, lastMatch) : null;
+      model.releaseNote = model.state === 'awaiting-update'
+        ? 'Refresh status before relying on payout availability. No payout has been confirmed by this snapshot.'
+        : 'A payout-release transaction is required after the time windows end. It sends your return to this wallet; you do not need to deposit again or make a separate claim for a successful transfer.';
+      if (openCases.length) model.releaseNote += ' Unresolved Court cases keep their own shares reserved.';
+      if (model.state !== 'release-ready') model.primary = button('View payout details', payouts);
+    } else {
+      model.releaseLabel = 'Payout round released';
+      model.releaseNote = 'Check your wallet for the transfer. If it failed, the existing recovery screen checks whether a payment is owed before preparing a claim.';
+    }
     if (payout && !stale) {
       if (state.phase === 'Finalized') {
         model.amountWei = payout.payoutShareWei; model.amountLabel = 'Initial payout share';
@@ -174,6 +198,8 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
     model.walletKind = 'disputed'; model.walletTitle = 'Your attendance is being decided by Kleros Court';
     model.walletNote = 'Review the matched case and submit your attendance evidence through the reviewed evidence flow. Your share stays protected while ordinary attendees can receive their payouts after the time windows.';
     model.primary = button('Review case & attendance evidence', cases);
+    model.releaseLabel = 'Your payout waits for the Court decision';
+    model.releaseNote = 'Your disputed share remains reserved. There is no confirmed payout date for this wallet while its case is unresolved.';
     const held = payout?.cases.find(item => same(item.wallet, wallet));
     if (held && state.phase === 'Finalized' && !stale && BigInt(held.heldShareWei) > 0n) { model.amountWei = held.heldShareWei; model.amountLabel = 'Your protected disputed share'; }
   } else if (challenge.state === 3) {
@@ -188,7 +214,11 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
     model.primary = button(canChallenge ? 'Challenge incorrect absence' : 'Review attendance & recovery', canChallenge ? recovery : payouts);
   }
   if (!payout) model.amountNote += ' Payout amounts and registration totals are unavailable in this saved snapshot.';
-  if (stale) { model.amountWei = null; model.amountLabel = ''; model.amountNote += ' Saved snapshot: refresh before relying on deadlines or amounts. Existing action screens perform fresh checks.'; }
+  if (stale) {
+    model.amountWei = null; model.amountLabel = '';
+    if (model.releaseAt !== null) { model.releaseLabel = 'Last recorded payout timing'; model.releaseNote = 'This is saved information. Refresh to check the latest time windows and payout availability.'; }
+    model.amountNote += ' Saved snapshot: refresh before relying on deadlines or amounts. Existing action screens perform fresh checks.';
+  }
   return model;
 }
 
@@ -197,6 +227,9 @@ export function renderPostEvent(root, model, { now = Date.now() / 1000, event = 
   panel.hidden = !model.visible;
   const host = root.documentElement ?? root;
   host.classList.toggle('post-event-view', !!model.visible);
+  const heading = root.querySelector('[data-event-page-label]'); if (heading) heading.textContent = model.visible ? 'YOUR EVENT STATUS' : 'YOUR EVENT DEPOSIT';
+  const skip = root.querySelector('.skip-link'); if (skip) skip.textContent = model.visible ? 'Skip to attendance and payout status' : 'Skip to deposit';
+  if (typeof root.title === 'string') root.title = model.visible ? 'Truth Pays · Attendance & payout' : 'Truth Pays · Event deposit';
   const closed = now >= Date.parse(event.startsAt) / 1000 || !!model.visible;
   host.classList.toggle('deposit-closed-view', closed);
   const closure = root.querySelector('[data-deposit-closed-note]'); if (closure) closure.hidden = !closed || !!model.visible;
@@ -209,7 +242,9 @@ export function renderPostEvent(root, model, { now = Date.now() / 1000, event = 
   const deadline = model.target ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone: event.timezone }).format(new Date(model.target * 1000)) : '';
   const left = model.target ? Math.max(0, Math.ceil(model.target - now)) : 0;
   const hours = Math.floor(left / 3600), minutes = Math.floor(left % 3600 / 60);
-  put('countdown', model.target ? `${model.deadlineLabel} · ${deadline} (${event.timezone}) · ${hours}h ${String(minutes).padStart(2, '0')}m remaining` : '');
+  const remaining = `${hours}h ${String(minutes).padStart(2, '0')}m remaining`;
+  put('countdown', model.target ? model.walletKind === 'attended' && model.releaseAt === model.target
+    ? `${model.deadlineLabel} · ${remaining}` : `${model.deadlineLabel} · ${deadline} (${event.timezone}) · ${remaining}` : '');
   panel.querySelector('[data-post-event-countdown]').hidden = !model.target;
   put('wallet-title', model.walletTitle); put('wallet-note', model.walletNote);
   const stats = panel.querySelector('[data-post-event-stats]'); stats.replaceChildren();
@@ -218,6 +253,21 @@ export function renderPostEvent(root, model, { now = Date.now() / 1000, event = 
   put('amount', model.amountWei === null ? '' : `${formatPostEventEth(model.amountWei)} ETH`);
   put('amount-label', model.amountLabel); put('estimate-note', model.amountNote);
   panel.querySelector('[data-post-event-estimate]').hidden = model.amountWei === null;
+  const release = panel.querySelector('[data-post-event-release]');
+  if (release) {
+    release.hidden = !model.releaseLabel;
+    put('release-label', model.releaseLabel); put('release-note', model.releaseNote);
+    const time = panel.querySelector('[data-post-event-release-date]');
+    time.hidden = !model.releaseAt;
+    if (model.releaseAt) {
+      time.dateTime = new Date(model.releaseAt * 1000).toISOString();
+      const zone = event.timezone === 'Asia/Kolkata' ? 'IST' : event.timezone;
+      time.textContent = `${new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'medium', timeZone: event.timezone }).format(new Date(model.releaseAt * 1000))} (${zone})`;
+    } else { time.removeAttribute('datetime'); time.textContent = ''; }
+    const local = panel.querySelector('[data-post-event-release-local]'), localZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    local.hidden = !model.releaseAt || localZone === event.timezone;
+    local.textContent = local.hidden ? '' : `Your local time · ${new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'medium' }).format(new Date(model.releaseAt * 1000))}`;
+  }
   for (const key of ['primary', 'secondary']) { const node = panel.querySelector(`[data-post-event-${key}]`), action = model[key]; node.hidden = !action; if (action) { node.textContent = action.label; node.href = action.href; } }
   put('snapshot', checkedAt ? `Saved on-chain snapshot: ${new Date(checkedAt).toLocaleString()}. Status is checked again before any wallet action.` : 'Latest on-chain status is unavailable.');
 }

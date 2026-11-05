@@ -59,6 +59,9 @@ try {
   // Use the real controller after the event: wallet selection and the original
   // receipt survive, while even a forced preparation click stays local.
   await page.unroute('**/api/first-event/depositors');
+  // This scenario covers explicit selection. The separate post-event wallet
+  // status integration covers nonprompting restoration of a remembered provider.
+  await page.evaluate(() => localStorage.removeItem('kleros-wallet-preference:v1'));
   await page.goto(preview.origin + '/first-event/?preview=omitted', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-post-event]')).toHaveAttribute('data-state', 'challenge-open');
   await expect(page.locator('[data-deposit]')).toBeHidden();
@@ -67,6 +70,11 @@ try {
   await page.locator('[data-connect-wallet]').click();
   await expect(page.locator('[data-post-event-wallet-title]')).toContainText(/missing|not.*list|omitt|absen/i);
   await expect(page.locator('.receipt-hash').first()).toHaveAttribute('href', 'https://etherscan.io/tx/' + SAMPLE_HASH);
+  await expect(page.locator('.receipt-message')).toContainText('attendance and payout status');
+  await expect(page.locator('.receipt-message')).not.toContainText('Luma');
+  await page.locator('[data-copy-tx]').click();
+  await expect(page.locator('.receipt-copy-status')).toContainText('event records');
+  await expect(page.locator('.receipt-copy-status')).not.toContainText('Luma');
   await page.locator('[data-deposit]').dispatchEvent('click');
   await expect(page.locator('[data-deposit]')).toBeHidden();
   assert.deepEqual(calls, ['eth_requestAccounts', 'eth_requestAccounts', 'eth_requestAccounts']);

@@ -21,7 +21,7 @@ let browser;
 const pass = (condition, note) => { assert(condition, note); proof.checks.push(note); };
 try {
   browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 1000 }, reducedMotion: 'reduce', serviceWorkers: 'block' });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 1000 }, locale: 'en-GB', timezoneId: 'Asia/Manila', reducedMotion: 'reduce', serviceWorkers: 'block' });
   const page = await context.newPage();
   page.on('pageerror', error => proof.browserErrors.push(error.message));
   await page.addInitScript(() => {
@@ -61,6 +61,46 @@ try {
     assert.deepEqual(await page.locator('[data-post-event-stats] dd').allTextContents(), ['10']);
     pass(true, `${scenario}: unpublished list shows registration total only, with no attended/absent/Court statistics`);
   };
+
+  await open('current-connect', 'challenge-open');
+  await expect(panel).toHaveAttribute('data-wallet-state', 'disconnected');
+  await expect(page.locator('[data-post-event-estimate]')).toBeHidden();
+  await page.locator('[data-connect-wallet]').click();
+  await expect(panel).toHaveAttribute('data-wallet-state', 'attended');
+  await expect(page.locator('[data-post-event-title]')).toHaveText('Your attendance is confirmed');
+  await expect(page.locator('[data-post-event-amount]')).toHaveText('0.01 ETH');
+  await expect(page.locator('[data-post-event-release-date]')).toHaveAttribute('datetime', '2026-11-06T01:15:11.000Z');
+  await expect(page.locator('[data-post-event-release-date]')).toContainText(/6 Nov 2026.*6:45:11.*IST/i);
+  await expect(page.locator('[data-post-event-release-local]')).toContainText(/6 Nov 2026.*9:15:11/i);
+  await expect(page.locator('[data-post-event-release-note]')).toContainText('transaction is required');
+  await expect(page.locator('[data-post-event-primary]')).toHaveText('View payout details');
+  assert.deepEqual(await page.locator('[data-post-event-stats] dd').allTextContents(), ['14', '14', '0', '0']);
+  await expect(page.locator('[data-deposit]')).toBeHidden();
+  await expect(page.locator('.manual-option')).toBeHidden();
+  pass(true, 'Connected sample attendee sees all14 attendance,0.01ETH return and exact recorded release deadline in IST/local time, without payment controls');
+  await shot('current-all-attended-desktop');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open('current', 'challenge-open');
+  await expect(page.locator('[data-post-event-release-date]')).toHaveAttribute('datetime', '2026-11-06T01:15:11.000Z');
+  await expect(page.locator('[data-tx-status]')).not.toContainText('for Luma');
+  await shot('current-all-attended-mobile');
+  await open('current-ready', 'release-ready');
+  await expect(page.locator('[data-post-event-release-label]')).toHaveText('Ready for payout release');
+  await expect(page.locator('[data-post-event-release-note]')).toContainText('transaction is required');
+  await expect(page.locator('[data-post-event-primary]')).toHaveText('Review payout release');
+  pass(!/you received|funds received|payment delivered/i.test(await panel.innerText()), 'Afterdeadline Listed14attendee view requires release and does not claim payment');
+  await shot('current-release-ready-mobile');
+  await open('current-stale', 'awaiting-update');
+  await expect(page.locator('[data-post-event-amount]')).toHaveText('');
+  await expect(page.locator('[data-post-event-title]')).toContainText('Refresh');
+  await expect(page.locator('[data-event-countdown]')).toContainText('Refresh');
+  pass(true, 'Stale all-attended snapshot cannot become release-ready from its local clock');
+  await open('current-released', 'finalized');
+  await expect(page.locator('[data-post-event-release-note]')).toContainText('If it failed');
+  await expect(page.locator('[data-post-event-release-date]')).toBeHidden();
+  await shot('current-released-mobile');
+  pass(!/you received|funds received|payment delivered/i.test(await panel.innerText()), 'Released round keeps delivery uncertain and explains failed-transfer recovery');
+  await page.setViewportSize({ width: 1280, height: 1000 });
 
   await open('organizer', 'awaiting-attendance');
   await expect(panel).toContainText(/organizer|attendance/i);

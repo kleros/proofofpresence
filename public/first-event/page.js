@@ -33,6 +33,8 @@ if (legacy && EVENT.id !== LEGACY_EVENT.id) {
 }
 // A mismatched static QR/address must never offer a manual transfer to a stale child.
 const qr = document.querySelector('[data-qr-contract]');
+const manual = document.querySelector('.manual-option');
+if (manual) manual.hidden = Date.now() >= Date.parse(EVENT.startsAt);
 if (address?.textContent.trim().toLowerCase() !== EVENT.contract.toLowerCase() || qr?.dataset.qrContract?.toLowerCase() !== EVENT.contract.toLowerCase()) {
   if (copyButton) copyButton.disabled = true;
   document.querySelector('.manual-option')?.setAttribute('hidden', '');

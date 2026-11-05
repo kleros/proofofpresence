@@ -20,7 +20,7 @@
       </header>
       <main id="deposit">
         <div class="event-heading">
-          <p class="eyebrow">YOUR EVENT DEPOSIT</p>
+          <p class="eyebrow" data-event-page-label>YOUR EVENT DEPOSIT</p>
           <h1>Truth Pays</h1>
           <p class="event-subtitle">Queryable Data, Prediction Markets<br class="desktop-break" /> &amp; Onchain Justice</p>
           <p class="event-date" data-event-date><time datetime="2026-11-04T18:00:00+05:30">4 November 2026</time><span aria-hidden="true">·</span><span data-event-hours>18:00–22:00 India (IST)</span></p>
@@ -45,9 +45,10 @@
             <h2 id="post-event-title" data-post-event-title>Attendance status</h2>
             <p class="post-event-message" data-post-event-message></p>
             <p class="event-countdown" data-post-event-countdown role="timer" hidden></p>
-            <dl class="post-event-stats" data-post-event-stats hidden></dl>
             <div class="post-event-wallet"><h3 data-post-event-wallet-title></h3><p data-post-event-wallet-note></p></div>
             <div class="post-event-estimate" data-post-event-estimate hidden><p data-post-event-amount-label></p><strong data-post-event-amount></strong></div>
+            <section class="post-event-payout-time" data-post-event-release hidden aria-label="Payout timing"><p data-post-event-release-label></p><time data-post-event-release-date></time><p class="post-event-local-time" data-post-event-release-local hidden></p><p class="post-event-release-note" data-post-event-release-note></p></section>
+            <dl class="post-event-stats" data-post-event-stats hidden></dl>
             <p class="post-event-note" data-post-event-estimate-note></p>
             <div class="post-event-actions"><a class="button button-primary" data-post-event-primary href="/#">Review attendance</a><a class="button button-secondary" data-post-event-secondary href="/#">Review payout &amp; recovery</a></div>
             <div class="post-event-update"><button type="button" class="button button-secondary" data-post-event-refresh>Refresh status</button><p data-post-event-snapshot></p></div>
@@ -63,7 +64,7 @@
             <div><p class="eyebrow" id="admission-label">YOUR COMMITMENT</p><strong data-admission-status>Connect your wallet</strong><p data-admission-note>Connect to see your commitment and registration status. Your place is confirmed when the organizer registers your wallet.</p></div>
           </div>
 
-          <details class="manual-option">
+          <details class="manual-option" hidden>
             <summary>Pay by QR or wallet address</summary>
           <div class="manual-deposit">
             <div class="qr-wrap"><img src="./qr.svg" data-qr-contract="0xc069A460c5B1c577791Ee61E7F9ADcb7866068df" width="144" height="144" alt="QR code for this event’s Ethereum Mainnet deposit address" /></div>

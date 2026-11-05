@@ -31,13 +31,13 @@ export function loadDepositSnapshot({ refresh = false } = {}) {
 const dateLabel = (seconds, event) => new Intl.DateTimeFormat(undefined, {
   day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: event.timezone,
 }).format(new Date(seconds * 1000));
-export function timelineState(state, now = Date.now() / 1000, event = EVENT) {
+export function timelineState(state, now = Date.now() / 1000, event = EVENT, { stale = false } = {}) {
   const start = Date.parse(event.startsAt) / 1000, end = Date.parse(event.endsAt) / 1000;
   const result = { countdownLabel: now < start ? 'Event starts in' : now < end ? 'Event ends in' : 'Event finished',
     target: now < start ? start : now < end ? end : null,
     event: `${event.dateLabel} · ${event.hoursLabel}`,
     attendance: 'Attend the event. Once attendance is posted, you have 24 hours to challenge a missing entry.',
-    claim: 'After the challenge and matching windows, your deposit + any kickback is sent automatically when payouts are released.',
+    claim: 'After the challenge and matching windows, a payout-release transaction sends your deposit + any kickback to your wallet.',
     deadline: 'Payout time depends on attendance being finalized, not just the event ending.' };
   if (now >= end) result.countdownLabel = state ? 'Awaiting attendance list' : 'Attendance status not yet available';
   if (now >= end && state?.phase === 'Open' && now <= state.claimDeadline) {
@@ -51,8 +51,9 @@ export function timelineState(state, now = Date.now() / 1000, event = EVENT) {
     result.claim = 'Fallback recovery is now available. Open Manage deposit to check your refund.';
   }
   if (['Listed', 'Finalized'].includes(state?.phase)) {
-    const remainingMatch = state.stakers.filter(row => row.challenge.state === 1 && row.challenge.matchDeadline >= now)
+    const lastMatch = state.stakers.filter(row => row.challenge.state === 1)
       .reduce((latest, row) => Math.max(latest, row.challenge.matchDeadline), 0);
+    const remainingMatch = lastMatch >= now ? lastMatch : 0;
     result.attendance = `Attendance posted · challenge deadline ${dateLabel(state.challengeEndsAt, event)} (${event.timezone}). Each challenge has its own 24-hour matching window.`;
     if (state.phase === 'Finalized') {
       result.countdownLabel = 'Payouts released'; result.target = null;
@@ -64,6 +65,9 @@ export function timelineState(state, now = Date.now() / 1000, event = EVENT) {
     } else if (remainingMatch) {
       result.countdownLabel = 'Latest challenge matching window closes in'; result.target = remainingMatch;
       result.deadline = 'Each waiting challenge must finish its matching window before the payout round can start.';
+    } else if (stale || !uint(state.chainTimestamp) || state.chainTimestamp <= Math.max(state.challengeEndsAt, lastMatch)) {
+      result.countdownLabel = 'Refresh to check payout availability'; result.target = null;
+      result.deadline = 'A fresh on-chain snapshot must confirm the time windows have ended. Time passing alone does not send ETH.';
     } else {
       result.countdownLabel = 'Awaiting payout release'; result.target = null;
       result.deadline = 'Open Kleros cases reserve their shares; other attendees can receive their payouts.';
@@ -114,7 +118,7 @@ export function mountDepositJourney() {
   };
   const tick = () => {
     if (disposed) return;
-    const now = Date.now() / 1000, state = savedEventState(snapshot), timeline = timelineState(state, now);
+    const now = Date.now() / 1000, state = savedEventState(snapshot), timeline = timelineState(state, now, EVENT, { stale: !!savedStatus() });
     const fromSnapshot = state && (state.phase !== 'Open' || now >= state.endsAt);
     put('[data-event-countdown]', `${fromSnapshot && savedStatus() ? 'Saved status · ' : ''}${timeline.countdownLabel}${timeline.target ? ' · ' + duration(timeline.target - now) : ''}`);
     put('[data-timeline-event]', timeline.event); put('[data-timeline-attendance]', timeline.attendance);

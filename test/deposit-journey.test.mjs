@@ -33,7 +33,10 @@ test('event end never invents a challenge or payout countdown; posting begins it
   s.phase = 'Listed'; s.challengeEndsAt = end + 5 * 86400;
   assert.equal(timelineState(s, end + 60).target, s.challengeEndsAt);
   assert.equal(timelineState(s, s.challengeEndsAt).target, s.challengeEndsAt);
+  assert.match(timelineState(s, s.challengeEndsAt + 1).countdownLabel, /Refresh to check/);
+  s.chainTimestamp = s.challengeEndsAt + 1;
   assert.match(timelineState(s, s.challengeEndsAt + 1).countdownLabel, /Awaiting payout release/);
+  assert.match(timelineState(s, s.challengeEndsAt + 1, EVENT, { stale: true }).countdownLabel, /Refresh to check/);
   s.stakers.push({ challenge: { state: 1, matchDeadline: s.challengeEndsAt + 1800 } });
   assert.equal(timelineState(s, s.challengeEndsAt + 1).target, s.challengeEndsAt + 1800);
   assert.equal(timelineState(s, s.challengeEndsAt + 1800).target, s.challengeEndsAt + 1800);
@@ -60,4 +63,11 @@ test('fallback threshold opens recovery and a cancelled Paid row is never advert
   data.eventState.stakers.push({ wallet, status: 2, attended: false, challenge: { state: 0, matchDeadline: 0 } });
   assert.match(admissionState(data, wallet).title, /Event cancelled/);
   assert.doesNotMatch(admissionState(data, wallet).title, /Registered/);
+});
+test('a fast device clock cannot drop a matching window that the saved chain has not passed', () => {
+  const s = state(); s.phase = 'Listed'; s.challengeEndsAt = end + 100;
+  s.chainTimestamp = end + 190; s.stakers = [{ challenge: { state: 1, matchDeadline: end + 200 } }];
+  assert.match(timelineState(s, end + 201).countdownLabel, /Refresh to check/);
+  s.chainTimestamp = end + 201;
+  assert.match(timelineState(s, end + 201).countdownLabel, /Awaiting payout release/);
 });

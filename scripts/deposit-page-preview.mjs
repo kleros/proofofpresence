@@ -11,6 +11,11 @@ export const SAMPLE_WALLET = `0x${'1'.repeat(40)}`;
 export const SAMPLE_HASH = `0x${'a'.repeat(64)}`;
 const OWNER = `0x${'f'.repeat(40)}`, BLOCK_HASH = `0x${'c'.repeat(64)}`;
 export const PREVIEW_SCENARIOS = Object.freeze({
+  current: 'Published attendance · 14 attendees · 0.01 ETH return',
+  'current-connect': 'Published attendance · connect a sample wallet',
+  'current-ready': 'Published attendance · payout release ready',
+  'current-stale': 'Published attendance · stale status needs refresh',
+  'current-released': 'Published attendance · payout round released',
   before: 'Before the event',
   pending: 'Deposit recorded · admission pending',
   registered: 'Deposit recorded · registered',
@@ -35,8 +40,15 @@ export const PREVIEW_SCENARIOS = Object.freeze({
 });
 const scenarioName = value => Object.hasOwn(PREVIEW_SCENARIOS, value) ? value : 'before';
 const start = Date.parse(EVENT.startsAt) / 1000, end = Date.parse(EVENT.endsAt) / 1000;
+// Public recorded timing mirrored in sample data only. Production reads its API;
+// neither the 14 synthetic wallets nor this deadline enter the product modules.
+const PUBLISHED_CHALLENGE_END = 1793927711;
+const currentScenario = scenario => scenario.startsWith('current');
 export function previewClock(scenario) {
   const clocks = {
+    current: PUBLISHED_CHALLENGE_END - 23 * 3600, 'current-connect': PUBLISHED_CHALLENGE_END - 23 * 3600,
+    'current-ready': PUBLISHED_CHALLENGE_END + 1, 'current-stale': PUBLISHED_CHALLENGE_END + 3600,
+    'current-released': PUBLISHED_CHALLENGE_END + 3600,
     before: start - 3 * 86400 - 3661, pending: start - 2 * 86400, registered: start - 2 * 86400,
     organizer: end + 3600, 'organizer-24h': end + 3600,
     challenge: end + 3600, omitted: end + 3600, 'no-no-shows': end + 3600,
@@ -53,11 +65,12 @@ export function previewSnapshot(scenario = 'before') {
   scenario = scenarioName(scenario);
   const now = previewClock(scenario);
   const open = ['before', 'pending', 'registered', 'organizer', 'organizer-24h', 'fallback', 'unavailable', 'post-unavailable'].includes(scenario);
-  const finalized = ['finalized', 'finalized-court'].includes(scenario);
-  const wallets = Array.from({ length: 10 }, (_, index) => `0x${(index + 1).toString(16).repeat(40)}`);
+  const finalized = ['finalized', 'finalized-court', 'current-released'].includes(scenario);
+  const current = currentScenario(scenario), stale = ['stale', 'current-stale'].includes(scenario);
+  const wallets = Array.from({ length: current ? 14 : 10 }, (_, index) => `0x${(index + 1).toString(16).repeat(40)}`);
   const zeroChallenge = () => ({ state: 0, depositWei: '0', matchDeadline: 0, localId: '0' });
   const ownOmitted = ['omitted', 'waiting', 'own-court', 'finalized-court'].includes(scenario);
-  const allAttended = scenario === 'no-no-shows';
+  const allAttended = scenario === 'no-no-shows' || current;
   const unregistered = ['pending', 'unregistered'].includes(scenario);
   const stakers = wallets.filter((_, index) => !(unregistered && index === 0)).map(wallet => {
     const index = wallets.indexOf(wallet);
@@ -71,8 +84,8 @@ export function previewSnapshot(scenario = 'before') {
   const data = {
     schemaVersion: 1, kind: 'first-event-depositors', displayOnly: true,
     mode: EVENT.mode, instanceId: 'local-sample-deposit-preview', eventId: EVENT.id,
-    chainId: EVENT.chainId, contract: EVENT.contract, status: scenario === 'stale' ? 'stale' : 'current',
-    checkedAt: new Date((now - (scenario === 'stale' ? 3600 : 0)) * 1000).toISOString(), blockNumber: 100, blockHash: BLOCK_HASH,
+    chainId: EVENT.chainId, contract: EVENT.contract, status: stale ? 'stale' : 'current',
+    checkedAt: new Date((now - (stale ? 3600 : 0)) * 1000).toISOString(), blockNumber: current ? 200 : 100, blockHash: BLOCK_HASH,
     depositors: wallets.map((wallet, index) => ({ wallet, totalReceivedWei: EVENT.depositWei,
       deposits: [{ txHash: index === 0 ? SAMPLE_HASH : `0x${(index + 1).toString(16).padStart(64, '0')}`,
         logIndex: 0, amountWei: EVENT.depositWei, blockNumber: 90 + index, blockHash: BLOCK_HASH }] })),
@@ -81,8 +94,8 @@ export function previewSnapshot(scenario = 'before') {
       owner: OWNER, eventStart: start, endsAt: end,
       // Current source uses start+7d. Only the explicitly labeled proposal fixture differs.
       claimDeadline: scenario === 'organizer-24h' ? end + 86400 : start + 7 * 86400,
-      challengeEndsAt: open ? 0 : end + 24 * 3600,
-      challengeDepositWei: '1000000000000000', chainTimestamp: now - (scenario === 'stale' ? 3600 : 0), stakers,
+      challengeEndsAt: open ? 0 : current ? PUBLISHED_CHALLENGE_END : end + 24 * 3600,
+      challengeDepositWei: '1000000000000000', chainTimestamp: now - (stale ? 3600 : 0), stakers,
     },
   };
   const attended = stakers.filter(row => row.attended).length, cases = stakers.filter(row => row.challenge.state === 2);
@@ -99,7 +112,7 @@ export function previewSnapshot(scenario = 'before') {
 }
 
 function previewController(scenario) {
-  const selected = !['before', 'unavailable', 'post-unavailable'].includes(scenario);
+  const selected = !['before', 'unavailable', 'post-unavailable', 'current-connect'].includes(scenario);
   return `import { setDepositWallet } from './journey.js';
 import { renderDepositReceipt } from './receipt-card.js';
 const wallet = ${JSON.stringify(previewWallet(scenario))}, hash = ${JSON.stringify(SAMPLE_HASH)};
@@ -122,7 +135,7 @@ document.querySelector('[data-copy-address]').title = 'Payments are disabled in 
 if (connected) {
   showWallet();
   for (const node of document.querySelectorAll('.manual-option,.divider,.manual-deposit,.address-box')) node.hidden = true;
-  if (wallet === ${JSON.stringify(SAMPLE_WALLET)}) renderDepositReceipt(receipt, { message: 'Sample deposit receipt. Copy this transaction ID for Luma. This is a visual example, not a real transaction.', hash, status: 'confirmed' });
+  if (wallet === ${JSON.stringify(SAMPLE_WALLET)}) renderDepositReceipt(receipt, { message: ${JSON.stringify(previewClock(scenario) >= end ? 'Sample original deposit receipt. Your attendance and payout status appear above. This is a visual example, not a real transaction.' : 'Sample deposit receipt. Copy this transaction ID for Luma. This is a visual example, not a real transaction.')}, hash, status: 'confirmed', forRegistration: ${JSON.stringify(previewClock(scenario) < end)} });
 }
 `;
 }
@@ -153,7 +166,7 @@ document.querySelector('[data-preview-notice]').textContent = 'Financial review 
   const bar = `<aside class="local-preview-bar" aria-label="Local sample preview">
 <strong>Local preview · sample data · payments disabled</strong>${proposal}
 <label>Sample timeline <select data-preview-scenario>${options}</select></label>
-<span data-preview-notice>10 example depositor wallets · 0.1 ETH historical deposits. No real wallet, payment, or backend connection.</span>
+<span data-preview-notice>${currentScenario(scenario) ? '14 example attendee wallets · 0.14 ETH · recorded challenge deadline mirrored for this sample.' : '10 example depositor wallets · 0.1 ETH historical deposits.'} No real wallet, payment, or backend connection.</span>
 </aside>`;
   const style = `<style>.local-preview-bar{padding:12px 24px;background:#2e1d4c;color:#eeeaf5;border-bottom:1px solid #84739e;font:12px/1.5 Geist,system-ui,sans-serif;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 18px}.local-preview-bar label{display:flex;gap:8px;align-items:center}.local-preview-bar select{max-width:100%;font:inherit;color:#eeeaf5;background:#120e1c;border:1px solid #84739e;border-radius:6px;padding:8px}.local-preview-bar span,.preview-proposal{flex-basis:100%;text-align:center;color:#cac5d5}.preview-proposal{color:#ffcf88}@media(max-width:600px){.local-preview-bar{padding:12px 16px}.local-preview-bar label{display:block;width:100%}.local-preview-bar select{display:block;width:100%;margin-top:4px}}</style>`;
   return html.replace('</head>', `${setup}${style}</head>`).replace('<body>', `<body>${bar}`);
