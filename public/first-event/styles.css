@@ -116,3 +116,19 @@
 @media(max-width:600px){.post-event-view h1{font-size:42px}.post-event-status h2{font-size:29px}.post-event-message{font-size:12px}.post-event-actions{flex-direction:column}.post-event-actions .button{width:100%}.post-event-estimate strong{font-size:27px}.post-event-stats{gap:14px 10px}.post-event-status .event-countdown{font-size:10px}}
 
 .deposit-closed-view .manual-option,.deposit-closed-view .manual-deposit,.deposit-closed-view .address-box,.deposit-closed-view [data-deposit]{display:none!important}
+
+/* After-event status: personal result first, supporting records on demand. */
+.post-event-view .event-subtitle,.post-event-view .event-date,.post-event-view .journey-card{display:none}
+.post-event-view h1{font-size:38px}.post-event-view .event-heading{margin-bottom:20px}.post-event-view .event-heading .eyebrow{margin-bottom:6px}
+.post-event-view .post-event-connect-title{display:none}.post-event-view [data-connect-wallet]{width:auto;min-height:44px;padding:9px 13px;font-size:12px;background:transparent;color:var(--purple);border-color:var(--boundary)}
+.post-event-view .wallet-status{font-size:11px;margin:7px 0 21px}.post-event-view .post-event-status{padding-top:19px;border-top:1px solid var(--line);margin-top:18px}
+.post-event-view .post-event-message{margin-top:8px}.post-event-view .post-event-status h2{font-size:30px}
+.post-event-view .post-event-estimate{padding-top:20px}.post-event-view .post-event-payout-time{background:transparent;border:0;border-radius:0;padding:0;margin-top:21px}
+.post-event-view .post-event-actions:has(>a[hidden]){display:none}
+.post-event-details{border-top:1px solid var(--line);margin-top:22px}.post-event-details>summary,.post-event-receipt>summary{min-height:44px;padding:11px 0;width:100%;font-size:12px}
+.post-event-details .post-event-wallet{background:transparent;border:0;padding:0;margin-top:7px}.post-event-details .post-event-stats{margin:14px 0;border-top:0;padding-top:0}
+.post-event-recovery-link{display:inline-flex;align-items:center;min-height:44px;font-size:12px}
+.post-event-update{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin-top:8px;padding-top:10px;border-top:0}.post-event-update p{margin:0;flex:1;min-width:160px}
+.post-event-receipt>summary{display:none}.post-event-view .post-event-receipt{border-top:1px solid var(--line);margin-top:15px}.post-event-view .post-event-receipt>summary{display:list-item}
+.post-event-view .trust-links a[href*="luma.com"],.post-event-view .registration-next>.return-note{display:none}
+@media(max-width:600px){.post-event-view main{margin-top:22px}.post-event-view h1{font-size:36px}.post-event-view .post-event-status h2{font-size:28px}.post-event-view .post-event-estimate strong{font-size:30px}}

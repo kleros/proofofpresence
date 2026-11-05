@@ -49,7 +49,7 @@ test('only verified same-block payout counters produce a provisional return; his
   const data = fixture(), view = model(data);
   assert.equal(view.walletKind, 'attended'); assert.equal(view.amountWei, '12500000000000000');
   assert.equal(view.stats.find(row => row.label === 'Not on attendance list').value, '2');
-  assert.match(view.amountLabel, /Provisional/); assert.match(view.amountNote, /can change/);
+  assert.equal(view.amountLabel, 'Estimated return'); assert.match(view.amountNote, /can change/);
   data.depositors[0].deposits.push({ ...data.depositors[0].deposits[0], txHash: H('d') }); data.depositors[0].totalReceivedWei = String(BigInt(event.depositWei) * 2n);
   assert.equal(model(data).amountWei, '12500000000000000');
   delete data.payoutState; assert.equal(model(data).amountWei, null); assert.deepEqual(model(data).stats, []);

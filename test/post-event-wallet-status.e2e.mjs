@@ -183,6 +183,7 @@ try {
   ({ page } = await open({ remembered: true, heldIntent: true }));
   await expect(page.locator('[data-post-event]')).toHaveAttribute('data-wallet-state', 'attended');
   await expect(page.locator('[data-tx-status]')).toContainText('A wallet request may still be open');
+  await expect(page.locator('[data-post-event-receipt]')).toHaveAttribute('open', '');
   assert.equal(await page.evaluate(() => localStorage.getItem(window.originalIntentKey) === window.originalIntentValue), true);
   await page.locator('[data-deposit]').dispatchEvent('click');
   assert.equal(await page.evaluate(() => localStorage.getItem(window.originalIntentKey) === window.originalIntentValue), true);

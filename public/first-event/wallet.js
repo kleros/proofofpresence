@@ -136,6 +136,9 @@ const txStatus = (text, hash = null, explicitState = null) => {
     ? paymentReference?.status === "recorded" ? "recorded" : "confirmed"
     : "submitted");
   renderDepositReceipt(transactionStatus, { message: text, hash, status: state, forRegistration: Date.now() < Date.parse(EVENT.endsAt) });
+  const receiptDetails = transactionStatus?.closest('[data-post-event-receipt]');
+  if (receiptDetails && Date.now() >= Date.parse(EVENT.endsAt) && text &&
+      (hash && !['recorded', 'confirmed'].includes(state) || /wallet request|unverified|checking stopped|could not|reverted/i.test(text))) receiptDetails.open = true;
 };
 
 function scope() {

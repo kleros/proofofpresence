@@ -67,7 +67,7 @@ try {
   await expect(page.locator('[data-post-event-estimate]')).toBeHidden();
   await page.locator('[data-connect-wallet]').click();
   await expect(panel).toHaveAttribute('data-wallet-state', 'attended');
-  await expect(page.locator('[data-post-event-title]')).toHaveText('Your attendance is confirmed');
+  await expect(page.locator('[data-post-event-title]')).toHaveText('Attendance confirmed');
   await expect(page.locator('[data-post-event-amount]')).toHaveText('0.01 ETH');
   await expect(page.locator('[data-post-event-release-date]')).toHaveAttribute('datetime', '2026-11-06T01:15:11.000Z');
   await expect(page.locator('[data-post-event-release-date]')).toContainText(/6 Nov 2026.*6:45:11.*IST/i);
@@ -78,6 +78,11 @@ try {
   await expect(page.locator('[data-deposit]')).toBeHidden();
   await expect(page.locator('.manual-option')).toBeHidden();
   pass(true, 'Connected sample attendee sees all14 attendance,0.01ETH return and exact recorded release deadline in IST/local time, without payment controls');
+  await expect(page.locator('.post-event-details')).not.toHaveAttribute('open', '');
+  await expect(page.locator('[data-post-event-receipt]')).not.toHaveAttribute('open', '');
+  await expect(page.locator('.journey-card')).toBeHidden();
+  await expect(page.locator('[data-post-event-primary]')).toBeHidden();
+  pass(true, 'Connected status starts with attendance, estimated return and payout time; supporting details and original receipt are collapsed');
   await shot('current-all-attended-desktop');
   await page.setViewportSize({ width: 390, height: 844 });
   await open('current', 'challenge-open');
@@ -176,7 +181,7 @@ try {
   await expect(panel).toContainText(/reserv|protect|held/i);
   pass((await actionPaths()).some(hash => hash.includes('view=cases')), 'Matched challenger has a case/evidence route, not an automatic evidence upload');
   await shot('own-court-protected-share-desktop');
-  const caseLink = panel.locator('a[href*="view=cases"]').first();
+  const caseLink = page.locator('[data-post-event-primary]');
   await caseLink.click();
   await expect(page.locator('[data-action-preview-title]')).toHaveText('Kleros case & evidence');
   await expect(page.locator('[data-sample-evidence]')).toBeVisible();

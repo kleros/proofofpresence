@@ -72,6 +72,7 @@ try {
   await expect(page.locator('.receipt-hash').first()).toHaveAttribute('href', 'https://etherscan.io/tx/' + SAMPLE_HASH);
   await expect(page.locator('.receipt-message')).toContainText('attendance and payout status');
   await expect(page.locator('.receipt-message')).not.toContainText('Luma');
+  await page.locator('[data-post-event-receipt] > summary').click();
   await page.locator('[data-copy-tx]').click();
   await expect(page.locator('.receipt-copy-status')).toContainText('event records');
   await expect(page.locator('.receipt-copy-status')).not.toContainText('Luma');

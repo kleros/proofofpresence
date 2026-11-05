@@ -64,3 +64,35 @@ contract, wallet, server-instance, policy, deposit provenance and draft checks.
 No deployment, contract upgrade, live role grant or financial transaction is part
 of the local preview. Existing financial rules, disputed-share treatment and ruling-0
 economics are unchanged.
+
+
+## Focused status page
+
+After the event, the initial view shows the connected wallet's attendance, estimated
+return and earliest release time. The date includes the event timezone and seconds,
+with a local-time equivalent where different. Receipt, counts and recovery context
+remain in native disclosures. Omitted wallets retain a prominent challenge action;
+matched cases retain their case/evidence action. Pending or unverified original
+transaction warnings expand their receipt instead of being hidden by simplification.
+
+An existing wallet preference can restore display identity after fresh account and
+chain checks. It never grants a private session, role or transaction permission.
+A changed/locked/disconnected wallet clears personal status and requires selection.
+A stale cache or a fast device clock cannot advertise payout readiness; the saved
+canonical block must be strictly past the challenge and every Waiting match deadline.
+The payout-release transaction remains explicit. Released does not mean delivered.
+
+## Application rollout
+
+Ship the frontend and its existing public display producer together. The production
+frontend build is `npm run build:netlify:production` with Node 22, publishing
+`dist/netlify-app` and the existing `netlify/functions` folder. Verify the current
+canonical published Netlify deploy before the matching backend release. No contract,
+policy, ABI, environment or database schema change is needed.
+
+The backend update adds optional same-block `payoutState` alongside `eventState` in
+the existing cached `GET /api/first-event/depositors` response. The HTTP read stays
+SQL-only. Live acceptance requires a fresh successful background projection with
+both valid sidecars; HTTP 200 or historical receipt totals alone do not establish a
+payout estimate. Missing, stale or inconsistent projections suppress monetary values.
+The local sample clock and synthetic wallets never enter the production build.
