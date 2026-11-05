@@ -6,6 +6,12 @@ const PROFILE = "kleros-event-v10-uups", PENDING_MS = 180000, READY_MS = 300000,
 const pureRead = operation => ["bootstrap", "deposit-inbox"].includes(operation);
 const stable = (v, max = 160) => typeof v === "string" && new RegExp(`^[A-Za-z0-9_-]{1,${max}}$`).test(v);
 const address = v => typeof v === "string" && /^0x[0-9a-f]{40}$/i.test(v) && !/^0x0{40}$/i.test(v);
+const positiveWei = v => typeof v === "string" && /^[1-9][0-9]{0,77}$/.test(v) && BigInt(v) < 2n ** 256n;
+// A URI is reviewed data, never an upload/availability proof or a caller-selected
+// transaction target. Keep resolver evidence paths bounded and unambiguous.
+const evidencePath = v => typeof v === "string" && v.length <= 4096 &&
+  /^\/ipfs\/[A-Za-z0-9]+(?:\/[A-Za-z0-9._-]+)*$/.test(v) &&
+  v.split("/").every(segment => segment !== "." && segment !== "..");
 const copy = v => structuredClone(v), own = (v, key) => v && typeof v === "object" ? Object.getOwnPropertyDescriptor(v, key)?.value : undefined;
 const check = (ok, code, status, message) => { if (!ok) throw Object.assign(new Error(message), { code, status }); };
 function exact(v, keys) {
@@ -69,9 +75,14 @@ function payloadOf(body) {
   }
   if (operation === "participant-draft") {
     const action = own(body, "action"), params = own(body, "params");
-    check((action === "withdrawPending" && exact(params, [])) || (["challenge", "match", "resolve"].includes(action) &&
+    check((["withdrawPending", "release", "claim", "emergencyWithdraw"].includes(action) && exact(params, [])) ||
+      (action === "evidence" && exact(params, ["wallet", "uri"]) && address(own(params, "wallet")) && evidencePath(own(params, "uri"))) ||
+      (["passPeriod", "deliverRuling", "appealRewards"].includes(action) && exact(params, ["wallet"]) && address(own(params, "wallet"))) ||
+      (action === "fundAppeal" && exact(params, ["wallet", "side", "amountWei"]) && address(own(params, "wallet")) &&
+        Number.isInteger(own(params, "side")) && [0, 1, 2].includes(own(params, "side")) && positiveWei(own(params, "amountWei"))) ||
+      (["challenge", "match", "resolve"].includes(action) &&
       (exact(params, []) || (action !== "challenge" && exact(params, ["wallet"]) && address(own(params, "wallet"))))),
-      "INVALID_INPUT", 400, "Choose one exact participant challenge, matching, resolution or unused-credit recovery request.");
+      "INVALID_INPUT", 400, "Choose one exact participant challenge, evidence, payout or own-credit recovery request.");
     Object.assign(payload, { action, params: copy(params) });
   }
   if (operation === "deposit-inbox") {

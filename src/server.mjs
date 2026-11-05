@@ -280,12 +280,25 @@ export async function startServer({
           return w.createDraft(eventId, session, { action: "withdrawPending",
             params: { to: session.wallet, amountWei: String(credit) } });
         }
-        if (["adopt-payer", "manage-draft", "participant-draft", "deposit-inbox"].includes(operation))
+        if (operation === "participant-draft")
+          requireThat(w.firstEventCreditRecoveryAvailable?.(eventId) === true,
+            "Participant actions require a reviewed current or previous event", "FIRST_EVENT_SCOPE", 404);
+        if (["adopt-payer", "manage-draft", "deposit-inbox"].includes(operation))
           requireThat(w.firstEventManageAvailable(eventId), "First event management is unavailable", "FIRST_EVENT_SCOPE", 404);
         if (operation === "adopt-payer") return w.adoptPayer(eventId, session,
           { wallet: input.wallet, txHash: input.txHash, confirmed: input.confirmed, note: input.note },
           () => requireThat(eventSessionCurrent(session), "Wallet session changed", "UNAUTHENTICATED", 401));
         if (["manage-draft", "participant-draft"].includes(operation)) {
+          if (operation === "participant-draft" && ["claim", "emergencyWithdraw"].includes(input.action)) {
+            requireThat(session?.mode === "wallet" && ethers.isAddress(session.wallet) && eventSessionCurrent(session),
+              "Sign in to review your own recovery", "UNAUTHENTICATED", 401);
+            return w.createDraft(eventId, session, { action: input.action, params: { to: session.wallet } });
+          }
+          if (operation === "participant-draft" && input.action === "appealRewards") {
+            requireThat(session?.mode === "wallet" && ethers.isAddress(session.wallet) && eventSessionCurrent(session),
+              "Sign in to review your own appeal rewards", "UNAUTHENTICATED", 401);
+            return w.createDraft(eventId, session, { action: input.action, params: { wallet: input.params.wallet, sides: [0, 1, 2] } });
+          }
           return w.createDraft(eventId, session, { action: input.action, params: input.params });
         }
         if (operation === "deposit-inbox") return depositInbox.read(eventId, session, { refresh: input.refresh });
@@ -471,7 +484,7 @@ export async function startServer({
           ...(v10Production ? { ...V10_WALLET_CAPABILITIES, eventReadJobs: true,
             canonicalPayerAdoption: w.firstEventManageAvailable?.(bootstrap.selectedEvent?.eventId) === true,
             manualAttendanceReview: w.firstEventManageAvailable?.(bootstrap.selectedEvent?.eventId) === true,
-            casePublication: false, originalCreationRecovery: false } : {}),
+            casePublication: true, originalCreationRecovery: false } : {}),
         } : {}),
       }
     : hosted
@@ -730,11 +743,11 @@ export async function startServer({
         if (!requestId && req.method === "POST") {
           const input = await body(req);
           requireThat(getSession(req) === s, "Wallet session changed", "UNAUTHENTICATED", 401);
-          if (input.operation === "participant-draft" && input.action === "withdrawPending") {
+          if (input.operation === "participant-draft") {
             requireThat(s?.mode === "wallet" && ethers.isAddress(s.wallet), "Sign in to recover your own credit", "UNAUTHENTICATED", 401);
             requireThat(w.firstEventCreditRecoveryAvailable?.(input.eventId) === true,
               "Credit recovery requires a reviewed current or previous event", "FIRST_EVENT_SCOPE", 404);
-          } else if (["adopt-payer", "manage-draft", "participant-draft", "deposit-inbox"].includes(input.operation))
+          } else if (["adopt-payer", "manage-draft", "deposit-inbox"].includes(input.operation))
             requireThat(w.firstEventManageAvailable?.(input.eventId) === true,
               "First event management is unavailable", "FIRST_EVENT_SCOPE", 404);
           const result = eventReadJobs.start(s, input);
@@ -1342,6 +1355,32 @@ export async function startServer({
               ? await w.executeDraft(eventId, s, draft[1])
               : await w.confirmDraft(eventId, s, draft[1], b.hash),
           );
+        }
+        const productionEvidenceFile = tail.match(/^cases\/(0x[0-9a-fA-F]{40})\/files\/(artifact|availability|publish)$/);
+        if (isProduction && v10Production && productionEvidenceFile && req.method === "POST") {
+          const input = await body(req);
+          const assertSession = () => requireThat(getSession(req) === s && s,
+            "Wallet session changed; authenticate again", "UNAUTHENTICATED", 401);
+          assertSession();
+          const action = productionEvidenceFile[2], wallet = productionEvidenceFile[1];
+          const out = action === "artifact" ? await w.evidenceFileArtifact(eventId, s, wallet, input, assertSession)
+            : action === "availability" ? await w.verifyEvidenceFile(eventId, s, wallet, input, assertSession)
+              : await w.publishEvidenceFile(eventId, s, wallet, input, assertSession);
+          assertSession();
+          return send(res, 200, out);
+        }
+        const productionEvidence = tail.match(/^cases\/(0x[0-9a-fA-F]{40})\/evidence\/(artifact|availability|publish)$/);
+        if (isProduction && v10Production && productionEvidence && req.method === "POST") {
+          const input = await body(req);
+          const assertSession = () => requireThat(getSession(req) === s && s,
+            "Wallet session changed; authenticate again", "UNAUTHENTICATED", 401);
+          assertSession();
+          const action = productionEvidence[2], wallet = productionEvidence[1];
+          const out = action === "artifact" ? await w.evidenceArtifact(eventId, s, wallet, input, assertSession)
+            : action === "availability" ? await w.verifyEvidenceArtifact(eventId, s, wallet, input, assertSession)
+              : await w.publishEvidenceArtifact(eventId, s, wallet, input, assertSession);
+          assertSession();
+          return send(res, 200, out);
         }
         const productionCase = tail.match(/^cases\/(0x[0-9a-fA-F]{40})\/(artifact|availability|publish)$/);
         if (isProduction && productionCase && req.method === "POST") {

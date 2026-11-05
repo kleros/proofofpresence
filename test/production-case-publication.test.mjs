@@ -22,11 +22,12 @@ const key = (ctx) => `${ctx.eventId}:${ctx.wallet.toLowerCase()}`;
 const deferred = () => { let resolve; const promise = new Promise((done) => { resolve = done; }); return { promise, resolve }; };
 const approval = (dto) => ({ sha256: dto.artifact.sha256, scopeHash: dto.artifact.scopeHash });
 
-function fixture({ durable = new Map(), source = sourceScope(), fetcher, initialRecords, persistHook } = {}) {
+function fixture({ durable = new Map(), source = sourceScope(), fetcher, initialRecords, persistHook, contractVersion } = {}) {
   const f = { durable, source, content: "{}", uri, authorized: true, reads: 0, writes: 0, saves: 0,
     requests: [], orphans: new Set(), records: new Map(initialRecords || [...durable].map(([k, v]) => [k, clone(v)])),
     onRead: null, beforePersist: persistHook, now: 1000 };
   const callbacks = {
+    ...(contractVersion ? { contractVersion } : {}),
     readCase: async (ctx, saved) => {
       f.reads++;
       if (ctx.assertSession) ctx.assertSession();
@@ -332,4 +333,25 @@ test("an unknown intent marker is consumed, and tampered stored artifacts fail w
   f.records.get(key(context())).artifact.scope.blockNumber++;
   await assert.rejects(f.service.exportCase(context()));
   assert.deepEqual(f.requests.map((x) => x.method), ["GET"]);
+});
+
+
+test("V10 case bytes are version-scoped and one unknown upload cannot be replayed", async () => {
+  const version = "kleros-event-v10-uups";
+  const source = { ...sourceScope(), contractVersion: version };
+  const unconfigured = fixture({ source });
+  await assert.rejects(unconfigured.service.exportCase(context()), code("INVALID_CASE_SCOPE"));
+  const f = fixture({ source, contractVersion: version, fetcher: async () => { throw Error("lost response"); } });
+  const reviewed = await f.service.exportCase(context());
+  assert.equal(reviewed.artifact.scope.contractVersion, version);
+  const uncertain = await f.service.publishCase(context(), approval(reviewed));
+  assert.equal(uncertain.publication.status, "upload-uncertain");
+  assert.deepEqual(f.requests.map(x => x.method), ["POST"]);
+  const recovery = fixture({ durable: f.durable, source, contractVersion: version });
+  const checked = await recovery.service.publishCase(context(), approval(reviewed));
+  assert.equal(checked.publication.status, "verified");
+  assert.deepEqual(recovery.requests.map(x => x.method), ["GET"]);
+  const wrongVersion = fixture({ durable: f.durable });
+  await assert.rejects(wrongVersion.service.exportCase(context()), code("INVALID_CASE_SCOPE"));
+  assert.deepEqual(wrongVersion.requests, []);
 });

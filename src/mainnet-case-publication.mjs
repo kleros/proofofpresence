@@ -35,17 +35,18 @@ function exactKeys(value, keys, code) {
 function validAddress(value) {
   return typeof value === "string" && ethers.isAddress(value) && value.toLowerCase() !== ethers.ZeroAddress;
 }
-function normalizedScope(value) {
+function normalizedScope(value, contractVersion) {
+  check(["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(contractVersion), "INVALID_CASE_SCOPE", "Unsupported exact contract version.");
   exactKeys(value, SCOPE_KEYS, "INVALID_CASE_SCOPE");
   check(value.environment === MAINNET_CASE_PUBLICATION.environment && value.chainId === 1 &&
-    value.contractVersion === MAINNET_CASE_PUBLICATION.contractVersion &&
+    value.contractVersion === contractVersion &&
     typeof value.instanceId === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(value.instanceId) &&
     typeof value.eventId === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(value.eventId) &&
     validAddress(value.contract) && validAddress(value.wallet) &&
     Number.isSafeInteger(value.blockNumber) && value.blockNumber > 0 &&
     typeof value.blockHash === "string" && /^0x[0-9a-fA-F]{64}$/.test(value.blockHash) &&
     !/^0x0{64}$/.test(value.blockHash) && typeof value.matched === "boolean",
-  "INVALID_CASE_SCOPE", "A canonical Ethereum v9 event, challenged wallet and server provenance are required.");
+  "INVALID_CASE_SCOPE", "A canonical Ethereum event, challenged wallet and server provenance are required.");
   const caseId = (id) => typeof id === "string" && /^(?:0|[1-9][0-9]{0,77})$/.test(id) && BigInt(id) < 2n ** 256n;
   check(value.matched
     ? caseId(value.localDisputeID) && caseId(value.arbitratorDisputeID)
@@ -74,7 +75,7 @@ function varint(value) {
   do { bytes.push((value & 127) | (value >= 128 ? 128 : 0)); value = Math.floor(value / 128); } while (value);
   return Uint8Array.from(bytes);
 }
-function contentURI(bytes) {
+export function contentURI(bytes) {
   // The existing contract's single-block UnixFS file / DAG-PB / SHA256 / CIDv0.
   const size = varint(bytes.length);
   const file = ethers.getBytes(ethers.concat([Uint8Array.of(8, 2, 18), size, bytes, Uint8Array.of(24), size]));
@@ -83,16 +84,16 @@ function contentURI(bytes) {
 }
 
 /** Pure export. Core authenticates access and supplies an authoritative canonical case snapshot. */
-export function prepareCaseArtifact({ scope, content, expectedURI } = {}) {
-  const normalized = normalizedScope(scope), bytes = contentBytes(content), uri = contentURI(bytes);
+export function prepareCaseArtifact({ scope, content, expectedURI, contractVersion = MAINNET_CASE_PUBLICATION.contractVersion } = {}) {
+  const normalized = normalizedScope(scope, contractVersion), bytes = contentBytes(content), uri = contentURI(bytes);
   check(typeof expectedURI === "string" && /^\/ipfs\/Qm[1-9A-HJ-NP-Za-km-z]{44}$/.test(expectedURI) && uri === expectedURI,
     "CASE_CID_MISMATCH", "The exact case bytes do not match the contract's expected CIDv0 URI.");
   return Object.freeze({ version: 1, scope: normalized, scopeHash: digest(JSON.stringify(normalized)),
     content, sha256: digest(bytes), byteLength: bytes.length, uri });
 }
-function validated(artifact) {
+function validated(artifact, contractVersion) {
   exactKeys(artifact, ARTIFACT_KEYS, "INVALID_CASE_ARTIFACT");
-  const checked = prepareCaseArtifact({ scope: artifact.scope, content: artifact.content, expectedURI: artifact.uri });
+  const checked = prepareCaseArtifact({ scope: artifact.scope, content: artifact.content, expectedURI: artifact.uri, contractVersion });
   check(artifact.version === 1 && artifact.scopeHash === checked.scopeHash && artifact.sha256 === checked.sha256 &&
     artifact.byteLength === checked.byteLength && JSON.stringify(artifact.scope) === JSON.stringify(checked.scope),
   "INVALID_CASE_ARTIFACT", "Case artifact metadata or provenance changed after preparation.");
@@ -159,8 +160,8 @@ async function readBounded(response, maximum, signal) {
 /** Explicit reviewed publication only. No automatic retry, verification GET, signing or RPC.
  * The trusted intent writer must durably and atomically claim this scope/file, or throw if
  * already claimed or uncertain. A returned proof is validated here; storage/locking stays in core. */
-export async function publishReviewedCase({ artifact, approvedSha256, approvedScopeHash, persistIntent, fetcher = globalThis.fetch } = {}) {
-  const original = validated(artifact);
+export async function publishReviewedCase({ artifact, approvedSha256, approvedScopeHash, persistIntent, fetcher = globalThis.fetch, contractVersion = MAINNET_CASE_PUBLICATION.contractVersion } = {}) {
+  const original = validated(artifact, contractVersion);
   check(typeof approvedSha256 === "string" && /^[a-f0-9]{64}$/.test(approvedSha256) && approvedSha256 === original.sha256,
     "PUBLICATION_NOT_APPROVED", "Approve this exact case-file SHA256 before publishing its public bytes.");
   check(typeof approvedScopeHash === "string" && /^[a-f0-9]{64}$/.test(approvedScopeHash) && approvedScopeHash === original.scopeHash,
@@ -176,7 +177,7 @@ export async function publishReviewedCase({ artifact, approvedSha256, approvedSc
   check(claim.claimed === true && typeof claim.intentId === "string" && /^[A-Za-z0-9_-]{1,160}$/.test(claim.intentId) &&
     claim.scopeHash === intent.scopeHash && claim.sha256 === intent.sha256 && claim.uri === intent.uri,
     "PUBLICATION_INTENT_INVALID", "A durable atomic claim for this exact case file is required. No upload was requested.");
-  const current = validated(artifact);
+  const current = validated(artifact, contractVersion);
   check(current.scopeHash === original.scopeHash && current.sha256 === original.sha256 && current.uri === original.uri,
     "CASE_ARTIFACT_CHANGED", "The case artifact changed while recording its reviewed publication intent.");
   try {
@@ -207,8 +208,8 @@ export async function publishReviewedCase({ artifact, approvedSha256, approvedSc
 }
 
 /** GET-only recovery. Original instanceId is artifact provenance, not a new signing/session gate. */
-export async function verifyCaseAvailability({ artifact, fetcher = globalThis.fetch } = {}) {
-  const checked = validated(artifact);
+export async function verifyCaseAvailability({ artifact, fetcher = globalThis.fetch, contractVersion = MAINNET_CASE_PUBLICATION.contractVersion } = {}) {
+  const checked = validated(artifact, contractVersion);
   check(typeof fetcher === "function", "INVALID_TRANSPORT", "A read-only HTTP transport is required.");
   try {
     return await boundedRequest(async (signal) => {

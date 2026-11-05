@@ -189,7 +189,7 @@ function actionPreviewHtml(scenario) {
   let mode = 'payout';
   if (view === 'organizer') mode = 'organizer';
   else if (sample.matched && view === 'cases') mode = 'evidence';
-  else if (view === 'participant') mode = sample.matched ? 'evidence' : sample.waiting ? 'matching' : sample.unregistered || sample.fallback || sample.finalized ? 'recovery' : 'challenge';
+  else if (view === 'participant') mode = sample.matched ? 'evidence' : sample.waiting ? 'matching' : sample.unregistered || sample.fallback || sample.finalized ? 'recovery' : ['finalization', 'current-ready'].includes(${JSON.stringify(scenario)}) ? 'payout' : 'challenge';
   const definitions = {
     organizer:['Publish final attendance','Owner attendance review','The current event owner selects registered attendees and signs one on-chain attendance list after the event. That transaction starts the 24-hour omission challenge window. This sample does not publish a list.','0 ETH plus network fee'],
     challenge:['Challenge missing attendance','Review a separate challenge payment','Only a registered wallet missing from the posted list can challenge before its omission deadline. Opening a challenge starts a separate 24-hour matching period. A Kleros Court case is created only if someone contests it by matching the challenge payment.','0.001 ETH sample challenge payment, plus network fee'],

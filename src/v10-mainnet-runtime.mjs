@@ -1074,6 +1074,15 @@ export function v10MainnetStateStore(filename, input) {
               "PUBLICATION_INTENT_IMMUTABLE",
               409,
             );
+            for (const field of ["evidenceArtifacts", "fileArtifacts"]) {
+              for (const [key, item] of Object.entries(publication[field] ?? {})) {
+                const preserved = next[field]?.[key];
+                requireThat(preserved && hash(preserved.artifact) === hash(item.artifact) &&
+                  preserved.author === item.author && (!Object.hasOwn(item, "intent") ||
+                    (Object.hasOwn(preserved, "intent") && hash({ intent: preserved.intent }) === hash({ intent: item.intent }))),
+                "A durable evidence artifact or upload intent cannot be removed or replaced", "PUBLICATION_INTENT_IMMUTABLE", 409);
+              }
+            }
           }
         }
         const seen = new Set();
@@ -1147,6 +1156,37 @@ export function v10MainnetStateStore(filename, input) {
               "STATE_SCOPE",
               409,
             );
+            const evidence = publication.evidenceArtifacts ?? {};
+            requireThat(evidence && typeof evidence === "object" && !Array.isArray(evidence) && Object.keys(evidence).length <= 32,
+              "Invalid evidence publication records", "STATE_SCOPE", 409);
+            for (const [key, item] of Object.entries(evidence)) {
+              const a = item?.artifact;
+              requireThat(item && ethers.isAddress(item.author) && a &&
+                key === lower(item.author) + ":" + a.sha256 && /^[a-f0-9]{64}$/.test(a.sha256) &&
+                a.scope?.environment === "production" && a.scope.chainId === 1 && a.scope.contractVersion === V10_MAINNET_PROFILE &&
+                a.scope.eventId === eventId && same(a.scope.contract, record.deployment.contract) && same(a.scope.wallet, wallet) &&
+                a.scope.matched === true && (!item.intent || (item.intent.scopeHash === a.scopeHash &&
+                  item.intent.sha256 === a.sha256 && item.intent.uri === a.uri && item.intent.byteLength === a.byteLength)),
+              "Evidence publication left its event, case, author or reviewed bytes", "STATE_SCOPE", 409);
+            }
+            const files = publication.fileArtifacts ?? {};
+            requireThat(files && typeof files === "object" && !Array.isArray(files) && Object.keys(files).length <= 32,
+              "Invalid evidence file records", "STATE_SCOPE", 409);
+            for (const [key, item] of Object.entries(files)) {
+              const a = item?.artifact;
+              requireThat(item && ethers.isAddress(item.author) && a && typeof a.fileName === "string" && typeof a.mediaType === "string" &&
+                Object.keys(item).every(k => ["author", "artifact", "status", "intent", "reason", "lastCheckedAt"].includes(k)) &&
+                Object.keys(a).sort().join(",") === "byteLength,fileName,kind,mediaType,schemaVersion,scope,scopeHash,sha256,uri" &&
+                a.schemaVersion === 1 &&
+                key === lower(item.author) + ":" + a.sha256 + ":" + hash([a.fileName, a.mediaType]) && /^[a-f0-9]{64}$/.test(a.sha256) &&
+                a.kind === "erc1497-evidence-attachment" && a.scope?.environment === "production" && a.scope.chainId === 1 &&
+                a.scope.contractVersion === V10_MAINNET_PROFILE && a.scope.eventId === eventId &&
+                same(a.scope.contract, record.deployment.contract) && same(a.scope.wallet, wallet) && same(a.scope.uploaderWallet, item.author) &&
+                same(a.scope.resolver, MAINNET_KLEROS.resolver) && (!item.intent || (item.intent.scopeHash === a.scopeHash &&
+                  item.intent.sha256 === a.sha256 && item.intent.uri === a.uri && item.intent.byteLength === a.byteLength &&
+                  item.intent.fileName === a.fileName && item.intent.mediaType === a.mediaType)),
+              "Evidence file publication left its event, case, author or reviewed bytes", "STATE_SCOPE", 409);
+            }
           }
           return {
             ...dynamic,

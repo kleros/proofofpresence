@@ -28,17 +28,17 @@ const blob = (artifact) => ({
   byteLength: artifact.byteLength,
 });
 
-function checkedArtifact(value) {
+function checkedArtifact(value, contractVersion) {
   check(value && typeof value === "object", "PUBLICATION_RECORD_CHANGED", "The saved case artifact is unavailable.");
-  const artifact = prepareCaseArtifact({ scope: value.scope, content: value.content, expectedURI: value.uri });
+  const artifact = prepareCaseArtifact({ scope: value.scope, content: value.content, expectedURI: value.uri, contractVersion });
   check(same(artifact, value), "PUBLICATION_RECORD_CHANGED", "The saved case artifact changed.");
   return artifact;
 }
-function checkedRecord(value) {
+function checkedRecord(value, contractVersion) {
   if (value === null || value === undefined) return null;
   check(value.productionCase === true && typeof value.status === "string",
     "PUBLICATION_RECORD_CHANGED", "This publication record is not an approved production case.");
-  checkedArtifact(value.artifact);
+  checkedArtifact(value.artifact, contractVersion);
   return copy(value);
 }
 function synchronous(value) {
@@ -55,10 +55,11 @@ function synchronous(value) {
  * Context is opaque except for its stable eventId/wallet lock key; it is never persisted.
  * @param {{readCase?: (context:any, savedArtifact?:any)=>any,
  * readRecord?: (context:any)=>any, writeRecord?: (context:any,record:any)=>any,
- * persist?: ()=>any, fetcher?: typeof globalThis.fetch, now?: ()=>number}} [options]
+ * persist?: ()=>any, fetcher?: typeof globalThis.fetch, now?: ()=>number, contractVersion?: string}} [options]
  */
 export function createProductionCasePublicationService(options = {}) {
-  const { readCase, readRecord, writeRecord, persist, fetcher = globalThis.fetch, now = Date.now } = options;
+  const { readCase, readRecord, writeRecord, persist, fetcher = globalThis.fetch, now = Date.now, contractVersion = MAINNET_CASE_PUBLICATION.contractVersion } = options;
+  check(["kleros-event-v9-uups", "kleros-event-v10-uups"].includes(contractVersion), "PUBLICATION_CONFIGURATION", "Unsupported publication contract version.", 500);
   check([readCase, readRecord, writeRecord, persist, fetcher, now].every((fn) => typeof fn === "function"),
     "PUBLICATION_CONFIGURATION", "Canonical reads and durable scoped publication storage are required.", 500);
   const flights = new Map();
@@ -76,7 +77,7 @@ export function createProductionCasePublicationService(options = {}) {
     return value;
   }
   function stored(context) {
-    return checkedRecord(synchronous(readRecord(context)));
+    return checkedRecord(synchronous(readRecord(context)), contractVersion);
   }
   function commit(context, record) {
     // A failed save may have reached durable storage. Never roll back or erase its intent.
@@ -90,7 +91,7 @@ export function createProductionCasePublicationService(options = {}) {
   }
   async function fresh(context, savedArtifact) {
     const input = await readCase(context, savedArtifact ? copy(savedArtifact) : undefined);
-    const current = prepareCaseArtifact(input);
+    const current = prepareCaseArtifact({ ...input, contractVersion });
     check(current.scope.eventId === context.eventId &&
       current.scope.wallet.toLowerCase() === context.wallet.toLowerCase(),
     "CASE_PUBLICATION_CHANGED", "The authorized case does not match this event and wallet.");
@@ -163,7 +164,7 @@ export function createProductionCasePublicationService(options = {}) {
   }
   async function verify(context, record) {
     const guard = {};
-    const outcome = await verifyCaseAvailability({ artifact: record.artifact,
+    const outcome = await verifyCaseAvailability({ artifact: record.artifact, contractVersion,
       fetcher: (url, init) => checkedTransport(context, record.artifact, url, init, guard) });
     if (guard.failure) throw guard.failure;
     return saveOutcome(context, record, outcome);
@@ -193,7 +194,7 @@ export function createProductionCasePublicationService(options = {}) {
           "PUBLICATION_NOT_APPROVED", "Approve the exact original case SHA256 and scope hash.", 400);
         if (own(record, "intent")) return verify(context, record);
         const guard = {};
-        const outcome = await publishReviewedCase({ artifact: a, approvedSha256: approval.sha256,
+        const outcome = await publishReviewedCase({ artifact: a, contractVersion, approvedSha256: approval.sha256,
           approvedScopeHash: approval.scopeHash,
           persistIntent: async (intent) => {
             try { await fresh(context, a); }

@@ -1,5 +1,5 @@
 // Fixed public identities only; discover the application graph after metadata.
-import { EVENT, firstEventById, isPreviousFirstEvent } from "./first-event/event.js";
+import { EVENT, firstEventById } from "./first-event/event.js";
 let fullRequested = false,
   epoch = 0,
   home = null,
@@ -10,16 +10,21 @@ const homeRoute = () => {
   const route = new URLSearchParams(location.hash.slice(1));
   return !route.get("event") && route.get("setup") !== "kickback";
 };
-// Older recovery buttons produced this exact bookmark. Keep it on the saved-data
-// recovery page; the withdrawal controller performs fresh checks when requested.
-function normalizePreviousRecovery() {
+// Old participant review/case bookmarks have a fast, scoped replacement. Leave
+// any extra transaction or action parameters to the original recovery router.
+function normalizeFirstEventReview() {
   if (location.search) return;
   const route = new URLSearchParams(location.hash.slice(1));
   if (route.getAll("event").length !== 1 || route.getAll("view").length !== 1 ||
-      route.getAll("review").length !== 1 || route.get("view") !== "participant" || route.get("review") !== "1" ||
-      !isPreviousFirstEvent(firstEventById(route.get("event"))) ||
+      !firstEventById(route.get("event")) ||
       [...route.keys()].some(key => !["event", "view", "review"].includes(key))) return;
+  const participantReview = route.get("view") === "participant" &&
+    route.getAll("review").length === 1 && route.get("review") === "1";
+  const caseView = route.get("view") === "cases" && (route.getAll("review").length === 0 ||
+    (route.getAll("review").length === 1 && route.get("review") === "1"));
+  if (!participantReview && !caseView) return;
   route.delete("review"); route.set("deposit", "manage");
+  route.set("view", "participant");
   history.replaceState(null, "", "#" + route);
 }
 // Only simple public routes may bypass the guarded application. Preserve every
@@ -165,7 +170,7 @@ function handoff(options = {}) {
     });
 }
 function routeChanged() {
-  normalizePreviousRecovery();
+  normalizeFirstEventReview();
   if (redirectFirstEventParticipant()) return;
   if (firstEventRoute()) void showFirstEvent();
   else if (!homeRoute()) handoff();
@@ -204,7 +209,7 @@ async function startHome() {
   }
 }
 window.addEventListener("hashchange", routeChanged);
-normalizePreviousRecovery();
+normalizeFirstEventReview();
 if (redirectFirstEventParticipant()) { /* The canonical deposit page owns this route. */ }
 else if (firstEventRoute()) void showFirstEvent();
 else if (homeRoute()) void startHome();

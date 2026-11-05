@@ -211,3 +211,47 @@ test("V10 production publication intents remain consumed and immutable under sta
   assert.throws(() => v10MainnetStateStore(filename, m).save(new Map([[stale.definition.id, stale]]), new Map()), code("PUBLICATION_INTENT_IMMUTABLE"));
   assert.deepEqual(fs.readFileSync(filename), before);
 }));
+
+test("V10 evidence artifacts preserve old records and prevent stale writers from clearing upload intent", () => temporary(filename => {
+  const m = manifest(), r = record(m), wallet = addr(30).toLowerCase(), author = addr(31),
+    caseArtifact = { scope: { environment: "production", chainId: 1, contractVersion: PROFILE, eventId: r.definition.id,
+      contract: r.deployment.contract, wallet }, scopeHash: hash("case-scope"), sha256: hash("case-bytes"), uri: "/ipfs/case", byteLength: 1 };
+  r.publications.set(wallet, { productionCase: true, artifact: caseArtifact, status: "prepared" });
+  const store = v10MainnetStateStore(filename, m), events = new Map([[r.definition.id, r]]); store.save(events, new Map());
+  assert.equal(new Map(v10MainnetStateStore(filename, m).load().events[0].publications).get(wallet).evidenceArtifacts, undefined);
+  const evidence = { scope: { environment: "production", chainId: 1, contractVersion: PROFILE, eventId: r.definition.id,
+    contract: r.deployment.contract, wallet, matched: true }, scopeHash: hash("evidence-scope"), sha256: hash("evidence-bytes"), uri: "/ipfs/evidence", byteLength: 1 };
+  const key = author.toLowerCase() + ":" + evidence.sha256;
+  r.publications.get(wallet).evidenceArtifacts = { [key]: { author, artifact: evidence, status: "exported" } };
+  store.save(events, new Map()); const stale = structuredClone(r);
+  const item = r.publications.get(wallet).evidenceArtifacts[key];
+  item.intent = { sha256: evidence.sha256, scopeHash: evidence.scopeHash, uri: evidence.uri, byteLength: evidence.byteLength };
+  item.status = "upload-uncertain"; store.save(events, new Map()); const before = fs.readFileSync(filename);
+  assert.throws(() => v10MainnetStateStore(filename, m).save(new Map([[stale.definition.id, stale]]), new Map()), code("PUBLICATION_INTENT_IMMUTABLE"));
+  assert.deepEqual(fs.readFileSync(filename), before);
+  const reloaded = new Map(v10MainnetStateStore(filename, m).load().events[0].publications).get(wallet);
+  assert.deepEqual(reloaded.evidenceArtifacts[key].intent, item.intent);
+}));
+
+test("V10 attachment records retain a consumed upload intent across stale disk writers without storing bytes", () => temporary(filename => {
+  const m = manifest(), r = record(m), wallet = addr(30).toLowerCase(), author = addr(31);
+  const caseArtifact = { scope: { environment: "production", chainId: 1, contractVersion: PROFILE, eventId: r.definition.id,
+    contract: r.deployment.contract, wallet }, scopeHash: hash("case-scope"), sha256: hash("case-bytes"), uri: "/ipfs/case", byteLength: 1 };
+  r.publications.set(wallet, { productionCase: true, artifact: caseArtifact, status: "exported" });
+  const events = new Map([[r.definition.id, r]]), store = v10MainnetStateStore(filename, m); store.save(events, new Map());
+  const artifact = { schemaVersion: 1, kind: "erc1497-evidence-attachment", fileName: "proof.json", mediaType: "application/json",
+    scope: { ...caseArtifact.scope, uploaderWallet: author, resolver: MAINNET_KLEROS.resolver },
+    scopeHash: hash("file-scope"), sha256: hash("file-bytes"), uri: "/ipfs/file", byteLength: 2 };
+  const key = author.toLowerCase() + ":" + artifact.sha256 + ":" + hash([artifact.fileName, artifact.mediaType]);
+  r.publications.get(wallet).fileArtifacts = { [key]: { author, artifact, status: "exported" } };
+  store.save(events, new Map()); const stale = structuredClone(r), item = r.publications.get(wallet).fileArtifacts[key];
+  item.intent = { sha256: artifact.sha256, scopeHash: artifact.scopeHash, uri: artifact.uri, byteLength: artifact.byteLength,
+    fileName: artifact.fileName, mediaType: artifact.mediaType };
+  item.status = "upload-uncertain"; store.save(events, new Map()); const before = fs.readFileSync(filename);
+  assert.throws(() => v10MainnetStateStore(filename, m).save(new Map([[stale.definition.id, stale]]), new Map()), code("PUBLICATION_INTENT_IMMUTABLE"));
+  assert.deepEqual(fs.readFileSync(filename), before);
+  const reloaded = new Map(v10MainnetStateStore(filename, m).load().events[0].publications).get(wallet);
+  assert.deepEqual(reloaded.fileArtifacts[key].intent, item.intent);
+  assert.equal(Object.hasOwn(reloaded.fileArtifacts[key].artifact, "base64"), false);
+  assert.equal(Object.hasOwn(reloaded.fileArtifacts[key].artifact, "bytes"), false);
+}));
