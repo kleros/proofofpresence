@@ -1,8 +1,11 @@
-// Provider selection only: no account/chain/signature requests, API or storage.
+// Choosing a provider never requests accounts or signatures. A saved preference
+// can restore an existing connection with read-only wallet methods only.
 // App links follow MetaMask/Trust's official dapp-browser documentation.
 const active = new WeakMap();
 const discoveries = new WeakMap();
 const browserFallback = new WeakMap();
+const remembered = new WeakMap();
+const preferenceKey = "kleros-wallet-preference:v1";
 const CURRENT_ORIGINS = new Set(["https://kleros-kickback.netlify.app", "https://kickback.kleros.io"]);
 const validProvider = value => value && typeof value.request === "function";
 const cancelled = () => Object.assign(Error("Wallet selection cancelled."), { code: 4001 });
@@ -57,20 +60,89 @@ function browserProvider(win, providers, add) {
 function discovery(win) {
   if (discoveries.has(win)) return discoveries.get(win);
   const providers = [], subscribers = new Set();
-  const add = (provider, name) => {
+  const add = (provider, name, rdns = null) => {
     if (!validProvider(provider) || providers.length >= 20) return false;
     const known = providers.find(item => item.provider === provider);
     const label = typeof name === "string" && name.trim() && name.length <= 100 ? name.trim() : "Browser wallet";
-    if (known) { if (known.name === label) return false; known.name = label; }
-    else providers.push({ provider, name: label });
+    const domain = typeof rdns === "string" && /^[a-z0-9.-]{1,150}$/i.test(rdns) ? rdns : null;
+    if (known) { if (known.name === label && (!domain || known.rdns === domain)) return false; known.name = label; if (domain) known.rdns = domain; }
+    else providers.push({ provider, name: label, rdns: domain });
     return true;
   };
   // EIP-6963 requires this passive listener to remain for the page lifetime.
   win.addEventListener("eip6963:announceProvider", event => {
-    try { if (add(event.detail?.provider, event.detail?.info?.name)) for (const update of subscribers) update(); }
+    try { if (add(event.detail?.provider, event.detail?.info?.name, event.detail?.info?.rdns)) for (const update of subscribers) update(); }
     catch { /* Ignore invalid announcements. No icons or executable metadata are used. */ }
   });
   const value = { providers, add, subscribers }; discoveries.set(win, value); return value;
+}
+// This preference contains no wallet address, token or role. Browser storage is
+// only a provider-selection hint; current account and server authority are read
+// again by each consumer.
+export function rememberWalletProvider(provider, ownerDocument = document) {
+  if (!validProvider(provider)) return;
+  const entry = discovery(ownerDocument.defaultView).providers.find(item => item.provider === provider);
+  const preference = provider.isWalletConnect ? { version: 1, type: "walletconnect" }
+    : { version: 1, type: "injected", name: entry?.name ?? legacyName(provider), rdns: entry?.rdns ?? null };
+  remembered.set(ownerDocument, provider);
+  try { ownerDocument.defaultView.localStorage.setItem(preferenceKey, JSON.stringify(preference)); } catch { /* Storage is optional. */ }
+}
+export function forgetWalletProvider(ownerDocument = document) {
+  remembered.delete(ownerDocument);
+  try { ownerDocument.defaultView.localStorage.removeItem(preferenceKey); } catch { /* Storage is optional. */ }
+}
+export async function restoreWalletProvider({ ownerDocument = document, isCurrent = () => Boolean(true), signal } = {}) {
+  const win = ownerDocument.defaultView, pageURL = ownerDocument.location.href;
+  const current = () => !signal?.aborted && isCurrent() && ownerDocument.location.href === pageURL;
+  if (!win || !current()) return null;
+  let preference;
+  try {
+    const raw = win.localStorage.getItem(preferenceKey);
+    if (!raw || raw.length > 512) return null;
+    preference = JSON.parse(raw);
+  } catch { return null; }
+  if (preference?.version !== 1 || !["injected", "walletconnect"].includes(preference.type)) return null;
+  let provider, release = () => {}, accepted = false;
+  try {
+    if (preference.type === "walletconnect") {
+      if (!CURRENT_ORIGINS.has(ownerDocument.location.origin)) return null;
+      const { createWalletConnectProvider } = await import("./walletconnect.js");
+      if (!current()) return null;
+      provider = createWalletConnectProvider({ ownerDocument, isCurrent: current, signal });
+    } else {
+      const { providers, add } = discovery(win);
+      win.dispatchEvent(new Event("eip6963:requestProvider"));
+      browserProvider(win, providers, add);
+      await new Promise(resolve => setTimeout(resolve, 180));
+      if (!current()) return null;
+      browserProvider(win, providers, add);
+      const prior = remembered.get(ownerDocument);
+      const choices = providers.filter(item => preference.rdns ? item.rdns === preference.rdns : item.name === preference.name);
+      provider = choices.some(item => item.provider === prior) ? prior : choices.length === 1 ? choices[0].provider : null;
+    }
+    if (!provider || !current()) return null;
+    let changed = false;
+    const invalidated = () => { changed = true; if (current()) forgetWalletProvider(ownerDocument); };
+    for (const event of ["accountsChanged", "chainChanged", "disconnect"]) provider.on?.(event, invalidated);
+    release = () => { for (const event of ["accountsChanged", "chainChanged", "disconnect"]) provider.removeListener?.(event, invalidated); };
+    const valid = () => current() && !changed;
+    const deadline = Date.now() + 3500;
+    const read = async method => {
+      let timer;
+      try { return await Promise.race([provider.request({ method }), new Promise((_, reject) => { timer = setTimeout(() => reject(aborted()), Math.max(0, deadline - Date.now())); })]); }
+      finally { clearTimeout(timer); }
+    };
+    const accounts = await read("eth_accounts");
+    if (!valid() || !Array.isArray(accounts) || !/^0x[0-9a-f]{40}$/i.test(accounts[0] ?? "") || /^0x0{40}$/i.test(accounts[0])) return null;
+    const chain = await read("eth_chainId");
+    if (!valid() || ![1, "0x1", "0x01"].includes(chain)) return null;
+    remembered.set(ownerDocument, provider);
+    accepted = true;
+    // Consumer attaches its own invalidation listeners before releasing this
+    // short guard, closing the gap between restoration and controller adoption.
+    return { provider, wallet: accounts[0], valid, release };
+  } catch { return null; }
+  finally { if (!accepted) release(); }
 }
 /** @param {{ownerDocument?: Document, isCurrent?: () => boolean, signal?: AbortSignal}} [options] */
 export async function chooseWalletProvider({ ownerDocument = document, isCurrent = () => Boolean(true), signal } = {}) {

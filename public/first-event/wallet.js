@@ -3,7 +3,7 @@ import { loadDepositSnapshot, setDepositWallet } from "./journey.js";
 import { renderDepositReceipt } from "./receipt-card.js";
 import { assertDirectDepositDraft } from "./direct-deposit.js";
 import { recordedDepositReference, savedDepositReference } from "./receipts.js";
-import { chooseWalletProvider } from "../wallet-connection.js";
+import { chooseWalletProvider, rememberWalletProvider, restoreWalletProvider, forgetWalletProvider } from "../wallet-connection.js";
 import { eventReadJob } from "../event-read.js";
 import { createPublicTransactionFlow, resetUnusedPublicTransactionFlow } from "../public-transactions.js";
 import { acquireDepositOwnership, assertDepositOwnership } from "../deposit-ownership.js";
@@ -135,7 +135,10 @@ const txStatus = (text, hash = null, explicitState = null) => {
   const state = explicitState ?? (hash && confirmedHash === hash
     ? paymentReference?.status === "recorded" ? "recorded" : "confirmed"
     : "submitted");
-  renderDepositReceipt(transactionStatus, { message: text, hash, status: state });
+  renderDepositReceipt(transactionStatus, { message: text, hash, status: state, forRegistration: Date.now() < Date.parse(EVENT.endsAt) });
+  const receiptDetails = transactionStatus?.closest('[data-post-event-receipt]');
+  if (receiptDetails && Date.now() >= Date.parse(EVENT.endsAt) && text &&
+      (hash && !['recorded', 'confirmed'].includes(state) || /wallet request|unverified|checking stopped|could not|reverted/i.test(text))) receiptDetails.open = true;
 };
 
 function scope() {
@@ -231,7 +234,7 @@ function checkEarlierScopes(captured) {
 }
 function showPaymentComplete(complete) {
   connectButton.hidden = complete || connection !== null;
-  for (const node of document.querySelectorAll(".manual-option,.divider,.manual-deposit,.address-box")) node.hidden = complete;
+  for (const node of document.querySelectorAll(".manual-option,.divider,.manual-deposit,.address-box")) node.hidden = complete || Date.now() >= Date.parse(EVENT.startsAt);
 }
 function restorePaymentReference() {
   if (!wallet || !journal) return;
@@ -250,12 +253,19 @@ function paint() {
   if (!wallet || !connection || !journal) return;
   if (confirmedHash) {
     showPaymentComplete(true);
-    txStatus(paymentReference?.status === "recorded" ? "Deposit transaction recorded. Copy this transaction ID for Luma." : "Deposit confirmed. Copy this transaction ID for Luma.", confirmedHash);
+    const afterEvent = Date.now() >= Date.parse(EVENT.endsAt);
+    txStatus(afterEvent
+      ? "Your original deposit is recorded. Your attendance and payout status are shown above. Keep this transaction ID for your records."
+      : paymentReference?.status === "recorded" ? "Deposit transaction recorded. Copy this transaction ID for Luma." : "Deposit confirmed. Copy this transaction ID for Luma.", confirmedHash);
     return;
   }
   if (!connection.instanceId && paymentReference) {
     txStatus(paymentReference.status === "awaiting-wallet" ? "A wallet request may still be open. Check your original wallet activity before continuing." : "Transaction submitted. Keep this original transaction ID while confirmation is checked.", paymentReference.hash);
     checkButton.hidden = paymentReference.status !== "submitted";
+    return;
+  }
+  if (!connection.instanceId && Date.now() >= Date.parse(EVENT.startsAt)) {
+    txStatus("Deposits are closed. Your recorded attendance, challenge and recovery options are shown on this page.");
     return;
   }
   if (!connection.instanceId) {
@@ -271,6 +281,10 @@ function paint() {
   }
   if (heldIntent(captured)) {
     txStatus("A wallet request may still be open. Check your wallet activity before continuing; no second deposit will be requested here.");
+    return;
+  }
+  if (Date.now() >= Date.parse(EVENT.startsAt)) {
+    txStatus("Deposits are closed. Review your attendance or recover unused credit through the existing event tools.");
     return;
   }
   if (!bootstrap || !detail) {
@@ -327,6 +341,7 @@ async function api(path, options = {}) {
   } finally { clearTimeout(timer); outer?.removeEventListener("abort", abort); }
 }
 function invalidate() {
+  forgetWalletProvider(document);
   epoch++;
   readController.abort();
   readController = new AbortController();
@@ -349,6 +364,28 @@ function reconnectAfter(error, hash = null) {
   status(`${error.message || "The wallet session changed."} Connect the original wallet again to continue.`);
   if (hash) txStatus("Keep this original transaction ID. Reconnecting and checking its receipt will not send it again.", hash);
 }
+// Both explicit Connect and remembered-provider restoration adopt the same
+// invalidation listeners. A restored address is display identity only; it does
+// not bind a transaction flow, authenticated session, permissions or draft.
+function adoptWallet(selectedProvider, selectedWallet, capturedEpoch) {
+  if (!current(capturedEpoch)) return;
+  if (listeningProvider !== selectedProvider) {
+    listeningProvider?.removeListener?.("accountsChanged", invalidate);
+    listeningProvider?.removeListener?.("chainChanged", invalidate);
+    listeningProvider?.removeListener?.("disconnect", invalidate);
+    selectedProvider.on?.("accountsChanged", invalidate);
+    selectedProvider.on?.("chainChanged", invalidate);
+    selectedProvider.on?.("disconnect", invalidate);
+    listeningProvider = selectedProvider;
+  }
+  if (!current(capturedEpoch)) return;
+  journal = createTransactionJournal(localStorage);
+  provider = selectedProvider;
+  wallet = selectedWallet;
+  connection = Object.freeze({ wallet: selectedWallet, provider, epoch: capturedEpoch });
+  restorePaymentReference();
+  status(`Connected · ${wallet.slice(0, 6)}…${wallet.slice(-4)}`);
+}
 async function connect() {
   if (busy) return;
   busy = true;
@@ -357,6 +394,7 @@ async function connect() {
   readController = new AbortController();
   listeningProvider?.removeListener?.("accountsChanged", invalidate);
   listeningProvider?.removeListener?.("chainChanged", invalidate);
+  listeningProvider?.removeListener?.("disconnect", invalidate);
   listeningProvider = null;
   bootstrap = detail = wallet = draft = null;
   setDepositWallet(null);
@@ -377,18 +415,8 @@ async function connect() {
     const selectedWallet = accounts?.[0];
     if (typeof selectedWallet !== "string" || !/^0x[0-9a-f]{40}$/i.test(selectedWallet) || /^0x0{40}$/i.test(selectedWallet))
       fail("No wallet account was selected.");
-    if (listeningProvider !== provider) {
-      listeningProvider?.removeListener?.("accountsChanged", invalidate);
-      listeningProvider?.removeListener?.("chainChanged", invalidate);
-      provider.on?.("accountsChanged", invalidate);
-      provider.on?.("chainChanged", invalidate);
-      listeningProvider = provider;
-    }
-    journal = createTransactionJournal(localStorage);
-    wallet = selectedWallet;
-    connection = Object.freeze({ wallet: selectedWallet, provider, epoch: capturedEpoch });
-    restorePaymentReference();
-    status(`Connected · ${wallet.slice(0, 6)}…${wallet.slice(-4)}`);
+    rememberWalletProvider(provider, document);
+    adoptWallet(provider, selectedWallet, capturedEpoch);
   } catch (error) {
     if (current(capturedEpoch)) { status(error.message || "Wallet connection could not finish."); bootstrap = detail = wallet = draft = null; connection = null; }
   } finally {
@@ -406,6 +434,7 @@ function job(operation, payload, capturedEpoch, captured, signal = readControlle
 }
 async function prepare() {
   if (busy) return;
+  if (Date.now() >= Date.parse(EVENT.startsAt)) { paint(); return; }
   busy = true;
   const capturedEpoch = epoch;
   const selectedWallet = wallet, selectedProvider = provider;
@@ -650,4 +679,39 @@ const savedReceiptsReady = loadDepositSnapshot().then(snapshot => {
   // Keep background display errors contained, as in the original receipt loader.
   // The explicit deposit action still validates this raw snapshot before any flow.
 });
-// No provider, account request, authentication or financial action runs on load.
+// A provider preference contains no wallet address or authority. Only a live,
+// nonprompting account/network read can restore it. Without that preference the
+// helper never touches a provider. Explicit Connect supersedes this attempt by
+// changing the epoch and aborting the captured signal.
+const restoreEpoch = epoch, restoreSignal = readController.signal;
+let restoreAlive = true;
+const stopRestoration = () => { restoreAlive = false; };
+window.addEventListener("pagehide", stopRestoration, { once: true });
+void restoreWalletProvider({ ownerDocument: document, signal: restoreSignal,
+  isCurrent: () => restoreAlive && current(restoreEpoch) }).then(restored => {
+  if (!restored) return;
+  try {
+    if (!restoreAlive || !restored.valid() || !current(restoreEpoch) || busy || wallet || connection) return;
+    adoptWallet(restored.provider, restored.wallet, restoreEpoch);
+    // The helper's temporary event guard remains attached until our own
+    // listeners are active. An account/chain event cannot leave the old wallet.
+    if (!restored.valid()) { invalidate(); return; }
+    paint();
+  } catch (error) {
+    if (current(restoreEpoch)) {
+      bootstrap = detail = wallet = draft = null;
+      connection = null;
+      setDepositWallet(null);
+      status(error.message || "Reconnect your wallet to check its event status.");
+      paint();
+    }
+  } finally { restored.release(); }
+}).catch(error => {
+  if (restoreAlive && current(restoreEpoch) && !wallet) {
+    setDepositWallet(null);
+    status(error.message || "Reconnect your wallet to check its event status.");
+    depositButton.hidden = true;
+    connectButton.hidden = false;
+  }
+}).finally(() => { restoreAlive = false; window.removeEventListener("pagehide", stopRestoration); });
+// No account prompt, authentication, transaction flow or financial action runs on load.

@@ -27,26 +27,32 @@ test('event end never invents a challenge or payout countdown; posting begins it
   const s = state();
   assert.equal(timelineState(s, start - 60).target, start);
   assert.equal(timelineState(s, start + 60).target, end);
-  assert.equal(timelineState(s, end + 60).target, null);
-  assert.match(timelineState(s, end + 60).countdownLabel, /Awaiting attendance/);
+  assert.equal(timelineState(s, end + 60).target, s.claimDeadline);
+  assert.match(timelineState(s, end + 60).countdownLabel, /Organizer publication deadline/);
+  assert.match(timelineState(s, end + 60).deadline, /existing on-chain deadline/);
   s.phase = 'Listed'; s.challengeEndsAt = end + 5 * 86400;
   assert.equal(timelineState(s, end + 60).target, s.challengeEndsAt);
-  assert.match(timelineState(s, s.challengeEndsAt + 1).countdownLabel, /Awaiting organizer/);
+  assert.equal(timelineState(s, s.challengeEndsAt).target, s.challengeEndsAt);
+  assert.match(timelineState(s, s.challengeEndsAt + 1).countdownLabel, /Refresh to check/);
+  s.chainTimestamp = s.challengeEndsAt + 1;
+  assert.match(timelineState(s, s.challengeEndsAt + 1).countdownLabel, /Awaiting payout release/);
+  assert.match(timelineState(s, s.challengeEndsAt + 1, EVENT, { stale: true }).countdownLabel, /Refresh to check/);
   s.stakers.push({ challenge: { state: 1, matchDeadline: s.challengeEndsAt + 1800 } });
   assert.equal(timelineState(s, s.challengeEndsAt + 1).target, s.challengeEndsAt + 1800);
+  assert.equal(timelineState(s, s.challengeEndsAt + 1800).target, s.challengeEndsAt + 1800);
   s.phase = 'Finalized';
   assert.equal(timelineState(s, s.challengeEndsAt + 2).target, null);
   assert.match(timelineState(s, s.challengeEndsAt + 2).deadline, /does not prove a payment/);
 });
 test('deposit receipts alone never become admission, attendance or payment confirmation', () => {
   const data = fixture();
-  assert.match(admissionState(data, wallet).title, /admission not confirmed/);
+  assert.match(admissionState(data, wallet).title, /confirmation pending/);
   data.eventState.stakers.push({ wallet, status: 1, attended: false, challenge: { state: 0, matchDeadline: 0 } });
   assert.equal(admissionState(data, wallet).title, 'Registered on contract');
   assert.match(admissionState(data, null).title, /Connect/);
   const wrongTerms = structuredClone(data); wrongTerms.eventState.eventStart++;
   assert.equal(savedEventState(wrongTerms), null);
-  assert.match(admissionState(wrongTerms, wallet).title, /admission not confirmed/);
+  assert.match(admissionState(wrongTerms, wallet).title, /confirmation pending/);
 });
 test('fallback threshold opens recovery and a cancelled Paid row is never advertised as active admission', () => {
   const data = fixture();
@@ -57,4 +63,11 @@ test('fallback threshold opens recovery and a cancelled Paid row is never advert
   data.eventState.stakers.push({ wallet, status: 2, attended: false, challenge: { state: 0, matchDeadline: 0 } });
   assert.match(admissionState(data, wallet).title, /Event cancelled/);
   assert.doesNotMatch(admissionState(data, wallet).title, /Registered/);
+});
+test('a fast device clock cannot drop a matching window that the saved chain has not passed', () => {
+  const s = state(); s.phase = 'Listed'; s.challengeEndsAt = end + 100;
+  s.chainTimestamp = end + 190; s.stakers = [{ challenge: { state: 1, matchDeadline: end + 200 } }];
+  assert.match(timelineState(s, end + 201).countdownLabel, /Refresh to check/);
+  s.chainTimestamp = end + 201;
+  assert.match(timelineState(s, end + 201).countdownLabel, /Awaiting payout release/);
 });

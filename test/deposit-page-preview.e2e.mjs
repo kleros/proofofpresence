@@ -79,7 +79,7 @@ try {
   await screenshot('before-event-desktop');
 
   await open('pending');
-  await expect(page.locator('[data-admission-status]')).toHaveText('Deposit received · admission not confirmed');
+  await expect(page.locator('[data-admission-status]')).toHaveText('Commitment received · confirmation pending');
   await expect(page.locator('.deposit-receipt')).toHaveAttribute('data-status', 'confirmed');
   await expect(page.locator('.receipt-hash').first()).toHaveAttribute('href', `https://etherscan.io/tx/${SAMPLE_HASH}`);
   await expect(page.locator('.receipt-hash').first()).toHaveText(SAMPLE_HASH);
@@ -124,7 +124,7 @@ try {
   await page.unroute('**/api/first-event/depositors');
 
   await open('finalization');
-  await expect(page.locator('[data-event-countdown]')).toHaveText('Awaiting organizer payout release');
+  await expect(page.locator('[data-event-countdown]')).toHaveText('Awaiting payout release');
   await expect(page.locator('[data-timeline-deadline]')).toContainText('Open Kleros cases reserve their shares');
   pass(!(await page.locator('[data-event-countdown]').innerText()).match(/\d+h/), 'After the challenge window, no invented payout countdown is shown');
 

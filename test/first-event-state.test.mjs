@@ -4,7 +4,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { ethers } from "ethers";
-import { collectFirstEventState, publicFirstEventState } from "../src/first-event-state.mjs";
+import { collectFirstEventState, collectFirstEventDisplayState, publicFirstEventState, publicFirstEventPayoutState } from "../src/first-event-state.mjs";
 import { createFirstEventDisplay } from "../src/first-event-display.mjs";
 import { FIRST_EVENT_MANAGE_SCOPE as scope } from "../src/first-event-manage-scope.mjs";
 import { loadV10UpgradeableArtifacts } from "../src/v10-upgrade-artifacts.mjs";
@@ -41,6 +41,7 @@ function fixture(count = 2) {
       owner: target.toLowerCase() === d.upgradeAuthority.toLowerCase() ? d.initialUpgradeOwner : address(7),
       eventStart: BigInt(d.eventStart), claimDeadline: BigInt(d.claimDeadline), depositAmount: BigInt(d.depositWei),
       phase: 1n, challengeEndsAt: 90000n, challengeDeposit: 12n, stakers: wallets, CHALLENGE_PERIOD: 86400n, MATCH_PERIOD: 86400n,
+      stakerCount: BigInt(wallets.length), attendeeCount: wallets.length ? 1n : 0n, payoutShare: 0n, heldBack: 0n, pendingChallenges: 0n,
       status: 1n, attended: args[0]?.toLowerCase() === wallets[0]?.toLowerCase(),
       challenges: [0n, ethers.ZeroAddress, 0n, 0n, 0n, 0n, 0n, 0n] };
     return override?.(target, method, args, base[method]) ?? base[method];
@@ -83,8 +84,9 @@ function fixture(count = 2) {
         adoption: { kind: "recorded-adoption", txHash: d.deploymentTxHash, blockNumber: 10, blockHash: digest(10) } }] }),
     state() { throw Error("Private/full state forbidden"); }, bootstrap() { throw Error("Bootstrap forbidden"); }, owner() { throw Error("Private role verification forbidden"); } };
   const collect = extra => collectFirstEventState({ provider, chain, record, block, ...extra });
+  const collectDisplay = extra => collectFirstEventDisplayState({ provider, chain, record, block, ...extra });
   const display = id => { instanceId = id; return createFirstEventDisplay(w, { instanceId, origin: "https://state.example.invalid", store, now: () => 10000000 }); };
-  return { d, record, chain, provider, block, calls, reads, rows, wallets, collect, display,
+  return { d, record, chain, provider, block, calls, reads, rows, wallets, collect, collectDisplay, display,
     corruptCode: () => { corruptCode = true; }, corruptSlot: () => { corruptSlot = true; },
     override: callback => { override = callback; }, afterCall: callback => { afterCall = callback; } };
 }
@@ -113,6 +115,59 @@ test("maximum 150 stakers stay within the 512-read bound; duplicate and excessiv
   }
 });
 
+test("payout sidecar reads actual counters and Court IDs at the receipt block without changing eventState", async () => {
+  const f = fixture();
+  f.override((_target, method, args, normal) => method === "pendingChallenges" ? 1n
+    : method === "challenges" && args[0].toLowerCase() === f.wallets[1].toLowerCase()
+      ? [2n, address(9), 90003n, 13n, 0n, 17n, 7n, 0n] : normal);
+  const { eventState, payoutState } = await f.collectDisplay();
+  assert.deepEqual(Object.keys(eventState), ["phase", "owner", "eventStart", "endsAt", "claimDeadline", "challengeEndsAt", "challengeDepositWei", "chainTimestamp", "stakers"]);
+  assert.deepEqual(payoutState, { schemaVersion: 1, kind: "first-event-payout-state", eventId: f.record.definition.id,
+    chainId: 1, contract: f.d.contract, blockNumber: f.block.number, blockHash: f.block.hash, depositWei: f.d.depositWei,
+    stakerCount: 2, attendeeCount: 1, payoutShareWei: "0", heldBackWei: "0",
+    cases: [{ wallet: f.wallets[1], arbitratorDisputeId: "0", heldShareWei: "0" }] });
+  assert.equal(f.reads.length, 30 + 6); assert(f.reads.every(row => row.block === "0x7b"));
+  assert.deepEqual(f.reads.filter(row => ["stakerCount", "attendeeCount", "payoutShare", "heldBack", "pendingChallenges"].includes(row.method))
+    .map(row => row.method), ["stakerCount", "attendeeCount", "payoutShare", "heldBack", "pendingChallenges"]);
+  const maximum = fixture(150); assert.equal((await maximum.collectDisplay()).payoutState.stakerCount, 150);
+  assert.equal(maximum.reads.length, 480); assert.equal(maximum.calls.filter(row => row.method === "eth_call").length, 10);
+});
+
+test("strict payout projection omits mismatched scope, block, totals, private keys and incomplete case sets", async () => {
+  const f = fixture(), { eventState, payoutState } = await f.collectDisplay();
+  const project = value => publicFirstEventPayoutState(value, f.record,
+    { eventState, blockNumber: f.block.number, blockHash: f.block.hash });
+  assert.deepEqual(project(payoutState), payoutState); assert.equal(project(undefined), null);
+  for (const mutate of [p => p.schemaVersion = 2, p => p.kind = "private-state", p => p.eventId = "foreign-event", p => p.chainId = 2,
+    p => p.contract = address(99), p => p.blockNumber++, p => p.blockHash = digest(999), p => p.depositWei = "1",
+    p => p.stakerCount--, p => p.attendeeCount = 2, p => p.attendeeCount = 151, p => p.heldBackWei = "1", p => p.payoutShareWei = "1",
+    p => p.owedWei = "1000", p => p.permissions = { owner: true }, p => p.cases.push({ wallet: f.wallets[0], arbitratorDisputeId: "0", heldShareWei: "0" })]) {
+    const changed = structuredClone(payoutState); mutate(changed); assert.equal(project(changed), null);
+  }
+  const detached = project(payoutState); detached.cases.push({}); assert.equal(payoutState.cases.length, 0);
+  assert.equal(publicFirstEventPayoutState(payoutState, f.record, { eventState: { ...eventState, permissions: {} }, blockNumber: f.block.number, blockHash: f.block.hash }), null);
+});
+
+test("finalized held shares match only unresolved Court cases, while payoutShare stays an initial-round amount", async () => {
+  const f = fixture(3), deposit = BigInt(f.d.depositWei), initial = deposit * 3n / 2n;
+  f.override((_target, method, args, normal) => method === "phase" ? 2n : method === "payoutShare" ? initial : method === "heldBack" ? initial
+    : method === "pendingChallenges" ? 1n : method === "status" && args[0].toLowerCase() === f.wallets[0].toLowerCase() ? 2n
+      : method === "challenges" && args[0].toLowerCase() === f.wallets[1].toLowerCase()
+        ? [2n, address(9), 90003n, 13n, 44n, 17n, 7n, initial] : normal);
+  const { eventState, payoutState } = await f.collectDisplay();
+  assert.equal(payoutState.payoutShareWei, initial.toString()); assert.equal(payoutState.heldBackWei, initial.toString());
+  const project = value => publicFirstEventPayoutState(value, f.record, { eventState, blockNumber: f.block.number, blockHash: f.block.hash });
+  for (const mutate of [p => p.cases.length = 0, p => p.cases.push(p.cases[0]), p => p.cases[0].heldShareWei = "0",
+    p => p.cases[0].arbitratorDisputeId = "-1", p => p.cases[0].session = "private", p => p.cases[0].wallet = f.wallets[0]]) {
+    const changed = structuredClone(payoutState); mutate(changed); assert.equal(project(changed), null);
+  }
+  const overcommitted = structuredClone(payoutState);
+  overcommitted.heldBackWei = (initial + 1n).toString(); overcommitted.cases[0].heldShareWei = overcommitted.heldBackWei;
+  assert.equal(project(overcommitted), null, "Recorded initial payments plus reserved shares cannot exceed the registered pool");
+  const waitingAfterRelease = structuredClone(eventState); waitingAfterRelease.stakers[2].challenge = { state: 1, depositWei: "13", matchDeadline: 90003, localId: "0" };
+  assert.equal(publicFirstEventPayoutState(payoutState, f.record, { eventState: waitingAfterRelease, blockNumber: f.block.number, blockHash: f.block.hash }), null);
+});
+
 test("an empty decoded ethers Result creates no row requests or phantom stakers", async () => {
   const f = fixture(0), state = await f.collect();
   assert.deepEqual(state.stakers, []);
@@ -135,6 +190,11 @@ test("actual local V10 Open event with no registered stakers yields usable optio
   assert.equal(state.phase, "Open"); assert.equal(state.owner, f.organizerAddress); assert.deepEqual(state.stakers, []);
   assert.equal(state.eventStart, now + 3600); assert.equal(state.endsAt, now + 7200); assert.equal(state.chainTimestamp, block.timestamp);
   assert.equal(Object.hasOwn(state, "verified"), false); assert.equal(Object.hasOwn(state, "capabilities"), false);
+  const extended = await collectFirstEventDisplayState({ provider: w.provider, chain: w.chain, record: w.record(draft.eventId), block });
+  assert.deepEqual(extended.eventState, state);
+  assert.deepEqual(extended.payoutState, { schemaVersion: 1, kind: "first-event-payout-state", eventId: draft.eventId,
+    chainId: 1, contract: created.contract, blockNumber: block.number, blockHash: block.hash, depositWei: "1000000000000",
+    stakerCount: 0, attendeeCount: 0, payoutShareWei: "0", heldBackWei: "0", cases: [] });
 });
 
 test("source, implementation, governance and immutable-term mismatches cannot produce optional state", async () => {
@@ -163,14 +223,34 @@ test("JSONB hint projection rejects cross-row, private, enum, integer and immuta
 test("SQL-only read/restart serves optional hints; failed state refresh or invalid hints preserve receipt availability", async () => {
   const f = fixture(), first = f.display("display-state-first");
   await first.refresh(); const afterRefresh = f.calls.length;
-  const result = await first.read(); assert.equal(result.eventState.phase, "Listed"); assert.equal(f.calls.length, afterRefresh);
+  const result = await first.read(); assert.equal(result.eventState.phase, "Listed"); assert.equal(result.payoutState.stakerCount, 2); assert.equal(f.calls.length, afterRefresh);
   await first.close(); const restarted = f.display("display-state-restarted");
-  assert.equal((await restarted.read()).eventState.stakers.length, 2); assert.equal(f.calls.length, afterRefresh);
+  assert.equal((await restarted.read()).eventState.stakers.length, 2); assert.equal((await restarted.read()).payoutState.stakerCount, 2); assert.equal(f.calls.length, afterRefresh);
+  const stored = f.rows.values().next().value.snapshot;
+  stored.payoutState.blockNumber++;
+  const wrongBlock = await restarted.read(); assert.equal(Object.hasOwn(wrongBlock, "payoutState"), false); assert.equal(wrongBlock.eventState.phase, "Listed");
+  assert.equal(f.calls.length, afterRefresh);
+  delete stored.payoutState;
+  const oldSnapshot = await restarted.read(); assert.equal(Object.hasOwn(oldSnapshot, "payoutState"), false); assert.equal(oldSnapshot.eventState.phase, "Listed");
   f.rows.values().next().value.snapshot.eventState.privateContacts = ["synthetic-private"];
   assert.equal(Object.hasOwn(await restarted.read(), "eventState"), false); assert.equal(f.calls.length, afterRefresh);
   f.corruptCode(); await restarted.refresh(); const afterFailure = f.calls.length;
   const receipts = await restarted.read(); assert.deepEqual(receipts.depositors, []); assert.equal(Object.hasOwn(receipts, "eventState"), false);
   assert.equal(f.calls.length, afterFailure); await restarted.close();
+});
+
+test("failed optional payout counter read keeps canonical receipts available without mixing old sidecar blocks", async () => {
+  const f = fixture(), display = f.display("display-counter-failure");
+  await display.refresh(); assert.equal((await display.read()).payoutState.blockNumber, f.block.number);
+  const original = [{ wallet: f.wallets[0], totalReceivedWei: f.d.depositWei,
+    deposits: [{ txHash: digest(555), logIndex: 0, amountWei: f.d.depositWei, blockNumber: 100, blockHash: digest(100) }] }];
+  f.rows.values().next().value.snapshot.depositors = structuredClone(original);
+  assert.deepEqual((await display.read()).depositors, original);
+  f.block.number = 124; f.block.hash = digest(124);
+  f.override((_target, method, _args, normal) => { if (method === "stakerCount") throw Error("Synthetic counter unavailable"); return normal; });
+  await display.refresh(); const result = await display.read();
+  assert.equal(result.blockNumber, 124); assert.deepEqual(result.depositors, original); assert.equal(Object.hasOwn(result, "payoutState"), false);
+  assert.equal(Object.hasOwn(result, "eventState"), false); await display.close();
 });
 
 test("aborted collection propagates cancellation and stops before another pinned batch", async () => {

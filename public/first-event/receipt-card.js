@@ -1,5 +1,5 @@
 // Presentation of an existing hash only. Never creates or changes a payment.
-export function renderDepositReceipt(container, { message = '', hash = null, status = 'submitted' } = {}) {
+export function renderDepositReceipt(container, { message = '', hash = null, status = 'submitted', forRegistration = true } = {}) {
   if (!container) return;
   container.replaceChildren();
   if (typeof hash !== 'string' || !/^0x[0-9a-f]{64}$/i.test(hash)) {
@@ -33,9 +33,9 @@ export function renderDepositReceipt(container, { message = '', hash = null, sta
     try {
       if (!navigator.clipboard?.writeText) throw Error('Clipboard unavailable');
       await navigator.clipboard.writeText(hash);
-      if (current()) { copy.textContent = 'Transaction ID copied'; copyStatus.textContent = 'Paste this transaction ID into Luma.'; }
+      if (current()) { copy.textContent = 'Transaction ID copied'; copyStatus.textContent = forRegistration ? 'Paste this transaction ID into Luma.' : 'Keep this transaction ID with your event records.'; }
     } catch {
-      if (current()) { fallback.hidden = false; fallback.focus(); fallback.select(); copyStatus.textContent = 'Copy the selected transaction ID, then paste it into Luma.'; }
+      if (current()) { fallback.hidden = false; fallback.focus(); fallback.select(); copyStatus.textContent = forRegistration ? 'Copy the selected transaction ID, then paste it into Luma.' : 'Copy the selected transaction ID for your event records.'; }
     } finally { if (current()) copy.disabled = false; }
   });
   actions.append(copy, explorer); card.append(heading, description, caption, link, actions, fallback, copyStatus); container.append(card);
