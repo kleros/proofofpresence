@@ -537,3 +537,33 @@ test("real local V10 Waiting case exports exact on-chain metadata without networ
   assert.equal(fs.readFileSync(stateFile, "utf8").includes('"base64"'), false);
   assert.equal(forbidden, 0);
 });
+
+test("owner and depositor can each review release only when the local V10 contract permits it", async () => {
+  const eventId = draft.eventId, c = w.contract(eventId);
+  const roles = [
+    { mode: "wallet", id: "local-release-owner", wallet: ownerWallet.address },
+    { mode: "wallet", id: "local-release-depositor", wallet: guest.address },
+  ];
+  for (const session of roles)
+    await assert.rejects(w.createDraft(eventId, session, { action: "release", params: {} }), { code: "SIMULATION_FAILED" });
+
+  await rpc.request({ method: "evm_increaseTime", params: [86402] });
+  await rpc.request({ method: "evm_mine", params: [] });
+  const reviewed = [];
+  for (const session of roles) {
+    const value = await w.createDraft(eventId, session, { action: "release", params: {} });
+    assert.equal(value.method, "releasePayouts");
+    assert.equal(value.transaction.to.toLowerCase(), c.target.toLowerCase());
+    assert.equal(value.transaction.from.toLowerCase(), session.wallet.toLowerCase());
+    assert.equal(value.transaction.data, "0x766f8426");
+    assert.equal(String(value.transaction.value), "0");
+    assert.equal((await w.validateDraft(eventId, session, value.id)).d.id, value.id);
+    reviewed.push(value);
+  }
+  // Only the synthetic local-chain depositor submits; a previously reviewed
+  // owner request must no longer validate after the phase changes.
+  await (await c.connect(guest).releasePayouts({ gasLimit: 800000 })).wait();
+  assert.equal(Number(await c.phase()), 2);
+  await assert.rejects(w.validateDraft(eventId, roles[0], reviewed[0].id));
+  assert.equal(forbidden, 0);
+});
