@@ -35,6 +35,7 @@ define(403, "Wallet ownership could not be verified. Authenticate again.", [
 define(403, "You do not have permission to perform this action.", [
   "FORBIDDEN",
 ]);
+define(403, "Only an on-chain party to this case can prepare hosted evidence.", ["EVIDENCE_AUTHOR_FORBIDDEN"]);
 define(
   403,
   "Only this event's current contract owner can perform this action.",
@@ -286,6 +287,13 @@ define(409, "The event's immutable Luma terms cannot be edited.", ["IMMUTABLE_EV
 define(409, "The reviewed factory is unavailable. Preserve any existing creation hash.", ["FACTORY_UNAVAILABLE", "FACTORY_CHANGED"]);
 define(409, "A verified published policy is required before creating an event.", ["POLICY_UNPUBLISHED", "POLICY_UNAVAILABLE"]);
 define(400, "Review and approve the exact case file and scope before publishing.", ["PUBLICATION_NOT_APPROVED"]);
+define(400, "Choose a supported PDF, PNG, JPEG, JSON or text file of at most 256 KiB.", [
+  "INVALID_EVIDENCE_FILE", "INVALID_EVIDENCE_CONTENT", "INVALID_EVIDENCE_TYPE", "INVALID_EVIDENCE_ARTIFACT", "INVALID_EVIDENCE_SCOPE",
+]);
+define(409, "This case has reached its evidence preparation limit.", ["PUBLICATION_CAPACITY"]);
+define(409, "The original attachment or its publication intent changed. Preserve the existing review.", ["EVIDENCE_ARTIFACT_CHANGED", "EVIDENCE_INTENT_INVALID"]);
+define(503, "The attachment publication could not be safely recorded. Preserve the existing attempt for verification.", ["EVIDENCE_INTENT_FAILED", "EVIDENCE_INTENT_REQUIRED"]);
+define(409, "Verify that the exact case document is published and available before matching this challenge.", ["CASE_METADATA_NOT_VERIFIED"]);
 define(400, "The case export or its scope is invalid. Request a fresh export.", [
   "INVALID_CASE_SCOPE", "INVALID_CASE_CONTENT", "INVALID_CASE_ARTIFACT",
 ]);

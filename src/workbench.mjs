@@ -31,6 +31,9 @@ import { createFactoryCreationRecovery } from "./creation-recovery.mjs";
 import { eventV9LumaTemplate, V9_LUMA_ATTENDANCE_STANDARD } from "./contracts-v9-luma.mjs";
 import { eventV10LumaTemplate, V10_LUMA_ATTENDANCE_STANDARD } from "./contracts-v10-luma.mjs";
 import { createProductionCasePublicationService } from "./production-case-publication.mjs";
+import { createV10EvidencePublicationService } from "./v10-evidence-publication.mjs";
+import { createV10EvidenceFileService } from "./v10-evidence-file-service.mjs";
+import { requireAvailableV10CaseMetadata } from "./v10-case-match-guard.mjs";
 import { createFactoryRefresh } from "./shared-factory-refresh.mjs";
 import { publicCatalogSnapshot } from "./public-catalog.mjs";
 import { v10ReadBatch, v10CodeHashBatch } from "./v10-read-batch.mjs";
@@ -88,7 +91,7 @@ export async function createWorkbench({
   serverInstanceId = id(),
   productionOrigin = null,
 } = {}, { productionRuntime = null, productionStore = null, assertWallet: trustedAssertWallet = null,
-  firstEventManageScope = FIRST_EVENT_MANAGE_SCOPE } = {}) {
+  firstEventManageScope = FIRST_EVENT_MANAGE_SCOPE, productionCaseFetcher = null } = {}) {
   requireThat(
     contractVersion === "truth-pays-v7" || isV8Version(contractVersion),
     "Unsupported contract version",
@@ -204,7 +207,7 @@ export async function createWorkbench({
           attendanceStandard: { ...attendanceStandard },
           challengeWindowSeconds: 86400, matchWindowSeconds: 86400, minimumClaimDays: 7 },
       } : {}),
-      ...(productionV10 ? { features: { casePublication: false, originalCreationRecovery: false } } : {}),
+      ...(productionV10 ? { features: { casePublication: true, originalCreationRecovery: false } } : {}),
       // Only a wallet's own saved reviews reveal these minimal identities.
       // They authorize receipt lookup, never a fresh financial action.
       recoveryEvents: s?.wallet && !publicActor(s) ? [...new Set([...drafts.values()]
@@ -1189,8 +1192,17 @@ export async function createWorkbench({
             !d.used && !d.submittedHash && !d.confirmedHash && d.expiresAt > Date.now(),
           "The original credit withdrawal review changed", "DRAFT_SCOPE", 409);
           v10Receipts.sealDraft(d);
-        } else requireThat(firstEventManageMatches(events.get(eventId), manageScope),
-          "Participant reviews require this first event", "FIRST_EVENT_SCOPE", 404);
+        } else {
+          const r = events.get(eventId), d = drafts.get(result?.id);
+          requireThat(productionV10 && firstEventCreditRecoveryMatches(r, manageScope) && s?.mode === "wallet" && !publicActor(s) &&
+            d && hash(result) === hash(d) && d.eventId === eventId && d.sessionId === s.id && lower(d.wallet) === lower(s.wallet) &&
+            d.instanceId === serverInstanceId && d.origin === productionOrigin && d.chainId === 1 &&
+            d.contractVersion === "kleros-event-v10-uups" && d.abiVersion === "kleros-event-v10-uups" &&
+            lower(d.contract) === lower(r.deployment.contract) && d.transaction?.chainId === 1 &&
+            lower(d.transaction.from) === lower(s.wallet) && !d.used && !d.submittedHash && !d.confirmedHash && d.expiresAt > Date.now(),
+          "The original participant review changed", "DRAFT_SCOPE", 409);
+          v10Receipts.sealDraft(d);
+        }
       }
       if (["adopt-payer", "manage-draft", "deposit-inbox"].includes(operation)) {
         const accepting = operation === "manage-draft" && result?.action === "acceptOwnership";
@@ -1382,7 +1394,7 @@ export async function createWorkbench({
       state: stateDTO,
       payments: await projectPayments(chain, r, { blockTag: st.blockNumber }),
       ...(production ? { deploymentTrust: st.deploymentTrust, upgrade: st.upgrade,
-        ...(productionV10 ? { features: { casePublication: false, originalCreationRecovery: false } } : {}) } : {}),
+        ...(productionV10 ? { features: { casePublication: true, originalCreationRecovery: false } } : {}) } : {}),
       ownWallet,
       participants,
       deposits,
@@ -2053,6 +2065,11 @@ export async function createWorkbench({
             : "Challenge your omission. A separate one-day matching period starts; unmatched expired challenges count as attended.";
         break;
       case "match": {
+        if (productionV10) {
+          const context = caseContext(eventId, s, wallet());
+          await requireAvailableV10CaseMetadata(r.publications.get(lower(wallet())),
+            () => casePublications.verifyCase(context));
+        }
         const ch = await c.challenges(wallet());
         method = "matchChallenge";
         args = [wallet()];
@@ -3095,8 +3112,7 @@ export async function createWorkbench({
     return publication;
   }
   function caseContext(eventId, s, wallet, assertSession = () => {}) {
-    requireThat(production, "Production case publication requires Ethereum V9", "FORBIDDEN", 403);
-    requireThat(!productionV10, "V10 case publication is not enabled", "NOT_FOUND", 404);
+    requireThat(production, "Production case publication requires Ethereum", "FORBIDDEN", 403);
     requireThat(typeof wallet === "string" && ethers.isAddress(wallet), "Choose a challenged wallet");
     return { eventId, session: s, wallet: ethers.getAddress(wallet), assertSession };
   }
@@ -3105,8 +3121,10 @@ export async function createWorkbench({
     authenticated(context.session);
     const r = events.get(context.eventId);
     requireThat(r, "Unknown event", "NOT_FOUND", 404);
-    requireThat(r.deployment.contractVersion === "kleros-event-v9-uups" &&
+    requireThat(r.deployment.contractVersion === activeContractVersion &&
       r.deployment.chainId === 1, "Unsupported case environment", "WRONG_CHAIN", 409);
+    if (productionV10) requireThat(firstEventCreditRecoveryMatches(r, manageScope),
+      "Choose a reviewed current or previous event", "FIRST_EVENT_SCOPE", 404);
     return r;
   }
   function caseAccess(context) {
@@ -3126,6 +3144,10 @@ export async function createWorkbench({
     requireThat(Number(challenge.state) > 0 && organizer !== ethers.ZeroAddress,
       "An opened attendance challenge is required", "NOT_MATCHED_CASE", 409);
     const matched = Number(challenge.state) >= 2 && lower(challenge.matcher) !== lower(ethers.ZeroAddress);
+    const resolverCase = productionV10 && Number(challenge.state) === 2
+      ? await chain.resolver.disputes(challenge.localDisputeID, at) : null;
+    caseAccess(context);
+    const evidenceOpen = Number(challenge.state) === 2 && resolverCase?.isRuled === false;
     if (savedArtifact) requireThat(savedArtifact.scope?.eventId === context.eventId &&
       lower(savedArtifact.scope?.contract) === lower(r.deployment.contract) &&
       lower(savedArtifact.scope?.wallet) === lower(context.wallet) &&
@@ -3157,22 +3179,41 @@ export async function createWorkbench({
     caseAccess(context);
     return {
       scope: { environment: "production", instanceId: serverInstanceId, chainId: 1,
-        contractVersion: "kleros-event-v9-uups", eventId: context.eventId,
+        contractVersion: activeContractVersion, eventId: context.eventId,
         contract: r.deployment.contract, wallet: context.wallet, blockNumber: st.blockNumber,
         blockHash: st.blockHash, matched,
         localDisputeID: matched ? String(challenge.localDisputeID) : null,
         arbitratorDisputeID: matched ? String(challenge.arbitratorDisputeID) : null },
-      content: metadata[0], expectedURI: metadata[1],
+      content: metadata[0], expectedURI: metadata[1], evidenceOpen,
+      evidenceAuthors: [context.wallet, organizer, challenge.matcher].filter(address =>
+        ethers.isAddress(address) && lower(address) !== lower(ethers.ZeroAddress)),
     };
   }
-  const casePublications = production && !productionV10 ? createProductionCasePublicationService({
-    readCase: readProductionCase,
+  const casePublications = production ? createProductionCasePublicationService({
+    contractVersion: activeContractVersion, readCase: readProductionCase,
+    ...(productionCaseFetcher ? { fetcher: productionCaseFetcher } : {}),
     // Stored bytes stay internal until readCase refreshes authority. Cached or
     // empty access metadata must not reject a newly transferred private owner.
     readRecord: (context) => caseRecord(context).publications.get(lower(context.wallet)) ?? null,
     writeRecord: (context, publication) => {
       caseAccess(context).publications.set(lower(context.wallet), publication);
     },
+    persist: () => store.save(events, drafts),
+  }) : null;
+  const evidencePublications = productionV10 ? createV10EvidencePublicationService({
+    readCase: readProductionCase,
+    ...(productionCaseFetcher ? { fetcher: productionCaseFetcher } : {}),
+    ensureCase: context => casePublications.exportCase(context),
+    readRecord: context => caseRecord(context).publications.get(lower(context.wallet)) ?? null,
+    writeRecord: (context, publication) => { caseAccess(context).publications.set(lower(context.wallet), publication); },
+    persist: () => store.save(events, drafts),
+  }) : null;
+  const evidenceFiles = productionV10 ? createV10EvidenceFileService({
+    readCase: readProductionCase,
+    ...(productionCaseFetcher ? { fetcher: productionCaseFetcher } : {}),
+    ensureCase: context => casePublications.exportCase(context),
+    readRecord: context => caseRecord(context).publications.get(lower(context.wallet)) ?? null,
+    writeRecord: (context, publication) => { caseAccess(context).publications.set(lower(context.wallet), publication); },
     persist: () => store.save(events, drafts),
   }) : null;
   const w = {
@@ -3265,6 +3306,12 @@ export async function createWorkbench({
     mockRuling,
     mockAppeal,
     publish,
+    evidenceFileArtifact: (eventId, s, wallet, input, assertSession) => { requireThat(evidenceFiles, "Not found", "NOT_FOUND", 404); return evidenceFiles.prepare(caseContext(eventId, s, wallet, assertSession), input); },
+    publishEvidenceFile: (eventId, s, wallet, input, assertSession) => { requireThat(evidenceFiles, "Not found", "NOT_FOUND", 404); return evidenceFiles.publish(caseContext(eventId, s, wallet, assertSession), input); },
+    verifyEvidenceFile: (eventId, s, wallet, input, assertSession) => { requireThat(evidenceFiles, "Not found", "NOT_FOUND", 404); return evidenceFiles.availability(caseContext(eventId, s, wallet, assertSession), input); },
+    evidenceArtifact: (eventId, s, wallet, input, assertSession) => { requireThat(evidencePublications, "Not found", "NOT_FOUND", 404); return evidencePublications.prepare(caseContext(eventId, s, wallet, assertSession), input); },
+    publishEvidenceArtifact: (eventId, s, wallet, input, assertSession) => { requireThat(evidencePublications, "Not found", "NOT_FOUND", 404); return evidencePublications.publish(caseContext(eventId, s, wallet, assertSession), input); },
+    verifyEvidenceArtifact: (eventId, s, wallet, input, assertSession) => { requireThat(evidencePublications, "Not found", "NOT_FOUND", 404); return evidencePublications.availability(caseContext(eventId, s, wallet, assertSession), input); },
     caseArtifact: (eventId, s, wallet, assertSession) => { const context = caseContext(eventId, s, wallet, assertSession); return casePublications.exportCase(context); },
     publishCaseArtifact: (eventId, s, wallet, approval, assertSession) => { const context = caseContext(eventId, s, wallet, assertSession); return casePublications.publishCase(context, approval); },
     verifyCaseArtifact: (eventId, s, wallet, assertSession) => { const context = caseContext(eventId, s, wallet, assertSession); return casePublications.verifyCase(context); },

@@ -76,7 +76,7 @@ export function mountFirstEventDisplay({ root, view = "participant", onReview, e
     <header class="luma-launch-event luma-page-heading"><div class="eyebrow">${organizer ? "EVENT MANAGEMENT" : recovery ? "YOUR EVENT DEPOSIT" : "TRUTH PAYS"}</div>
       <h1>${organizer ? "Manage Event" : recovery ? "Your deposit" : "Truth Pays"}</h1>
       <p class="luma-event-name">${escape(EVENT.title)}</p>
-      ${EVENT.id !== DEFAULT_EVENT.id ? '<p class="field-help">Previous event — recovery only. These receipts and unused credits remain at this original contract; they have not moved to the replacement event.</p>' : ""}
+      ${EVENT.id !== DEFAULT_EVENT.id ? '<p class="field-help">Previous event — original contract. Its receipts, deposits, payouts and cases stay scoped to this address; no funds have moved to the replacement event.</p>' : ""}
       <dl class="details-list luma-event-facts"><div><dt>Event time</dt><dd>${escape(EVENT.dateLabel ?? "Event date unavailable")} <span>${escape(EVENT.hoursLabel ?? "Event hours unavailable")}</span></dd></div>
       <div><dt>Deposit per guest</dt><dd>0.01 ETH</dd></div>
       <div><dt>Event contract</dt><dd><a class="mono" href="https://etherscan.io/address/${EVENT.contract}" target="_blank" rel="noopener noreferrer">${EVENT.contract}</a></dd></div></dl>

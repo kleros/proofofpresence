@@ -820,6 +820,9 @@ body.launch-mode {
   align-items: start;
   gap: 20px;
 }
+.luma-manage-secondary > .luma-participant-tools:only-child {
+  grid-column: 1 / -1;
+}
 .luma-manage-section {
   min-width: 0;
   padding: 22px;
@@ -845,6 +848,70 @@ body.launch-mode {
   font-family: Geist, sans-serif;
   font-size: 13px;
   font-weight: 600;
+}
+.luma-settlement .section-heading {
+  display: block;
+  text-align: left;
+}
+.luma-recovery-tools,
+.luma-attendance-case {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.luma-attendance-case > h4 {
+  margin-top: 0;
+}
+.luma-attendance-case > .button + .button {
+  margin-top: 10px;
+}
+.luma-attendance-case details {
+  margin-top: 18px;
+}
+.luma-attendance-case summary,
+.luma-recovery-tools summary {
+  cursor: pointer;
+  color: var(--heading);
+  font-weight: 600;
+}
+.luma-attendance-case .button-row,
+.luma-settlement .button-row {
+  flex-wrap: wrap;
+}
+.luma-attendance-case textarea {
+  width: 100%;
+  resize: vertical;
+}
+.luma-document-bytes {
+  max-height: 280px;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--deep);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.luma-evidence-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 280px;
+  margin: 16px auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.wallet-review .luma-public-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+}
+.luma-public-consent input {
+  flex: 0 0 auto;
+  margin-top: 4px;
 }
 .luma-manage-section > summary {
   color: var(--heading);

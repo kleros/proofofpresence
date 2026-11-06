@@ -13,7 +13,8 @@ export const formatPostEventEth = value => {
   const wei = BigInt(value), fraction = String(wei % 10n ** 18n).padStart(18, '0').replace(/0+$/, '');
   return `${wei / 10n ** 18n}${fraction ? '.' + fraction : ''}`;
 };
-export const eventReviewPath = (event = EVENT, view = 'participant') => '/#' + new URLSearchParams({ event: event.id, view, review: '1' });
+// All current-event participant actions use the saved-state management surface.
+export const eventReviewPath = (event = EVENT) => firstEventRecoveryPath(event);
 export function savedEventState(snapshot, event = EVENT) {
   const state = snapshot?.eventState;
   if (!state || !['Open', 'Listed', 'Finalized', 'Cancelled'].includes(state.phase) || !walletAddress(state.owner) ||
@@ -150,6 +151,7 @@ export function postEventState(snapshot, wallet = null, { now = Date.now() / 100
   }
   if (state.phase === 'Open') {
     model.walletKind = 'registered-waiting'; model.walletTitle = model.state === 'no-list' ? 'Review no-list recovery' : 'Your wallet is registered · awaiting attendance';
+    if (model.state === 'awaiting-attendance') model.primary = button('Review your deposit', recovery);
     model.walletNote = model.state === 'no-list' ? 'No financial attendance list was posted by the contract deadline. Review recovery rather than an attendance challenge.'
       : 'Your final attendance status appears after the owner posts the on-chain list. The challenge clock has not started.'; return model;
   }

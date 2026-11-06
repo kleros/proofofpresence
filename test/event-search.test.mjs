@@ -94,3 +94,12 @@ test("Unsupported display metadata stays honest and zero never becomes a free-de
     assert.equal(entry.statusLabel, "Status unavailable");
   }
 });
+
+test("known previous event search links retain its contract-specific fast recovery route", async () => {
+  const { renderPublicResults } = await import("../public/public-home.js");
+  const { LEGACY_EVENT, firstEventRecoveryPath } = await import("../public/first-event/event.js");
+  const html = renderPublicResults([{ id: LEGACY_EVENT.id, title: "Previous event", startsAt: null,
+    timezone: null, depositWei: "10000000000000000", statusLabel: "Ended" }], "");
+  assert(html.includes(firstEventRecoveryPath(LEGACY_EVENT).replaceAll("&", "&amp;") ) || html.includes(firstEventRecoveryPath(LEGACY_EVENT)));
+  assert(!html.includes("review=1"));
+});

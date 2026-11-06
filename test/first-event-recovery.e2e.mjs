@@ -167,7 +167,7 @@ try {
   pass(true, "One complete browser account proof remains immediately before sign-in and one before transaction; seven duplicate preparation reads are removed");
   pass(true, "Explicit signed-in recovery uses participant-draft with empty input, exact original child/self calldata, zero ETH and unchanged validate/submitted/receipt pipeline");
   await expect(page.locator('[data-manage-action="withdrawPending"]')).toBeDisabled();
-  await page.reload({ waitUntil: "networkidle" }); await page.locator("[data-manage-connect]").click();
+  await page.reload({ waitUntil: "networkidle" }); await expect(page.locator("[data-manage-wallet]")).toContainText(wallet);
   await expect(page.locator("[data-manage-check-original]")).toBeVisible();
   const beforeCheck = scenario.jobs.length; scenario.allowReceipt();
   await page.locator("[data-manage-check-original]").click(); await expect(page.locator("[data-manage-status]")).toContainText("Confirmed");
@@ -204,7 +204,7 @@ try {
   assert.equal((await page.evaluate(() => window.sends)).length, 1);
   await expect(page.locator('[data-manage-action="withdrawPending"]')).toBeDisabled();
   const beforeReload = scenario.jobs.length;
-  await page.reload({ waitUntil: "networkidle" }); await page.locator("[data-manage-connect]").click();
+  await page.reload({ waitUntil: "networkidle" }); await expect(page.locator("[data-manage-wallet]")).toContainText(wallet);
   await expect(page.locator("[data-manage-pending]")).toContainText("no recorded hash");
   await expect(page.locator('[data-manage-action="withdrawPending"]')).toBeDisabled();
   assert.equal((await page.evaluate(() => window.sends)).length, 0); assert.equal(scenario.jobs.length, beforeReload);

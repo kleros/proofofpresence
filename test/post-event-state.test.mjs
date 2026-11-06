@@ -29,7 +29,7 @@ test('organizer publication uses exact existing deadline and no invented 24-hour
   assert.equal(view.walletKind, 'registered-waiting'); assert.equal(view.amountWei, null);
   assert.match(view.message, /starts when that list is posted/); assert.match(view.amountNote, /existing contract deadline/);
   assert.equal(model(data, W(1), data.eventState.claimDeadline + 1).state, 'no-list');
-  assert.match(model(data, W(1), data.eventState.claimDeadline + 1).primary.href, /view=participant&review=1/);
+  assert.match(model(data, W(1), data.eventState.claimDeadline + 1).primary.href, /view=participant&deposit=manage/);
 });
 test('unpublished attendance never labels registrants as absent and keeps organizer management accessible', () => {
   const data = fixture('Open'), owner = model(data, data.eventState.owner);
@@ -76,9 +76,9 @@ test('challenge and independent matching deadlines block release; a Court case r
   assert.equal(model(data).amountWei, '11111111111111111');
   data.eventState.stakers[9].challenge.state = 2; data.payoutState.cases = [{ wallet: W(10), arbitratorDisputeId: '0', heldShareWei: '0' }];
   const attended = model(data), disputed = model(data, W(10));
-  assert.equal(attended.state, 'release-ready'); assert.match(attended.primary.href, /view=cases&review=1/);
+  assert.equal(attended.state, 'release-ready'); assert.match(attended.primary.href, /view=participant&deposit=manage/);
   assert.match(attended.amountNote, /do not wait for the Court ruling/);
-  assert.equal(disputed.walletKind, 'disputed'); assert.match(disputed.primary.label, /evidence/); assert.match(disputed.primary.href, /view=cases/);
+  assert.equal(disputed.walletKind, 'disputed'); assert.match(disputed.primary.label, /evidence/); assert.match(disputed.primary.href, /view=participant&deposit=manage/);
 });
 test('expired unmatched challenge still needs settlement and a new challenge is never offered after its window', () => {
   const data = fixture(); data.eventState.challengeEndsAt = now - 3600; challenge(data, 10, 1, now - 1);
@@ -89,7 +89,7 @@ test('finalized status preserves uncertain ETH delivery and points claims to exi
   const data = fixture('Finalized'); data.eventState.challengeEndsAt = now - 3600;
   const paid = model(data); assert.equal(paid.state, 'finalized'); assert.equal(paid.amountWei, '12500000000000000');
   assert.equal(paid.amountLabel, 'Initial payout share'); assert.match(paid.walletNote, /does not confirm delivery/);
-  assert.match(paid.primary.href, /view=cases&review=1/); assert.match(paid.amountNote, /not a delivery receipt/);
+  assert.match(paid.primary.href, /view=participant&deposit=manage/); assert.match(paid.amountNote, /not a delivery receipt/);
   data.payoutState.payoutShareWei = '11111111111111111'; challenge(data, 10, 2, now - 1800);
   const held = model(data, W(10)); assert.equal(held.walletKind, 'disputed'); assert.equal(held.amountWei, '11111111111111111');
   assert.equal(held.amountLabel, 'Your protected disputed share');
@@ -115,7 +115,7 @@ test('stale snapshots never present an amount as current; cancelled and disconne
   const disconnected = model(fixture(), null); assert.equal(disconnected.walletKind, 'disconnected'); assert.equal(disconnected.amountWei, null);
   const cancelled = fixture('Open'); cancelled.eventState.phase = 'Cancelled'; cancelled.eventState.stakers.forEach(row => row.status = 2);
   assert.equal(model(cancelled).state, 'cancelled'); assert.equal(model(cancelled).amountWei, null);
-  assert.equal(eventReviewPath(event, 'cases'), '/#' + new URLSearchParams({ event: event.id, view: 'cases', review: '1' }));
+  assert.equal(eventReviewPath(event, 'cases'), '/#' + new URLSearchParams({ event: event.id, view: 'participant', deposit: 'manage' }));
 });
 test('release readiness needs a fresh chain checkpoint strictly past the challenge boundary', () => {
   const data = fixture(); data.eventState.challengeEndsAt = now + 1;
@@ -141,4 +141,24 @@ test('payout timing follows challenge and matching gates, while a disputed walle
   assert.equal(disputed.releaseAt, null); assert.match(disputed.releaseNote, /no confirmed payout date/);
   const paid = fixture('Finalized'); paid.eventState.challengeEndsAt = now - 1;
   assert.match(model(paid).releaseLabel, /round released/); assert.match(model(paid).releaseNote, /If it failed/);
+});
+
+test('all participant post-event action links stay in the fast event management route', () => {
+  const listed = fixture();
+  const awaiting = fixture('Open');
+  const noList = fixture('Open'); noList.eventState.claimDeadline = now - 1;
+  const waiting = fixture(); challenge(waiting, 10, 1, now + 3600);
+  const court = fixture(); challenge(court, 10, 2, now + 3600);
+  const released = fixture('Finalized');
+  for (const [data, wallet] of [[listed, W(1)], [listed, W(10)], [awaiting, W(1)],
+    [noList, W(1)], [waiting, W(10)], [court, W(10)], [released, W(1)]]) {
+    const view = model(data, wallet);
+    for (const action of [view.primary, view.secondary].filter(Boolean)) {
+      const params = new URLSearchParams(new URL(action.href, 'https://local.invalid').hash.slice(1));
+      assert.equal(params.get('event'), event.id);
+      assert.equal(params.get('view'), 'participant');
+      assert.equal(params.get('deposit'), 'manage');
+      assert.equal(params.has('review'), false);
+    }
+  }
 });

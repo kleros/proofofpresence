@@ -179,7 +179,7 @@ try {
   await open('own-court', 'release-ready');
   await expect(page.locator('[data-post-event-wallet-title]')).toContainText(/Kleros|dispute|court/i);
   await expect(panel).toContainText(/reserv|protect|held/i);
-  pass((await actionPaths()).some(hash => hash.includes('view=cases')), 'Matched challenger has a case/evidence route, not an automatic evidence upload');
+  pass((await actionPaths()).some(hash => hash.includes('deposit=manage')), 'Matched challenger has a case/evidence route, not an automatic evidence upload');
   await shot('own-court-protected-share-desktop');
   const caseLink = page.locator('[data-post-event-primary]');
   await caseLink.click();
@@ -198,7 +198,7 @@ try {
 
   await open('finalization', 'release-ready');
   await expect(panel).toContainText(/transaction|release/i);
-  pass((await actionPaths()).some(hash => hash.includes('view=cases') || hash.includes('review=1')), 'Release-ready state links to full reviewed payout controls');
+  pass((await actionPaths()).some(hash => hash.includes('deposit=manage') || hash.includes('deposit=manage')), 'Release-ready state links to full reviewed payout controls');
   const primary = page.locator('[data-post-event-primary]');
   await primary.click();
   await expect(page.locator('[data-action-preview-title]')).toHaveText('Release eligible payouts');

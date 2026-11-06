@@ -23,6 +23,10 @@ import { MAINNET_KLEROS, MAINNET_EXTRA_DATA } from "../scripts/mainnet/verify-kl
 const PROFILE = "kleros-event-v10-uups", publicOrigin = "https://v10-app.example.invalid", backendOrigin = "https://v10-backend.example.invalid";
 const proxySecret = "synthetic_v10_proxy_" + "1234567890abcdef".repeat(4);
 let rpc, provider, runtime, manifest, app, w, dir, stateFile, organizer, guest, ownerWallet, cookie, draft, created, reads = 0, forbidden = 0;
+let syntheticManageScope;
+let syntheticCaseBytes = null;
+let syntheticNextArtifact = null;
+const syntheticGateway = new Map();
 let failTransactionRead = false, forgedType4 = false, deliveryReceiptHidden = false, deliveryReorgBlock = null, deliveryReceiptReorgHash = null;
 let observedBirth = null, observedBirthReads = 0, failLateBirthRead = false;
 before(async () => {
@@ -77,7 +81,22 @@ after(async () => { await app?.close(); provider?.destroy(); await rpc?.disconne
 async function launch() {
   app = await startServer({ port: 0, rpcPort: 0, production: { manifest, stateFile },
     deployment: { mode: "hosted-production", publicOrigin, backendOrigin, proxySecret, runtimeRoot: dir } }, {
-    workbenchFactory: async options => { w = await createWorkbench(options, { productionRuntime: async () => runtime }); return w; },
+    workbenchFactory: async options => { w = await createWorkbench(options, { productionRuntime: async () => runtime,
+      ...(syntheticManageScope ? { firstEventManageScope: syntheticManageScope } : {}),
+      productionCaseFetcher: async (url, init) => {
+        if (init.method === "POST") {
+          assert.equal(String(url), "https://kleros-api.netlify.app/.netlify/functions/upload-to-ipfs?operation=evidence&pinToGraph=false");
+          assert.ok(syntheticNextArtifact);
+          const bytes = new Uint8Array(await init.body.get("file").arrayBuffer());
+          assert.equal(hash(bytes), syntheticNextArtifact.sha256);
+          syntheticGateway.set(syntheticNextArtifact.uri, bytes);
+          const uri = syntheticNextArtifact.uri; syntheticNextArtifact = null;
+          return new Response(JSON.stringify({ cids: [uri], inconsistentCids: [] }));
+        }
+        assert.equal(init.method, "GET"); assert.ok(String(url).startsWith("https://cdn.kleros.link/ipfs/"));
+        const path = new URL(url).pathname, bytes = syntheticGateway.get(path) ?? syntheticCaseBytes;
+        return bytes === null ? new Response("unavailable", { status: 503 }) : new Response(bytes);
+      } }); return w; },
   });
 }
 async function request(route, { method = "GET", payload, session = cookie } = {}) {
@@ -113,7 +132,7 @@ test("V10 factory-only bootstrap uses immediate metadata, exact jobs profile, so
   assert.equal(boot.data.capabilities.serverSigning, false); assert.equal(boot.data.capabilities.eip7702, V10_WALLET_CAPABILITIES.eip7702);
   for (const [key, value] of Object.entries(V10_WALLET_SUPPORT)) assert.deepEqual(boot.data.walletSupport[key], value);
   assert.match(boot.data.walletSupport.notice, /source-verified MetaMask/);
-  assert.deepEqual(boot.data.capabilities.supportedAccountTypes, V10_WALLET_CAPABILITIES.supportedAccountTypes); assert.equal(boot.data.capabilities.casePublication, false);
+  assert.deepEqual(boot.data.capabilities.supportedAccountTypes, V10_WALLET_CAPABILITIES.supportedAccountTypes); assert.equal(boot.data.capabilities.casePublication, true);
   assert.equal(boot.data.capabilities.originalCreationRecovery, false);
   const recovery = await request("/api/recovery/auth/challenge", { method: "POST", session: null, payload: { wallet: organizer.address, hash: ethers.id("old") } }); assert.equal(recovery.status, 404);
   await rpc.request({ method: "evm_setAccountCode", params: [guest.address, "0x00"] });
@@ -229,7 +248,7 @@ test("V10 public/private/mixed inventory and immutable template bindings never c
   const hidden = await request("/api/bootstrap", { session: null }); assert.deepEqual(hidden.data.events, []);
   assert.equal((await request("/api/bootstrap")).data.events[0].role, "organizer");
   assert.throws(() => w.creationRecoveryScope(organizer.address, created.hash), { code: "NOT_FOUND" });
-  assert.throws(() => w.caseArtifact(draft.eventId, { mode: "wallet", id: "own", wallet: organizer.address }, organizer.address), { code: "NOT_FOUND" });
+  await assert.rejects(w.caseArtifact(draft.eventId, { mode: "wallet", id: "own", wallet: organizer.address }, organizer.address), { code: "FIRST_EVENT_SCOPE" });
 });
 
 test("selected V10 async bootstrap delivers the original canonical payments anchor successfully", async () => {
@@ -432,4 +451,119 @@ test("direct V10 detail hydrates fresh financial ownership before private access
     assert.equal(previous.data.code, "FORBIDDEN");
     assert.equal(JSON.stringify(previous.data).includes(record.definition.title), false);
   } finally { record.definition.organizers = originalOrganizers; }
+});
+
+test("real local V10 Waiting case exports exact on-chain metadata without network publication", async () => {
+  const eventId = draft.eventId, c = w.contract(eventId), amount = await c.depositAmount();
+  await (await c.connect(ownerWallet).deposit({ value: amount, gasLimit: 300000 })).wait();
+  await (await c.connect(ownerWallet).registerStakers([ownerWallet.address, guest.address], { gasLimit: 500000 })).wait();
+  await rpc.request({ method: "evm_increaseTime", params: [3601] });
+  await rpc.request({ method: "evm_mine", params: [] });
+  await (await c.connect(ownerWallet).postAttendance([ownerWallet.address], amount * 2n, { gasLimit: 500000 })).wait();
+  const fee = await c.challengeDeposit();
+  await (await c.connect(guest).challenge({ value: fee, gasLimit: 500000 })).wait();
+  syntheticManageScope = r => r?.definition?.id === eventId;
+  await app.close(); await launch();
+  const signed = await login(guest), path = `/api/events/${eventId}/cases/${guest.address}/artifact`;
+  const anonymous = await request(path, { method: "POST", session: null, payload: {} });
+  assert.equal(anonymous.status, 403);
+  const result = await request(path, { method: "POST", session: signed, payload: {} });
+  assert.equal(result.status, 200, JSON.stringify(result.data));
+  assert.equal(result.data.artifact.scope.contractVersion, PROFILE);
+  assert.equal(result.data.artifact.scope.matched, false);
+  const actual = await c.caseMetaEvidence(guest.address);
+  assert.equal(result.data.artifact.content, actual[0]); assert.equal(result.data.artifact.uri, actual[1]);
+  assert.equal(result.data.publication.status, "exported"); assert.equal(result.data.publication.uploadAttempted, false);
+  const ownerSession = { mode: "wallet", id: "synthetic-match-owner", wallet: ownerWallet.address };
+  const match = { action: "match", params: { wallet: guest.address } };
+  await assert.rejects(w.createDraft(eventId, ownerSession, match), { code: "CASE_METADATA_NOT_VERIFIED" });
+  syntheticCaseBytes = result.data.artifact.content;
+  const available = await request(`/api/events/${eventId}/cases/${guest.address}/availability`, { method: "POST", session: signed, payload: {} });
+  assert.equal(available.status, 200, JSON.stringify(available.data));
+  assert.equal(available.data.publication.status, "verified");
+  const reviewedMatch = await w.createDraft(eventId, ownerSession, match);
+  const stillValid = await w.validateDraft(eventId, ownerSession, reviewedMatch.id);
+  assert.equal(stillValid.d.id, reviewedMatch.id);
+  syntheticCaseBytes = null;
+  await assert.rejects(w.validateDraft(eventId, ownerSession, reviewedMatch.id), { code: "CASE_METADATA_NOT_VERIFIED" });
+  await (await c.connect(ownerWallet).matchChallenge(guest.address, { value: fee, gasLimit: 2000000 })).wait();
+  const evidencePath = `/api/events/${eventId}/cases/${guest.address}/evidence/artifact`;
+  const text = await request(evidencePath, { method: "POST", session: signed, payload: {
+    title: "Synthetic attendance", description: "Local fixture evidence only", attachmentURI: "" } });
+  assert.equal(text.status, 200, JSON.stringify(text.data));
+  assert.equal(text.data.artifact.scope.matched, true);
+  assert.equal(JSON.parse(text.data.artifact.content).submitter.toLowerCase(), guest.address.toLowerCase());
+  assert.equal(text.data.publication.uploadAttempted, false);
+  const denied = await request(`/api/events/${eventId}/cases/${guest.address}/evidence/publish`, { method: "POST", session: signed,
+    payload: { sha256: text.data.artifact.sha256, scopeHash: text.data.artifact.scopeHash } });
+  assert.equal(denied.status, 400); // Exact, explicit public consent required before transport.
+  const file = await request(`/api/events/${eventId}/cases/${guest.address}/files/artifact`, { method: "POST", session: signed,
+    payload: { fileName: "proof.json", mediaType: "application/json", base64: "e30=" } });
+  assert.equal(file.status, 200, JSON.stringify(file.data));
+  assert.equal(file.data.publication.uploadAttempted, false);
+  assert.equal(file.data.artifact.scope.uploaderWallet.toLowerCase(), guest.address.toLowerCase());
+  assert.equal(Object.hasOwn(file.data.artifact, "bytes"), false);
+  const fileDenied = await request(`/api/events/${eventId}/cases/${guest.address}/files/publish`, { method: "POST", session: signed,
+    payload: { sha256: file.data.artifact.sha256, scopeHash: file.data.artifact.scopeHash, base64: "e30=" } });
+  assert.equal(fileDenied.status, 400);
+  syntheticNextArtifact = file.data.artifact;
+  const filePublished = await request(`/api/events/${eventId}/cases/${guest.address}/files/publish`, { method: "POST", session: signed,
+    payload: { sha256: file.data.artifact.sha256, scopeHash: file.data.artifact.scopeHash, base64: "e30=", consent: true } });
+  assert.equal(filePublished.status, 200, JSON.stringify(filePublished.data));
+  assert.equal(filePublished.data.publication.status, "published-unverified");
+  const fileVerified = await request(`/api/events/${eventId}/cases/${guest.address}/files/availability`, { method: "POST", session: signed,
+    payload: { sha256: file.data.artifact.sha256, scopeHash: file.data.artifact.scopeHash, base64: "e30=" } });
+  assert.equal(fileVerified.status, 200, JSON.stringify(fileVerified.data));
+  assert.equal(fileVerified.data.publication.status, "verified");
+  const withFile = await request(evidencePath, { method: "POST", session: signed, payload: {
+    title: "Synthetic attendance with attachment", description: "Local fixture evidence only", attachmentURI: file.data.artifact.uri } });
+  assert.equal(withFile.status, 200, JSON.stringify(withFile.data));
+  const json = JSON.parse(withFile.data.artifact.content);
+  assert.equal(json.fileURI, file.data.artifact.uri); assert.equal(json.fileTypeExtension, "json");
+  syntheticNextArtifact = withFile.data.artifact;
+  const textPublished = await request(`/api/events/${eventId}/cases/${guest.address}/evidence/publish`, { method: "POST", session: signed,
+    payload: { sha256: withFile.data.artifact.sha256, scopeHash: withFile.data.artifact.scopeHash, consent: true } });
+  assert.equal(textPublished.status, 200, JSON.stringify(textPublished.data));
+  assert.equal(textPublished.data.publication.status, "published-unverified");
+  const textVerified = await request(`/api/events/${eventId}/cases/${guest.address}/evidence/availability`, { method: "POST", session: signed,
+    payload: { sha256: withFile.data.artifact.sha256, scopeHash: withFile.data.artifact.scopeHash } });
+  assert.equal(textVerified.status, 200, JSON.stringify(textVerified.data));
+  assert.equal(textVerified.data.publication.status, "verified");
+  const localId = String((await c.challenges(guest.address)).localDisputeID);
+  const reviewedEvidence = await w.createDraft(eventId, { mode: "wallet", id: "synthetic-evidence-author", wallet: guest.address },
+    { action: "evidence", params: { wallet: guest.address, uri: withFile.data.artifact.uri } });
+  assert.equal(reviewedEvidence.args[0], localId); assert.equal(reviewedEvidence.args[1], withFile.data.artifact.uri);
+  assert.equal(reviewedEvidence.transaction.to.toLowerCase(), MAINNET_KLEROS.resolver.toLowerCase());
+  assert.equal(fs.readFileSync(stateFile, "utf8").includes('"base64"'), false);
+  assert.equal(forbidden, 0);
+});
+
+test("owner and depositor can each review release only when the local V10 contract permits it", async () => {
+  const eventId = draft.eventId, c = w.contract(eventId);
+  const roles = [
+    { mode: "wallet", id: "local-release-owner", wallet: ownerWallet.address },
+    { mode: "wallet", id: "local-release-depositor", wallet: guest.address },
+  ];
+  for (const session of roles)
+    await assert.rejects(w.createDraft(eventId, session, { action: "release", params: {} }), { code: "SIMULATION_FAILED" });
+
+  await rpc.request({ method: "evm_increaseTime", params: [86402] });
+  await rpc.request({ method: "evm_mine", params: [] });
+  const reviewed = [];
+  for (const session of roles) {
+    const value = await w.createDraft(eventId, session, { action: "release", params: {} });
+    assert.equal(value.method, "releasePayouts");
+    assert.equal(value.transaction.to.toLowerCase(), c.target.toLowerCase());
+    assert.equal(value.transaction.from.toLowerCase(), session.wallet.toLowerCase());
+    assert.equal(value.transaction.data, "0x766f8426");
+    assert.equal(String(value.transaction.value), "0");
+    assert.equal((await w.validateDraft(eventId, session, value.id)).d.id, value.id);
+    reviewed.push(value);
+  }
+  // Only the synthetic local-chain depositor submits; a previously reviewed
+  // owner request must no longer validate after the phase changes.
+  await (await c.connect(guest).releasePayouts({ gasLimit: 800000 })).wait();
+  assert.equal(Number(await c.phase()), 2);
+  await assert.rejects(w.validateDraft(eventId, roles[0], reviewed[0].id));
+  assert.equal(forbidden, 0);
 });

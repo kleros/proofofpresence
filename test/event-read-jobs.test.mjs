@@ -3,6 +3,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createEventReadJobService } from "../src/event-read-jobs.mjs";
 import { withReadJobScope, readJobSignal } from "../src/read-job-scope.mjs";
+import { FIRST_EVENT_MANAGE_SCOPE, LEGACY_FIRST_EVENT_SCOPES } from "../src/first-event-manage-scope.mjs";
 const session = (n = 2) => ({ id: `session-${n}`, mode: "wallet", wallet: `0x${String(n).repeat(40)}` });
 const body = (operation = "deposit", requestId = "request-one", eventId = "event-one") => ({ requestId, operation,
   ...(operation === "bootstrap" ? { selectedEventId: eventId } : { eventId }),
@@ -47,6 +48,112 @@ test("participant reviews accept only scoped challenge, match and resolve argume
     assert.throws(() => f.service.start(f.actor, { ...body("participant-draft", `invalid-participant-${index}`), action, params }), code("INVALID_INPUT"));
   await settle();
   assert(f.calls.every(call => call.operation === "participant-draft"));
+});
+
+test("participant settlement and evidence reviews keep exact event, actor and one-shot request identities", async () => {
+  const f = fixture((_, context) => ({ action: context.action, params: context.params, expiresAt: 1004000 }));
+  const uri = "/ipfs/Qm" + "a".repeat(44) + "/evidence.json";
+  for (const [index, [action, params]] of [["release", {}], ["claim", {}], ["emergencyWithdraw", {}],
+    ["evidence", { wallet: session(3).wallet, uri }]].entries()) {
+    const request = { ...body("participant-draft", `settlement-${index}`), action, params };
+    assert.throws(() => f.service.start(null, request), code("UNAUTHENTICATED"));
+    assert.equal(f.service.start(f.actor, request).state, "pending"); await settle();
+    const result = await f.service.status(f.actor, request.requestId);
+    assert.equal(result.state, "ready"); assert.equal(result.eventId, "event-one");
+    assert.equal(result.wallet, f.actor.wallet); assert.equal(result.expiresAt, 1004000);
+    assert.deepEqual(result.result, { action, params, expiresAt: 1004000 });
+    assert.strictEqual(f.calls[index].context.session, f.actor);
+    assert.equal(f.calls[index].context.eventId, "event-one");
+    assert.equal(f.service.start(f.actor, request).state, "expired", "Consumed reviews cannot execute again");
+  }
+  assert.equal(f.calls.length, 4); assert.equal(f.deliveries.length, 4);
+});
+
+test("participant settlement cannot choose recipients, value, resolver IDs or ambiguous evidence paths", () => {
+  const f = fixture(), uri = "/ipfs/Qm" + "a".repeat(44), wallet = session(3).wallet;
+  const invalid = [
+    ["release", { value: "1" }], ["release", { wallet }], ["claim", { to: wallet }],
+    ["emergencyWithdraw", { to: wallet }], ["claim", { amountWei: "1" }],
+    ["evidence", {}], ["evidence", { uri }], ["evidence", { wallet, uri, localDisputeID: "0" }],
+    ["evidence", { wallet, uri, target: wallet }], ["evidence", { wallet, uri, value: "0" }],
+    ["evidence", { wallet: "0x" + "0".repeat(40), uri }],
+  ];
+  for (const bad of ["https://example.invalid/evidence.json", "ipfs://Qmexample", "/ipfs/", "/ipfs/Qm/root/../evidence.json",
+    "/ipfs/Qm/./evidence.json", "/ipfs/Qm/evidence.json?key=x", "/ipfs/Qm/evidence.json#fragment", "/ipfs/Qm/%2e%2e/file",
+    "/ipfs/Qm\\evidence.json", "/ipfs/Qm//evidence.json", "/ipfs/Qm/" + "a".repeat(4096), null])
+    invalid.push(["evidence", { wallet, uri: bad }]);
+  let getterReads = 0;
+  const accessor = { wallet }; Object.defineProperty(accessor, "uri", { enumerable: true, get() { getterReads++; return uri; } });
+  invalid.push(["evidence", accessor]);
+  for (const [index, [action, params]] of invalid.entries())
+    assert.throws(() => f.service.start(f.actor, { ...body("participant-draft", `invalid-settlement-${index}`), action, params }), code("INVALID_INPUT"));
+  assert.equal(getterReads, 0); assert.equal(f.calls.length, 0);
+});
+
+test("accepted evidence is copied before queuing and its original event, wallet and URI cannot be replaced", async () => {
+  const pause = deferred(), f = fixture((_, context) => context.action === "release" ? pause.promise : { params: context.params });
+  const holding = { ...body("participant-draft", "holding-release"), action: "release", params: {} };
+  const original = { ...body("participant-draft", "original-evidence"), action: "evidence",
+    params: { wallet: session(3).wallet, uri: "/ipfs/Qm" + "a".repeat(44) + "/evidence.json" } };
+  const request = structuredClone(original);
+  f.service.start(f.actor, holding); f.service.start(f.actor, request); await settle();
+  request.eventId = "event-two"; request.params.wallet = session(4).wallet; request.params.uri = "/ipfs/changed";
+  assert.throws(() => f.service.start(f.actor, request), code("EVENT_READ_JOB_CONFLICT"));
+  pause.resolve({ released: false }); await settle();
+  assert.equal((await f.service.status(f.actor, holding.requestId)).state, "ready"); await settle();
+  const result = await f.service.status(f.actor, original.requestId);
+  assert.equal(result.state, "ready"); assert.deepEqual(result.result.params, original.params);
+  assert.equal(f.calls[1].context.eventId, "event-one"); assert.deepEqual(f.calls[1].context.params, original.params);
+  assert.equal(f.calls.length, 2); assert.equal(f.deliveries.length, 2);
+});
+
+test("advanced case reviews bind a challenged wallet and exact appeal side/wei without accepting IDs or rewards recipients", async () => {
+  const f = fixture((_, context) => ({ action: context.action, params: context.params })), wallet = session(3).wallet;
+  const allowed = [["passPeriod", { wallet }], ["deliverRuling", { wallet }], ["appealRewards", { wallet }],
+    ...[0, 1, 2].map(side => ["fundAppeal", { wallet, side, amountWei: "1" }])];
+  for (const [index, [action, params]] of allowed.entries()) {
+    const request = { ...body("participant-draft", `advanced-case-${index}`), action, params };
+    f.service.start(f.actor, request); await settle();
+    assert.deepEqual((await f.service.status(f.actor, request.requestId)).result, { action, params });
+    assert.equal(f.service.start(f.actor, request).state, "expired");
+  }
+  const invalid = [["passPeriod", {}], ["deliverRuling", { wallet, arbitratorDisputeID: "1" }],
+    ["appealRewards", { wallet, sides: [0, 1, 2] }], ["appealRewards", { wallet, to: f.actor.wallet }],
+    ["fundAppeal", { wallet, side: 1, amountWei: "1", localDisputeID: "1" }]];
+  for (const side of [-1, 3, "1", null]) invalid.push(["fundAppeal", { wallet, side, amountWei: "1" }]);
+  for (const amountWei of ["0", "01", "-1", "1.0", "1e18", 1, String(2n ** 256n)]) invalid.push(["fundAppeal", { wallet, side: 1, amountWei }]);
+  for (const [index, [action, params]] of invalid.entries())
+    assert.throws(() => f.service.start(f.actor, { ...body("participant-draft", `invalid-advanced-${index}`), action, params }), code("INVALID_INPUT"));
+  assert.equal(f.calls.length, allowed.length);
+});
+
+test("known current and legacy participant reviews retain distinct event identities without promoting arbitrary events", async () => {
+  const scopes = [FIRST_EVENT_MANAGE_SCOPE, ...LEGACY_FIRST_EVENT_SCOPES], allowed = new Map(scopes.map(scope => [scope.eventId, scope]));
+  let drafts = 0;
+  const f = fixture((_, context) => {
+    // Mirrors the server's trusted reviewed-event gate. Transport cannot turn a
+    // stable identifier into contract authority or replace either saved child.
+    const selected = allowed.get(context.eventId);
+    if (!selected) throw Object.assign(Error("Unreviewed event"), { code: "FIRST_EVENT_SCOPE" });
+    drafts++; return { eventId: selected.eventId, contract: selected.contract, action: context.action };
+  });
+  const actions = [["release", {}], ["claim", {}], ["emergencyWithdraw", {}], ["withdrawPending", {}],
+    ["evidence", { wallet: session(3).wallet, uri: "/ipfs/Qm" + "a".repeat(44) }], ["passPeriod", { wallet: session(3).wallet }],
+    ["deliverRuling", { wallet: session(3).wallet }], ["appealRewards", { wallet: session(3).wallet }],
+    ["fundAppeal", { wallet: session(3).wallet, side: 1, amountWei: "1" }]];
+  for (const [scopeIndex, selected] of scopes.entries()) for (const [actionIndex, [action, params]] of actions.entries()) {
+    const request = { ...body("participant-draft", `known-${scopeIndex}-${actionIndex}`, selected.eventId), action, params };
+    f.service.start(f.actor, request); await settle();
+    const result = await f.service.status(f.actor, request.requestId);
+    assert.equal(result.state, "ready"); assert.equal(result.eventId, selected.eventId);
+    assert.equal(result.result.contract, selected.contract); assert.equal(result.result.action, action);
+    assert.throws(() => f.service.start(f.actor, { ...request, eventId: scopes[1 - scopeIndex].eventId }), code("EVENT_READ_JOB_CONFLICT"));
+    assert.throws(() => f.service.start(f.actor, { ...request, requestId: `wrong-child-${scopeIndex}-${actionIndex}`, contract: selected.contract }), code("INVALID_INPUT"));
+  }
+  assert.equal(drafts, actions.length * scopes.length);
+  const request = { ...body("participant-draft", "unreviewed-stable-event", "event-arbitrary"), action: "release", params: {} };
+  f.service.start(f.actor, request); await settle(); assert.equal((await f.service.status(f.actor, request.requestId)).state, "failed");
+  assert.equal(drafts, actions.length * scopes.length, "Only the trusted known-event gate may authorize a draft");
 });
 
 test("authenticated deposit inbox reads expire in the pure-read pool without consuming permanent wallet records", async () => {

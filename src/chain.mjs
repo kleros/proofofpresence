@@ -46,6 +46,9 @@ export const loadArtifact = (name) =>
   JSON.parse(fs.readFileSync(new URL(`build/${name}.json`, base), "utf8"));
 export const PHASES = ["Open", "Listed", "Finalized", "Cancelled"];
 export const DAY = 86400;
+export const financialStateFingerprint = (state, contractVersion) => contractVersion === EVENT_V10_VERSION
+  ? hash({ ...state, cases: state.cases.map(({ publication: _publication, ...financialCase }) => financialCase) })
+  : hash(state);
 export const EXTRA = ethers.AbiCoder.defaultAbiCoder().encode(
   ["uint256", "uint256"],
   [0, 3],
@@ -932,7 +935,11 @@ export async function chainState(
   return {
     ...state,
     ...(trust ? { deploymentTrust: trust.deploymentTrust } : {}),
-    fingerprint: hash(state),
+    // V10 case-publication status and its last-check time are off-chain display
+    // metadata, not financial terms. A fresh availability check must not stale
+    // the transaction review it is required to protect. Every on-chain case
+    // field remains in the fingerprint; older profiles retain their behavior.
+    fingerprint: financialStateFingerprint(state, d.contractVersion),
     blockNumber: block.number,
     ...(includeBlockHash ? { blockHash: block.hash } : {}),
     now: block.timestamp,
